@@ -1,0 +1,18 @@
+# Kria: configuração do projeto Supabase. Preencher project_id depois do `npx supabase link`.
+project_id = "kria"
+
+[auth]
+site_url = "http://localhost:5231"
+additional_redirect_urls = ["http://localhost:5231/**"]
+enable_signup = true
+minimum_password_length = 8
+
+[auth.email]
+enable_confirmations = true
+
+# Quem chama estas duas é o fal.ai e o Asaas, não uma pessoa logada.
+[functions.fal-webhook]
+verify_jwt = false
+
+[functions.asaas-webhook]
+verify_jwt = false
