@@ -1,0 +1,23 @@
+const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+const dateTime = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+
+export function formatBRL(cents: number): string {
+  return brl.format(cents / 100)
+}
+
+export function formatCredits(credits: number): string {
+  return `${credits.toLocaleString('pt-BR')} ${Math.abs(credits) === 1 ? 'crédito' : 'créditos'}`
+}
+
+export function formatDateTime(iso: string): string {
+  return dateTime.format(new Date(iso))
+}
+
+/** Prompt que gera um retrato limpo, bom de usar como referência de persona. */
+export function personaPortraitPrompt(description: string): string {
+  return [
+    'Retrato fotográfico realista, rosto e ombros, olhando para a câmera,',
+    'luz natural suave, fundo neutro, pele com textura real, foto de celular de alta qualidade.',
+    `Pessoa: ${description.trim()}`,
+  ].join(' ')
+}

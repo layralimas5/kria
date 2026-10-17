@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/geist';
+
+@theme {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-accent: #c6f432;
+  --color-accent-strong: #d6ff5c;
+  --color-accent-ink: #0b0b0f;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-zinc-950 font-sans text-zinc-100 antialiased;
+}
+
+::selection {
+  @apply bg-accent text-accent-ink;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
