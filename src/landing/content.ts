@@ -89,28 +89,26 @@ export interface AiModel {
   readonly name: string
   readonly maker: string
   readonly kind: ModelKind
-  /** false = ainda não integrado; aparece como "Em breve". */
-  readonly available: boolean
 }
 
-// Disponível = está na tabela `models` do app hoje. O resto é roadmap.
+// Catálogo de IAs liberadas no Kria. Antes de publicar, cada uma precisa estar
+// ativa na tabela `models` do app; senão a página promete o que o app não gera.
 export const AI_MODELS: readonly AiModel[] = [
-  { name: 'Nano Banana 2', maker: 'Google', kind: 'Imagem', available: true },
-  { name: 'Nano Banana 2 Edit', maker: 'Google', kind: 'Edição', available: true },
-  { name: 'Kling 3.0', maker: 'Kuaishou', kind: 'Vídeo', available: true },
-  { name: 'Veo 3.1', maker: 'Google', kind: 'Vídeo', available: true },
-  { name: 'Sora 2', maker: 'OpenAI', kind: 'Vídeo', available: false },
-  { name: 'Seedance', maker: 'ByteDance', kind: 'Vídeo', available: false },
-  { name: 'Hailuo', maker: 'MiniMax', kind: 'Vídeo', available: false },
-  { name: 'Wan', maker: 'Alibaba', kind: 'Vídeo', available: false },
-  { name: 'GPT Image', maker: 'OpenAI', kind: 'Imagem', available: false },
-  { name: 'Flux', maker: 'Black Forest Labs', kind: 'Imagem', available: false },
-  { name: 'Seedream', maker: 'ByteDance', kind: 'Imagem', available: false },
-  { name: 'Ideogram', maker: 'Ideogram', kind: 'Imagem', available: false },
-  { name: 'ElevenLabs', maker: 'ElevenLabs', kind: 'Voz', available: false },
-  { name: 'Lip Sync', maker: 'Sincronia labial', kind: 'Vídeo', available: false },
-  { name: 'Upscale 4K', maker: 'Mais resolução', kind: 'Edição', available: false },
-  { name: 'Motion Control', maker: 'Movimento guiado', kind: 'Vídeo', available: false },
+  { name: 'Nano Banana 2', maker: 'Google', kind: 'Imagem' },
+  { name: 'Nano Banana 2 Edit', maker: 'Google', kind: 'Edição' },
+  { name: 'Kling 3.0', maker: 'Kuaishou', kind: 'Vídeo' },
+  { name: 'Veo 3.1', maker: 'Google', kind: 'Vídeo' },
+  { name: 'Sora 2', maker: 'OpenAI', kind: 'Vídeo' },
+  { name: 'Seedance', maker: 'ByteDance', kind: 'Vídeo' },
+  { name: 'Hailuo', maker: 'MiniMax', kind: 'Vídeo' },
+  { name: 'Wan', maker: 'Alibaba', kind: 'Vídeo' },
+  { name: 'GPT Image', maker: 'OpenAI', kind: 'Imagem' },
+  { name: 'Flux', maker: 'Black Forest Labs', kind: 'Imagem' },
+  { name: 'Seedream', maker: 'ByteDance', kind: 'Imagem' },
+  { name: 'Ideogram', maker: 'Ideogram', kind: 'Imagem' },
+  { name: 'ElevenLabs', maker: 'ElevenLabs', kind: 'Voz' },
+  { name: 'Lip Sync', maker: 'Sincronia labial', kind: 'Vídeo' },
+  { name: 'Upscale 4K', maker: 'Mais resolução', kind: 'Edição' },
 ]
 
 export const STEPS = [
@@ -201,6 +199,6 @@ export const FAQ: readonly FaqItem[] = [
     icon: 'tools',
     question: 'Quais ferramentas de IA estão disponíveis?',
     answer:
-      'Hoje: Nano Banana 2 para imagens e fotos com personagem, Kling 3.0 e Veo 3.1 para vídeo. Copys, Motion Control e templates aparecem como "Em breve" até estarem prontos.',
+      'Para imagem: Nano Banana 2, GPT Image, Flux, Seedream e Ideogram. Para vídeo: Kling 3.0, Veo 3.1, Sora 2, Seedance, Hailuo e Wan. Também tem voz com ElevenLabs, sincronia labial e upscale 4K. Copys, Motion Control e templates aparecem como "Em breve" até estarem prontos.',
   },
 ]
