@@ -15,6 +15,8 @@ export const modelSchema = z.object({
   position: z.number().int(),
   badge: z.enum(['NOVO', 'TOP']).nullable(),
   defaults: z.record(z.unknown()),
+  /** Planos que podem usar o modelo; nulo libera para todos. */
+  allowed_plans: z.array(z.string()).nullable(),
 })
 export type Model = z.infer<typeof modelSchema>
 
@@ -56,14 +58,87 @@ export const creditPackSchema = z.object({
 })
 export type CreditPack = z.infer<typeof creditPackSchema>
 
+export const ledgerReasonSchema = z.enum([
+  'signup_bonus',
+  'purchase',
+  'generation',
+  'generation_refund',
+  'adjustment',
+  'subscription_grant',
+  'subscription_expire',
+])
+export type LedgerReason = z.infer<typeof ledgerReasonSchema>
+
 export const ledgerEntrySchema = z.object({
   id: z.number().int(),
   delta: z.number().int(),
-  reason: z.enum(['signup_bonus', 'purchase', 'generation', 'generation_refund', 'adjustment']),
+  reason: ledgerReasonSchema,
   note: z.string().nullable(),
+  balance_after: z.number().int().nullable(),
   created_at: z.string(),
 })
 export type LedgerEntry = z.infer<typeof ledgerEntrySchema>
+
+/** Carteira em dois baldes: o do plano renova e não acumula; o comprado não expira. */
+export const walletSchema = z.object({
+  balance: z.number().int(),
+  subscription_balance: z.number().int(),
+  purchased_balance: z.number().int(),
+})
+export type Wallet = z.infer<typeof walletSchema>
+
+export const planSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  description: z.string(),
+  price_cents: z.number().int(),
+  monthly_credits: z.number().int(),
+  max_concurrent: z.number().int(),
+  features: z.array(z.string()),
+  public: z.boolean(),
+  highlight: z.boolean(),
+  position: z.number().int(),
+})
+export type Plan = z.infer<typeof planSchema>
+
+export const PLAN_COLUMNS = 'slug, name, description, price_cents, monthly_credits, max_concurrent, features, public, highlight, position'
+
+export const subscriptionStatusSchema = z.enum(['pending', 'active', 'past_due', 'canceled', 'expired'])
+export type SubscriptionStatus = z.infer<typeof subscriptionStatusSchema>
+
+export const subscriptionSchema = z.object({
+  id: z.string().uuid(),
+  plan_slug: z.string(),
+  status: subscriptionStatusSchema,
+  price_cents: z.number().int(),
+  monthly_credits: z.number().int(),
+  current_period_start: z.string().nullable(),
+  current_period_end: z.string().nullable(),
+  canceled_at: z.string().nullable(),
+  created_at: z.string(),
+})
+export type Subscription = z.infer<typeof subscriptionSchema>
+
+export const SUBSCRIPTION_COLUMNS =
+  'id, plan_slug, status, price_cents, monthly_credits, current_period_start, current_period_end, canceled_at, created_at'
+
+export const subscriptionPaymentSchema = z.object({
+  id: z.string().uuid(),
+  amount_cents: z.number().int(),
+  status: z.enum(['confirmed', 'refunded']),
+  invoice_url: z.string().nullable(),
+  paid_at: z.string(),
+})
+export type SubscriptionPayment = z.infer<typeof subscriptionPaymentSchema>
+
+export const goalSchema = z.enum(['influencers', 'viral_videos', 'ugc_ads', 'images', 'social_content', 'all_tools'])
+export type Goal = z.infer<typeof goalSchema>
+
+export const preferencesSchema = z.object({
+  goal: goalSchema.nullable(),
+  onboarded_at: z.string().nullable(),
+})
+export type Preferences = z.infer<typeof preferencesSchema>
 
 export const purchaseSchema = z.object({
   id: z.string().uuid(),

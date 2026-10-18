@@ -15,7 +15,7 @@ import { useQuery, type QueryState } from './useQuery'
 async function fetchModels(): Promise<Model[]> {
   const { data, error } = await supabase
     .from('models')
-    .select('slug, name, description, kind, requires_image, credits, position, badge, defaults')
+    .select('slug, name, description, kind, requires_image, credits, position, badge, defaults, allowed_plans')
     .order('position')
   if (error) throw error
   return z.array(modelSchema).parse(data)
@@ -42,7 +42,7 @@ async function fetchPersonas(): Promise<Persona[]> {
 async function fetchLedger(): Promise<LedgerEntry[]> {
   const { data, error } = await supabase
     .from('credit_ledger')
-    .select('id, delta, reason, note, created_at')
+    .select('id, delta, reason, note, balance_after, created_at')
     .order('created_at', { ascending: false })
     .limit(50)
   if (error) throw error

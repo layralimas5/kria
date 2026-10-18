@@ -13,6 +13,13 @@ export function formatDateTime(iso: string): string {
   return dateTime.format(new Date(iso))
 }
 
+const dateOnly = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Sao_Paulo' })
+
+/** "18 de out. de 2026" no fuso de Brasília, para vencimentos e renovações. */
+export function formatDate(iso: string): string {
+  return dateOnly.format(new Date(iso))
+}
+
 /** Prompt que gera um retrato limpo, bom de usar como referência de persona. */
 export function personaPortraitPrompt(description: string): string {
   return [

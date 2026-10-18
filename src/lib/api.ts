@@ -3,10 +3,13 @@ import { z } from 'zod'
 import {
   generationSchema,
   personaSchema,
+  preferencesSchema,
   PROFILE_COLUMNS,
   profileSchema,
   type Generation,
+  type Goal,
   type Persona,
+  type Preferences,
   type Profile,
   type ProfileUpdate,
 } from '@/domain/types'
@@ -39,6 +42,8 @@ export interface GenerateInput {
   readonly prompt: string
   readonly personaId?: string
   readonly sourceGenerationId?: string
+  /** Mesma chave = mesmo pedido: o servidor não cobra nem gera duas vezes. */
+  readonly idempotencyKey: string
 }
 
 export async function generate(input: GenerateInput): Promise<Generation> {
@@ -53,6 +58,46 @@ export async function refreshGenerations(ids: readonly string[]): Promise<void> 
 export async function startCheckout(pack: string): Promise<string> {
   const data = await invoke('buy-credits', { pack })
   return z.object({ url: z.string().url() }).parse(data).url
+}
+
+export async function startSubscription(plan: string): Promise<string> {
+  const data = await invoke('subscribe', { plan })
+  return z.object({ url: z.string().url() }).parse(data).url
+}
+
+export async function cancelSubscription(): Promise<void> {
+  await invoke('cancel-subscription', {})
+}
+
+/** Os dados da conta em JSON, para a pessoa baixar (LGPD). */
+export async function exportAccountData(): Promise<unknown> {
+  return invoke('account', { action: 'export' })
+}
+
+export async function deleteAccount(): Promise<void> {
+  await invoke('account', { action: 'delete', confirmation: 'EXCLUIR' })
+  await supabase.auth.signOut({ scope: 'local' })
+}
+
+export async function fetchPreferences(userId: string): Promise<Preferences | null> {
+  const { data, error } = await supabase.from('user_preferences').select('goal, onboarded_at').eq('user_id', userId).maybeSingle()
+  if (error) throw new ApiError('preferences_unavailable', 'Não deu para carregar suas preferências.')
+  return data ? preferencesSchema.parse(data) : null
+}
+
+export async function saveGoal(userId: string, goal: Goal): Promise<Preferences> {
+  const { data, error } = await supabase
+    .from('user_preferences')
+    .upsert({ user_id: userId, goal, onboarded_at: new Date().toISOString() }, { onConflict: 'user_id' })
+    .select('goal, onboarded_at')
+    .single()
+  if (error) throw new ApiError('preferences_failed', 'Não deu para salvar sua escolha. Tente de novo.')
+  return preferencesSchema.parse(data)
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/nova-senha` })
+  if (error) throw new ApiError('reset_failed', 'Não deu para enviar o e-mail agora. Tente de novo em instantes.')
 }
 
 const PERSONA_ERRORS: Record<string, string> = {

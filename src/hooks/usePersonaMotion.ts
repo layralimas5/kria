@@ -3,6 +3,7 @@ import type { Generation, Model } from '@/domain/types'
 import { errorMessage, generate } from '@/lib/api'
 import { useBalance } from './useBalance'
 import { useGenerations } from './useGenerations'
+import { useIdempotencyKey } from './useIdempotencyKey'
 
 export const MOTION_PRESETS = [
   { label: 'Acenar e sorrir', prompt: 'olha para a câmera, sorri e acena com a mão' },
@@ -23,10 +24,13 @@ export function usePersonaMotion(models: readonly Model[]) {
   const [modelSlug, setModelSlug] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const requestKey = useIdempotencyKey()
 
   useEffect(() => {
     if (!modelSlug && videoModels[0]) setModelSlug(videoModels[0].slug)
   }, [modelSlug, videoModels])
+
+  useEffect(() => requestKey.rotate(), [personaId, prompt, modelSlug, requestKey])
 
   const model = videoModels.find((item) => item.slug === modelSlug) ?? null
   const canAfford = model !== null && balance !== null && balance >= model.credits
@@ -47,7 +51,8 @@ export function usePersonaMotion(models: readonly Model[]) {
     setSubmitting(true)
     setError(null)
     try {
-      const generation = await generate({ model: model.slug, prompt: prompt.trim(), personaId })
+      const generation = await generate({ model: model.slug, prompt: prompt.trim(), personaId, idempotencyKey: requestKey.current() })
+      requestKey.rotate()
       upsert(generation)
       void refreshBalance()
       return generation

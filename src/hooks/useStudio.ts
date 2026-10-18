@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { canUseModel } from '@/domain/plans'
 import type { ImageSource, MediaKind, Model } from '@/domain/types'
 import { errorMessage, generate } from '@/lib/api'
+import { useAccount } from './useAccount'
 import { useBalance } from './useBalance'
 import { useGenerations } from './useGenerations'
+import { useIdempotencyKey } from './useIdempotencyKey'
 
 export const PROMPT_MAX = 2000
 
@@ -23,6 +26,7 @@ function sourceFromParams(params: URLSearchParams): ImageSource | null {
 export function useStudio(models: readonly Model[]) {
   const [params, setParams] = useSearchParams()
   const { balance, refresh: refreshBalance } = useBalance()
+  const { plan } = useAccount()
   const { upsert } = useGenerations()
 
   const kind: MediaKind = params.get('modo') === 'video' ? 'video' : 'image'
@@ -39,13 +43,19 @@ export function useStudio(models: readonly Model[]) {
     [setParams],
   )
   const [modelSlug, setModelSlug] = useState<string | null>(null)
-  const [prompt, setPrompt] = useState('')
+  // Atalhos do início chegam com um prompt pronto para a pessoa completar.
+  const [prompt, setPrompt] = useState(() => (params.get('prompt') ?? '').slice(0, PROMPT_MAX))
   const [source, setSource] = useState<ImageSource | null>(() => sourceFromParams(params))
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // O aviso some assim que a pessoa mexe no que faltava.
-  useEffect(() => setError(null), [prompt, source, modelSlug, kind])
+  const requestKey = useIdempotencyKey()
+
+  // O aviso some assim que a pessoa mexe no que faltava; pedido diferente, chave nova.
+  useEffect(() => {
+    setError(null)
+    requestKey.rotate()
+  }, [prompt, source, modelSlug, kind, requestKey])
 
   const modelsOfKind = useMemo(() => models.filter((model) => model.kind === kind), [models, kind])
 
@@ -73,6 +83,7 @@ export function useStudio(models: readonly Model[]) {
     if (!model) return 'Escolha um modelo.'
     if (prompt.trim().length < 3) return 'Escreva o que você quer criar.'
     if (needsSource && !source) return 'Escolha uma persona ou imagem no botão +.'
+    if (plan && !canUseModel(model.allowed_plans, plan.slug)) return `${model.name} faz parte dos planos pagos. Veja em Assinatura.`
     if (!canAfford) return `Você precisa de ${model.credits} créditos para esse modelo.`
     return null
   }
@@ -91,7 +102,9 @@ export function useStudio(models: readonly Model[]) {
         prompt: prompt.trim(),
         personaId: needsSource && source?.type === 'persona' ? source.id : undefined,
         sourceGenerationId: needsSource && source?.type === 'image' ? source.id : undefined,
+        idempotencyKey: requestKey.current(),
       })
+      requestKey.rotate()
       upsert(generation)
       void refreshBalance()
     } catch (submitError) {
