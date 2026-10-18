@@ -12,7 +12,7 @@ interface ModelTilesProps {
 /** Atalhos para os modelos, no topo do Estúdio. Clicar escolhe o modelo na caixa de prompt. */
 export function ModelTiles({ models, selected, onSelect }: ModelTilesProps) {
   return (
-    <div role="radiogroup" aria-label="Modelos" className="-mx-4 flex snap-x gap-2.5 overflow-x-auto px-4 scrollbar-none sm:-mx-5 sm:px-5 lg:mx-0 lg:grid lg:grid-cols-4 lg:px-0">
+    <div role="radiogroup" aria-label="Modelos" className="-mx-4 flex snap-x gap-2.5 overflow-x-auto px-4 scrollbar-none sm:-mx-5 sm:px-5 lg:mx-0 lg:grid lg:grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] lg:px-0">
       {models.map((model) => {
         const active = model.slug === selected
         return (

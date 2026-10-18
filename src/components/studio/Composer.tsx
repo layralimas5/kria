@@ -139,7 +139,7 @@ export function Composer({ studio, personas, images }: ComposerProps) {
   const specs = studio.model ? modelSpecs(studio.model.defaults) : []
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 px-3 md:bottom-5">
+    <div className="pointer-events-none fixed right-0 left-[var(--sidebar-w)] bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 px-3 transition-[left] duration-200 md:bottom-5">
       <div className="pointer-events-auto mx-auto max-w-3xl space-y-2">
         {studio.error && (
           <p role="alert" className="rounded-xl border border-red-500/30 bg-red-950/80 px-3 py-2 text-sm text-red-100 backdrop-blur">

@@ -48,7 +48,8 @@ export function StudioPage() {
     <div className="mx-auto max-w-[1600px] pb-64">
       <h1 className="sr-only">Estúdio</h1>
       {models.error && <Notice tone="error">{models.error}</Notice>}
-      {models.data && <ModelTiles models={models.data} selected={studio.model?.slug ?? null} onSelect={studio.selectModel} />}
+      {/* Cada aba (Imagem, Vídeo) mostra só os modelos dela. */}
+      {models.data && <ModelTiles models={studio.modelsOfKind} selected={studio.model?.slug ?? null} onSelect={studio.selectModel} />}
 
       {error && (
         <div className="mt-6">

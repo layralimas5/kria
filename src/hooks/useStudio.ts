@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { ImageSource, MediaKind, Model } from '@/domain/types'
 import { errorMessage, generate } from '@/lib/api'
@@ -15,13 +15,29 @@ function sourceFromParams(params: URLSearchParams): ImageSource | null {
   return null
 }
 
-/** Estado e envio do Estúdio. Lê `?modo=video&origem=<id>` e `?persona=<id>`. */
+/**
+ * Estado e envio do Estúdio. O tipo vem da URL (`?modo=imagem|video`), para as abas
+ * da barra lateral e o seletor da caixa de prompt mostrarem sempre o mesmo.
+ * Também lê `?origem=<id>` e `?persona=<id>`.
+ */
 export function useStudio(models: readonly Model[]) {
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const { balance, refresh: refreshBalance } = useBalance()
   const { upsert } = useGenerations()
 
-  const [kind, setKind] = useState<MediaKind>(params.get('modo') === 'video' ? 'video' : 'image')
+  const kind: MediaKind = params.get('modo') === 'video' ? 'video' : 'image'
+  const setKind = useCallback(
+    (next: MediaKind) =>
+      setParams(
+        (current) => {
+          const updated = new URLSearchParams(current)
+          updated.set('modo', next === 'video' ? 'video' : 'imagem')
+          return updated
+        },
+        { replace: true },
+      ),
+    [setParams],
+  )
   const [modelSlug, setModelSlug] = useState<string | null>(null)
   const [prompt, setPrompt] = useState('')
   const [source, setSource] = useState<ImageSource | null>(() => sourceFromParams(params))
