@@ -2,6 +2,7 @@
 // Storage e Edge Functions) pelo `fetch` do cliente. Só é carregado com
 // VITE_DEMO=true; nada disso entra na conversa com o servidor de verdade.
 
+import { DEMO_PLANS } from './demoPlans'
 import { createDemoState, DEMO_IMAGES, DEMO_USER_ID, DEMO_VIDEO, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
@@ -44,6 +45,8 @@ const TABLES: Record<string, () => Row[]> = {
   purchases: () => state.purchases,
   credit_balances: () => [{ user_id: DEMO_USER_ID, balance: state.balance }],
   profiles: () => [state.profile],
+  subscription_plans: () => DEMO_PLANS,
+  subscriptions: () => [],
 }
 
 function addLedger(delta: number, reason: string, note: string) {
@@ -172,6 +175,9 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
       return json({ outcomes: [] })
     }
     if (name === 'buy-credits') return buyCredits(body)
+    if (name === 'subscribe' || name === 'cancel-subscription') {
+      return fail(503, 'demo_no_payment', 'No modo demo não existe pagamento de verdade. Assinaturas só funcionam com o Supabase e o Asaas configurados.')
+    }
     return fail(404, 'not_found', 'Função desconhecida.')
   }
 

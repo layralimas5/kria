@@ -1,25 +1,43 @@
 import clsx from 'clsx'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { CalendarCheck, Clock, Cpu, Gift, GraduationCap, Plus, RotateCcw, ShieldCheck, Smartphone, Wallet, type LucideIcon } from 'lucide-react'
+import {
+  ArrowLeftRight,
+  Briefcase,
+  CalendarCheck,
+  Clapperboard,
+  Coins,
+  Cpu,
+  Gift,
+  PlusCircle,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  UserRound,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react'
 import { useId, useState } from 'react'
 import { CtaLink } from '../components/CtaLink'
 import { SectionHeading } from '../components/SectionHeading'
 import { FAQ, WELCOME_CREDITS, type FaqIcon, type FaqItem } from '../content'
 
 const ICONS: Record<FaqIcon, LucideIcon> = {
-  skill: GraduationCap,
-  billing: Wallet,
-  time: Clock,
-  expiry: CalendarCheck,
-  refund: RotateCcw,
-  safety: ShieldCheck,
-  device: Smartphone,
-  models: Cpu,
+  what: Sparkles,
+  credits: Coins,
+  persona: UserRound,
+  video: Clapperboard,
+  commercial: Briefcase,
+  rollover: CalendarCheck,
+  change: ArrowLeftRight,
+  cancel: XCircle,
+  extra: PlusCircle,
+  tools: Cpu,
 }
 
 const PROMISES: readonly { icon: LucideIcon; title: string; text: string }[] = [
-  { icon: Gift, title: `${WELCOME_CREDITS} créditos grátis`, text: 'Testa antes de pagar qualquer coisa' },
-  { icon: RotateCcw, title: 'Estorno automático', text: 'Deu erro, o crédito volta' },
+  { icon: Gift, title: `${WELCOME_CREDITS} créditos grátis`, text: 'Testa antes de assinar qualquer plano' },
+  { icon: RefreshCw, title: 'Cancele quando quiser', text: 'Sem multa, o plano vale até o fim do mês pago' },
   { icon: ShieldCheck, title: 'Sem deepfake', text: 'Nada de rosto de pessoa real' },
 ]
 

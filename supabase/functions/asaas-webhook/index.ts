@@ -1,10 +1,12 @@
-// Webhook do Asaas. Confere o token, registra o evento (repetido para aqui)
-// e credita a compra quando o pagamento confirma.
+// Webhook do Asaas. Confere o token, registra o evento (repetido para aqui),
+// ativa e renova assinaturas e credita compras avulsas quando o pagamento confirma.
 //
 // Deploy sem verificação de JWT (quem chama é o Asaas):
 //   npx supabase functions deploy asaas-webhook --no-verify-jwt
 // No painel do Asaas: eventos CHECKOUT_PAID, CHECKOUT_EXPIRED, CHECKOUT_CANCELED,
-// PAYMENT_CONFIRMED, PAYMENT_RECEIVED e PAYMENT_REFUNDED, com o ASAAS_WEBHOOK_TOKEN.
+// PAYMENT_CONFIRMED, PAYMENT_RECEIVED, PAYMENT_OVERDUE, PAYMENT_REFUNDED,
+// PAYMENT_CHARGEBACK_REQUESTED, SUBSCRIPTION_DELETED e SUBSCRIPTION_INACTIVATED,
+// com o ASAAS_WEBHOOK_TOKEN.
 //
 // Sempre responde 200 depois de registrar: erro nosso não pode fazer o Asaas
 // pausar a fila. O que não deu para aplicar fica em billing_events.outcome.
@@ -13,15 +15,24 @@ import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { adminClient, errorResponse, handle, json, readJson, requireEnv } from '../_shared/http.ts'
 import { timingSafeEqual } from '../_shared/signature.ts'
+import { decideSubscriptionEvent, type SubscriptionDecision } from '../_shared/subscription-events.ts'
 
 const eventSchema = z.object({
   id: z.string().min(1),
   event: z.string().min(1),
   checkout: z.object({ id: z.string(), externalReference: z.string().nullish() }).passthrough().optional(),
   payment: z
-    .object({ id: z.string(), checkoutSession: z.string().nullish(), externalReference: z.string().nullish() })
+    .object({
+      id: z.string(),
+      checkoutSession: z.string().nullish(),
+      externalReference: z.string().nullish(),
+      subscription: z.string().nullish(),
+      customer: z.string().nullish(),
+      dueDate: z.string().nullish(),
+    })
     .passthrough()
     .optional(),
+  subscription: z.object({ id: z.string() }).passthrough().optional(),
 })
 
 type AsaasEvent = z.infer<typeof eventSchema>
@@ -45,7 +56,77 @@ async function findPurchaseId(admin: SupabaseClient, event: AsaasEvent): Promise
   return null
 }
 
+async function findSubscriptionId(
+  admin: SupabaseClient,
+  providerSubscriptionId: string,
+  checkoutSessionId: string | null,
+): Promise<string | null> {
+  const { data } = await admin.from('subscriptions').select('id').eq('provider_subscription_id', providerSubscriptionId).maybeSingle()
+  if (data?.id) return data.id as string
+  // Primeira cobrança: ainda não sabemos o id da assinatura no Asaas, só o checkout que a criou.
+  if (!checkoutSessionId) return null
+  const first = await admin.from('subscriptions').select('id').eq('provider_checkout_id', checkoutSessionId).maybeSingle()
+  return (first.data?.id as string | undefined) ?? null
+}
+
+async function applySubscription(admin: SupabaseClient, decision: Exclude<SubscriptionDecision, { kind: 'not_subscription' }>): Promise<string> {
+  if (decision.kind === 'ignored') return `ignorado: ${decision.reason}`
+  const now = new Date().toISOString()
+
+  if (decision.kind === 'paid') {
+    const subscriptionId = await findSubscriptionId(admin, decision.providerSubscriptionId, decision.checkoutSessionId)
+    if (!subscriptionId) return 'assinatura não encontrada'
+    const { data, error } = await admin.rpc('grant_subscription_payment', {
+      p_subscription_id: subscriptionId,
+      p_payment_id: decision.paymentId,
+      p_provider_subscription_id: decision.providerSubscriptionId,
+      p_customer_id: decision.customerId,
+      p_period_end: decision.periodEnd.toISOString(),
+    })
+    if (error) return `erro ao liberar assinatura: ${error.message}`
+    return data ? 'assinatura liberada' : 'cobrança já liberada'
+  }
+
+  if (decision.kind === 'overdue') {
+    await admin
+      .from('subscriptions')
+      .update({ status: 'overdue', updated_at: now })
+      .eq('provider_subscription_id', decision.providerSubscriptionId)
+      .eq('status', 'active')
+    return 'assinatura em atraso'
+  }
+  if (decision.kind === 'refunded') {
+    // Estorno corta o plano na hora; créditos já usados não voltam automaticamente.
+    await admin
+      .from('subscriptions')
+      .update({ status: 'canceled', canceled_at: now, current_period_end: now, updated_at: now })
+      .eq('provider_subscription_id', decision.providerSubscriptionId)
+    return 'assinatura estornada: revisar saldo manualmente'
+  }
+  await admin
+    .from('subscriptions')
+    .update({ status: 'canceled', canceled_at: now, updated_at: now })
+    .eq('provider_subscription_id', decision.providerSubscriptionId)
+    .in('status', ['active', 'overdue'])
+  return 'assinatura encerrada no fim do período pago'
+}
+
+async function expireSubscriptionCheckout(admin: SupabaseClient, checkoutId: string | undefined): Promise<boolean> {
+  if (!checkoutId) return false
+  const { data } = await admin
+    .from('subscriptions')
+    .update({ status: 'expired', updated_at: new Date().toISOString() })
+    .eq('provider_checkout_id', checkoutId)
+    .eq('status', 'pending')
+    .select('id')
+  return (data?.length ?? 0) > 0
+}
+
 async function apply(admin: SupabaseClient, event: AsaasEvent): Promise<string> {
+  const subscriptionDecision = decideSubscriptionEvent(event)
+  if (subscriptionDecision.kind !== 'not_subscription') return applySubscription(admin, subscriptionDecision)
+  if (CLOSED.has(event.event) && (await expireSubscriptionCheckout(admin, event.checkout?.id))) return 'checkout de assinatura expirado'
+
   const handled = PAID.has(event.event) || CLOSED.has(event.event) || REFUNDED.has(event.event)
   if (!handled) return `ignorado: ${event.event}`
 

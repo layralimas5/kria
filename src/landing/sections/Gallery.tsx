@@ -40,7 +40,7 @@ export function Gallery() {
                     <figcaption className="absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 pt-12 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
                       <p className="line-clamp-4 text-pretty text-[13px] font-medium leading-snug text-white">“{clip.prompt}”</p>
                       <p className="mt-1.5 text-[11px] text-zinc-400">
-                        {clip.model} · {clip.credits} créditos
+                        {clip.model}
                       </p>
                     </figcaption>
                   </figure>

@@ -9,7 +9,7 @@ consistente) e gera fotos e vídeos com eles, pagando por crédito. Repositório
 - Banco/Auth/Storage: Supabase (`supabase/migrations`), RLS em tudo
 - Edge functions (Deno): `supabase/functions`
 - IA: fal.ai (fila assíncrona + webhook). Catálogo de modelos na tabela `models`
-- Pagamento: Asaas, checkout avulso Pix + cartão (mesmo padrão do Momentumm)
+- Pagamento: Asaas. Assinatura mensal no cartão (checkout recorrente) + créditos avulsos Pix/cartão. Ver `docs/assinaturas.md`
 
 ## Regras do domínio
 
@@ -19,6 +19,7 @@ consistente) e gera fotos e vídeos com eles, pagando por crédito. Repositório
   é o que impede deepfake de pessoa real. Não abrir upload sem moderação de rosto.
 - Webhook do fal não confia no corpo: confere a assinatura HMAC do id e consulta o fal.
 - Trocar modelo ou preço = `update public.models`. Não precisa de deploy.
+- Plano, preço, créditos do mês e limites = `update public.subscription_plans`. Benefício só entra pelo webhook (`grant_subscription_payment`), nunca pela volta do navegador.
 
 ## Comandos
 

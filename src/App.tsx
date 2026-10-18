@@ -16,6 +16,8 @@ const PersonasPage = lazy(() => import('@/pages/PersonasPage').then((module) => 
 const TermsPage = lazy(() => import('@/landing/TermsPage').then((module) => ({ default: module.TermsPage })))
 const CreditsPage = lazy(() => import('@/pages/CreditsPage').then((module) => ({ default: module.CreditsPage })))
 const AccountPage = lazy(() => import('@/pages/AccountPage').then((module) => ({ default: module.AccountPage })))
+const SubscribePage = lazy(() => import('@/pages/SubscribePage').then((module) => ({ default: module.SubscribePage })))
+const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage').then((module) => ({ default: module.SubscriptionPage })))
 const AccountSettingsPage = lazy(() =>
   import('@/pages/AccountSettingsPage').then((module) => ({ default: module.AccountSettingsPage })),
 )
@@ -44,6 +46,16 @@ export function App() {
             }
           />
           <Route
+            path="/assinar/:plan"
+            element={
+              <RequireAuth>
+                <Suspense fallback={<PageFallback />}>
+                  <SubscribePage />
+                </Suspense>
+              </RequireAuth>
+            }
+          />
+          <Route
             element={
               <RequireAuth>
                 <BalanceProvider>
@@ -64,6 +76,7 @@ export function App() {
             <Route path="creditos" element={<CreditsPage />} />
             <Route path="conta" element={<AccountPage />} />
             <Route path="conta/configuracoes" element={<AccountSettingsPage />} />
+            <Route path="conta/assinatura" element={<SubscriptionPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

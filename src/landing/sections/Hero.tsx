@@ -72,7 +72,7 @@ export function Hero() {
           </AnchorButton>
         </motion.div>
         <motion.p {...enter(0.28)} className="mt-7 text-[13px] text-zinc-500">
-          Sem mensalidade · Paga com Pix · Por trás: {MODELS.join(', ')}
+          Comece grátis · Planos mensais · Cancele quando quiser · Por trás: {MODELS.join(', ')}
         </motion.p>
       </div>
 

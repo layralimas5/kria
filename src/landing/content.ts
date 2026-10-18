@@ -1,17 +1,10 @@
-// Conteúdo da landing. Preços e custos espelham os seeds de `credit_packs` e
-// `models` (supabase/migrations/0001_init.sql): se mudar lá, mudar aqui.
+// Conteúdo fixo da landing. Preços, créditos e planos não ficam aqui: vêm do
+// banco (`subscription_plans`, migration 0003) pela seção de planos.
 import avatarSpecs from './avatars.json'
 import generatedMedia from './avatars.generated.json'
 
 export const SIGNUP_PATH = '/entrar'
 export const WELCOME_CREDITS = 20
-
-export const COSTS = {
-  photo: 5,
-  photoPersona: 6,
-  videoShort: 40,
-  videoTalking: 200,
-} as const
 
 export const TIKTOK_URL: string | undefined = import.meta.env.VITE_TIKTOK_URL || undefined
 
@@ -38,7 +31,6 @@ export interface Clip {
   readonly poster: string
   readonly prompt: string
   readonly model: string
-  readonly credits: number
   /** false enquanto o vídeo real não foi gerado (`npm run landing:avatars`). */
   readonly generated: boolean
 }
@@ -56,7 +48,6 @@ export function toClip(spec: AvatarSpec, media: GeneratedMedia | undefined): Cli
     poster: media?.poster ?? `/landing/${spec.placeholder}.jpg`,
     prompt: spec.image,
     model: 'Nano Banana + Kling',
-    credits: COSTS.photo + COSTS.videoShort,
     generated: media !== undefined,
   }
 }
@@ -106,21 +97,17 @@ export const AUDIENCES = [
   { title: 'Perfil de IA', text: 'Uma influenciadora que posta todo dia e não existe.' },
 ] as const
 
-export interface CreditPack {
-  readonly id: string
-  readonly name: string
-  readonly credits: number
-  readonly priceCents: number
-  readonly highlight: boolean
-}
-
-export const CREDIT_PACKS: readonly CreditPack[] = [
-  { id: 'inicial', name: 'Inicial', credits: 100, priceCents: 1990, highlight: false },
-  { id: 'criador', name: 'Criador', credits: 300, priceCents: 4990, highlight: true },
-  { id: 'estudio', name: 'Estúdio', credits: 800, priceCents: 11990, highlight: false },
-]
-
-export type FaqIcon = 'skill' | 'billing' | 'time' | 'expiry' | 'refund' | 'safety' | 'device' | 'models'
+export type FaqIcon =
+  | 'what'
+  | 'credits'
+  | 'persona'
+  | 'video'
+  | 'commercial'
+  | 'rollover'
+  | 'change'
+  | 'cancel'
+  | 'extra'
+  | 'tools'
 
 export interface FaqItem {
   readonly icon: FaqIcon
@@ -128,48 +115,64 @@ export interface FaqItem {
   readonly answer: string
 }
 
+// Respostas presas às regras implementadas (migration 0003, functions subscribe,
+// cancel-subscription e asaas-webhook). Mudou a regra, muda a resposta.
 export const FAQ: readonly FaqItem[] = [
   {
-    icon: 'skill',
-    question: 'Preciso saber usar IA?',
+    icon: 'what',
+    question: 'O que é o Kria IA?',
     answer:
-      'Não. Você escreve em português o que quer ver e escolhe entre foto e vídeo. Qual modelo usar, tamanho e formato o Kria resolve.',
+      'Uma plataforma brasileira que junta ferramentas de IA num lugar só: você cria personagens virtuais e gera imagens e vídeos com eles, escrevendo em português.',
   },
   {
-    icon: 'billing',
-    question: 'Tem mensalidade?',
-    answer: `Não. Você compra créditos quando precisar, por Pix ou cartão, e gasta só no que gerar. Quem cria a conta ganha ${WELCOME_CREDITS} créditos pra testar.`,
-  },
-  {
-    icon: 'time',
-    question: 'Quanto tempo demora pra ficar pronto?',
-    answer: 'Foto sai em segundos. Vídeo leva de 1 a 5 minutos e aparece sozinho na sua galeria quando termina, pode fechar a aba.',
-  },
-  {
-    icon: 'expiry',
-    question: 'Os créditos expiram?',
-    answer: 'Não. O que você comprou fica na conta até usar, sem prazo e sem renovação automática.',
-  },
-  {
-    icon: 'refund',
-    question: 'E se a geração der erro?',
-    answer: 'Os créditos voltam pra sua conta automaticamente. Você só paga pelo que ficou pronto.',
-  },
-  {
-    icon: 'safety',
-    question: 'Posso subir a foto de uma pessoa real?',
+    icon: 'credits',
+    question: 'Como funcionam os créditos?',
     answer:
-      'Não. Os influenciadores nascem de imagens geradas dentro do Kria. É assim que a gente evita deepfake de gente de verdade.',
+      'Cada criação usa uma quantidade de créditos que depende da ferramenta e do modelo escolhido. O custo aparece antes de você gerar. Se a geração falhar, os créditos voltam sozinhos.',
   },
   {
-    icon: 'device',
-    question: 'Funciona no celular?',
-    answer: 'Sim. O Kria roda no navegador, no celular ou no computador, sem instalar nada. O vídeo já sai no formato vertical.',
-  },
-  {
-    icon: 'models',
-    question: 'Quais IAs estão por trás?',
+    icon: 'persona',
+    question: 'Posso criar influenciadores virtuais?',
     answer:
-      'Hoje: Veo 3.1 (Google) e Kling pra vídeo, Nano Banana pra imagem. Quando sai um modelo melhor, ele entra no Kria sem você precisar assinar mais nada.',
+      'Sim. Você descreve a pessoa, gera retratos até gostar e salva como personagem, que mantém o mesmo rosto nas próximas criações. Por segurança, personagens nascem só de imagens geradas no Kria: não dá para usar foto de gente real.',
+  },
+  {
+    icon: 'video',
+    question: 'Posso transformar imagens em vídeos?',
+    answer: 'Sim. Qualquer imagem gerada no Kria pode virar vídeo com Kling (5 segundos, com áudio) ou Veo 3.1 (8 segundos, com fala e som).',
+  },
+  {
+    icon: 'commercial',
+    question: 'Posso utilizar minhas criações comercialmente?',
+    answer:
+      'Sim, em perfis, anúncios e projetos, respeitando os termos de uso do Kria e dos provedores dos modelos de IA. Você responde pelo uso e deve marcar o conteúdo como gerado por IA quando a rede social pedir.',
+  },
+  {
+    icon: 'rollover',
+    question: 'Os créditos acumulam para o mês seguinte?',
+    answer: 'Sim. Os créditos não vencem: o que sobrar de um mês continua na conta e soma com os créditos do mês seguinte.',
+  },
+  {
+    icon: 'change',
+    question: 'Posso mudar de plano?',
+    answer:
+      'Pode, na página Assinatura da sua conta. O limite de personagens muda na hora; o novo valor e os créditos do novo plano valem a partir da próxima cobrança.',
+  },
+  {
+    icon: 'cancel',
+    question: 'Como funciona o cancelamento?',
+    answer:
+      'Você cancela quando quiser na página Assinatura, sem multa. Não há nova cobrança, o plano continua até o fim do período já pago e os créditos que estão na conta ficam com você.',
+  },
+  {
+    icon: 'extra',
+    question: 'Posso comprar créditos adicionais?',
+    answer: 'Sim. Além do plano, dá para comprar pacotes avulsos de créditos por Pix ou cartão, na página Créditos.',
+  },
+  {
+    icon: 'tools',
+    question: 'Quais ferramentas de IA estão disponíveis?',
+    answer:
+      'Hoje: Nano Banana 2 para imagens e fotos com personagem, Kling 3.0 e Veo 3.1 para vídeo. Copys, Motion Control e templates aparecem como "Em breve" até estarem prontos.',
   },
 ]

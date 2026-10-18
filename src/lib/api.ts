@@ -10,6 +10,14 @@ import {
   type Profile,
   type ProfileUpdate,
 } from '@/domain/types'
+import {
+  PLAN_COLUMNS,
+  SUBSCRIPTION_COLUMNS,
+  subscriptionPlanSchema,
+  subscriptionSchema,
+  type Subscription,
+  type SubscriptionPlan,
+} from '@/domain/plans'
 import { supabase } from './supabase'
 
 export class ApiError extends Error {
@@ -57,7 +65,7 @@ export async function startCheckout(pack: string): Promise<string> {
 
 const PERSONA_ERRORS: Record<string, string> = {
   source_not_found: 'Essa imagem não pode virar persona.',
-  too_many_personas: 'Você chegou ao limite de 30 personas.',
+  too_many_personas: 'Você chegou ao limite de personagens do seu plano. Troque de plano para salvar mais.',
 }
 
 export async function createPersona(generationId: string, name: string, description: string): Promise<Persona> {
@@ -128,4 +136,36 @@ export async function changePassword(password: string): Promise<void> {
 export async function signOutEverywhere(): Promise<void> {
   const { error } = await supabase.auth.signOut({ scope: 'global' })
   if (error) throw new ApiError('signout_failed', 'Não deu para sair dos outros aparelhos.')
+}
+
+// ------------------------------------------------------------ assinatura
+
+export async function fetchPlans(): Promise<SubscriptionPlan[]> {
+  const { data, error } = await supabase.from('subscription_plans').select(PLAN_COLUMNS).order('position')
+  if (error) throw new ApiError('plans_failed', 'Não deu para carregar os planos.')
+  return z.array(subscriptionPlanSchema).parse(data)
+}
+
+/** A assinatura mais recente da pessoa (qualquer status), ou `null`. */
+export async function fetchSubscription(): Promise<Subscription | null> {
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select(SUBSCRIPTION_COLUMNS)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) throw new ApiError('subscription_failed', 'Não deu para carregar sua assinatura.')
+  return data ? subscriptionSchema.parse(data) : null
+}
+
+export type SubscribeResult = { readonly kind: 'checkout'; readonly url: string } | { readonly kind: 'changed' }
+
+export async function startSubscription(plan: string): Promise<SubscribeResult> {
+  const data = await invoke('subscribe', { plan })
+  const parsed = z.union([z.object({ url: z.string().url() }), z.object({ changed: z.literal(true) })]).parse(data)
+  return 'url' in parsed ? { kind: 'checkout', url: parsed.url } : { kind: 'changed' }
+}
+
+export async function cancelSubscription(): Promise<void> {
+  await invoke('cancel-subscription', {})
 }

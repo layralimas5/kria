@@ -11,7 +11,7 @@
     "typecheck": "tsc -b",
     "typecheck:functions": "tsc -p supabase/typecheck/tsconfig.json",
     "test": "vitest run",
-    "db:test": "node supabase/tests/credits.mjs",
+    "db:test": "node supabase/tests/credits.mjs && node supabase/tests/subscriptions.mjs",
     "check": "npm run typecheck && npm run typecheck:functions && npm test && npm run db:test",
     "billing:image": "node scripts/billing-image.mjs",
     "demo:assets": "node scripts/demo-assets.mjs",

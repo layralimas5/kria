@@ -47,10 +47,12 @@ export function LoginPage() {
     setLoading(true)
     setError(null)
     setNotice(null)
+    // O link de confirmação volta para onde a pessoa ia (ex.: o plano que escolheu na landing).
+    const emailRedirectTo = new URL(target, window.location.origin).href
     const result =
       mode === 'signin'
         ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
+        : await supabase.auth.signUp({ email, password, options: { emailRedirectTo } })
     setLoading(false)
     if (result.error) {
       setError(AUTH_ERRORS[result.error.message] ?? 'Não deu para continuar. Confira os dados e tente de novo.')
