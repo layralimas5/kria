@@ -62,8 +62,34 @@ async function newUser(db, email) {
   return rows[0].id
 }
 
-const create = (db, userId, model, prompt = 'retrato de uma mulher no café', persona = null, source = null) =>
-  db.query(`select * from create_generation($1, $2, $3, $4, $5)`, [userId, model, prompt, persona, source])
+const create = (db, userId, model, prompt = 'retrato de uma mulher no café', persona = null, source = null, key = null) =>
+  db.query(`select * from create_generation($1, $2, $3, $4, $5, $6)`, [userId, model, prompt, persona, source, key])
+
+/** Põe saldo direto nos baldes, como se tivesse vindo de compra e de plano. */
+const setWallet = (db, userId, purchased, subscription = 0) =>
+  db.query(
+    `update credit_balances set purchased_balance = $2, subscription_balance = $3, balance = $2::int + $3::int where user_id = $1`,
+    [userId, purchased, subscription],
+  )
+
+const walletOf = async (db, userId) =>
+  (await db.query(`select balance, subscription_balance, purchased_balance from credit_balances where user_id = $1`, [userId])).rows[0]
+
+async function newSubscription(db, userId, plan = 'pro') {
+  const { rows } = await db.query(
+    `insert into subscriptions (user_id, plan_slug, price_cents, monthly_credits)
+     select $1, slug, price_cents, monthly_credits from subscription_plans where slug = $2 returning id`,
+    [userId, plan],
+  )
+  return rows[0].id
+}
+
+const activate = (db, subscriptionId, paymentId, providerId = null) =>
+  db.query(`select activate_subscription_period($1, $2, 7990, current_date, null, $3) as result`, [subscriptionId, paymentId, providerId])
+
+async function makeAdmin(db, userId) {
+  await db.query(`insert into admin_users (user_id) values ($1)`, [userId])
+}
 
 let passed = 0
 async function test(name, fn) {
@@ -90,23 +116,28 @@ await test('gerar debita o preço do modelo e registra no extrato', async (db) =
 
 await test('sem saldo não gera e não debita', async (db) => {
   const ana = await newUser(db, 'ana@x.com')
-  await db.query(`update credit_balances set balance = 4 where user_id = $1`, [ana])
+  await setWallet(db, ana, 4)
   await expectError(create(db, ana, 'foto'), 'insufficient_credits')
   assert.equal(await balanceOf(db, ana), 4)
   assert.equal((await db.query(`select count(*)::int as n from generations`)).rows[0].n, 0)
 })
 
-await test('no máximo 3 gerações abertas por pessoa', async (db) => {
+await test('o limite de gerações abertas vem do plano (grátis: 2, pro: 4)', async (db) => {
   const ana = await newUser(db, 'ana@x.com')
-  for (let i = 0; i < 3; i += 1) await create(db, ana, 'foto')
+  for (let i = 0; i < 2; i += 1) await create(db, ana, 'foto')
   await expectError(create(db, ana, 'foto'), 'too_many_running')
-  assert.equal(await balanceOf(db, ana), 5)
+  assert.equal(await balanceOf(db, ana), 10)
+
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_1')
+  for (let i = 0; i < 2; i += 1) await create(db, ana, 'foto')
+  await expectError(create(db, ana, 'foto'), 'too_many_running')
 })
 
 await test('modelo que pede imagem exige persona ou imagem de origem da própria pessoa', async (db) => {
   const ana = await newUser(db, 'ana@x.com')
   const bia = await newUser(db, 'bia@x.com')
-  await db.query(`update credit_balances set balance = 500`)
+  await setWallet(db, ana, 500)
+  await setWallet(db, bia, 500)
   await expectError(create(db, ana, 'video-kling'), 'image_required')
 
   const { rows } = await create(db, bia, 'foto')
@@ -176,6 +207,9 @@ await test('cliente não chama as funções de crédito nem escreve no saldo', a
     await expectError(create(db, ana, 'foto'), 'permission denied')
     await expectError(db.query(`select grant_purchase(gen_random_uuid())`), 'permission denied')
     await expectError(db.query(`update credit_balances set balance = 9999`), 'permission denied')
+    await expectError(db.query(`select wallet_move($1, 0, 999, 'adjustment', 'x')`, [ana]), 'permission denied')
+    await expectError(db.query(`select activate_subscription_period(gen_random_uuid(), 'p', 1)`), 'permission denied')
+    await expectError(db.query(`select expire_lapsed_subscriptions()`), 'permission denied')
     await expectError(db.query(`insert into credit_ledger (user_id, delta, reason) values ($1, 999, 'adjustment')`, [ana]), 'permission denied')
   })
 })
@@ -195,6 +229,9 @@ await test('RLS: cada pessoa só enxerga o que é dela', async (db) => {
   assert.deepEqual(seen.balances, [{ user_id: ana }])
   assert.deepEqual(seen.ledger, [{ user_id: ana }])
   assert.equal(seen.models, 4)
+  await as(db, 'authenticated', ana, () =>
+    expectError(db.query(`select provider_cost_usd from models`), 'permission denied'),
+  )
 })
 
 await test('conta nova ganha um @ único e válido a partir do e-mail', async (db) => {
@@ -235,6 +272,228 @@ await test('perfil: cliente não muda campos fora da lista (id, created_at)', as
   await as(db, 'authenticated', ana, () =>
     expectError(db.query(`update profiles set created_at = now() - interval '1 year' where id = $1`, [ana]), 'permission denied'),
   )
+})
+
+await test('gera gastando primeiro o crédito do plano e estorna para os mesmos baldes', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await setWallet(db, ana, 100, 3)
+  const { rows } = await create(db, ana, 'foto')
+  assert.deepEqual(await walletOf(db, ana), { balance: 98, subscription_balance: 0, purchased_balance: 98 })
+
+  const reservation = (await db.query(`select * from credit_reservations where generation_id = $1`, [rows[0].id])).rows[0]
+  assert.equal(reservation.status, 'held')
+  assert.equal(reservation.subscription_amount, 3)
+  assert.equal(reservation.purchased_amount, 2)
+
+  await db.query(`select fail_generation($1, 'erro do modelo')`, [rows[0].id])
+  assert.deepEqual(await walletOf(db, ana), { balance: 103, subscription_balance: 3, purchased_balance: 100 })
+  const released = (await db.query(`select status from credit_reservations where generation_id = $1`, [rows[0].id])).rows[0]
+  assert.equal(released.status, 'released')
+})
+
+await test('geração concluída captura a reserva', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const { rows } = await create(db, ana, 'foto')
+  await db.query(`select complete_generation($1, 'x.png', 'image/png')`, [rows[0].id])
+  const { rows: reservation } = await db.query(`select status from credit_reservations where generation_id = $1`, [rows[0].id])
+  assert.equal(reservation[0].status, 'captured')
+})
+
+await test('a mesma chave idempotente não cobra duas vezes', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const first = await create(db, ana, 'foto', 'um café na varanda', null, null, 'clique-0001')
+  const again = await create(db, ana, 'foto', 'um café na varanda', null, null, 'clique-0001')
+  assert.equal(first.rows[0].id, again.rows[0].id)
+  assert.equal(await balanceOf(db, ana), 15)
+  const charges = await db.query(`select count(*)::int as n from credit_ledger where user_id = $1 and reason = 'generation'`, [ana])
+  assert.equal(charges.rows[0].n, 1)
+})
+
+await test('extrato guarda o saldo depois de cada movimento', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await create(db, ana, 'foto')
+  const { rows } = await db.query(`select delta, balance_after from credit_ledger where user_id = $1 order by id`, [ana])
+  assert.deepEqual(rows, [{ delta: 20, balance_after: 20 }, { delta: -5, balance_after: 15 }])
+})
+
+await test('extrato é imutável, mas some junto com a conta excluída', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await expectError(db.query(`update credit_ledger set delta = 999 where user_id = $1`, [ana]), 'ledger_is_immutable')
+  await expectError(db.query(`delete from credit_ledger where user_id = $1`, [ana]), 'ledger_is_immutable')
+  await db.query(`delete from auth.users where id = $1`, [ana])
+  const { rows } = await db.query(`select count(*)::int as n from credit_ledger where user_id = $1`, [ana])
+  assert.equal(rows[0].n, 0)
+})
+
+await test('ciclo pago da assinatura credita uma vez, mesmo com webhook repetido', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const sub = await newSubscription(db, ana, 'pro')
+  const first = await activate(db, sub, 'pay_1', 'sub_asaas_1')
+  const again = await activate(db, sub, 'pay_1', 'sub_asaas_1')
+  assert.equal(first.rows[0].result.outcome, 'activated')
+  assert.equal(again.rows[0].result.outcome, 'already_applied')
+  assert.deepEqual(await walletOf(db, ana), { balance: 720, subscription_balance: 700, purchased_balance: 20 })
+  const { rows } = await db.query(
+    `select status, provider_subscription_id, current_period_end > now() as live from subscriptions where id = $1`,
+    [sub],
+  )
+  assert.deepEqual(rows[0], { status: 'active', provider_subscription_id: 'sub_asaas_1', live: true })
+})
+
+await test('na renovação o crédito do plano não acumula; o comprado fica', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const sub = await newSubscription(db, ana, 'starter')
+  await activate(db, sub, 'pay_1')
+  await create(db, ana, 'foto')
+  assert.deepEqual(await walletOf(db, ana), { balance: 315, subscription_balance: 295, purchased_balance: 20 })
+  await activate(db, sub, 'pay_2')
+  assert.deepEqual(await walletOf(db, ana), { balance: 320, subscription_balance: 300, purchased_balance: 20 })
+  const reasons = await db.query(
+    `select reason, delta from credit_ledger where user_id = $1 and reason::text like 'subscription%' order by id`,
+    [ana],
+  )
+  assert.deepEqual(reasons.rows, [
+    { reason: 'subscription_grant', delta: 300 },
+    { reason: 'subscription_expire', delta: -295 },
+    { reason: 'subscription_grant', delta: 300 },
+  ])
+})
+
+await test('trocar de plano encerra a assinatura anterior e devolve o id dela para cancelar no Asaas', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const starter = await newSubscription(db, ana, 'starter')
+  await activate(db, starter, 'pay_1', 'sub_old')
+  const studio = await newSubscription(db, ana, 'studio')
+  const { rows } = await activate(db, studio, 'pay_2', 'sub_new')
+  assert.deepEqual(rows[0].result.replaced, ['sub_old'])
+  const statuses = await db.query(`select plan_slug, status from subscriptions where user_id = $1`, [ana])
+  assert.deepEqual(statuses.rows.map((row) => `${row.plan_slug}:${row.status}`).sort(), ['starter:expired', 'studio:active'])
+  assert.equal((await walletOf(db, ana)).subscription_balance, 1500)
+})
+
+await test('assinatura vencida expira e zera só o balde do plano', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const sub = await newSubscription(db, ana, 'pro')
+  await activate(db, sub, 'pay_1')
+  await db.query(`update subscriptions set current_period_end = now() - interval '4 days' where id = $1`, [sub])
+  // A expiração é preguiçosa: acontece na próxima geração.
+  await create(db, ana, 'foto')
+  assert.deepEqual(await walletOf(db, ana), { balance: 15, subscription_balance: 0, purchased_balance: 15 })
+  const { rows } = await db.query(`select status from subscriptions where id = $1`, [sub])
+  assert.equal(rows[0].status, 'expired')
+})
+
+await test('cancelada continua valendo até o fim do período pago', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const sub = await newSubscription(db, ana, 'pro')
+  await activate(db, sub, 'pay_1')
+  await db.query(`select set_subscription_status($1, 'canceled')`, [sub])
+  const planOf = async () => (await db.query(`select (effective_plan($1)).slug as slug`, [ana])).rows[0].slug
+  assert.equal(await planOf(), 'pro')
+  await db.query(`update subscriptions set current_period_end = now() - interval '1 minute' where id = $1`, [sub])
+  const { rows } = await db.query(`select expire_lapsed_subscriptions() as closed`)
+  assert.equal(rows[0].closed, 1)
+  assert.equal(await planOf(), 'gratis')
+  assert.equal((await walletOf(db, ana)).subscription_balance, 0)
+})
+
+await test('atraso só vale para assinatura ativa', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const sub = await newSubscription(db, ana, 'pro')
+  const pending = await db.query(`select set_subscription_status($1, 'past_due') as ok`, [sub])
+  assert.equal(pending.rows[0].ok, false)
+  await activate(db, sub, 'pay_1')
+  const active = await db.query(`select set_subscription_status($1, 'past_due') as ok`, [sub])
+  assert.equal(active.rows[0].ok, true)
+  const { rows } = await db.query(`select (effective_plan($1)).slug as slug`, [ana])
+  assert.equal(rows[0].slug, 'pro')
+})
+
+await test('modelo restrito a planos exige o plano certo', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await setWallet(db, ana, 500)
+  await db.query(`update models set allowed_plans = array['pro', 'studio'] where slug = 'foto'`)
+  await expectError(create(db, ana, 'foto'), 'plan_required')
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_1')
+  const { rows } = await create(db, ana, 'foto')
+  assert.equal(rows[0].status, 'queued')
+})
+
+await test('conta suspensa não gera', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await db.query(`update profiles set suspended_at = now() where id = $1`, [ana])
+  await expectError(create(db, ana, 'foto'), 'account_suspended')
+  assert.equal(await balanceOf(db, ana), 20)
+})
+
+await test('admin: quem não é admin não chama nada do painel', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await as(db, 'authenticated', ana, async () => {
+    assert.equal((await db.query(`select is_admin() as ok`)).rows[0].ok, false)
+    await expectError(db.query(`select admin_overview()`), 'forbidden')
+    await expectError(db.query(`select * from admin_search_users('')`), 'forbidden')
+    await expectError(db.query(`select admin_adjust_credits($1, 1000, 'quero mais')`, [ana]), 'forbidden')
+    await expectError(db.query(`select admin_update_plan('pro', 100, 99999, 20, true, null)`), 'forbidden')
+    await expectError(db.query(`insert into admin_users (user_id) values ($1)`, [ana]), 'permission denied')
+    assert.equal((await db.query(`select count(*)::int as n from admin_audit_logs`)).rows[0].n, 0)
+  })
+})
+
+await test('admin: ajuste de crédito precisa de motivo, não deixa negativo e fica auditado', async (db) => {
+  const lay = await newUser(db, 'lay@x.com')
+  const ana = await newUser(db, 'ana@x.com')
+  await makeAdmin(db, lay)
+  await as(db, 'authenticated', lay, async () => {
+    await expectError(db.query(`select admin_adjust_credits($1, 50, '')`, [ana]), 'reason_required')
+    await expectError(db.query(`select admin_adjust_credits($1, -500, 'estorno manual')`, [ana]), 'insufficient_credits')
+    const { rows } = await db.query(`select admin_adjust_credits($1, 50, 'Compensação por falha') as balance`, [ana])
+    assert.equal(rows[0].balance, 70)
+    const audit = await db.query(`select action, target_user_id, reason from admin_audit_logs`)
+    assert.deepEqual(audit.rows, [{ action: 'credits.adjust', target_user_id: ana, reason: 'Compensação por falha' }])
+  })
+  const ledger = await db.query(`select reason, actor_id from credit_ledger where user_id = $1 and reason = 'adjustment'`, [ana])
+  assert.deepEqual(ledger.rows, [{ reason: 'adjustment', actor_id: lay }])
+})
+
+await test('admin: busca, suspensão, plano e modelo', async (db) => {
+  const lay = await newUser(db, 'lay@x.com')
+  const ana = await newUser(db, 'ana.souza@x.com')
+  await makeAdmin(db, lay)
+  await as(db, 'authenticated', lay, async () => {
+    const found = await db.query(`select id, email, balance from admin_search_users('souza')`)
+    assert.deepEqual(found.rows, [{ id: ana, email: 'ana.souza@x.com', balance: 20 }])
+
+    await db.query(`select admin_set_suspended($1, true, 'Uso abusivo de prompts')`, [ana])
+    await expectError(db.query(`select admin_set_suspended($1, true, 'teste de si')`, [lay]), 'cannot_suspend_self')
+
+    const plan = await db.query(`select * from admin_update_plan('pro', 8990, 800, 4, true, null)`)
+    assert.equal(plan.rows[0].version, 2)
+
+    await db.query(`select admin_update_model('video-veo', true, 250, 3.2, array['pro', 'studio'])`)
+    await expectError(db.query(`select admin_update_model('foto', true, 5, null, array['vip'])`), 'plan_not_found')
+
+    const overview = (await db.query(`select admin_overview() as o`)).rows[0].o
+    assert.equal(overview.total_users, 2)
+    assert.equal(overview.revenue_by_plan.length, 3)
+  })
+  await expectError(create(db, ana, 'foto'), 'account_suspended')
+  const veo = await db.query(`select credits, provider_cost_usd::float as cost, allowed_plans from models where slug = 'video-veo'`)
+  assert.deepEqual(veo.rows[0], { credits: 250, cost: 3.2, allowed_plans: ['pro', 'studio'] })
+  const actions = await db.query(`select action from admin_audit_logs order by id`)
+  assert.deepEqual(actions.rows.map((row) => row.action), ['user.suspend', 'plan.update', 'model.update'])
+})
+
+await test('preferências: cada pessoa grava só a própria meta', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  await as(db, 'authenticated', ana, async () => {
+    await db.query(`update user_preferences set goal = 'ugc_ads', onboarded_at = now() where user_id = $1`, [ana])
+    const other = await db.query(`update user_preferences set goal = 'images' where user_id = $1 returning user_id`, [bia])
+    assert.equal(other.rows.length, 0)
+    await expectError(db.query(`update user_preferences set goal = 'hackear' where user_id = $1`, [ana]), 'check')
+  })
+  const { rows } = await db.query(`select goal from user_preferences where user_id = $1`, [ana])
+  assert.equal(rows[0].goal, 'ugc_ads')
 })
 
 console.log(`\n${passed} testes do banco passaram`)
