@@ -13,6 +13,8 @@ export const modelSchema = z.object({
   requires_image: z.boolean(),
   credits: z.number().int(),
   position: z.number().int(),
+  badge: z.enum(['NOVO', 'TOP']).nullable(),
+  defaults: z.record(z.unknown()),
 })
 export type Model = z.infer<typeof modelSchema>
 

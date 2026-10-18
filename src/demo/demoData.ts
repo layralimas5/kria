@@ -53,10 +53,10 @@ export function createDemoState(): DemoState {
   return {
     balance: 265,
     models: [
-      { slug: 'foto', name: 'Foto', description: 'Imagem realista a partir do texto.', kind: 'image', requires_image: false, credits: 5, position: 10 },
-      { slug: 'foto-persona', name: 'Foto com persona', description: 'A mesma pessoa em qualquer cenário.', kind: 'image', requires_image: true, credits: 6, position: 20 },
-      { slug: 'video-kling', name: 'Vídeo Kling', description: 'Anima uma imagem. 5 segundos, com áudio.', kind: 'video', requires_image: true, credits: 40, position: 30 },
-      { slug: 'video-veo', name: 'Vídeo Veo 3.1', description: 'Anima uma imagem com fala e som. 8 segundos.', kind: 'video', requires_image: true, credits: 200, position: 40 },
+      { slug: 'foto', name: 'Nano Banana 2', description: 'Foto realista a partir do texto.', kind: 'image', requires_image: false, credits: 5, position: 10, badge: null, defaults: { aspect_ratio: '4:5' } },
+      { slug: 'foto-persona', name: 'Nano Banana 2 Persona', description: 'A mesma pessoa em qualquer cenário.', kind: 'image', requires_image: true, credits: 6, position: 20, badge: 'TOP', defaults: { aspect_ratio: '4:5' } },
+      { slug: 'video-kling', name: 'Kling 3.0', description: 'Anima uma imagem com movimento natural e áudio.', kind: 'video', requires_image: true, credits: 40, position: 30, badge: 'NOVO', defaults: { duration: '5', generate_audio: true } },
+      { slug: 'video-veo', name: 'Veo 3.1', description: 'Vídeo com fala sincronizada e som ambiente.', kind: 'video', requires_image: true, credits: 200, position: 40, badge: 'TOP', defaults: { duration: '8s', aspect_ratio: '9:16', generate_audio: true } },
     ],
     packs: [
       { slug: 'inicial', name: 'Inicial', credits: 100, price_cents: 1990, highlight: false, position: 10 },
@@ -74,9 +74,9 @@ export function createDemoState(): DemoState {
       generation(6, { prompt: 'Homem de 40 anos cozinhando, cozinha rústica, foto de celular' }),
     ],
     ledger: [
-      { id: 6, user_id: DEMO_USER_ID, delta: -40, reason: 'generation', note: 'Vídeo Kling', created_at: minutesAgo(6) },
+      { id: 6, user_id: DEMO_USER_ID, delta: -40, reason: 'generation', note: 'Kling 3.0', created_at: minutesAgo(6) },
       { id: 5, user_id: DEMO_USER_ID, delta: 5, reason: 'generation_refund', note: 'Estorno de geração que falhou', created_at: minutesAgo(36) },
-      { id: 4, user_id: DEMO_USER_ID, delta: -5, reason: 'generation', note: 'Foto', created_at: minutesAgo(37) },
+      { id: 4, user_id: DEMO_USER_ID, delta: -5, reason: 'generation', note: 'Nano Banana 2', created_at: minutesAgo(37) },
       { id: 3, user_id: DEMO_USER_ID, delta: 300, reason: 'purchase', note: 'Compra de créditos', created_at: minutesAgo(120) },
       { id: 2, user_id: DEMO_USER_ID, delta: -30, reason: 'generation', note: 'Fotos', created_at: minutesAgo(150) },
       { id: 1, user_id: DEMO_USER_ID, delta: 20, reason: 'signup_bonus', note: 'Créditos de boas-vindas', created_at: minutesAgo(1440) },

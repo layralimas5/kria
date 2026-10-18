@@ -17,6 +17,7 @@
     "demo:assets": "node scripts/demo-assets.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/archivo": "^5.3.0",
     "@fontsource-variable/geist": "^5.3.0",
     "@supabase/supabase-js": "^2.45.0",
     "clsx": "^2.1.1",
