@@ -8,11 +8,13 @@ interface PopoverProps {
   readonly children: (close: () => void) => ReactNode
   readonly label: string
   readonly align?: 'start' | 'end'
+  /** Abre acima do gatilho (padrão, para a caixa de prompt no rodapé) ou abaixo. */
+  readonly side?: 'top' | 'bottom'
   readonly className?: string
 }
 
 /** Painel que abre acima do gatilho. Fecha com Esc, clique fora ou ao escolher. */
-export function Popover({ trigger, children, label, align = 'start', className }: PopoverProps) {
+export function Popover({ trigger, children, label, align = 'start', side = 'top', className }: PopoverProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const id = useId()
@@ -45,13 +47,14 @@ export function Popover({ trigger, children, label, align = 'start', className }
             id={id}
             role="dialog"
             aria-label={label}
-            initial={reduceMotion ? false : { opacity: 0, y: 6, scale: 0.98 }}
+            initial={reduceMotion ? false : { opacity: 0, y: side === 'top' ? 6 : -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6, scale: 0.98 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: side === 'top' ? 6 : -6, scale: 0.98 }}
             transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
             className={clsx(
               // Fundo sólido: dentro da caixa de prompt (que já tem backdrop-blur) um blur aninhado não funciona.
-              'absolute bottom-full z-50 mb-2 rounded-2xl border border-white/[0.08] bg-surface-2 p-2 shadow-2xl shadow-black/70',
+              'absolute z-50 rounded-2xl border border-white/[0.08] bg-surface-2 p-2 shadow-2xl shadow-black/70',
+              side === 'top' ? 'bottom-full mb-2' : 'top-full mt-2',
               align === 'end' ? 'right-0' : 'left-0',
               className,
             )}

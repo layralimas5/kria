@@ -34,3 +34,4 @@ cobrar em real e ser pensada para quem vende (afiliado, comércio local, perfil 
 4. **Plano mensal** com créditos inclusos (assinatura Asaas, como no Momentumm).
 5. **Painel admin:** custo real do fal x receita, ajuste de saldo, estorno manual.
 6. **Recuperar senha** e login com Google.
+7. **Miniaturas do construtor de persona:** trocar os ícones dos cards (nicho, cabelo etc.) por miniaturas geradas com a própria IA, como o Higgsfield faz. Os dados ficam em `src/domain/personaTraits.ts`.
