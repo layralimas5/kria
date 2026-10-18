@@ -40,12 +40,14 @@ export function App() {
               </RequireAuth>
             }
           >
-            <Route index element={<StudioPage />} />
+            <Route path="estudio" element={<StudioPage />} />
             <Route path="galeria" element={<GalleryPage />} />
             <Route path="personas" element={<PersonasPage />} />
             <Route path="creditos" element={<CreditsPage />} />
           </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* A raiz vai para a landing quando ela entrar (branch feat/landing). */}
+          <Route index element={<Navigate to="/estudio" replace />} />
+          <Route path="*" element={<Navigate to="/estudio" replace />} />
         </Routes>
       </BrowserRouter>
     </SessionProvider>
