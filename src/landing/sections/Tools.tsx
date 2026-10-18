@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Badge } from '../components/Badge'
 import { CtaLink } from '../components/CtaLink'
 import { LoopVideo } from '../components/LoopVideo'
+import { ModelGrid } from '../components/ModelGrid'
 import { Reveal } from '../components/Reveal'
 import { avatar, SIGNUP_PATH, TOOLS, WELCOME_CREDITS, type ToolIcon } from '../content'
 import { CARD_HOVER } from '../styles'
@@ -41,7 +42,7 @@ function PromoCard() {
 
 export function Tools() {
   return (
-    <section id="ferramentas" aria-labelledby="ferramentas-title" className="scroll-mt-24 px-4 pt-16 md:pt-20">
+    <section id="ferramentas" aria-labelledby="ferramentas-title" className="scroll-mt-16 px-4 pt-16 md:pt-20">
       <Reveal className="mx-auto grid max-w-[1440px] gap-4 lg:grid-cols-[1.1fr_1.5fr]">
         <PromoCard />
         <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -67,6 +68,9 @@ export function Tools() {
             )
           })}
         </ul>
+      </Reveal>
+      <Reveal>
+        <ModelGrid />
       </Reveal>
     </section>
   )

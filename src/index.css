@@ -26,14 +26,7 @@
   --color-panel: #16181b;
   --color-panel-hover: #1c1f23;
 
-  --animate-card-pulse: card-pulse 1.8s ease-in-out infinite;
-  --animate-marquee: marquee 40s linear infinite;
-
-  @keyframes marquee {
-    to {
-      transform: translateX(-33.333%);
-    }
-  }
+  --animate-card-pulse: card-pulse 1.6s ease-in-out infinite;
 
   @keyframes card-pulse {
     0%,
@@ -42,8 +35,8 @@
       box-shadow: 0 0 0 0 rgb(255 107 44 / 0);
     }
     50% {
-      transform: scale(1.015);
-      box-shadow: 0 0 0 1px rgb(255 107 44 / 0.35), 0 18px 40px -18px rgb(255 107 44 / 0.45);
+      transform: scale(1.025);
+      box-shadow: 0 0 0 1px rgb(255 107 44 / 0.6), 0 20px 50px -16px rgb(255 107 44 / 0.5);
     }
   }
 }

@@ -29,7 +29,7 @@ export function Hero() {
     <section
       id="topo"
       aria-labelledby="hero-title"
-      className="relative overflow-hidden bg-[radial-gradient(75%_65%_at_50%_0%,#2a2420_0%,#141517_60%,#0f1113_100%)] pt-[5.5rem] lg:min-h-dvh"
+      className="relative overflow-hidden bg-[radial-gradient(75%_65%_at_50%_0%,#2a2420_0%,#141517_60%,#0f1113_100%)] pt-14 lg:min-h-dvh"
     >
       <div
         aria-hidden="true"

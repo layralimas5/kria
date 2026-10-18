@@ -6,7 +6,6 @@ laranja do Kria (#ff6b2c), botão "com degrau", grade de mídia de ponta a ponta
 
 - Textos, vídeos, ferramentas, pacotes e FAQ: `src/landing/content.ts`. Preços e custos espelham
   `credit_packs` e `models`; se mudar no banco, mudar lá também.
-- Perfil do TikTok: `VITE_TIKTOK_URL`. Sem ela, a faixa mostra "Perfil chega em breve".
 
 ## Vídeos de avatar (IA de verdade)
 

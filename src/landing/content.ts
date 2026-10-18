@@ -6,8 +6,6 @@ import generatedMedia from './avatars.generated.json'
 export const SIGNUP_PATH = '/entrar'
 export const WELCOME_CREDITS = 20
 
-export const TIKTOK_URL: string | undefined = import.meta.env.VITE_TIKTOK_URL || undefined
-
 const PLACEHOLDERS = ['chrome', 'aurora', 'dunes', 'tunnel', 'silk', 'planet'] as const
 type Placeholder = (typeof PLACEHOLDERS)[number]
 
@@ -83,6 +81,36 @@ export const TOOLS: readonly Tool[] = [
   { title: 'Foto realista', description: 'Do texto à foto em segundos', icon: 'image' },
   { title: 'Foto com persona', description: 'Sua persona em qualquer cenário', icon: 'image' },
   { title: 'Copy com IA', description: 'Legenda, roteiro e gancho', icon: 'copy', badge: 'breve' },
+]
+
+export type ModelKind = 'Imagem' | 'Vídeo' | 'Voz' | 'Edição'
+
+export interface AiModel {
+  readonly name: string
+  readonly maker: string
+  readonly kind: ModelKind
+  /** false = ainda não integrado; aparece como "Em breve". */
+  readonly available: boolean
+}
+
+// Disponível = está na tabela `models` do app hoje. O resto é roadmap.
+export const AI_MODELS: readonly AiModel[] = [
+  { name: 'Nano Banana 2', maker: 'Google', kind: 'Imagem', available: true },
+  { name: 'Nano Banana 2 Edit', maker: 'Google', kind: 'Edição', available: true },
+  { name: 'Kling 3.0', maker: 'Kuaishou', kind: 'Vídeo', available: true },
+  { name: 'Veo 3.1', maker: 'Google', kind: 'Vídeo', available: true },
+  { name: 'Sora 2', maker: 'OpenAI', kind: 'Vídeo', available: false },
+  { name: 'Seedance', maker: 'ByteDance', kind: 'Vídeo', available: false },
+  { name: 'Hailuo', maker: 'MiniMax', kind: 'Vídeo', available: false },
+  { name: 'Wan', maker: 'Alibaba', kind: 'Vídeo', available: false },
+  { name: 'GPT Image', maker: 'OpenAI', kind: 'Imagem', available: false },
+  { name: 'Flux', maker: 'Black Forest Labs', kind: 'Imagem', available: false },
+  { name: 'Seedream', maker: 'ByteDance', kind: 'Imagem', available: false },
+  { name: 'Ideogram', maker: 'Ideogram', kind: 'Imagem', available: false },
+  { name: 'ElevenLabs', maker: 'ElevenLabs', kind: 'Voz', available: false },
+  { name: 'Lip Sync', maker: 'Sincronia labial', kind: 'Vídeo', available: false },
+  { name: 'Upscale 4K', maker: 'Mais resolução', kind: 'Edição', available: false },
+  { name: 'Motion Control', maker: 'Movimento guiado', kind: 'Vídeo', available: false },
 ]
 
 export const STEPS = [
