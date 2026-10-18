@@ -86,7 +86,7 @@ export function BuilderPanel({ tab, onTabChange, children, cost, submitting, err
             onClick={onGenerate}
             disabled={submitting}
             aria-busy={submitting || undefined}
-            className="btn-lime flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl text-[17px] font-bold transition-all hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:translate-y-px active:shadow-none disabled:cursor-wait"
+            className="btn-accent flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl text-[17px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-wait"
           >
             {submitting ? (
               <Spinner className="size-5" />

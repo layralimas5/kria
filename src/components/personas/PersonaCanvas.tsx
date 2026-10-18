@@ -29,7 +29,7 @@ function PersonaCard({ persona, onDelete }: { readonly persona: Persona; readonl
         <div className="flex items-center gap-1.5">
           <Link
             to={`/estudio?modo=imagem&persona=${persona.id}`}
-            className={clsx('btn-lime inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 text-[13px] font-semibold', FOCUS)}
+            className={clsx('btn-accent inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 text-[13px] font-semibold', FOCUS)}
           >
             <Sparkles className="size-3.5" aria-hidden="true" /> Criar
           </Link>

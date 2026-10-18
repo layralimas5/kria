@@ -54,11 +54,14 @@ Obrigatório: aviso de que o conteúdo é gerado por IA e link para termos de us
 
 ## Identidade visual (igual ao app)
 
-- Fundo escuro: `#09090b` (zinc-950), cards `zinc-900`, bordas `white/8%`
-- Destaque: lima `#c6f432` (hover `#d6ff5c`), texto sobre ele `#0b0b0f`
-- Fonte: Geist Variable (`@fontsource-variable/geist`)
+A landing definiu a identidade e o app segue ela (tokens em `src/index.css` dos dois projetos):
+
+- Fundo `#0f1113`, painéis `#16181b` e `#1c1f23`, bordas `white/8%`
+- Destaque: laranja `#ff6b2c` (hover `#ff8a50`, degrau do botão `#b8410f`), texto sobre ele `#0b0b0f`
+- Selo TOP em rosa `#ff3d8b`; selo NOVO no laranja
+- Fontes: Geist Variable no texto, Space Grotesk Variable nos títulos (caixa alta, negrito, apertado)
 - Nome escrito **Kria IA**, com "IA" na cor de destaque
-- Ícone: `pessoais/kria/public/icon.png` (quadrado lima arredondado com o K)
+- Ícone: `pessoais/kria/public/icon.png` (quadrado laranja arredondado com o K)
 - Logo em código: `pessoais/kria/src/components/Logo.tsx`
 - Visual premium e minimalista (Vercel, Linear), animações sutis
 

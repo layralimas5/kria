@@ -10,7 +10,7 @@ const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'pu
 fs.mkdirSync(OUT, { recursive: true })
 
 const PALETTES = [
-  { sky: ['#f4c7a1', '#8a5a44'], skin: '#e8b996', hair: '#3b2418', shirt: '#c6f432' },
+  { sky: ['#f4c7a1', '#8a5a44'], skin: '#e8b996', hair: '#3b2418', shirt: '#ff6b2c' },
   { sky: ['#f2a7c3', '#5b2a4a'], skin: '#d79f7e', hair: '#1f1512', shirt: '#f7f1e8' },
   { sky: ['#9fd8cf', '#1f4e5a'], skin: '#c58c69', hair: '#2a1d16', shirt: '#24324a' },
   { sky: ['#e9d79a', '#5c5328'], skin: '#f0c7a7', hair: '#b4773f', shirt: '#8c3b2f' },

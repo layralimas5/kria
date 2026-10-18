@@ -6,7 +6,7 @@ type Variant = 'primary' | 'secondary' | 'ghost'
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    'btn-lime font-semibold hover:brightness-105 active:translate-y-px active:shadow-none disabled:bg-none disabled:bg-surface-3 disabled:text-zinc-500 disabled:shadow-none disabled:brightness-100',
+    'btn-accent font-semibold disabled:bg-surface-3 disabled:text-zinc-500 disabled:shadow-none',
   secondary: 'border border-white/[0.08] bg-surface-2 text-zinc-100 hover:border-white/15 hover:bg-surface-3',
   ghost: 'text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-100',
 }

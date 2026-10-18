@@ -68,7 +68,7 @@ function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
       </p>
       <Link
         to="/creditos"
-        className={clsx('btn-lime mt-3 flex min-h-9 items-center justify-center rounded-lg text-[13px] font-semibold', FOCUS)}
+        className={clsx('btn-accent mt-3 flex min-h-9 items-center justify-center rounded-lg text-[13px] font-semibold', FOCUS)}
       >
         Comprar créditos
       </Link>

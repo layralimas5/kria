@@ -87,7 +87,7 @@ export function GalleryPage() {
           action={
             <Link
               to="/estudio"
-              className="btn-lime inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="btn-accent inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               <Sparkles className="size-4" aria-hidden="true" /> Ir para o Estúdio
             </Link>

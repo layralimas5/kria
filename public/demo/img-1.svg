@@ -7,7 +7,7 @@
   <rect width="800" height="1000" fill="url(#sky)"/>
   <rect width="800" height="1000" fill="url(#glow)"/>
   <path d="M235 420 C220 250 300 160 400 160 C500 160 580 250 565 420 L590 760 L210 760 Z" fill="#3b2418"/>
-  <path d="M120 1000 C130 820 250 740 400 740 C550 740 670 820 680 1000 Z" fill="#c6f432"/>
+  <path d="M120 1000 C130 820 250 740 400 740 C550 740 670 820 680 1000 Z" fill="#ff6b2c"/>
   <rect x="352" y="600" width="96" height="160" rx="40" fill="#e8b996"/>
   <ellipse cx="400" cy="440" rx="150" ry="185" fill="#e8b996"/>
   <ellipse cx="400" cy="440" rx="150" ry="185" fill="url(#shade)"/>

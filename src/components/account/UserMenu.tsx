@@ -105,7 +105,7 @@ export function UserMenu() {
               <Link
                 to="/creditos"
                 onClick={close}
-                className={clsx('btn-lime inline-flex min-h-8 items-center rounded-full px-3.5 text-[13px] font-bold', FOCUS)}
+                className={clsx('btn-accent inline-flex min-h-8 items-center rounded-full px-3.5 text-[13px] font-bold', FOCUS)}
               >
                 Comprar
               </Link>

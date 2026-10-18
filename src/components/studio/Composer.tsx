@@ -113,9 +113,8 @@ function GenerateButton({ studio }: { readonly studio: Studio }) {
       disabled={studio.submitting}
       aria-busy={studio.submitting || undefined}
       className={clsx(
-        'btn-lime flex min-h-12 w-full shrink-0 flex-col items-center justify-center rounded-xl px-6 transition-all hover:brightness-105 active:translate-y-px active:shadow-none sm:min-h-[4.5rem] sm:w-32',
+        'btn-accent flex min-h-12 w-full shrink-0 flex-col items-center justify-center rounded-xl px-6 transition-all sm:min-h-[4.5rem] sm:w-32',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2',
-        !studio.ready && 'saturate-[0.65]',
       )}
     >
       {studio.submitting ? (
