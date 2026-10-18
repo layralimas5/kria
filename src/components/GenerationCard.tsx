@@ -87,7 +87,7 @@ export function GenerationCard({ generation, modelName, onMakePersona }: Generat
           <div className="-mx-1 flex flex-wrap items-center gap-1">
             <DownloadLink generation={generation} />
             {isImage && (
-              <Link to={`/?modo=video&origem=${generation.id}`} className={ACTION}>
+              <Link to={`/estudio?modo=video&origem=${generation.id}`} className={ACTION}>
                 <Film className="size-4" aria-hidden="true" />
                 Animar
               </Link>

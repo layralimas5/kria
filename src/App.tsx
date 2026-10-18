@@ -6,9 +6,10 @@ import { Spinner } from '@/components/ui/Spinner'
 import { BalanceProvider } from '@/hooks/useBalance'
 import { GenerationsProvider } from '@/hooks/useGenerations'
 import { SessionProvider } from '@/hooks/useSession'
+import { LandingPage } from '@/landing/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
-import { StudioPage } from '@/pages/StudioPage'
 
+const StudioPage = lazy(() => import('@/pages/StudioPage').then((module) => ({ default: module.StudioPage })))
 const GalleryPage = lazy(() => import('@/pages/GalleryPage').then((module) => ({ default: module.GalleryPage })))
 const PersonasPage = lazy(() => import('@/pages/PersonasPage').then((module) => ({ default: module.PersonasPage })))
 const CreditsPage = lazy(() => import('@/pages/CreditsPage').then((module) => ({ default: module.CreditsPage })))
@@ -26,6 +27,7 @@ export function App() {
     <SessionProvider>
       <BrowserRouter>
         <Routes>
+          <Route index element={<LandingPage />} />
           <Route path="/entrar" element={<LoginPage />} />
           <Route
             element={
@@ -40,7 +42,7 @@ export function App() {
               </RequireAuth>
             }
           >
-            <Route index element={<StudioPage />} />
+            <Route path="estudio" element={<StudioPage />} />
             <Route path="galeria" element={<GalleryPage />} />
             <Route path="personas" element={<PersonasPage />} />
             <Route path="creditos" element={<CreditsPage />} />

@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { Logo } from './Logo'
 
 const NAV = [
-  { to: '/', label: 'Estúdio', icon: Sparkles },
+  { to: '/estudio', label: 'Estúdio', icon: Sparkles },
   { to: '/galeria', label: 'Galeria', icon: Images },
   { to: '/personas', label: 'Personas', icon: UserRound },
 ] as const
@@ -44,12 +44,12 @@ export function AppShell() {
       </a>
       <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <NavLink to="/" aria-label="Kria, início" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          <NavLink to="/estudio" aria-label="Kria, início" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
             <Logo />
           </NavLink>
           <nav aria-label="Principal" className="hidden items-center gap-1 md:flex">
             {NAV.map(({ to, label, icon: Icon }) => (
-              <NavLink key={to} to={to} end={to === '/'} className={navClass}>
+              <NavLink key={to} to={to} className={navClass}>
                 <Icon className="size-4" aria-hidden="true" />
                 {label}
               </NavLink>
@@ -83,7 +83,7 @@ export function AppShell() {
             <NavLink
               key={to}
               to={to}
-              end={to === '/'}
+             
               className={({ isActive }) =>
                 clsx(
                   'flex min-h-16 flex-col items-center justify-center gap-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent',

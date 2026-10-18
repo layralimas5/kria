@@ -26,7 +26,7 @@ const BENEFITS = [
 function useRedirectTarget(): string {
   const location = useLocation()
   const from = (location.state as { from?: unknown } | null)?.from
-  return typeof from === 'string' && from.startsWith('/') ? from : '/'
+  return typeof from === 'string' && from.startsWith('/') ? from : '/estudio'
 }
 
 export function LoginPage() {

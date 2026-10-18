@@ -35,7 +35,7 @@ function PersonaCard({ persona, onDelete }: { readonly persona: Persona; readonl
         </div>
         <div className="mt-auto flex items-center gap-2">
           <Link
-            to={`/?persona=${persona.id}`}
+            to={`/estudio?persona=${persona.id}`}
             className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent px-3 text-xs font-medium text-accent-ink hover:bg-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
           >
             <Sparkles className="size-3.5" aria-hidden="true" /> Criar com ela

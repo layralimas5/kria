@@ -73,7 +73,7 @@ export function GalleryPage() {
           description="Crie a primeira imagem no Estúdio. Ela aparece aqui assim que ficar pronta."
           action={
             <Link
-              to="/"
+              to="/estudio"
               className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-ink hover:bg-accent-strong"
             >
               <Sparkles className="size-4" aria-hidden="true" /> Ir para o Estúdio
@@ -96,7 +96,7 @@ export function GalleryPage() {
       <MakePersonaDialog
         generation={personaSource}
         onClose={() => setPersonaSource(null)}
-        onCreated={(persona) => navigate(`/?persona=${persona.id}`)}
+        onCreated={(persona) => navigate(`/estudio?persona=${persona.id}`)}
       />
     </div>
   )
