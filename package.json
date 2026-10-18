@@ -12,7 +12,8 @@
     "test": "vitest run",
     "db:test": "node supabase/tests/credits.mjs",
     "check": "npm run typecheck && npm run typecheck:functions && npm test && npm run db:test",
-    "billing:image": "node scripts/billing-image.mjs"
+    "billing:image": "node scripts/billing-image.mjs",
+    "landing:assets": "node scripts/landing-assets.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
