@@ -44,6 +44,29 @@ Painel > Integrações > Webhooks: URL `https://<ref>.supabase.co/functions/v1/a
 token = `ASAAS_WEBHOOK_TOKEN`, eventos `CHECKOUT_PAID`, `CHECKOUT_EXPIRED`,
 `CHECKOUT_CANCELED`, `PAYMENT_CONFIRMED`, `PAYMENT_RECEIVED`, `PAYMENT_REFUNDED`.
 
+## 4b. Fase 1 (planos, admin, conta)
+
+```bash
+npx supabase functions deploy subscribe
+npx supabase functions deploy cancel-subscription
+npx supabase functions deploy account
+npx supabase functions deploy asaas-webhook --no-verify-jwt   # de novo: agora trata assinatura
+```
+
+- **Webhook do Asaas:** além dos eventos acima, marcar `PAYMENT_OVERDUE`,
+  `SUBSCRIPTION_DELETED` e `SUBSCRIPTION_INACTIVATED`.
+- **Admin:** depois de criar a sua conta no app, no SQL Editor:
+  `insert into public.admin_users (user_id) select id from auth.users where email = '<seu e-mail>';`
+- **pg_cron:** em Database > Extensions, ligar `pg_cron` e rodar
+  `select cron.schedule('kria-expire-subscriptions', '0 3 * * *', 'select public.expire_lapsed_subscriptions()');`
+  (a migration agenda sozinha se a extensão já existir). Sem o cron a expiração ainda acontece na
+  próxima geração da pessoa, só o painel demora a refletir.
+- **Recuperar senha:** em Auth > URL Configuration, incluir `<APP_URL>/nova-senha` nas Redirect URLs.
+- **Google (opcional):** Auth > Providers > Google com o client do Google Cloud; depois
+  `VITE_AUTH_GOOGLE=true` no front.
+- **Custos:** no admin > Modelos e preços, preencher o custo real (US$) de cada modelo conferido
+  em `fal.ai/models/<endpoint>`. Sem isso a margem do financeiro fica incompleta.
+
 ## 5. Front
 
 `.env.local` com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`, `npm run build`, publicar `dist/`
@@ -58,4 +81,9 @@ token = `ASAAS_WEBHOOK_TOKEN`, eventos `CHECKOUT_PAID`, `CHECKOUT_EXPIRED`,
 4. Animar com Kling. O vídeo leva de 1 a 5 minutos.
 5. Forçar uma falha (prompt bloqueado pelo modelo) e ver o estorno no extrato.
 6. Comprar o pacote Inicial no sandbox com Pix e ver os 100 créditos entrarem.
-7. Trocar `ASAAS_ENV=production` e a chave de produção; repetir o passo 6 com dinheiro real.
+7. Assinar o Starter no sandbox (cartão de teste do Asaas) e ver 300 créditos do plano entrarem e o
+   plano aparecer em Assinatura. Trocar para o Pro e conferir que o Starter foi cancelado no painel do Asaas.
+8. Cancelar a assinatura: o plano segue até a data de renovação.
+9. Pedir "Esqueci minha senha", abrir o link e trocar a senha.
+10. Exportar os dados em Configurações; excluir uma conta de teste e conferir que sumiu do Auth e do Storage.
+11. Trocar `ASAAS_ENV=production` e a chave de produção; repetir os passos 6 e 7 com dinheiro real.
