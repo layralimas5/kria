@@ -197,4 +197,44 @@ await test('RLS: cada pessoa só enxerga o que é dela', async (db) => {
   assert.equal(seen.models, 4)
 })
 
+await test('conta nova ganha um @ único e válido a partir do e-mail', async (db) => {
+  const a = await newUser(db, 'Ana.Souza@x.com')
+  const b = await newUser(db, 'ana.souza@y.com')
+  const { rows } = await db.query(`select id, username from profiles where id in ($1, $2)`, [a, b])
+  for (const row of rows) assert.match(row.username, /^anasouza\d{4}$/)
+  assert.notEqual(rows[0].username, rows[1].username)
+  const short = await newUser(db, 'x@x.com')
+  const { rows: shortRows } = await db.query(`select username from profiles where id = $1`, [short])
+  assert.match(shortRows[0].username, /^kria\d{4}$/)
+})
+
+await test('perfil: a pessoa edita o próprio, com avatar só da própria pasta', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  await as(db, 'authenticated', ana, async () => {
+    await db.query(`update profiles set bio = 'Crio conteúdo', username = 'ana_cria', avatar_path = $2 where id = $1`, [ana, `${ana}/g1.png`])
+    await expectError(db.query(`update profiles set avatar_path = $2 where id = $1`, [ana, `${bia}/g1.png`]), 'row-level security')
+    const other = await db.query(`update profiles set bio = 'invadido' where id = $1 returning id`, [bia])
+    assert.equal(other.rows.length, 0)
+  })
+  const { rows } = await db.query(`select bio, username from profiles where id = $1`, [ana])
+  assert.deepEqual(rows[0], { bio: 'Crio conteúdo', username: 'ana_cria' })
+})
+
+await test('perfil: @ repetido ou fora do formato é recusado', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  await db.query(`update profiles set username = 'luna' where id = $1`, [ana])
+  await expectError(db.query(`update profiles set username = 'luna' where id = $1`, [bia]), 'profiles_username_key')
+  await expectError(db.query(`update profiles set username = 'Com Espaço' where id = $1`, [bia]), 'profiles_username_format')
+  await expectError(db.query(`update profiles set instagram = 'https://x' where id = $1`, [bia]), 'check')
+})
+
+await test('perfil: cliente não muda campos fora da lista (id, created_at)', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await as(db, 'authenticated', ana, () =>
+    expectError(db.query(`update profiles set created_at = now() - interval '1 year' where id = $1`, [ana]), 'permission denied'),
+  )
+})
+
 console.log(`\n${passed} testes do banco passaram`)

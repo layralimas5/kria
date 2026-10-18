@@ -1,9 +1,9 @@
 import clsx from 'clsx'
-import { Coins, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Coins, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { formatCredits } from '@/domain/format'
 import { useBalance } from '@/hooks/useBalance'
-import { isDemo, supabase } from '@/lib/supabase'
+import { isDemo } from '@/lib/supabase'
 import { Logo, LogoMark } from '../Logo'
 import { Badge } from '../ui/Badge'
 import { NAV_GROUPS, type NavItem } from './nav'
@@ -120,20 +120,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       <div className="space-y-2 p-3">
         <CreditsCard collapsed={collapsed} />
-        <div className={clsx('flex gap-1', collapsed ? 'flex-col items-center' : 'items-center justify-between')}>
-          <button
-            type="button"
-            onClick={() => void supabase.auth.signOut()}
-            className={clsx(
-              'flex min-h-9 items-center gap-2 rounded-lg px-2.5 text-[13px] font-semibold text-zinc-500 transition-colors hover:bg-white/[0.04] hover:text-zinc-100',
-              FOCUS,
-            )}
-            aria-label="Sair da conta"
-            title="Sair"
-          >
-            <LogOut className="size-4" aria-hidden="true" />
-            {!collapsed && 'Sair'}
-          </button>
+        <div className={clsx('flex', collapsed ? 'justify-center' : 'justify-end')}>
           <button
             type="button"
             onClick={onToggle}

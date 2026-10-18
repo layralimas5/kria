@@ -11,6 +11,7 @@ export type Row = Record<string, unknown>
 
 export interface DemoState {
   balance: number
+  profile: Row
   models: Row[]
   packs: Row[]
   personas: Row[]
@@ -52,6 +53,18 @@ export function createDemoState(): DemoState {
 
   return {
     balance: 265,
+    profile: {
+      id: DEMO_USER_ID,
+      display_name: 'Lay',
+      username: 'lay.cria',
+      bio: '',
+      location: '',
+      instagram: '',
+      tiktok: '',
+      youtube: '',
+      avatar_path: null,
+      created_at: minutesAgo(60 * 24 * 3),
+    },
     models: [
       { slug: 'foto', name: 'Nano Banana 2', description: 'Foto realista a partir do texto.', kind: 'image', requires_image: false, credits: 5, position: 10, badge: null, defaults: { aspect_ratio: '4:5' } },
       { slug: 'foto-persona', name: 'Nano Banana 2 Persona', description: 'A mesma pessoa em qualquer cenário.', kind: 'image', requires_image: true, credits: 6, position: 20, badge: 'TOP', defaults: { aspect_ratio: '4:5' } },

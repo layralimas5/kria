@@ -1,14 +1,15 @@
 import clsx from 'clsx'
-import { Coins, LogOut } from 'lucide-react'
+import { Coins } from 'lucide-react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useBalance } from '@/hooks/useBalance'
-import { isDemo, supabase } from '@/lib/supabase'
+import { isDemo } from '@/lib/supabase'
+import { UserMenu } from '../account/UserMenu'
 import { Logo } from '../Logo'
 import { MOBILE_TABS } from './nav'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
-/** Topo do celular: marca, saldo (leva a Créditos) e sair. */
+/** Topo do celular: marca, saldo (leva a Créditos) e o menu da conta. */
 export function MobileTopBar() {
   const { balance } = useBalance()
   return (
@@ -29,14 +30,7 @@ export function MobileTopBar() {
         <Coins className="size-3.5 text-accent" aria-hidden="true" />
         {balance ?? '...'}
       </Link>
-      <button
-        type="button"
-        onClick={() => void supabase.auth.signOut()}
-        className={clsx('grid size-8 place-items-center rounded-lg text-zinc-500', FOCUS)}
-        aria-label="Sair da conta"
-      >
-        <LogOut className="size-4" aria-hidden="true" />
-      </button>
+      <UserMenu />
     </header>
   )
 }

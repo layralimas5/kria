@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import { Outlet } from 'react-router-dom'
 import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed'
+import { UserMenu } from './account/UserMenu'
 import { MobileTabBar, MobileTopBar } from './layout/MobileNav'
 import { Sidebar } from './layout/Sidebar'
 
@@ -23,7 +24,11 @@ export function AppShell() {
       <Sidebar collapsed={collapsed} onToggle={toggleCollapsed} />
       <MobileTopBar />
 
-      <main id="conteudo" className="px-4 pb-10 pt-4 transition-[padding] duration-200 sm:px-5 md:pl-[calc(var(--sidebar-w)+1.25rem)] md:pt-6">
+      <header className="sticky top-0 z-30 hidden h-14 items-center justify-end bg-canvas/85 pl-[calc(var(--sidebar-w)+1.25rem)] pr-5 backdrop-blur-xl transition-[padding] duration-200 md:flex">
+        <UserMenu />
+      </header>
+
+      <main id="conteudo" className="px-4 pb-10 pt-4 transition-[padding] duration-200 sm:px-5 md:pl-[calc(var(--sidebar-w)+1.25rem)] md:pt-1">
         <Outlet />
       </main>
 

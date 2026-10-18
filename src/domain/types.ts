@@ -81,3 +81,40 @@ export function isOpen(generation: Pick<Generation, 'status'>): boolean {
 
 /** De onde sai a imagem que um modelo de foto-com-persona ou de vídeo anima. */
 export type ImageSource = { readonly type: 'persona'; readonly id: string } | { readonly type: 'image'; readonly id: string }
+
+export const profileSchema = z.object({
+  id: z.string().uuid(),
+  display_name: z.string().nullable(),
+  username: z.string(),
+  bio: z.string(),
+  location: z.string(),
+  instagram: z.string(),
+  tiktok: z.string(),
+  youtube: z.string(),
+  avatar_path: z.string().nullable(),
+  created_at: z.string(),
+})
+export type Profile = z.infer<typeof profileSchema>
+
+export const PROFILE_COLUMNS = 'id, display_name, username, bio, location, instagram, tiktok, youtube, avatar_path, created_at'
+
+/** @ de rede social: aceita com ou sem o @ na frente e guarda sem. */
+const socialHandle = (pattern: RegExp, message: string) =>
+  z.preprocess((value) => (typeof value === 'string' ? value.trim().replace(/^@/, '') : value), z.string().regex(pattern, message))
+
+/** O que a pessoa pode editar no próprio perfil. Espelha as checks da migration 0002. */
+export const profileUpdateSchema = z.object({
+  display_name: z.string().trim().max(80),
+  username: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z0-9_.]{3,24}$/, 'Use de 3 a 24 letras minúsculas, números, ponto ou _.'),
+  bio: z.string().trim().max(300),
+  location: z.string().trim().max(80),
+  instagram: socialHandle(/^[A-Za-z0-9._]{0,30}$/, 'Só o @ do Instagram, sem link.'),
+  tiktok: socialHandle(/^[A-Za-z0-9._]{0,30}$/, 'Só o @ do TikTok, sem link.'),
+  youtube: socialHandle(/^[A-Za-z0-9._-]{0,60}$/, 'Só o @ do canal, sem link.'),
+  avatar_path: z.string().nullable(),
+})
+export type ProfileUpdate = z.infer<typeof profileUpdateSchema>

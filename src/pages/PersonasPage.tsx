@@ -54,7 +54,7 @@ export function PersonasPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-[1600px] flex-col gap-3 lg:h-[calc(100dvh-4rem)] lg:flex-row">
+    <div className="mx-auto flex max-w-[1600px] flex-col gap-3 lg:h-[calc(100dvh-7rem)] lg:flex-row">
       <BuilderPanel
         tab={tab}
         onTabChange={setTab}

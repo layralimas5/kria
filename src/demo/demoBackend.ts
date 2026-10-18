@@ -10,7 +10,8 @@ const SESSION_KEY = 'kria-demo-state'
 function loadState(): DemoState {
   try {
     const saved = sessionStorage.getItem(SESSION_KEY)
-    if (saved) return JSON.parse(saved) as DemoState
+    // Mescla com o estado novo: campos criados depois (ex.: perfil) não faltam em sessões antigas.
+    if (saved) return { ...createDemoState(), ...(JSON.parse(saved) as Partial<DemoState>) }
   } catch (error) {
     console.warn('demo: estado salvo ilegível, recomeçando', error)
   }
@@ -42,6 +43,7 @@ const TABLES: Record<string, () => Row[]> = {
   credit_ledger: () => state.ledger,
   purchases: () => state.purchases,
   credit_balances: () => [{ user_id: DEMO_USER_ID, balance: state.balance }],
+  profiles: () => [state.profile],
 }
 
 function addLedger(delta: number, reason: string, note: string) {
@@ -53,6 +55,7 @@ function query(rows: Row[], params: URLSearchParams): Row[] {
   let result = [...rows]
   params.forEach((value, key) => {
     if (value.startsWith('eq.')) result = result.filter((row) => String(row[key]) === value.slice(3))
+    if (value.startsWith('gt.')) result = result.filter((row) => Number(row[key]) > Number(value.slice(3)))
     if (value.startsWith('in.(')) {
       const allowed = value.slice(4, -1).split(',').map((item) => item.replace(/"/g, ''))
       result = result.filter((row) => allowed.includes(String(row[key])))
@@ -176,15 +179,23 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
 
   if (route.startsWith('rest/')) {
     const table = route.slice('rest/'.length)
-    const rows = TABLES[table]?.() ?? []
     if (method === 'DELETE' && table === 'personas') {
       const id = url.searchParams.get('id')?.replace('eq.', '')
       state.personas = state.personas.filter((persona) => persona.id !== id)
       persist()
       return new Response(null, { status: 204 })
     }
-    const result = query(rows, url.searchParams)
-    const accept = new Headers(init?.headers).get('accept') ?? ''
+    if (method === 'PATCH' && table === 'profiles') {
+      state.profile = { ...state.profile, ...(await readBody(init)) }
+      persist()
+    }
+    const result = query(TABLES[table]?.() ?? [], url.searchParams)
+    const headers = new Headers(init?.headers)
+    // select(..., { count: 'exact', head: true }) chega como HEAD e lê o total no content-range.
+    if (method === 'HEAD') {
+      return new Response(null, { status: 200, headers: { 'content-range': `*/${result.length}` } })
+    }
+    const accept = headers.get('accept') ?? ''
     return json(accept.includes('vnd.pgrst.object') ? (result[0] ?? null) : result)
   }
 
