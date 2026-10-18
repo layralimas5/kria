@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { Film, ShieldCheck, UserRound } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
 import { Button } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/Field'
@@ -20,13 +20,16 @@ const AUTH_ERRORS: Record<string, string> = {
 const BENEFITS = [
   { icon: UserRound, text: 'Crie um influenciador e mantenha o mesmo rosto em tudo' },
   { icon: Film, text: 'Transforme fotos em vídeos com fala e movimento' },
-  { icon: ShieldCheck, text: 'Pague só o que usar, com Pix. Sem mensalidade' },
+  { icon: ShieldCheck, text: 'Plano mensal ou pacote avulso com Pix. Você escolhe' },
 ] as const
+
+/** Login com Google só aparece quando o provedor estiver ligado no Supabase (VITE_AUTH_GOOGLE=true). */
+const GOOGLE_ENABLED = import.meta.env.VITE_AUTH_GOOGLE === 'true'
 
 function useRedirectTarget(): string {
   const location = useLocation()
   const from = (location.state as { from?: unknown } | null)?.from
-  return typeof from === 'string' && from.startsWith('/') && from !== '/' ? from : '/estudio'
+  return typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') && from !== '/' ? from : '/inicio'
 }
 
 export function LoginPage() {
@@ -59,6 +62,15 @@ export function LoginPage() {
     if (mode === 'signup' && !result.data.session) {
       setNotice('Enviamos um link de confirmação para o seu e-mail. Abra e volte aqui.')
     }
+  }
+
+  async function handleGoogle() {
+    setError(null)
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}${target}` },
+    })
+    if (oauthError) setError('Não deu para entrar com o Google agora. Use e-mail e senha.')
   }
 
   return (
@@ -134,7 +146,28 @@ export function LoginPage() {
             <Button type="submit" loading={loading} disabled={!isConfigured} className="min-h-11 w-full">
               {mode === 'signup' ? 'Criar conta grátis' : 'Entrar'}
             </Button>
+            {mode === 'signin' && (
+              <p className="text-center text-sm">
+                <Link
+                  to="/recuperar-senha"
+                  className="rounded font-medium text-zinc-400 underline-offset-4 hover:text-zinc-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  Esqueci minha senha
+                </Link>
+              </p>
+            )}
           </form>
+
+          {GOOGLE_ENABLED && (
+            <>
+              <div className="my-5 flex items-center gap-3 text-xs text-zinc-500" aria-hidden="true">
+                <span className="h-px flex-1 bg-white/10" /> ou <span className="h-px flex-1 bg-white/10" />
+              </div>
+              <Button variant="secondary" onClick={() => void handleGoogle()} disabled={!isConfigured} className="min-h-11 w-full">
+                Continuar com Google
+              </Button>
+            </>
+          )}
 
           <p className="mt-6 text-center text-sm text-zinc-400">
             {mode === 'signup' ? 'Já tem conta?' : 'Ainda não tem conta?'}{' '}

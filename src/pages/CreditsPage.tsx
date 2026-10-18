@@ -19,9 +19,11 @@ const REASON_LABELS: Record<LedgerEntry['reason'], string> = {
   generation: 'Geração',
   generation_refund: 'Estorno',
   adjustment: 'Ajuste',
+  subscription_grant: 'Plano',
+  subscription_expire: 'Fim do ciclo',
 }
 
-const PERKS = ['Pix ou cartão', 'Créditos não expiram', 'Falhou? O crédito volta']
+const PERKS = ['Pix ou cartão', 'Créditos de pacote não expiram', 'Falhou? O crédito volta']
 
 /** Quanto o pacote rende em cada modelo, para a pessoa entender o que está comprando. */
 function yieldLines(pack: CreditPack, models: readonly Model[]): string[] {
@@ -129,7 +131,7 @@ export function CreditsPage() {
     <div className="mx-auto max-w-6xl space-y-10 pt-4">
       <PageHeader
         title="Créditos"
-        description="Pague só pelo que usar. Sem mensalidade."
+        description="Pacotes avulsos, sem mensalidade. Para receber créditos todo mês, veja os planos em Assinatura."
         action={
           <div className="flex items-center gap-3 rounded-2xl bg-surface px-4 py-3 ring-1 ring-white/[0.06]">
             <Coins className="size-5 text-accent" aria-hidden="true" />
@@ -181,7 +183,10 @@ export function CreditsPage() {
                   {REASON_LABELS[entry.reason]}
                   {entry.note && <span className="font-normal text-zinc-500"> · {entry.note}</span>}
                 </p>
-                <p className="text-xs text-zinc-500">{formatDateTime(entry.created_at)}</p>
+                <p className="text-xs text-zinc-500">
+                  {formatDateTime(entry.created_at)}
+                  {entry.balance_after !== null && ` · saldo ${entry.balance_after.toLocaleString('pt-BR')}`}
+                </p>
               </div>
               <span className={clsx('shrink-0 font-bold tabular-nums', entry.delta > 0 ? 'text-accent' : 'text-zinc-400')}>
                 {entry.delta > 0 ? '+' : ''}

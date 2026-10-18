@@ -1,6 +1,8 @@
-import { ChevronLeft, KeyRound, LogOut, Mail } from 'lucide-react'
+import { ChevronLeft, Download, KeyRound, LogOut, Mail, Target, Trash2 } from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { GoalSelect } from '@/components/account/GoalSelect'
+import { DeleteAccount, ExportData } from '@/components/account/PrivacyActions'
 import { Button } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/Field'
 import { Notice } from '@/components/ui/Notice'
@@ -82,7 +84,7 @@ export function AccountSettingsPage() {
       <Link to="/conta" className="inline-flex items-center gap-1 rounded text-sm font-semibold text-zinc-400 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
         <ChevronLeft className="size-4" aria-hidden="true" /> Voltar ao perfil
       </Link>
-      <PageHeader title="Gerenciar conta" description="Acesso e segurança da sua conta." />
+      <PageHeader title="Configurações" description="Acesso, preferências e privacidade da sua conta." />
 
       <SettingsCard icon={<Mail className="size-5" aria-hidden="true" />} title="E-mail" description="É com ele que você entra na Kria.">
         <p className="rounded-xl bg-surface-2 px-4 py-3 text-[15px] font-semibold text-zinc-100">{session?.user.email ?? '–'}</p>
@@ -101,6 +103,18 @@ export function AccountSettingsPage() {
         <Button variant="secondary" loading={signingOut} onClick={() => void handleSignOutEverywhere()}>
           Sair de todos os aparelhos
         </Button>
+      </SettingsCard>
+
+      <SettingsCard icon={<Target className="size-5" aria-hidden="true" />} title="Preferências" description="O que você mais quer criar na Kria.">
+        <GoalSelect />
+      </SettingsCard>
+
+      <SettingsCard icon={<Download className="size-5" aria-hidden="true" />} title="Seus dados" description="Uma cópia de tudo o que guardamos sobre você, em JSON.">
+        <ExportData />
+      </SettingsCard>
+
+      <SettingsCard icon={<Trash2 className="size-5" aria-hidden="true" />} title="Excluir conta" description="Remove a conta e tudo o que está nela.">
+        <DeleteAccount />
       </SettingsCard>
     </div>
   )

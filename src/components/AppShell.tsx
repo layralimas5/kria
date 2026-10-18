@@ -1,9 +1,11 @@
 import clsx from 'clsx'
+import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed'
 import { UserMenu } from './account/UserMenu'
 import { MobileTabBar, MobileTopBar } from './layout/MobileNav'
 import { Sidebar } from './layout/Sidebar'
+import { Spinner } from './ui/Spinner'
 
 /**
  * Moldura do app logado. `--sidebar-w` é a largura da barra lateral no desktop
@@ -14,7 +16,7 @@ export function AppShell() {
   const [collapsed, toggleCollapsed] = useSidebarCollapsed()
 
   return (
-    <div className={clsx('min-h-dvh pb-20 [--sidebar-w:0px] md:pb-0', collapsed ? 'md:[--sidebar-w:72px]' : 'md:[--sidebar-w:240px]')}>
+    <div className={clsx('min-h-dvh pb-20 [--sidebar-w:0px] md:pb-0', collapsed ? 'md:[--sidebar-w:72px]' : 'md:[--sidebar-w:256px]')}>
       <a
         href="#conteudo"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-3 focus:py-2 focus:text-accent-ink"
@@ -29,7 +31,16 @@ export function AppShell() {
       </header>
 
       <main id="conteudo" className="px-4 pb-10 pt-4 transition-[padding] duration-200 sm:px-5 md:pl-[calc(var(--sidebar-w)+1.25rem)] md:pt-1">
-        <Outlet />
+        {/* A moldura fica montada enquanto a página carrega. */}
+        <Suspense
+          fallback={
+            <div className="grid place-items-center py-24 text-zinc-500" role="status" aria-label="Carregando">
+              <Spinner className="size-6" />
+            </div>
+          }
+        >
+          <Outlet />
+        </Suspense>
       </main>
 
       <MobileTabBar />

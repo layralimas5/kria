@@ -2,11 +2,12 @@ import clsx from 'clsx'
 import { Coins, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { formatCredits } from '@/domain/format'
+import { useAccount } from '@/hooks/useAccount'
 import { useBalance } from '@/hooks/useBalance'
 import { isDemo } from '@/lib/supabase'
 import { Logo, LogoMark } from '../Logo'
 import { Badge } from '../ui/Badge'
-import { NAV_GROUPS, type NavItem } from './nav'
+import { ADMIN_TAB, NAV_GROUPS, type NavItem } from './nav'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
@@ -15,7 +16,33 @@ interface SidebarProps {
   readonly onToggle: () => void
 }
 
+/** Ferramenta que ainda não existe: visível para a pessoa saber o que vem, mas sem ação. */
+function SoonTab({ item, collapsed }: { readonly item: NavItem; readonly collapsed: boolean }) {
+  const Icon = item.icon
+  return (
+    <span
+      aria-disabled="true"
+      title={`${item.label}: em breve`}
+      className={clsx(
+        'flex min-h-9 cursor-default items-center gap-3 whitespace-nowrap rounded-xl text-[14px] font-semibold text-zinc-600',
+        collapsed ? 'justify-center px-0' : 'px-3',
+      )}
+    >
+      <Icon className="size-[18px] shrink-0" aria-hidden="true" />
+      {collapsed ? (
+        <span className="sr-only">{item.label}, em breve</span>
+      ) : (
+        <>
+          <span className="min-w-0 flex-1 truncate">{item.label}</span>
+          <span className="shrink-0 rounded-md bg-white/[0.05] px-1 py-px text-[9px] font-bold uppercase tracking-wide text-zinc-500">Breve</span>
+        </>
+      )}
+    </span>
+  )
+}
+
 function Tab({ item, collapsed, active }: { readonly item: NavItem; readonly collapsed: boolean; readonly active: boolean }) {
+  if (item.soon) return <SoonTab item={item} collapsed={collapsed} />
   const Icon = item.icon
   return (
     <Link
@@ -24,7 +51,7 @@ function Tab({ item, collapsed, active }: { readonly item: NavItem; readonly col
       aria-label={collapsed ? item.label : undefined}
       title={collapsed ? item.label : undefined}
       className={clsx(
-        'group relative flex min-h-10 items-center gap-3 rounded-xl text-[14px] font-semibold transition-colors',
+        'group relative flex min-h-9 items-center gap-3 whitespace-nowrap rounded-xl text-[14px] font-semibold transition-colors',
         FOCUS,
         collapsed ? 'justify-center px-0' : 'px-3',
         active ? 'bg-white/[0.07] text-zinc-50' : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100',
@@ -34,8 +61,8 @@ function Tab({ item, collapsed, active }: { readonly item: NavItem; readonly col
       <Icon className={clsx('size-[18px] shrink-0', active && 'text-accent')} aria-hidden="true" />
       {!collapsed && (
         <>
-          <span className="flex-1">{item.label}</span>
-          {item.badge && <Badge>{item.badge}</Badge>}
+          <span className="min-w-0 flex-1 truncate">{item.label}</span>
+          {item.badge && <Badge className="shrink-0">{item.badge}</Badge>}
         </>
       )}
     </Link>
@@ -44,6 +71,7 @@ function Tab({ item, collapsed, active }: { readonly item: NavItem; readonly col
 
 function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
   const { balance } = useBalance()
+  const { plan } = useAccount()
 
   if (collapsed) {
     return (
@@ -61,7 +89,14 @@ function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
 
   return (
     <div className="rounded-2xl bg-surface-2 p-3 ring-1 ring-white/[0.05]">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Seu saldo</p>
+      <p className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+        Seu saldo
+        {plan && (
+          <Link to="/assinatura" className={clsx('rounded normal-case tracking-normal text-zinc-400 hover:text-zinc-100', FOCUS)}>
+            Plano {plan.name}
+          </Link>
+        )}
+      </p>
       <p className="mt-1 flex items-center gap-1.5 text-lg font-bold tabular-nums text-zinc-50">
         <Coins className="size-4 text-accent" aria-hidden="true" />
         {balance === null ? '...' : formatCredits(balance)}
@@ -79,6 +114,8 @@ function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { pathname } = useLocation()
   const [params] = useSearchParams()
+  const { isAdmin } = useAccount()
+  const groups = isAdmin ? [...NAV_GROUPS, { title: 'Operação', items: [ADMIN_TAB] }] : NAV_GROUPS
 
   return (
     <aside
@@ -86,7 +123,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       className="fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar-w)] flex-col border-r border-white/[0.05] bg-canvas transition-[width] duration-200 ease-out md:flex"
     >
       <div className={clsx('flex h-16 shrink-0 items-center', collapsed ? 'justify-center' : 'justify-between px-4')}>
-        <Link to="/estudio?modo=imagem" aria-label="Kria IA, início" className={clsx('rounded-lg', FOCUS)}>
+        <Link to="/inicio" aria-label="Kria IA, início" className={clsx('rounded-lg', FOCUS)}>
           {collapsed ? <LogoMark /> : <Logo />}
         </Link>
         {!collapsed && isDemo && (
@@ -99,8 +136,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         )}
       </div>
 
-      <nav aria-label="Principal" className={clsx('flex-1 space-y-6 overflow-y-auto py-2', collapsed ? 'px-3' : 'px-3')}>
-        {NAV_GROUPS.map((group) => (
+      <nav aria-label="Principal" className={clsx('flex-1 space-y-4 overflow-y-auto py-2', collapsed ? 'px-3' : 'px-3')}>
+        {groups.map((group) => (
           <div key={group.title}>
             {collapsed ? (
               <div aria-hidden="true" className="mx-auto mb-2 h-px w-6 bg-white/10" />

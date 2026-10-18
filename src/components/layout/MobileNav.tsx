@@ -14,7 +14,7 @@ export function MobileTopBar() {
   const { balance } = useBalance()
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-2 bg-canvas/90 px-4 backdrop-blur-xl md:hidden">
-      <Link to="/estudio?modo=imagem" aria-label="Kria IA, início" className={clsx('rounded-lg', FOCUS)}>
+      <Link to="/inicio" aria-label="Kria IA, início" className={clsx('rounded-lg', FOCUS)}>
         <Logo />
       </Link>
       {isDemo && (
@@ -44,7 +44,7 @@ export function MobileTabBar() {
       aria-label="Principal"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.06] bg-canvas/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
     >
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-5">
         {MOBILE_TABS.map((item) => {
           const active = item.isActive(pathname, params)
           const Icon = item.icon

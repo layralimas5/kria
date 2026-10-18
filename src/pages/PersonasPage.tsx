@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { MakePersonaDialog } from '@/components/MakePersonaDialog'
 import { BuilderPanel, type BuilderTab } from '@/components/personas/BuilderPanel'
 import { CreateTab } from '@/components/personas/CreateTab'
@@ -24,7 +25,8 @@ export function PersonasPage() {
   const { generations } = useGenerations()
   const builder = usePersonaBuilder(models.data ?? [])
   const motion = usePersonaMotion(models.data ?? [])
-  const [tab, setTab] = useState<BuilderTab>('create')
+  const [params] = useSearchParams()
+  const [tab, setTab] = useState<BuilderTab>(() => (params.get('aba') === 'movimento' ? 'motion' : 'create'))
   const [canvasTab, setCanvasTab] = useState<CanvasTab>('personas')
   const [saving, setSaving] = useState<Generation | null>(null)
   const [pageError, setPageError] = useState<string | null>(null)
