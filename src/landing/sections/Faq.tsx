@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { Clock, Cpu, Gift, GraduationCap, Plus, RotateCcw, ShieldCheck, Smartphone, Wallet, type LucideIcon } from 'lucide-react'
+import { CalendarCheck, Clock, Cpu, Gift, GraduationCap, Plus, RotateCcw, ShieldCheck, Smartphone, Wallet, type LucideIcon } from 'lucide-react'
 import { useId, useState } from 'react'
 import { CtaLink } from '../components/CtaLink'
 import { SectionHeading } from '../components/SectionHeading'
@@ -10,6 +10,7 @@ const ICONS: Record<FaqIcon, LucideIcon> = {
   skill: GraduationCap,
   billing: Wallet,
   time: Clock,
+  expiry: CalendarCheck,
   refund: RotateCcw,
   safety: ShieldCheck,
   device: Smartphone,

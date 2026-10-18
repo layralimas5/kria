@@ -8,6 +8,7 @@ export const WELCOME_CREDITS = 20
 
 export const COSTS = {
   photo: 5,
+  photoPersona: 6,
   videoShort: 40,
   videoTalking: 200,
 } as const
@@ -86,7 +87,7 @@ export interface Tool {
 
 export const TOOLS: readonly Tool[] = [
   { title: 'Vídeo Veo 3.1', description: '8 segundos com fala e som', icon: 'video', badge: 'top' },
-  { title: 'Vídeo Kling', description: 'Anima qualquer imagem em 5s', icon: 'video' },
+  { title: 'Vídeo Kling', description: 'Anima qualquer imagem em 5s, com áudio', icon: 'video' },
   { title: 'Influenciador com IA', description: 'O mesmo rosto em todo post', icon: 'persona', badge: 'novo' },
   { title: 'Foto realista', description: 'Do texto à foto em segundos', icon: 'image' },
   { title: 'Foto com persona', description: 'Sua persona em qualquer cenário', icon: 'image' },
@@ -119,7 +120,7 @@ export const CREDIT_PACKS: readonly CreditPack[] = [
   { id: 'estudio', name: 'Estúdio', credits: 800, priceCents: 11990, highlight: false },
 ]
 
-export type FaqIcon = 'skill' | 'billing' | 'time' | 'refund' | 'safety' | 'device' | 'models'
+export type FaqIcon = 'skill' | 'billing' | 'time' | 'expiry' | 'refund' | 'safety' | 'device' | 'models'
 
 export interface FaqItem {
   readonly icon: FaqIcon
@@ -142,7 +143,12 @@ export const FAQ: readonly FaqItem[] = [
   {
     icon: 'time',
     question: 'Quanto tempo demora pra ficar pronto?',
-    answer: 'Foto sai em segundos. Vídeo leva alguns minutos e aparece sozinho na sua galeria quando termina, pode fechar a aba.',
+    answer: 'Foto sai em segundos. Vídeo leva de 1 a 5 minutos e aparece sozinho na sua galeria quando termina, pode fechar a aba.',
+  },
+  {
+    icon: 'expiry',
+    question: 'Os créditos expiram?',
+    answer: 'Não. O que você comprou fica na conta até usar, sem prazo e sem renovação automática.',
   },
   {
     icon: 'refund',

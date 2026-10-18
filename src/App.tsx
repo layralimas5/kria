@@ -12,6 +12,7 @@ import { LoginPage } from '@/pages/LoginPage'
 const StudioPage = lazy(() => import('@/pages/StudioPage').then((module) => ({ default: module.StudioPage })))
 const GalleryPage = lazy(() => import('@/pages/GalleryPage').then((module) => ({ default: module.GalleryPage })))
 const PersonasPage = lazy(() => import('@/pages/PersonasPage').then((module) => ({ default: module.PersonasPage })))
+const TermsPage = lazy(() => import('@/landing/TermsPage').then((module) => ({ default: module.TermsPage })))
 const CreditsPage = lazy(() => import('@/pages/CreditsPage').then((module) => ({ default: module.CreditsPage })))
 
 function PageFallback() {
@@ -29,6 +30,14 @@ export function App() {
         <Routes>
           <Route index element={<LandingPage />} />
           <Route path="/entrar" element={<LoginPage />} />
+          <Route
+            path="/termos"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <TermsPage />
+              </Suspense>
+            }
+          />
           <Route
             element={
               <RequireAuth>

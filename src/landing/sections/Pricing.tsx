@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Clapperboard, ImageIcon, Mic, RotateCcw, ShieldCheck, Sparkles, Wallet, type LucideIcon } from 'lucide-react'
+import { CalendarCheck, Clapperboard, ImageIcon, Mic, RotateCcw, Sparkles, UserRound, Wallet, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { formatBRL } from '@/domain/format'
 import { CtaLink } from '../components/CtaLink'
@@ -13,6 +13,7 @@ const REFERENCE_PACK = CREDIT_PACKS[0]
 
 const COST_LIST: readonly { icon: LucideIcon; label: string; credits: number }[] = [
   { icon: ImageIcon, label: 'Foto realista', credits: COSTS.photo },
+  { icon: UserRound, label: 'Foto com persona', credits: COSTS.photoPersona },
   { icon: Clapperboard, label: 'Vídeo de 5 segundos', credits: COSTS.videoShort },
   { icon: Mic, label: 'Vídeo de 8s com fala', credits: COSTS.videoTalking },
 ]
@@ -20,7 +21,7 @@ const COST_LIST: readonly { icon: LucideIcon; label: string; credits: number }[]
 const GUARANTEES: readonly { icon: LucideIcon; text: string }[] = [
   { icon: Wallet, text: 'Pix ou cartão, pagamento único' },
   { icon: RotateCcw, text: 'Deu erro? Os créditos voltam sozinhos' },
-  { icon: ShieldCheck, text: 'Sem mensalidade e sem fidelidade' },
+  { icon: CalendarCheck, text: 'Crédito não expira, sem mensalidade' },
 ]
 
 function YieldList({ credits }: { readonly credits: number }) {
@@ -106,7 +107,7 @@ export function Pricing() {
           id="precos-title"
           align="center"
           title={`Foto a partir de ${formatBRL(lowestPriceCents(CREDIT_PACKS, COSTS.photo))}`}
-          lead="Sem mensalidade. Compra créditos quando precisar e gasta só no que gerar."
+          lead="Sem mensalidade e o crédito não expira. Compra quando precisar e gasta só no que gerar."
         />
 
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -148,8 +149,8 @@ export function Pricing() {
           ))}
         </ul>
 
-        <Reveal className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-          <dl className="grid gap-px overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.06] sm:grid-cols-3">
+        <Reveal className="mt-4 grid gap-4 xl:grid-cols-[1.9fr_1fr]">
+          <dl className="grid gap-px overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.06] sm:grid-cols-2 xl:grid-cols-4">
             {COST_LIST.map(({ icon: Icon, label, credits }) => (
               <div key={label} className="flex items-center gap-3 bg-canvas px-5 py-4">
                 <Icon className="size-5 shrink-0 text-accent" aria-hidden="true" />
