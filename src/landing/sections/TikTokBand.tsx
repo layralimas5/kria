@@ -7,7 +7,7 @@ const TOPICS = ['Prompt pronto pra copiar', 'Persona igual em 10 posts', 'Vídeo
 
 export function TikTokBand() {
   return (
-    <section id="tiktok" aria-labelledby="tiktok-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
+    <section id="tiktok" aria-labelledby="tiktok-title" className="scroll-mt-24 px-4 pt-20 md:pt-28">
       <Reveal className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,#0f1113_0%,#2a1206_55%,#8a3510_100%)] ring-1 ring-accent/40">
         <div
           aria-hidden="true"
@@ -16,10 +16,10 @@ export function TikTokBand() {
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(60%_100%_at_50%_100%,rgba(255,107,44,0.55),transparent)]" />
 
         <div aria-hidden="true" className="absolute -bottom-24 left-[4%] hidden w-[170px] -rotate-[8deg] md:block">
-          <PhoneVideo clip={avatar('review')} social />
+          <PhoneVideo clip={avatar('vovo-gamer')} social />
         </div>
         <div aria-hidden="true" className="absolute -bottom-28 right-[4%] hidden w-[170px] rotate-[8deg] md:block">
-          <PhoneVideo clip={avatar('chef')} social />
+          <PhoneVideo clip={avatar('doutor-churrasco')} social />
         </div>
 
         <div className="relative mx-auto flex max-w-2xl flex-col items-center px-5 py-16 text-center md:py-24">

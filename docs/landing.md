@@ -24,3 +24,34 @@ e o aviso "vídeos ilustrativos". Pra gerar os reais:
 
 Os vídeos do Kling vêm em mp4 grande; antes de publicar, vale comprimir
 (`ffmpeg -i in.mp4 -vf scale=540:-2 -crf 28 -an out.mp4`).
+
+## Depoimentos (formato WhatsApp)
+
+A seção "O que estão criando e falando" lê `src/landing/testimonials.json` e só aparece no
+site quando houver pelo menos um depoimento real. No `npm run dev` ela mostra um exemplo
+marcado como exemplo, pra ver o layout.
+
+Pra entrar um depoimento:
+
+1. Ter a autorização da pessoa por escrito (pode ser no próprio WhatsApp) e guardar o print original.
+2. Copiar o texto como ela mandou. Pode cortar mensagens, não pode mudar o sentido.
+3. Mídia (print, vídeo que ela criou) em `public/landing/depoimentos/`.
+4. Acrescentar no JSON:
+
+```json
+{
+  "id": "ana-sp",
+  "author": "Ana",
+  "consent": true,
+  "messages": [
+    { "from": "cliente", "time": "19:30", "text": "Fiz minha primeira influencer hoje" },
+    { "from": "kria", "time": "19:31", "text": "Manda pra gente ver!" },
+    { "from": "cliente", "time": "19:33", "video": "/landing/depoimentos/ana.mp4", "poster": "/landing/depoimentos/ana.jpg" }
+  ]
+}
+```
+
+Item sem `"consent": true` ou com mídia fora dessa pasta é ignorado. Nunca escrever
+depoimento inventado: é prova social falsa (Código de Defesa do Consumidor e Conar).
+Um jeito rápido de conseguir os primeiros: dar créditos extras pros primeiros usuários
+em troca de mandarem o que criaram e um comentário.

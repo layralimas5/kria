@@ -2,7 +2,7 @@
 // Storage e Edge Functions) pelo `fetch` do cliente. Só é carregado com
 // VITE_DEMO=true; nada disso entra na conversa com o servidor de verdade.
 
-import { DEMO_PLANS } from './demoPlans'
+import { PLAN_CATALOG } from '@/domain/planCatalog'
 import { createDemoState, DEMO_IMAGES, DEMO_USER_ID, DEMO_VIDEO, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
@@ -45,7 +45,7 @@ const TABLES: Record<string, () => Row[]> = {
   purchases: () => state.purchases,
   credit_balances: () => [{ user_id: DEMO_USER_ID, balance: state.balance }],
   profiles: () => [state.profile],
-  subscription_plans: () => DEMO_PLANS,
+  subscription_plans: () => PLAN_CATALOG.map((plan) => ({ ...plan })),
   subscriptions: () => [],
 }
 

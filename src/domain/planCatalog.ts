@@ -1,12 +1,13 @@
-// Planos do modo demo: mesma forma e valores do seed da migration 0003, só
-// para a landing e a página de assinatura aparecerem sem Supabase. Em
-// produção os planos vêm sempre do banco.
+// Catálogo de planos embutido: os mesmos valores do seed da migration 0003.
+// Usado quando o app roda sem Supabase (prévia local, modo demo) para a seção
+// de planos aparecer. Com Supabase configurado, os planos vêm sempre do banco.
+// `planCatalog.test.ts` falha se este arquivo e o seed se separarem.
 
-import type { Row } from './demoData'
+import type { SubscriptionPlan } from './plans'
 
 const feature = (label: string, soon = false) => ({ label, soon })
 
-export const DEMO_PLANS: Row[] = [
+export const PLAN_CATALOG: SubscriptionPlan[] = [
   {
     slug: 'starter',
     name: 'Kria Starter',

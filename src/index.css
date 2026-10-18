@@ -27,6 +27,13 @@
   --color-panel-hover: #1c1f23;
 
   --animate-card-pulse: card-pulse 1.8s ease-in-out infinite;
+  --animate-marquee: marquee 40s linear infinite;
+
+  @keyframes marquee {
+    to {
+      transform: translateX(-33.333%);
+    }
+  }
 
   @keyframes card-pulse {
     0%,

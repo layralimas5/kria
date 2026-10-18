@@ -59,7 +59,7 @@ export function Pricing() {
   const { data: plans, loading, error, reload } = usePlans()
 
   return (
-    <section id="precos" aria-labelledby="precos-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
+    <section id="precos" aria-labelledby="precos-title" className="scroll-mt-24 px-4 pt-20 md:pt-28">
       <div className="mx-auto max-w-[1440px]">
         <SectionHeading
           id="precos-title"

@@ -1,4 +1,5 @@
 import { Faq } from './sections/Faq'
+import { Feed } from './sections/Feed'
 import { FinalCta } from './sections/FinalCta'
 import { Footer } from './sections/Footer'
 import { Gallery } from './sections/Gallery'
@@ -6,6 +7,7 @@ import { Header } from './sections/Header'
 import { Hero } from './sections/Hero'
 import { HowItWorks } from './sections/HowItWorks'
 import { Pricing } from './sections/Pricing'
+import { Testimonials } from './sections/Testimonials'
 import { TikTokBand } from './sections/TikTokBand'
 import { Tools } from './sections/Tools'
 
@@ -21,10 +23,12 @@ export function LandingPage() {
       <Header />
       <main id="conteudo">
         <Hero />
+        <Feed />
         <Tools />
         <Gallery />
         <HowItWorks />
         <TikTokBand />
+        <Testimonials />
         <Pricing />
         <Faq />
         <FinalCta />

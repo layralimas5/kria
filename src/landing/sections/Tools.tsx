@@ -19,7 +19,7 @@ const PERKS = ['Vídeo com Veo 3.1 e Kling', 'Foto realista com Nano Banana', 'C
 function PromoCard() {
   return (
     <div className="relative isolate flex min-h-[300px] flex-col justify-end overflow-hidden rounded-2xl border border-white/[0.06] p-6 md:p-8">
-      <LoopVideo clip={avatar('viagem')} className="absolute inset-0 -z-10 size-full object-cover" />
+      <LoopVideo clip={avatar('rainha-pastel')} className="absolute inset-0 -z-10 size-full object-cover" />
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-black/85 via-black/55 to-black/10" />
       <h2 id="ferramentas-title" className="font-landing text-[2rem] font-bold uppercase leading-[0.92] tracking-[-0.035em] text-zinc-50 md:text-[2.5rem]">
         Crie sua conta e ganhe
@@ -41,7 +41,7 @@ function PromoCard() {
 
 export function Tools() {
   return (
-    <section id="ferramentas" aria-labelledby="ferramentas-title" className="scroll-mt-16 px-4 pt-2">
+    <section id="ferramentas" aria-labelledby="ferramentas-title" className="scroll-mt-24 px-4 pt-16 md:pt-20">
       <Reveal className="mx-auto grid max-w-[1440px] gap-4 lg:grid-cols-[1.1fr_1.5fr]">
         <PromoCard />
         <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">

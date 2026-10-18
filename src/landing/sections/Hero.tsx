@@ -9,13 +9,13 @@ const MODELS = ['Veo 3.1', 'Kling', 'Nano Banana'] as const
 
 /** Avatares que entram pelas bordas da tela, como os rostos do card de influenciador. */
 const SIDE_PHONES = [
-  { clip: avatar('skincare'), className: 'left-[-2%] top-[15%] w-[15%] max-w-[260px] -rotate-[9deg]', from: -60 },
-  { clip: avatar('podcast'), className: 'left-[12%] top-[38%] w-[12.5%] max-w-[215px] rotate-[4deg]', from: -60 },
-  { clip: avatar('fitness'), className: 'right-[12%] top-[34%] w-[12.5%] max-w-[215px] -rotate-[5deg]', from: 60 },
-  { clip: avatar('streetwear'), className: 'right-[-2%] top-[12%] w-[15%] max-w-[260px] rotate-[9deg]', from: 60 },
+  { clip: avatar('tia-gloria'), className: 'left-[-2%] top-[15%] w-[15%] max-w-[260px] -rotate-[9deg]', from: -60 },
+  { clip: avatar('seu-juca'), className: 'left-[12%] top-[38%] w-[12.5%] max-w-[215px] rotate-[4deg]', from: -60 },
+  { clip: avatar('mano-franja'), className: 'right-[12%] top-[34%] w-[12.5%] max-w-[215px] -rotate-[5deg]', from: 60 },
+  { clip: avatar('gemeos-bigode'), className: 'right-[-2%] top-[12%] w-[15%] max-w-[260px] rotate-[9deg]', from: 60 },
 ] as const
 
-const MOBILE_PHONES = [avatar('podcast'), avatar('skincare'), avatar('fitness')] as const
+const MOBILE_PHONES = [avatar('seu-juca'), avatar('tia-gloria'), avatar('mano-franja')] as const
 
 export function Hero() {
   const reduceMotion = useReducedMotion()
@@ -29,7 +29,7 @@ export function Hero() {
     <section
       id="topo"
       aria-labelledby="hero-title"
-      className="relative overflow-hidden bg-[radial-gradient(75%_65%_at_50%_0%,#2a2420_0%,#141517_60%,#0f1113_100%)] pt-14 lg:min-h-dvh"
+      className="relative overflow-hidden bg-[radial-gradient(75%_65%_at_50%_0%,#2a2420_0%,#141517_60%,#0f1113_100%)] pt-[5.5rem] lg:min-h-dvh"
     >
       <div
         aria-hidden="true"

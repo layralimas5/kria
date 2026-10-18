@@ -11,7 +11,7 @@ const ASPECTS = ['aspect-[3/4]', 'aspect-[9/16]', 'aspect-[4/5]', 'aspect-[9/14]
 
 export function Gallery() {
   return (
-    <section id="galeria" aria-labelledby="galeria-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
+    <section id="galeria" aria-labelledby="galeria-title" className="scroll-mt-24 px-4 pt-20 md:pt-28">
       <div className="mx-auto max-w-[1440px]">
         <SectionHeading
           id="galeria-title"
