@@ -8,7 +8,9 @@ export function Logo() {
           <circle cx="18.5" cy="12" r="1.6" fill="#0b0b0f" stroke="none" />
         </svg>
       </span>
-      <span className="text-[17px] font-semibold tracking-tight text-zinc-50">Kria</span>
+      <span className="text-[17px] font-semibold tracking-tight text-zinc-50">
+        Kria <span className="text-accent">IA</span>
+      </span>
     </span>
   )
 }

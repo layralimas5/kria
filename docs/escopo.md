@@ -1,4 +1,4 @@
-# Kria: escopo
+# Kria IA: escopo
 
 ## Ideia
 

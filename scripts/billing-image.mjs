@@ -1,4 +1,4 @@
-// Renderiza o ícone da Kria em PNG: favicon do app e imagem do item no
+// Renderiza o ícone da Kria IA em PNG: favicon do app e imagem do item no
 // checkout do Asaas (campo obrigatório). Roda com: npm run billing:image
 import fs from 'node:fs'
 import path from 'node:path'

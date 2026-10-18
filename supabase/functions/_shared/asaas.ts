@@ -46,7 +46,7 @@ export async function createCreditCheckout(input: CreditCheckoutInput): Promise<
       accept: 'application/json',
       'content-type': 'application/json',
       access_token: Deno.env.get('ASAAS_API_KEY') ?? '',
-      'User-Agent': 'Kria',
+      'User-Agent': 'Kria IA',
     },
     body: JSON.stringify({
       billingTypes: ['PIX', 'CREDIT_CARD'],
@@ -56,7 +56,7 @@ export async function createCreditCheckout(input: CreditCheckoutInput): Promise<
       callback: { successUrl: input.successUrl, cancelUrl: input.cancelUrl, expiredUrl: input.cancelUrl },
       items: [
         {
-          name: `Kria ${input.packName}`.slice(0, 30),
+          name: `Kria IA ${input.packName}`.slice(0, 30),
           description: `${input.credits} créditos para gerar imagens e vídeos`.slice(0, 150),
           quantity: 1,
           value: input.priceCents / 100,
