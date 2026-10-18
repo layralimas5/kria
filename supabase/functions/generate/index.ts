@@ -1,5 +1,5 @@
-// POST { model, prompt, personaId?, sourceGenerationId? }
-// Debita os créditos, manda para a fila do fal.ai e devolve a geração.
+// POST { model, prompt, personaId?, sourceGenerationId?, idempotencyKey? }
+// Reserva os créditos, manda para a fila do fal.ai e devolve a geração.
 // O resultado chega pelo fal-webhook (ou pelo polling do generation-status).
 
 import { z } from 'npm:zod@3'
@@ -22,6 +22,7 @@ const bodySchema = z.object({
   prompt: z.string().trim().min(3).max(2000),
   personaId: z.string().uuid().optional(),
   sourceGenerationId: z.string().uuid().optional(),
+  idempotencyKey: z.string().regex(/^[A-Za-z0-9-]{8,80}$/).optional(),
 })
 
 const SIGNED_URL_SECONDS = 60 * 60
@@ -46,8 +47,19 @@ Deno.serve(
         p_prompt: body.prompt,
         p_persona_id: body.personaId ?? null,
         p_source_generation_id: body.sourceGenerationId ?? null,
+        p_idempotency_key: body.idempotencyKey ?? null,
       })
       .single<{ id: string }>()
+    if (error?.message === 'duplicate_request' && body.idempotencyKey) {
+      // Clique repetido ou nova tentativa da rede: devolve o que já existe, sem cobrar nem reenviar.
+      const { data: existing } = await admin
+        .from('generations')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('idempotency_key', body.idempotencyKey)
+        .single()
+      return json({ generation: existing }, 200)
+    }
     if (error || !generation) return databaseErrorResponse(error ?? { message: 'no_row' })
 
     try {

@@ -38,6 +38,13 @@ export async function authenticatedUserId(request: Request, admin: SupabaseClien
   return data.user.id
 }
 
+/** Conta suspensa pelo admin não compra, não assina e não gera. */
+export async function isSuspended(admin: SupabaseClient, userId: string): Promise<boolean> {
+  const { data, error } = await admin.from('profiles').select('suspended_at').eq('id', userId).single()
+  if (error) throw new Error(`profiles: ${error.message}`)
+  return data.suspended_at !== null
+}
+
 export async function readJson(request: Request): Promise<unknown> {
   try {
     return await request.json()
@@ -56,8 +63,10 @@ const DATABASE_ERRORS: Record<string, { status: number; message: string }> = {
   persona_not_found: { status: 404, message: 'Persona não encontrada.' },
   source_not_found: { status: 404, message: 'Imagem de origem não encontrada.' },
   account_not_found: { status: 404, message: 'Conta não encontrada.' },
-  too_many_running: { status: 429, message: 'Você já tem 3 gerações em andamento. Espere uma terminar.' },
+  too_many_running: { status: 429, message: 'Você chegou ao limite de gerações ao mesmo tempo do seu plano. Espere uma terminar.' },
   insufficient_credits: { status: 402, message: 'Créditos insuficientes.' },
+  account_suspended: { status: 403, message: 'Sua conta está suspensa. Fale com o suporte.' },
+  plan_required: { status: 403, message: 'Esse modelo faz parte de um plano pago. Veja os planos em Assinatura.' },
 }
 
 export function databaseErrorResponse(error: { message: string }): Response {

@@ -4,7 +4,7 @@
 
 import { z } from 'npm:zod@3'
 import { AsaasError, createCreditCheckout } from '../_shared/asaas.ts'
-import { adminClient, authenticatedUserId, errorResponse, handle, json, readJson, requireEnv } from '../_shared/http.ts'
+import { adminClient, authenticatedUserId, errorResponse, handle, isSuspended, json, readJson, requireEnv } from '../_shared/http.ts'
 
 const bodySchema = z.object({ pack: z.string().regex(/^[a-z0-9-]{2,40}$/) })
 
@@ -18,6 +18,7 @@ Deno.serve(
 
     const parsed = bodySchema.safeParse(await readJson(request))
     if (!parsed.success) return errorResponse(400, 'invalid_body', 'Pedido inválido.')
+    if (await isSuspended(admin, userId)) return errorResponse(403, 'account_suspended', 'Sua conta está suspensa. Fale com o suporte.')
 
     const { data: pack } = await admin
       .from('credit_packs')

@@ -382,7 +382,8 @@ $$;
 drop function public.create_generation(uuid, text, text, uuid, uuid);
 
 -- Valida, reserva e cria a geração numa transação só. A mesma chave
--- idempotente devolve a geração já criada, sem cobrar de novo.
+-- idempotente levanta `duplicate_request`: quem chamou busca a geração que
+-- já existe e não manda de novo ao fornecedor nem cobra outra vez.
 create function public.create_generation(
   p_user_id uuid,
   p_model_slug text,
@@ -406,9 +407,10 @@ begin
   select * into wallet from public.credit_balances where user_id = p_user_id for update;
   if not found then raise exception 'account_not_found'; end if;
 
-  if p_idempotency_key is not null then
-    select * into g from public.generations where user_id = p_user_id and idempotency_key = p_idempotency_key;
-    if found then return g; end if;
+  if p_idempotency_key is not null and exists (
+    select 1 from public.generations where user_id = p_user_id and idempotency_key = p_idempotency_key
+  ) then
+    raise exception 'duplicate_request';
   end if;
 
   if exists (select 1 from public.profiles where id = p_user_id and suspended_at is not null) then

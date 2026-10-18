@@ -301,10 +301,12 @@ await test('geração concluída captura a reserva', async (db) => {
 
 await test('a mesma chave idempotente não cobra duas vezes', async (db) => {
   const ana = await newUser(db, 'ana@x.com')
-  const first = await create(db, ana, 'foto', 'um café na varanda', null, null, 'clique-0001')
-  const again = await create(db, ana, 'foto', 'um café na varanda', null, null, 'clique-0001')
-  assert.equal(first.rows[0].id, again.rows[0].id)
+  await create(db, ana, 'foto', 'um café na varanda', null, null, 'clique-0001')
+  await expectError(create(db, ana, 'foto', 'um café na varanda', null, null, 'clique-0001'), 'duplicate_request')
   assert.equal(await balanceOf(db, ana), 15)
+  // A mesma chave de outra pessoa não colide.
+  const bia = await newUser(db, 'bia@x.com')
+  await create(db, bia, 'foto', 'um café na varanda', null, null, 'clique-0001')
   const charges = await db.query(`select count(*)::int as n from credit_ledger where user_id = $1 and reason = 'generation'`, [ana])
   assert.equal(charges.rows[0].n, 1)
 })
