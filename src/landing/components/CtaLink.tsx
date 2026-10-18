@@ -1,37 +1,50 @@
 import clsx from 'clsx'
-import { ArrowRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { SIGNUP_PATH, WELCOME_CREDITS } from '../content'
 
 const BASE =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950'
+  'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-[transform,box-shadow,background-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:translate-y-[3px]'
+
+const SIZES = {
+  sm: 'min-h-9 px-3.5 text-[13px]',
+  md: 'min-h-11 px-5 text-sm',
+  lg: 'min-h-13 px-7 text-base',
+} as const
+
+/** Botão "com degrau": a sombra sólida embaixo some ao apertar. */
+const PRESSABLE = {
+  accent: 'bg-accent text-accent-ink shadow-[0_3px_0_0_var(--color-accent-deep)] hover:bg-accent-strong active:shadow-none',
+  light: 'bg-zinc-50 text-zinc-950 shadow-[0_3px_0_0_#a1a1aa] hover:bg-white active:shadow-none',
+} as const
 
 interface CtaLinkProps {
   readonly className?: string
   readonly children?: ReactNode
+  readonly size?: keyof typeof SIZES
+  readonly tone?: keyof typeof PRESSABLE
+  readonly to?: string
 }
 
-/** A ação única da página: criar conta com os créditos de boas-vindas. */
-export function CtaLink({ className, children }: CtaLinkProps) {
+/** A ação da página: criar conta com os créditos de boas-vindas. */
+export function CtaLink({ className, children, size = 'md', tone = 'accent', to = SIGNUP_PATH }: CtaLinkProps) {
   return (
-    <Link
-      to={SIGNUP_PATH}
-      className={clsx(
-        BASE,
-        'group bg-accent text-accent-ink hover:bg-accent-strong hover:shadow-xl hover:shadow-accent/20',
-        className,
-      )}
-    >
-      {children ?? `Começar com ${WELCOME_CREDITS} créditos grátis`}
-      <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
+    <Link to={to} className={clsx(BASE, SIZES[size], PRESSABLE[tone], className)}>
+      {children ?? `Criar com ${WELCOME_CREDITS} créditos grátis`}
     </Link>
   )
 }
 
-export function SecondaryLink({ href, children }: { readonly href: string; readonly children: ReactNode }) {
+interface AnchorButtonProps {
+  readonly href: string
+  readonly children: ReactNode
+  readonly size?: keyof typeof SIZES
+  readonly className?: string
+}
+
+export function AnchorButton({ href, children, size = 'md', className }: AnchorButtonProps) {
   return (
-    <a href={href} className={clsx(BASE, 'w-full sm:w-auto border border-white/10 bg-white/[0.03] text-zinc-100 hover:border-white/20 hover:bg-white/[0.06]')}>
+    <a href={href} className={clsx(BASE, SIZES[size], PRESSABLE.light, className)}>
       {children}
     </a>
   )

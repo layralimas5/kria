@@ -1,57 +1,58 @@
-import { ArrowUpRight, Play } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
+import { PhoneVideo } from '../components/PhoneVideo'
 import { Reveal } from '../components/Reveal'
-import { TIKTOK_URL } from '../content'
+import { CLIPS, TIKTOK_URL } from '../content'
 
-const TUTORIALS = [
-  'O prompt que deixa a foto com cara de celular, não de IA',
-  'Como fazer sua persona aparecer igual em 10 posts',
-  'Vídeo de produto pra afiliado em 2 minutos',
-] as const
+const TOPICS = ['Prompt pronto pra copiar', 'Persona igual em 10 posts', 'Vídeo de produto pra afiliado'] as const
 
 export function TikTokBand() {
   return (
-    <section aria-labelledby="tiktok-title" className="py-20 md:py-28">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <Reveal className="grid items-center gap-10 overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-zinc-900 to-zinc-950 p-6 sm:p-10 md:grid-cols-2 md:p-14">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Aprenda no TikTok</p>
-            <h2 id="tiktok-title" className="mt-3 text-balance text-3xl font-semibold tracking-tight text-zinc-50 md:text-4xl">
-              Prompt pronto e tutorial curto, toda semana
-            </h2>
-            <p className="mt-4 text-pretty text-zinc-400">
-              No nosso TikTok você vê o que está funcionando agora, copia o prompt e faz igual no Kria. Sem curso, sem enrolação.
-            </p>
-            {TIKTOK_URL ? (
-              <a
-                href={TIKTOK_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-8 inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-5 text-sm font-semibold text-zinc-50 transition-colors hover:border-white/20 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              >
-                Seguir no TikTok
-                <ArrowUpRight className="size-4" aria-hidden="true" />
-                <span className="sr-only">(abre em nova aba)</span>
-              </a>
-            ) : (
-              <p className="mt-8 inline-flex rounded-full border border-white/10 px-3 py-1.5 text-sm text-zinc-400">Perfil chega em breve</p>
-            )}
-          </div>
-          <ul className="space-y-3" aria-label="Exemplos de tutoriais">
-            {TUTORIALS.map((title, index) => (
-              <li
-                key={title}
-                className="flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-black/30 p-3 pr-5"
-                style={{ marginLeft: `${index * 6}%` }}
-              >
-                <span className="grid size-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent/30 via-violet-500/20 to-pink-500/20">
-                  <Play className="size-5 fill-zinc-50 text-zinc-50" aria-hidden="true" />
-                </span>
-                <span className="text-pretty text-sm font-medium text-zinc-200">{title}</span>
+    <section id="tiktok" aria-labelledby="tiktok-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
+      <Reveal className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,#0f1113_0%,#1a2008_55%,#5e7a0d_100%)] ring-1 ring-accent/40">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(rgba(198,244,50,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(198,244,50,0.08)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_top,black,transparent_85%)]"
+        />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(60%_100%_at_50%_100%,rgba(198,244,50,0.55),transparent)]" />
+
+        <div aria-hidden="true" className="absolute -bottom-24 left-[4%] hidden w-[170px] -rotate-[8deg] md:block">
+          <PhoneVideo clip={CLIPS.silk} social />
+        </div>
+        <div aria-hidden="true" className="absolute -bottom-28 right-[4%] hidden w-[170px] rotate-[8deg] md:block">
+          <PhoneVideo clip={CLIPS.tunnel} social />
+        </div>
+
+        <div className="relative mx-auto flex max-w-2xl flex-col items-center px-5 py-16 text-center md:py-24">
+          <p className="rounded-full bg-black/40 px-3 py-1 text-[13px] font-semibold text-zinc-200 ring-1 ring-white/10">Tutoriais toda semana</p>
+          <h2 id="tiktok-title" className="mt-5 font-display text-5xl font-bold uppercase leading-[0.9] tracking-[-0.045em] text-accent md:text-7xl">
+            Aprenda no TikTok
+          </h2>
+          <p className="mt-4 text-pretty text-[17px] font-medium text-zinc-200">
+            Vídeo curto mostrando o que está funcionando agora. Você copia o prompt e faz igual no Kria.
+          </p>
+          <ul className="mt-6 flex flex-wrap justify-center gap-2">
+            {TOPICS.map((topic) => (
+              <li key={topic} className="rounded-full bg-black/40 px-3 py-1.5 text-[13px] text-zinc-200 ring-1 ring-white/10">
+                {topic}
               </li>
             ))}
           </ul>
-        </Reveal>
-      </div>
+          {TIKTOK_URL ? (
+            <a
+              href={TIKTOK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-xl bg-zinc-50 px-6 text-[15px] font-semibold text-zinc-950 shadow-[0_3px_0_0_#a1a1aa] transition-transform hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:translate-y-[3px] active:shadow-none"
+            >
+              Seguir no TikTok
+              <ArrowUpRight className="size-4" aria-hidden="true" />
+              <span className="sr-only">(abre em nova aba)</span>
+            </a>
+          ) : (
+            <p className="mt-8 rounded-xl bg-black/40 px-5 py-3 text-[15px] font-semibold text-zinc-300 ring-1 ring-white/10">Perfil chega em breve</p>
+          )}
+        </div>
+      </Reveal>
     </section>
   )
 }

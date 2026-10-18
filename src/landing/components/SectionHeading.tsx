@@ -2,19 +2,22 @@ import type { ReactNode } from 'react'
 
 interface SectionHeadingProps {
   readonly id: string
-  readonly eyebrow: string
   readonly title: ReactNode
   readonly lead?: string
+  /** Botões alinhados à direita no desktop. */
+  readonly actions?: ReactNode
 }
 
-export function SectionHeading({ id, eyebrow, title, lead }: SectionHeadingProps) {
+export function SectionHeading({ id, title, lead, actions }: SectionHeadingProps) {
   return (
-    <div className="mx-auto max-w-2xl text-center">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">{eyebrow}</p>
-      <h2 id={id} className="mt-3 text-balance text-3xl font-semibold tracking-tight text-zinc-50 md:text-5xl">
-        {title}
-      </h2>
-      {lead && <p className="mt-4 text-pretty text-base text-zinc-400 md:text-lg">{lead}</p>}
+    <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+      <div>
+        <h2 id={id} className="font-display text-[1.9rem] font-bold uppercase leading-[0.95] tracking-[-0.03em] text-accent md:text-[2.6rem]">
+          {title}
+        </h2>
+        {lead && <p className="mt-2.5 max-w-2xl text-pretty text-[15px] text-zinc-400">{lead}</p>}
+      </div>
+      {actions && <div className="flex shrink-0 flex-wrap gap-3">{actions}</div>}
     </div>
   )
 }

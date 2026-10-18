@@ -1,11 +1,17 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/geist';
+@import '@fontsource-variable/space-grotesk';
 
 @theme {
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
   --color-accent: #c6f432;
   --color-accent-strong: #d6ff5c;
   --color-accent-ink: #0b0b0f;
+  --color-accent-deep: #8fb01c;
+  --color-canvas: #0f1113;
+  --color-panel: #16181b;
+  --color-panel-hover: #1c1f23;
 }
 
 :root {

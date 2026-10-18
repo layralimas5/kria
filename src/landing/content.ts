@@ -4,13 +4,15 @@
 export const SIGNUP_PATH = '/entrar'
 export const WELCOME_CREDITS = 20
 
-/** Enquanto os vídeos dos celulares forem os ilustrativos de `npm run landing:assets`. */
+/** Enquanto os vídeos forem os ilustrativos de `npm run landing:assets`. */
 export const ILLUSTRATIVE_MEDIA = true
 
 export const TIKTOK_URL: string | undefined = import.meta.env.VITE_TIKTOK_URL || undefined
 
-export interface ShowcaseVideo {
-  readonly id: string
+export type ClipId = 'chrome' | 'aurora' | 'dunes' | 'tunnel' | 'silk' | 'planet'
+
+export interface Clip {
+  readonly id: ClipId
   readonly src: string
   readonly poster: string
   readonly prompt: string
@@ -18,81 +20,56 @@ export interface ShowcaseVideo {
   readonly credits: number
 }
 
-export const SHOWCASE: readonly ShowcaseVideo[] = [
-  {
-    id: 'product',
-    src: '/landing/product.webm',
-    poster: '/landing/product.jpg',
-    prompt: 'Frasco de sérum lilás girando devagar, luz de estúdio, fundo com brilho neon',
-    model: 'Kling',
-    credits: 40,
-  },
-  {
-    id: 'influencer',
-    src: '/landing/influencer.webm',
-    poster: '/landing/influencer.jpg',
-    prompt: 'Minha persona de costas olhando o pôr do sol, vento no cabelo, luz dourada',
-    model: 'Veo 3.1',
-    credits: 200,
-  },
-  {
-    id: 'city',
-    src: '/landing/city.webm',
-    poster: '/landing/city.jpg',
-    prompt: 'Cidade à noite com chuva fina, câmera andando de lado, janelas acesas',
-    model: 'Kling',
-    credits: 40,
-  },
-]
+const clip = (id: ClipId, prompt: string, model: string, credits: number): Clip => ({
+  id,
+  src: `/landing/${id}.webm`,
+  poster: `/landing/${id}.jpg`,
+  prompt,
+  model,
+  credits,
+})
 
-export type CapabilityId = 'video' | 'image' | 'persona' | 'copy'
-
-export interface Capability {
-  readonly id: CapabilityId
-  readonly title: string
-  readonly description: string
-  readonly detail: string
-  readonly soon?: boolean
+export const CLIPS: Readonly<Record<ClipId, Clip>> = {
+  dunes: clip('dunes', 'Dunas no fim da tarde, câmera deslizando de lado, sol baixo e névoa dourada', 'Veo 3.1', 200),
+  chrome: clip('chrome', 'Gotas de metal líquido se fundindo no ar, luz de estúdio verde e roxa', 'Kling', 40),
+  aurora: clip('aurora', 'Aurora boreal sobre as montanhas, céu estrelado, movimento lento', 'Kling', 40),
+  planet: clip('planet', 'Planeta lilás com anéis girando devagar no espaço, estrelas ao fundo', 'Veo 3.1', 200),
+  silk: clip('silk', 'Seda lilás ondulando em câmera lenta, brilho suave, fundo escuro', 'Kling', 40),
+  tunnel: clip('tunnel', 'Voo por um túnel de neon verde, velocidade constante, clima de clipe', 'Kling', 40),
 }
 
-export const CAPABILITIES: readonly Capability[] = [
-  {
-    id: 'video',
-    title: 'Vídeo com IA',
-    description: 'Pega uma imagem e transforma em vídeo com movimento, som e até fala.',
-    detail: '5 ou 8 segundos, no formato do Reels e do TikTok',
-  },
-  {
-    id: 'image',
-    title: 'Imagem com IA',
-    description: 'Escreve o que você quer ver e recebe uma foto realista em segundos.',
-    detail: 'Produto, cenário, post, anúncio',
-  },
-  {
-    id: 'persona',
-    title: 'Influenciador com IA',
-    description: 'Cria uma pessoa que não existe e usa o mesmo rosto em todo post e vídeo.',
-    detail: 'Perfil de IA sem precisar aparecer',
-  },
-  {
-    id: 'copy',
-    title: 'Copy com IA',
-    description: 'Legenda, roteiro e gancho escritos pro conteúdo que você acabou de gerar.',
-    detail: 'Em português, no tom do seu perfil',
-    soon: true,
-  },
+/** Ordem da grade "Feito no Kria". */
+export const GALLERY: readonly ClipId[] = ['dunes', 'chrome', 'aurora', 'planet', 'silk', 'tunnel']
+
+export type ToolIcon = 'video' | 'image' | 'persona' | 'copy'
+export type ToolBadge = 'top' | 'novo' | 'breve'
+
+export interface Tool {
+  readonly title: string
+  readonly description: string
+  readonly icon: ToolIcon
+  readonly badge?: ToolBadge
+}
+
+export const TOOLS: readonly Tool[] = [
+  { title: 'Vídeo Veo 3.1', description: '8 segundos com fala e som', icon: 'video', badge: 'top' },
+  { title: 'Vídeo Kling', description: 'Anima qualquer imagem em 5s', icon: 'video' },
+  { title: 'Influenciador com IA', description: 'O mesmo rosto em todo post', icon: 'persona', badge: 'novo' },
+  { title: 'Foto realista', description: 'Do texto à foto em segundos', icon: 'image' },
+  { title: 'Foto com persona', description: 'Sua persona em qualquer cenário', icon: 'image' },
+  { title: 'Copy com IA', description: 'Legenda, roteiro e gancho', icon: 'copy', badge: 'breve' },
 ]
 
 export const STEPS = [
-  { title: 'Descreva', text: 'Escreve em português o que você quer. Sem termo técnico, sem prompt em inglês.' },
-  { title: 'Escolha foto ou vídeo', text: 'O Kria escolhe o modelo de IA certo por trás. Você só vê o resultado.' },
-  { title: 'Baixe e poste', text: 'Arquivo pronto no formato vertical, direto pro Reels, TikTok ou anúncio.' },
+  { title: 'Descreva', text: 'Escreve em português o que você quer ver. Sem termo técnico, sem prompt em inglês.' },
+  { title: 'Escolha', text: 'Foto ou vídeo. O Kria usa o modelo de IA certo por trás e você só vê o resultado.' },
+  { title: 'Poste', text: 'Arquivo vertical pronto pro Reels, TikTok ou anúncio. Baixa e publica.' },
 ] as const
 
 export const AUDIENCES = [
-  { title: 'Afiliado', text: 'Vídeo do produto sem comprar o produto, sem gravar e sem aparecer.' },
-  { title: 'Comércio local', text: 'Post e anúncio com cara de estúdio, gastando centavos em vez de um ensaio.' },
-  { title: 'Perfil de IA', text: 'Uma influenciadora que posta todo dia, com o mesmo rosto, sem existir.' },
+  { title: 'Afiliado', text: 'Vídeo do produto sem comprar, sem gravar e sem aparecer.' },
+  { title: 'Comércio local', text: 'Post e anúncio com cara de estúdio, por centavos.' },
+  { title: 'Perfil de IA', text: 'Uma influenciadora que posta todo dia e não existe.' },
 ] as const
 
 export interface CreditPack {

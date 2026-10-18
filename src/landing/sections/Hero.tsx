@@ -1,103 +1,84 @@
 import { motion, useReducedMotion } from 'framer-motion'
-import { Check } from 'lucide-react'
-import { CtaLink, SecondaryLink } from '../components/CtaLink'
+import { Gift } from 'lucide-react'
+import { AnchorButton, CtaLink } from '../components/CtaLink'
 import { PhoneVideo } from '../components/PhoneVideo'
-import { SHOWCASE } from '../content'
+import { CLIPS, WELCOME_CREDITS } from '../content'
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const
-const PROOF_POINTS = ['Sem mensalidade', 'Paga com Pix', 'Tudo em português'] as const
 const MODELS = ['Veo 3.1', 'Kling', 'Nano Banana'] as const
 
-function PhoneStack() {
-  const reduceMotion = useReducedMotion()
-  const [left, center, right] = SHOWCASE
-  if (!left || !center || !right) return null
+/** Celulares que entram pelas bordas do card, como os rostos do card de influenciador. */
+const SIDE_PHONES = [
+  { clip: CLIPS.dunes, className: 'left-[-3%] top-[14%] w-[15%] -rotate-[10deg]', from: -60 },
+  { clip: CLIPS.chrome, className: 'left-[11%] top-[34%] w-[13%] rotate-[4deg]', from: -60 },
+  { clip: CLIPS.aurora, className: 'right-[11%] top-[30%] w-[13%] -rotate-[5deg]', from: 60 },
+  { clip: CLIPS.planet, className: 'right-[-3%] top-[10%] w-[15%] rotate-[10deg]', from: 60 },
+] as const
 
-  const enter = (delay: number, x: number) => ({
-    initial: reduceMotion ? false : { opacity: 0, y: 40, x },
+const MOBILE_PHONES = [CLIPS.chrome, CLIPS.dunes, CLIPS.aurora] as const
+
+export function Hero() {
+  const reduceMotion = useReducedMotion()
+  const enter = (delay: number, x = 0) => ({
+    initial: reduceMotion ? false : { opacity: 0, y: 24, x },
     animate: { opacity: 1, y: 0, x: 0 },
     transition: { duration: 0.8, delay, ease: EASE_OUT_EXPO },
   })
 
   return (
-    <div className="relative mx-auto flex h-[440px] w-full max-w-[460px] items-center justify-center sm:h-[520px]">
-      <div aria-hidden="true" className="absolute inset-x-6 top-1/2 h-72 -translate-y-1/2 rounded-full bg-accent/20 blur-[90px]" />
-      <motion.div {...enter(0.25, 40)} className="absolute left-0 top-12 w-[150px] -rotate-[8deg] sm:left-2 sm:w-[180px]">
-        <PhoneVideo video={left} />
-      </motion.div>
-      <motion.div {...enter(0.4, -40)} className="absolute right-0 top-12 w-[150px] rotate-[8deg] sm:right-2 sm:w-[180px]">
-        <PhoneVideo video={right} />
-      </motion.div>
-      <motion.div {...enter(0.1, 0)} className="relative z-10 w-[190px] sm:w-[230px]">
-        <PhoneVideo video={center} showPrompt eager />
-      </motion.div>
-    </div>
-  )
-}
+    <section id="topo" aria-labelledby="hero-title" className="px-4 pt-4">
+      <div className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[28px] border border-white/[0.06] bg-[radial-gradient(70%_60%_at_50%_0%,#24272c_0%,#121417_60%,#0f1113_100%)]">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-50 [background-image:linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(70%_70%_at_50%_40%,black,transparent)]"
+        />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(45%_70%_at_50%_100%,rgba(198,244,50,0.16),transparent)]" />
 
-export function Hero() {
-  const reduceMotion = useReducedMotion()
-  const fadeUp = (delay: number) => ({
-    initial: reduceMotion ? false : { opacity: 0, y: 16 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6, delay, ease: EASE_OUT_EXPO },
-  })
+        {SIDE_PHONES.map(({ clip, className, from }, index) => (
+          <motion.div key={clip.id} {...enter(0.2 + index * 0.08, from)} className={`absolute hidden lg:block ${className}`}>
+            <PhoneVideo clip={clip} eager />
+          </motion.div>
+        ))}
 
-  return (
-    <section id="topo" aria-labelledby="hero-title" className="relative overflow-hidden">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(198,244,50,0.10),transparent_70%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-[0.35] [background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]"
-      />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-14 sm:px-6 md:pt-20 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pb-24">
-        <div className="text-center lg:text-left">
+        <div className="relative mx-auto flex max-w-3xl flex-col items-center px-5 pb-14 pt-14 text-center md:pb-24 md:pt-24">
           <motion.p
-            {...fadeUp(0)}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-zinc-300"
+            {...enter(0)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-[13px] font-semibold text-accent ring-1 ring-accent/30"
           >
-            <span className="size-1.5 rounded-full bg-accent" aria-hidden="true" />
+            <Gift className="size-3.5" aria-hidden="true" />
+            {WELCOME_CREDITS} créditos grátis
+          </motion.p>
+          <motion.p {...enter(0.05)} className="mt-6 font-display text-sm font-bold uppercase tracking-[0.02em] text-zinc-100">
             Vídeo, imagem e influenciador com IA
           </motion.p>
           <motion.h1
-            {...fadeUp(0.06)}
+            {...enter(0.1)}
             id="hero-title"
-            className="mt-5 text-balance text-[2.6rem] font-semibold leading-[1.05] tracking-tight text-zinc-50 sm:text-6xl lg:text-[4.2rem]"
+            className="mt-3 text-balance font-display text-[3.1rem] font-bold uppercase leading-[0.88] tracking-[-0.045em] text-zinc-50 sm:text-7xl lg:text-[6.4rem]"
           >
-            Você descreve.
-            <br />
-            <span className="text-accent">A IA grava.</span>
+            Você descreve. <span className="text-accent">A IA grava.</span>
           </motion.h1>
-          <motion.p {...fadeUp(0.12)} className="mx-auto mt-5 max-w-xl text-pretty text-base text-zinc-400 sm:text-lg lg:mx-0">
-            O Kria junta as melhores IAs de vídeo e imagem num lugar só, em português. Escreve o que você quer e recebe o
-            conteúdo pronto pra postar, sem câmera, sem estúdio e sem aparecer.
+          <motion.p {...enter(0.16)} className="mt-6 max-w-xl text-pretty text-[17px] font-medium text-zinc-400">
+            As melhores IAs de vídeo e imagem num lugar só, em português. Escreve o que você quer e recebe pronto pra postar.
           </motion.p>
-          <motion.div {...fadeUp(0.18)} className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
-            <CtaLink className="w-full sm:w-auto" />
-            <SecondaryLink href="#exemplos">Ver exemplos</SecondaryLink>
+          <motion.div {...enter(0.22)} className="mt-9 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
+            <CtaLink size="lg" className="w-full sm:w-auto" />
+            <AnchorButton href="#galeria" size="lg" className="w-full sm:w-auto">
+              Ver o que dá pra fazer
+            </AnchorButton>
           </motion.div>
-          <motion.ul {...fadeUp(0.24)} className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-zinc-400 lg:justify-start">
-            {PROOF_POINTS.map((point) => (
-              <li key={point} className="flex items-center gap-1.5">
-                <Check className="size-4 text-accent" aria-hidden="true" />
-                {point}
-              </li>
-            ))}
-          </motion.ul>
-          <motion.p {...fadeUp(0.3)} className="mt-10 text-xs text-zinc-500">
-            Por trás:{' '}
-            {MODELS.map((model, index) => (
-              <span key={model}>
-                <span className="font-medium text-zinc-300">{model}</span>
-                {index < MODELS.length - 1 && <span aria-hidden="true"> · </span>}
-              </span>
-            ))}
+          <motion.p {...enter(0.28)} className="mt-7 text-[13px] text-zinc-500">
+            Sem mensalidade · Paga com Pix · Por trás: {MODELS.join(', ')}
           </motion.p>
         </div>
-        <PhoneStack />
+
+        <div className="relative -mb-8 flex justify-center gap-3 px-4 lg:hidden" aria-hidden="true">
+          {MOBILE_PHONES.map((clip, index) => (
+            <motion.div key={clip.id} {...enter(0.3 + index * 0.08)} className={index === 1 ? 'w-[38%] max-w-[200px]' : 'mt-10 w-[30%] max-w-[160px]'}>
+              <PhoneVideo clip={clip} eager={index === 1} social={index === 1} />
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   )
