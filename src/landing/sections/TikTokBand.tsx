@@ -1,25 +1,25 @@
 import { ArrowUpRight } from 'lucide-react'
 import { PhoneVideo } from '../components/PhoneVideo'
 import { Reveal } from '../components/Reveal'
-import { CLIPS, TIKTOK_URL } from '../content'
+import { avatar, TIKTOK_URL } from '../content'
 
 const TOPICS = ['Prompt pronto pra copiar', 'Persona igual em 10 posts', 'Vídeo de produto pra afiliado'] as const
 
 export function TikTokBand() {
   return (
     <section id="tiktok" aria-labelledby="tiktok-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
-      <Reveal className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,#0f1113_0%,#1a2008_55%,#5e7a0d_100%)] ring-1 ring-accent/40">
+      <Reveal className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,#0f1113_0%,#2a1206_55%,#8a3510_100%)] ring-1 ring-accent/40">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(rgba(198,244,50,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(198,244,50,0.08)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_top,black,transparent_85%)]"
+          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(rgba(255,107,44,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,107,44,0.08)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_top,black,transparent_85%)]"
         />
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(60%_100%_at_50%_100%,rgba(198,244,50,0.55),transparent)]" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[radial-gradient(60%_100%_at_50%_100%,rgba(255,107,44,0.55),transparent)]" />
 
         <div aria-hidden="true" className="absolute -bottom-24 left-[4%] hidden w-[170px] -rotate-[8deg] md:block">
-          <PhoneVideo clip={CLIPS.silk} social />
+          <PhoneVideo clip={avatar('review')} social />
         </div>
         <div aria-hidden="true" className="absolute -bottom-28 right-[4%] hidden w-[170px] rotate-[8deg] md:block">
-          <PhoneVideo clip={CLIPS.tunnel} social />
+          <PhoneVideo clip={avatar('chef')} social />
         </div>
 
         <div className="relative mx-auto flex max-w-2xl flex-col items-center px-5 py-16 text-center md:py-24">

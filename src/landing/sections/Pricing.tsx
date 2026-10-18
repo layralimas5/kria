@@ -32,7 +32,7 @@ export function Pricing() {
                 delay={index * 0.05}
                 className={clsx(
                   'flex flex-col rounded-2xl border p-6',
-                  pack.highlight ? 'border-accent/60 bg-[linear-gradient(180deg,rgba(198,244,50,0.10),transparent_70%)]' : 'border-white/[0.06] bg-panel',
+                  pack.highlight ? 'border-accent/60 bg-[linear-gradient(180deg,rgba(255,107,44,0.10),transparent_70%)]' : 'border-white/[0.06] bg-panel',
                 )}
               >
                 <h3 className="flex items-center gap-2 text-[15px] font-semibold text-zinc-200">

@@ -2,31 +2,25 @@
 
 Rota `/` (`src/landing`). O app saiu de `/` e foi pra `/estudio`. Todo CTA leva pra `/entrar`.
 Visual inspirado na home da Higgsfield: fundo grafite, títulos em Space Grotesk caixa alta,
-verde-limão do Kria, botão "com degrau", grade de mídia de ponta a ponta.
+laranja do Kria (#ff6b2c), botão "com degrau", grade de mídia de ponta a ponta.
 
 - Textos, vídeos, ferramentas, pacotes e FAQ: `src/landing/content.ts`. Preços e custos espelham
   `credit_packs` e `models`; se mudar no banco, mudar lá também.
 - Perfil do TikTok: `VITE_TIKTOK_URL`. Sem ela, a faixa mostra "Perfil chega em breve".
 
-## Trocar os vídeos ilustrativos pelos reais
+## Vídeos de avatar (IA de verdade)
 
-Hoje os vídeos são cenas abstratas em shader (`npm run landing:assets`, ou
-`npm run landing:assets -- dunes` pra uma só). O visual só chega no nível da Higgsfield
-com vídeo real: gente, produto, cenário. Pra trocar:
+Os avatares ficam em `src/landing/avatars.json` (id, título, prompt da foto, prompt do movimento).
+Enquanto não forem gerados, a página mostra um vídeo abstrato provisório (`npm run landing:assets`)
+e o aviso "vídeos ilustrativos". Pra gerar os reais:
 
-1. Gerar no Kria, em 9:16, com os prompts abaixo (ou outros melhores).
-2. Salvar em `public/landing/<nome>.mp4` mais o pôster `<nome>.jpg` (primeiro quadro).
-   Até ~2 MB cada; comprimir com `ffmpeg -i in.mp4 -vf scale=540:-2 -crf 28 -an out.mp4`.
-3. Em `content.ts`: trocar a extensão do `src` em `clip()` pra `.mp4`, ajustar prompt, modelo e
-   créditos, e pôr `ILLUSTRATIVE_MEDIA = false`.
+1. Criar a conta no fal.ai, pôr saldo e gerar a chave em fal.ai/dashboard/keys.
+2. No `.env.local`: `FAL_KEY=...` (sem `VITE_`, então nunca vai pro navegador).
+3. `npm run landing:avatars`: pra cada avatar, gera a foto no Nano Banana 2 (9:16) e anima 5s no
+   Kling. Salva em `public/landing/avatars/` e registra em `avatars.generated.json`.
+   A landing troca sozinha, e o aviso some quando todos existirem.
+4. Não gostou de um? `npm run landing:avatars -- --force chef` refaz só esse. Pra trocar a pessoa,
+   muda o prompt em `avatars.json` antes.
 
-| Lugar | Nome | Prompt sugerido | Modelo |
-|---|---|---|---|
-| Topo, celular maior / card de créditos | `dunes` | Persona do Kria caminhando no deserto ao pôr do sol, olha pra câmera e sorri, vento no cabelo | Veo 3.1 |
-| Topo / CTA final | `chrome` | Frasco de perfume girando sobre pedestal, luz de estúdio verde e roxa, fundo escuro | Kling |
-| Topo | `aurora` | Mulher com casaco de inverno olhando a aurora boreal, câmera subindo devagar | Kling |
-| Topo | `planet` | Influenciadora gravando story num rooftop à noite, cidade iluminada atrás | Veo 3.1 |
-| Faixa TikTok | `silk` | Close de mãos abrindo uma caixa de produto, luz suave, estilo unboxing | Kling |
-| Faixa TikTok | `tunnel` | Tênis girando no ar com luz neon verde, câmera orbitando | Kling |
-
-Vale ter mais de 6 na grade "Feito no Kria": é só acrescentar em `CLIPS` e `GALLERY`.
+Os vídeos do Kling vêm em mp4 grande; antes de publicar, vale comprimir
+(`ffmpeg -i in.mp4 -vf scale=540:-2 -crf 28 -an out.mp4`).

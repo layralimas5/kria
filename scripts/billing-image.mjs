@@ -9,7 +9,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const SIZE = 180
 
 const html = `<!doctype html><html><body style="margin:0;background:transparent">
-<div style="width:${SIZE}px;height:${SIZE}px;border-radius:40px;background:#c6f432;display:grid;place-items:center">
+<div style="width:${SIZE}px;height:${SIZE}px;border-radius:40px;background:#ff6b2c;display:grid;place-items:center">
   <svg width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
     <path d="M6 4v16"/><path d="M18 4 9.5 12 18 20"/><circle cx="18.5" cy="12" r="1.6" fill="#0b0b0f" stroke="none"/>
   </svg>

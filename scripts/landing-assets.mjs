@@ -44,7 +44,7 @@ vec3 nrm(vec3 p){vec2 e=vec2(.002,0);return normalize(vec3(map(p+e.xyy)-map(p-e.
 vec3 env(vec3 d){
   float y=d.y*.5+.5;
   vec3 c=mix(vec3(.05,.05,.08),vec3(.55,.55,.62),smoothstep(-.1,.9,d.y));
-  c+=vec3(.78,.96,.2)*pow(max(dot(d,normalize(vec3(.8,.3,.5))),0.),6.)*1.4;
+  c+=vec3(1.,.42,.17)*pow(max(dot(d,normalize(vec3(.8,.3,.5))),0.),6.)*1.4;
   c+=vec3(.55,.35,1.)*pow(max(dot(d,normalize(vec3(-.9,.0,.4))),0.),4.)*1.3;
   c+=vec3(1.)*smoothstep(.985,1.,dot(d,normalize(vec3(.1,.9,.4))))*2.;
   return c;}
@@ -52,7 +52,7 @@ vec3 scene(vec2 uv,vec2 p){
   vec3 ro=vec3(0,0,4.),rd=normalize(vec3(p,-1.6));
   float t=0.;for(int i=0;i<64;i++){float d=map(ro+rd*t);if(d<.001||t>8.)break;t+=d;}
   vec3 col=mix(vec3(.03,.03,.05),vec3(.07,.05,.12),uv.y);
-  col+=vec3(.78,.96,.2)*.06*exp(-6.*length(p-vec2(.3,.4)));
+  col+=vec3(1.,.42,.17)*.06*exp(-6.*length(p-vec2(.3,.4)));
   if(t<8.){vec3 pos=ro+rd*t,n=nrm(pos),r=reflect(rd,n);
     float fr=pow(1.-max(dot(n,-rd),0.),3.);
     col=env(r)*(.6+.4*fr)+vec3(.02);}
@@ -67,14 +67,14 @@ vec3 scene(vec2 uv,vec2 p){
   for(int i=0;i<5;i++){float fi=float(i);
     float y=.55+fi*.06+.08*sin(uv.x*3.+T+fi)+.05*fbm(vec2(uv.x*2.5+T*.4+fi,fi));
     float band=exp(-pow((uv.y-y)*14.,2.))*(.55+.45*fbm(vec2(uv.x*5.-T*.6,fi*3.)));
-    vec3 tint=mix(vec3(.45,1.,.35),vec3(.55,.3,1.),fi/4.);
+    vec3 tint=mix(vec3(1.,.5,.25),vec3(.55,.3,1.),fi/4.);
     col+=tint*band*.55;
     col+=tint*.25*smoothstep(y,y+.25,uv.y)*exp(-(uv.y-y)*5.)*band*3.;}
   float ridge=.18+.06*fbm(vec2(uv.x*3.,1.))+.03*sin(uv.x*9.);
   col=mix(col,vec3(.005,.01,.02),smoothstep(ridge+.005,ridge-.005,uv.y));
   float lake=step(uv.y,ridge-.04);
   if(lake>.5){vec2 m=vec2(uv.x,2.*(ridge-.04)-uv.y+.02*sin(uv.y*80.+T*2.));
-    col+=vec3(.2,.6,.3)*.25*exp(-pow((m.y-.62)*8.,2.));}
+    col+=vec3(.6,.3,.15)*.25*exp(-pow((m.y-.62)*8.,2.));}
   return col;}`,
   },
   dunes: {
@@ -103,7 +103,7 @@ vec3 scene(vec2 uv,vec2 p){
   float z=.35/r+T/6.2831*4.;
   float ring=pow(abs(sin(z*3.14159*2.)),24.);
   float ribs=pow(abs(sin(a*6.+z*.5)),40.);
-  vec3 c1=vec3(.78,.96,.2),c2=vec3(.6,.35,1.);
+  vec3 c1=vec3(1.,.42,.17),c2=vec3(.6,.35,1.);
   vec3 col=mix(c2,c1,.5+.5*sin(z*.8))*(ring*1.2+ribs*.6);
   col*=smoothstep(0.,.6,r);
   col+=mix(c2,c1,.5)*.12*exp(-r*3.);
@@ -119,7 +119,7 @@ vec3 scene(vec2 uv,vec2 p){
   vec2 w=vec2(fbm(q+vec2(cos(T),sin(T))*.6),fbm(q+vec2(5.2,1.3)+vec2(sin(T),cos(T))*.6));
   float f=fbm(q+w*2.2);
   float fold=sin((q.x+w.x*2.)*5.+f*6.);
-  vec3 a=vec3(.06,.03,.14),b=vec3(.58,.36,1.),c=vec3(.78,.96,.2),d=vec3(1.,.55,.75);
+  vec3 a=vec3(.06,.03,.14),b=vec3(.58,.36,1.),c=vec3(1.,.42,.17),d=vec3(1.,.55,.75);
   vec3 col=mix(a,b,smoothstep(.2,.8,f));
   col=mix(col,d,smoothstep(.55,.95,w.y)*.6);
   col+=mix(c,vec3(1.),.4)*pow(.5+.5*fold,8.)*.35*smoothstep(.3,.7,f);
@@ -138,7 +138,7 @@ vec3 scene(vec2 uv,vec2 p){
     vec3 surf=mix(vec3(.22,.14,.5),vec3(.95,.7,.9),smoothstep(.25,.75,bands));
     float lit=max(dot(n,normalize(vec3(-.6,.4,.7))),0.);
     col=surf*(.08+lit*1.1);}
-  col+=mix(vec3(.55,.4,1.),vec3(.78,.96,.2),.35)*exp(-abs(d-r)*40.)*.8;
+  col+=mix(vec3(.55,.4,1.),vec3(1.,.42,.17),.35)*exp(-abs(d-r)*40.)*.8;
   col+=vec3(.4,.3,.9)*.18*exp(-max(d-r,0.)*8.);
   vec2 rp=c*mat2(.96,-.28,.28,.96);float e=length(rp*vec2(1.,3.6));
   float ring=smoothstep(.33,.35,e)*smoothstep(.47,.44,e)*(.6+.4*sin(e*90.));

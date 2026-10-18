@@ -1,45 +1,78 @@
 // Conteúdo da landing. Preços e custos espelham os seeds de `credit_packs` e
 // `models` (supabase/migrations/0001_init.sql): se mudar lá, mudar aqui.
+import avatarSpecs from './avatars.json'
+import generatedMedia from './avatars.generated.json'
 
 export const SIGNUP_PATH = '/entrar'
 export const WELCOME_CREDITS = 20
 
-/** Enquanto os vídeos forem os ilustrativos de `npm run landing:assets`. */
-export const ILLUSTRATIVE_MEDIA = true
+export const COSTS = {
+  photo: 5,
+  videoShort: 40,
+  videoTalking: 200,
+} as const
 
 export const TIKTOK_URL: string | undefined = import.meta.env.VITE_TIKTOK_URL || undefined
 
-export type ClipId = 'chrome' | 'aurora' | 'dunes' | 'tunnel' | 'silk' | 'planet'
+const PLACEHOLDERS = ['chrome', 'aurora', 'dunes', 'tunnel', 'silk', 'planet'] as const
+type Placeholder = (typeof PLACEHOLDERS)[number]
+
+interface AvatarSpec {
+  readonly id: string
+  readonly title: string
+  readonly image: string
+  readonly motion: string
+  readonly placeholder: string
+}
+
+interface GeneratedMedia {
+  readonly video: string
+  readonly poster: string
+}
 
 export interface Clip {
-  readonly id: ClipId
+  readonly id: string
+  readonly title: string
   readonly src: string
   readonly poster: string
   readonly prompt: string
   readonly model: string
   readonly credits: number
+  /** false enquanto o vídeo real não foi gerado (`npm run landing:avatars`). */
+  readonly generated: boolean
 }
 
-const clip = (id: ClipId, prompt: string, model: string, credits: number): Clip => ({
-  id,
-  src: `/landing/${id}.webm`,
-  poster: `/landing/${id}.jpg`,
-  prompt,
-  model,
-  credits,
-})
-
-export const CLIPS: Readonly<Record<ClipId, Clip>> = {
-  dunes: clip('dunes', 'Dunas no fim da tarde, câmera deslizando de lado, sol baixo e névoa dourada', 'Veo 3.1', 200),
-  chrome: clip('chrome', 'Gotas de metal líquido se fundindo no ar, luz de estúdio verde e roxa', 'Kling', 40),
-  aurora: clip('aurora', 'Aurora boreal sobre as montanhas, céu estrelado, movimento lento', 'Kling', 40),
-  planet: clip('planet', 'Planeta lilás com anéis girando devagar no espaço, estrelas ao fundo', 'Veo 3.1', 200),
-  silk: clip('silk', 'Seda lilás ondulando em câmera lenta, brilho suave, fundo escuro', 'Kling', 40),
-  tunnel: clip('tunnel', 'Voo por um túnel de neon verde, velocidade constante, clima de clipe', 'Kling', 40),
+function isPlaceholder(value: string): value is Placeholder {
+  return (PLACEHOLDERS as readonly string[]).includes(value)
 }
 
-/** Ordem da grade "Feito no Kria". */
-export const GALLERY: readonly ClipId[] = ['dunes', 'chrome', 'aurora', 'planet', 'silk', 'tunnel']
+export function toClip(spec: AvatarSpec, media: GeneratedMedia | undefined): Clip {
+  if (!isPlaceholder(spec.placeholder)) throw new Error(`Avatar ${spec.id}: placeholder "${spec.placeholder}" não existe`)
+  return {
+    id: spec.id,
+    title: spec.title,
+    src: media?.video ?? `/landing/${spec.placeholder}.webm`,
+    poster: media?.poster ?? `/landing/${spec.placeholder}.jpg`,
+    prompt: spec.image,
+    model: 'Nano Banana + Kling',
+    credits: COSTS.photo + COSTS.videoShort,
+    generated: media !== undefined,
+  }
+}
+
+const GENERATED: Readonly<Record<string, GeneratedMedia | undefined>> = generatedMedia
+
+/** Avatares da landing, na ordem de `avatars.json`. */
+export const AVATARS: readonly Clip[] = avatarSpecs.map((spec) => toClip(spec, GENERATED[spec.id]))
+
+export function avatar(id: string): Clip {
+  const found = AVATARS.find((clip) => clip.id === id)
+  if (!found) throw new Error(`Avatar "${id}" não está em avatars.json`)
+  return found
+}
+
+/** Mostra o aviso de "vídeos ilustrativos" enquanto algum avatar estiver no provisório. */
+export const ILLUSTRATIVE_MEDIA = AVATARS.some((clip) => !clip.generated)
 
 export type ToolIcon = 'video' | 'image' | 'persona' | 'copy'
 export type ToolBadge = 'top' | 'novo' | 'breve'
@@ -85,12 +118,6 @@ export const CREDIT_PACKS: readonly CreditPack[] = [
   { id: 'criador', name: 'Criador', credits: 300, priceCents: 4990, highlight: true },
   { id: 'estudio', name: 'Estúdio', credits: 800, priceCents: 11990, highlight: false },
 ]
-
-export const COSTS = {
-  photo: 5,
-  videoShort: 40,
-  videoTalking: 200,
-} as const
 
 export const FAQ = [
   {

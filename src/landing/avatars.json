@@ -1,0 +1,58 @@
+[
+  {
+    "id": "skincare",
+    "title": "UGC de skincare",
+    "image": "Selfie vertical de celular, mulher brasileira de 26 anos, cabelo cacheado preso, segurando um frasco de sérum perto do rosto no banheiro, luz natural da janela, pele com textura real, sem maquiagem pesada, foto de iPhone",
+    "motion": "Ela sorri, aproxima o frasco da câmera e fala animada, movimento natural de mão, câmera de celular levemente tremida",
+    "placeholder": "silk"
+  },
+  {
+    "id": "podcast",
+    "title": "Corte de podcast",
+    "image": "Homem brasileiro de 32 anos, barba curta, camiseta preta, falando num microfone de podcast em estúdio escuro com luz laranja ao fundo, foto realista de câmera de cinema, profundidade de campo",
+    "motion": "Ele fala com convicção olhando pra câmera, gesticula com uma mão, leve zoom lento da câmera",
+    "placeholder": "chrome"
+  },
+  {
+    "id": "fitness",
+    "title": "Story de academia",
+    "image": "Influenciadora fitness brasileira de 24 anos, top esportivo, rabo de cavalo, gravando story no espelho da academia, luz fria de academia, foto realista de celular",
+    "motion": "Ela termina a série, ri, ajusta o cabelo e acena pra câmera",
+    "placeholder": "tunnel"
+  },
+  {
+    "id": "streetwear",
+    "title": "Lookbook de rua",
+    "image": "Modelo brasileiro de 22 anos com jaqueta streetwear oversized e boné, andando numa rua do centro de São Paulo no fim da tarde, luz dourada, foto editorial realista",
+    "motion": "Ele caminha em direção à câmera com confiança, a câmera recua acompanhando, vento leve na jaqueta",
+    "placeholder": "dunes"
+  },
+  {
+    "id": "chef",
+    "title": "Receita no Reels",
+    "image": "Chef brasileira de 35 anos com avental, cozinha de casa iluminada, segurando uma colher de pau e provando o molho de uma panela, foto realista de celular, luz quente",
+    "motion": "Ela prova o molho, faz cara de aprovação e mostra a panela pra câmera",
+    "placeholder": "planet"
+  },
+  {
+    "id": "review",
+    "title": "Review de produto",
+    "image": "Jovem brasileiro de 23 anos no quarto com setup gamer ao fundo e luz roxa e laranja, segurando um fone de ouvido sem marca na frente da câmera, foto realista de webcam",
+    "motion": "Ele gira o fone na mão mostrando os detalhes e comenta empolgado olhando pra câmera",
+    "placeholder": "aurora"
+  },
+  {
+    "id": "viagem",
+    "title": "Vlog de viagem",
+    "image": "Mulher brasileira de 29 anos de vestido leve num mirante com vista para o mar do Rio de Janeiro, vento no cabelo, golden hour, foto realista de celular",
+    "motion": "Ela vira pra câmera sorrindo, o vento mexe no cabelo e no vestido, câmera gira devagar",
+    "placeholder": "dunes"
+  },
+  {
+    "id": "corretora",
+    "title": "Anúncio de serviço",
+    "image": "Corretora de imóveis brasileira de 40 anos, blazer bege, sorrindo numa sala de apartamento decorado e iluminado, foto realista profissional, luz natural",
+    "motion": "Ela abre os braços apresentando o ambiente e fala com a câmera de forma simpática",
+    "placeholder": "silk"
+  }
+]
