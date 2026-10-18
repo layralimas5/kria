@@ -19,11 +19,13 @@ const FILTERS: readonly { value: Filter; label: string }[] = [
   { value: 'video', label: 'Vídeos' },
 ]
 
+const GRID = 'grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'
+
 function GallerySkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4" aria-hidden="true">
-      {Array.from({ length: 8 }, (_, index) => (
-        <div key={index} className="aspect-[4/5] animate-pulse rounded-2xl bg-white/[0.04]" />
+    <div className={GRID} aria-hidden="true">
+      {Array.from({ length: 10 }, (_, index) => (
+        <div key={index} className="aspect-[4/5] animate-pulse rounded-2xl bg-surface" />
       ))}
     </div>
   )
@@ -38,30 +40,41 @@ export function GalleryPage() {
 
   const modelNames = useMemo(() => new Map((models.data ?? []).map((model) => [model.slug, model.name])), [models.data])
   const visible = filter === 'all' ? generations : generations.filter((item) => item.kind === filter)
+  const counts = useMemo(
+    () => ({
+      all: generations.length,
+      image: generations.filter((item) => item.kind === 'image').length,
+      video: generations.filter((item) => item.kind === 'video').length,
+    }),
+    [generations],
+  )
 
   return (
-    <div className="space-y-8">
-      <PageHeader title="Galeria" description="Tudo o que você criou. Os arquivos ficam guardados na sua conta." />
-
-      <div role="radiogroup" aria-label="Filtrar por tipo" className="flex gap-2">
-        {FILTERS.map(({ value, label }) => (
-          <button
-            key={value}
-            type="button"
-            role="radio"
-            aria-checked={filter === value}
-            onClick={() => setFilter(value)}
-            className={clsx(
-              'min-h-9 rounded-full border px-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              filter === value
-                ? 'border-accent/50 bg-accent/10 text-accent'
-                : 'border-white/10 text-zinc-400 hover:text-zinc-100',
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+    <div className="mx-auto max-w-[1600px] space-y-6 pt-4">
+      <PageHeader
+        title="Galeria"
+        description="Tudo o que você criou fica guardado aqui. Passe o mouse para baixar, animar ou virar persona."
+        action={
+          <div role="radiogroup" aria-label="Filtrar por tipo" className="inline-flex rounded-xl bg-surface p-1 ring-1 ring-white/[0.06]">
+            {FILTERS.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={filter === value}
+                onClick={() => setFilter(value)}
+                className={clsx(
+                  'inline-flex min-h-8 items-center gap-1.5 rounded-lg px-3 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                  filter === value ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-400 hover:text-zinc-100',
+                )}
+              >
+                {label}
+                <span className="tabular-nums opacity-60">{counts[value]}</span>
+              </button>
+            ))}
+          </div>
+        }
+      />
 
       {error && <Notice tone="error">{error}</Notice>}
       {loading ? (
@@ -69,19 +82,19 @@ export function GalleryPage() {
       ) : visible.length === 0 ? (
         <EmptyState
           icon={<Images className="size-5" aria-hidden="true" />}
-          title="Sua galeria está vazia"
+          title="Nada aqui ainda"
           description="Crie a primeira imagem no Estúdio. Ela aparece aqui assim que ficar pronta."
           action={
             <Link
               to="/estudio"
-              className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-ink hover:bg-accent-strong"
+              className="btn-lime inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               <Sparkles className="size-4" aria-hidden="true" /> Ir para o Estúdio
             </Link>
           }
         />
       ) : (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+        <div className={GRID}>
           {visible.map((generation) => (
             <GenerationCard
               key={generation.id}

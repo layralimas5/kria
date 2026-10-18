@@ -1,4 +1,4 @@
-# Colocar a Kria no ar
+# Colocar a Kria IA no ar
 
 Ordem que funciona. Cada passo diz o que conferir antes do próximo.
 

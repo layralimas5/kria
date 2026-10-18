@@ -1,10 +1,11 @@
 {
-  "name": "kria",
+  "name": "kria-ia",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port 5231 --strictPort",
+    "dev:demo": "vite --port 5231 --strictPort --mode demo",
     "build": "tsc -b && vite build",
     "preview": "vite preview --port 5231 --strictPort",
     "typecheck": "tsc -b",
@@ -13,10 +14,12 @@
     "db:test": "node supabase/tests/credits.mjs",
     "check": "npm run typecheck && npm run typecheck:functions && npm test && npm run db:test",
     "billing:image": "node scripts/billing-image.mjs",
+    "demo:assets": "node scripts/demo-assets.mjs",
     "landing:assets": "node scripts/landing-assets.mjs",
     "landing:avatars": "node scripts/landing-avatars.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/archivo": "^5.3.0",
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/space-grotesk": "^5.3.0",
     "@supabase/supabase-js": "^2.45.0",

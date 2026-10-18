@@ -23,7 +23,7 @@ export function Header() {
     <header
       className={clsx(
         'fixed inset-x-0 top-0 z-40 border-b transition-[background-color,border-color,backdrop-filter] duration-300',
-        scrolled ? 'border-white/[0.05] bg-canvas/85 backdrop-blur-xl' : 'border-transparent bg-transparent',
+        scrolled ? 'border-white/[0.05] bg-stage/85 backdrop-blur-xl' : 'border-transparent bg-transparent',
       )}
     >
       <div className="mx-auto grid h-14 max-w-[1440px] grid-cols-[1fr_auto] items-center gap-6 px-4 lg:grid-cols-[1fr_auto_1fr]">

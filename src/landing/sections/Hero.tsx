@@ -36,7 +36,7 @@ export function Hero() {
         className="pointer-events-none absolute inset-0 opacity-50 [background-image:linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(70%_70%_at_50%_40%,black,transparent)]"
       />
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(45%_70%_at_50%_100%,rgba(255,107,44,0.18),transparent)]" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-canvas to-transparent" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-stage to-transparent" />
 
       {SIDE_PHONES.map(({ clip, className, from }, index) => (
         <motion.div key={clip.id} {...enter(0.2 + index * 0.08, from)} className={`absolute hidden lg:block ${className}`}>
@@ -52,13 +52,13 @@ export function Hero() {
           <Gift className="size-3.5" aria-hidden="true" />
           {WELCOME_CREDITS} créditos grátis
         </motion.p>
-        <motion.p {...enter(0.05)} className="mt-6 font-display text-sm font-bold uppercase tracking-[0.02em] text-zinc-100">
+        <motion.p {...enter(0.05)} className="mt-6 font-landing text-sm font-bold uppercase tracking-[0.02em] text-zinc-100">
           Vídeo, imagem e influenciador com IA
         </motion.p>
         <motion.h1
           {...enter(0.1)}
           id="hero-title"
-          className="mt-3 text-balance font-display text-[3.1rem] font-bold uppercase leading-[0.88] tracking-[-0.045em] text-zinc-50 sm:text-7xl lg:text-[6.4rem]"
+          className="mt-3 text-balance font-landing text-[3.1rem] font-bold uppercase leading-[0.88] tracking-[-0.045em] text-zinc-50 sm:text-7xl lg:text-[6.4rem]"
         >
           Você descreve. <span className="text-accent">A IA grava.</span>
         </motion.h1>

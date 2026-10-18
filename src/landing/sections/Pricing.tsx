@@ -64,14 +64,14 @@ function PlanCard({ name, price, note, credits, tag, featured = false, cta }: Pl
   const body = (
     <div className={clsx('flex h-full flex-col rounded-[15px] p-6', featured ? 'bg-[linear-gradient(180deg,#2a1810_0%,#16181b_55%)]' : 'bg-panel')}>
       <div className="flex items-center justify-between gap-2">
-        <h3 className="font-display text-lg font-bold uppercase tracking-[-0.02em] text-zinc-50">{name}</h3>
+        <h3 className="font-landing text-lg font-bold uppercase tracking-[-0.02em] text-zinc-50">{name}</h3>
         {tag && (
           <span className={clsx('rounded-full px-2.5 py-0.5 text-[11px] font-bold', featured ? 'bg-accent text-accent-ink' : 'bg-accent/15 text-accent')}>
             {tag}
           </span>
         )}
       </div>
-      <p className="mt-5 font-display text-[2.9rem] font-bold leading-none tracking-[-0.045em] text-zinc-50">{price}</p>
+      <p className="mt-5 font-landing text-[2.9rem] font-bold leading-none tracking-[-0.045em] text-zinc-50">{price}</p>
       <p className="mt-2 text-sm text-zinc-400">
         <span className="font-semibold text-zinc-200">{credits} créditos</span> · {note}
       </p>
@@ -152,7 +152,7 @@ export function Pricing() {
         <Reveal className="mt-4 grid gap-4 xl:grid-cols-[1.9fr_1fr]">
           <dl className="grid gap-px overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.06] sm:grid-cols-2 xl:grid-cols-4">
             {COST_LIST.map(({ icon: Icon, label, credits }) => (
-              <div key={label} className="flex items-center gap-3 bg-canvas px-5 py-4">
+              <div key={label} className="flex items-center gap-3 bg-stage px-5 py-4">
                 <Icon className="size-5 shrink-0 text-accent" aria-hidden="true" />
                 <div>
                   <dt className="text-sm text-zinc-300">{label}</dt>

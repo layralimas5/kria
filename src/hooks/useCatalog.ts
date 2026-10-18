@@ -15,7 +15,7 @@ import { useQuery, type QueryState } from './useQuery'
 async function fetchModels(): Promise<Model[]> {
   const { data, error } = await supabase
     .from('models')
-    .select('slug, name, description, kind, requires_image, credits, position')
+    .select('slug, name, description, kind, requires_image, credits, position, badge, defaults')
     .order('position')
   if (error) throw error
   return z.array(modelSchema).parse(data)

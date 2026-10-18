@@ -57,14 +57,14 @@ export function MakePersonaDialog({
       ref={dialogRef}
       onClose={onClose}
       aria-labelledby="persona-dialog-title"
-      className="m-auto w-[min(92vw,26rem)] rounded-2xl border border-white/10 bg-zinc-900 p-0 text-zinc-100 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+      className="m-auto w-[min(92vw,26rem)] rounded-3xl border border-white/[0.08] bg-surface-2 p-0 text-zinc-100 shadow-2xl backdrop:bg-black/75 backdrop:backdrop-blur-sm"
     >
       {generation && (
         <form onSubmit={handleSubmit} className="space-y-5 p-5">
           <div className="flex items-center gap-4">
             <MediaView path={generation.output_path} kind="image" alt="" className="size-16 shrink-0 rounded-xl" />
             <div>
-              <h2 id="persona-dialog-title" className="font-semibold">
+              <h2 id="persona-dialog-title" className="font-headline text-xl">
                 Salvar como persona
               </h2>
               <p className="text-sm text-zinc-400">Ela vira referência de rosto para novas fotos e vídeos.</p>

@@ -66,7 +66,7 @@ export function TermsPage() {
   }, [])
 
   return (
-    <div className="min-h-dvh bg-canvas">
+    <div className="min-h-dvh bg-stage">
       <header className="border-b border-white/[0.05]">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
           <Link to="/" aria-label="Kria IA, página inicial" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
@@ -81,7 +81,7 @@ export function TermsPage() {
         </div>
       </header>
       <main className="mx-auto max-w-3xl px-4 py-14 md:py-20">
-        <h1 className="font-display text-4xl font-bold uppercase tracking-[-0.035em] text-zinc-50 md:text-5xl">Termos de uso</h1>
+        <h1 className="font-landing text-4xl font-bold uppercase tracking-[-0.035em] text-zinc-50 md:text-5xl">Termos de uso</h1>
         <p className="mt-3 text-sm text-zinc-500">Atualizado em {UPDATED_AT}</p>
         <div className="mt-10 space-y-10">
           {SECTIONS.map(({ title, paragraphs }, index) => (

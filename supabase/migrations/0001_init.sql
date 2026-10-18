@@ -58,6 +58,7 @@ create table public.models (
   requires_image boolean not null default false,
   credits integer not null check (credits > 0),
   defaults jsonb not null default '{}'::jsonb check (jsonb_typeof(defaults) = 'object'),
+  badge text check (badge in ('NOVO', 'TOP')),
   active boolean not null default true,
   position integer not null default 0,
   check (not requires_image or image_input is not null)
@@ -394,15 +395,15 @@ $$;
 -- Preço em créditos calibrado para ~R$ 0,20 por crédito na venda e margem
 -- de 2x a 3x sobre o custo do fal.ai. Conferir o preço de cada endpoint em
 -- fal.ai/pricing antes de abrir para o público e ajustar aqui.
-insert into public.models (slug, name, description, kind, endpoint, image_input, requires_image, credits, defaults, position) values
-  ('foto', 'Foto', 'Imagem realista a partir do texto.', 'image',
-   'fal-ai/nano-banana-2', null, false, 5, '{"num_images": 1, "aspect_ratio": "4:5", "safety_tolerance": "2"}', 10),
-  ('foto-persona', 'Foto com persona', 'A mesma pessoa em qualquer cenário.', 'image',
-   'fal-ai/nano-banana-2/edit', 'image_urls', true, 6, '{"num_images": 1, "aspect_ratio": "4:5", "safety_tolerance": "2"}', 20),
-  ('video-kling', 'Vídeo Kling', 'Anima uma imagem. 5 segundos, com áudio.', 'video',
-   'fal-ai/kling-video/v3/standard/image-to-video', 'start_image_url', true, 40, '{"duration": "5", "generate_audio": true}', 30),
-  ('video-veo', 'Vídeo Veo 3.1', 'Anima uma imagem com fala e som. 8 segundos.', 'video',
-   'fal-ai/veo3.1/image-to-video', 'image_url', true, 200, '{"duration": "8s", "resolution": "720p", "aspect_ratio": "9:16", "generate_audio": true, "safety_tolerance": "2"}', 40)
+insert into public.models (slug, name, description, kind, endpoint, image_input, requires_image, credits, defaults, badge, position) values
+  ('foto', 'Nano Banana 2', 'Foto realista a partir do texto.', 'image',
+   'fal-ai/nano-banana-2', null, false, 5, '{"num_images": 1, "aspect_ratio": "4:5", "safety_tolerance": "2"}', null, 10),
+  ('foto-persona', 'Nano Banana 2 Persona', 'A mesma pessoa em qualquer cenário.', 'image',
+   'fal-ai/nano-banana-2/edit', 'image_urls', true, 6, '{"num_images": 1, "aspect_ratio": "4:5", "safety_tolerance": "2"}', 'TOP', 20),
+  ('video-kling', 'Kling 3.0', 'Anima uma imagem com movimento natural e áudio.', 'video',
+   'fal-ai/kling-video/v3/standard/image-to-video', 'start_image_url', true, 40, '{"duration": "5", "generate_audio": true}', 'NOVO', 30),
+  ('video-veo', 'Veo 3.1', 'Vídeo com fala sincronizada e som ambiente.', 'video',
+   'fal-ai/veo3.1/image-to-video', 'image_url', true, 200, '{"duration": "8s", "resolution": "720p", "aspect_ratio": "9:16", "generate_audio": true, "safety_tolerance": "2"}', 'TOP', 40)
 on conflict (slug) do nothing;
 
 insert into public.credit_packs (slug, name, credits, price_cents, highlight, position) values

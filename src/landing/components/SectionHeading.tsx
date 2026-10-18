@@ -15,7 +15,7 @@ export function SectionHeading({ id, title, lead, actions, align = 'left' }: Sec
   return (
     <div className={clsx('flex flex-col gap-5', centered ? 'items-center text-center' : 'md:flex-row md:items-end md:justify-between')}>
       <div className={clsx(centered && 'flex flex-col items-center')}>
-        <h2 id={id} className="text-balance font-display text-[1.9rem] font-bold uppercase leading-[0.95] tracking-[-0.03em] text-accent md:text-[2.6rem]">
+        <h2 id={id} className="text-balance font-landing text-[1.9rem] font-bold uppercase leading-[0.95] tracking-[-0.03em] text-accent md:text-[2.6rem]">
           {title}
         </h2>
         {lead && <p className="mt-2.5 max-w-2xl text-pretty text-[15px] text-zinc-400">{lead}</p>}

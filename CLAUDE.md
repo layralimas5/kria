@@ -1,7 +1,7 @@
-# Kria
+# Kria IA
 
 SaaS de criação com IA: a pessoa cria influenciadores (personas com rosto
-consistente) e gera fotos e vídeos com eles, pagando por crédito. Nome provisório.
+consistente) e gera fotos e vídeos com eles, pagando por crédito. Repositório na pasta `pessoais/kria`.
 
 ## Stack
 
@@ -23,6 +23,8 @@ consistente) e gera fotos e vídeos com eles, pagando por crédito. Nome provis�
 ## Comandos
 
 - `npm run dev` (porta 5231)
+- `npm run dev:demo`: backend falso no navegador (`src/demo`), sessão aberta, gerações que terminam sozinhas. Nada vai ao Supabase
+- `npm run demo:assets`: regenera as mídias ilustrativas de `public/demo`
 - `npm run check`: tipos do front e das functions, testes unitários e testes do banco (pglite, sem Docker)
 - `npm run billing:image`: regenera o ícone e a imagem do checkout
 

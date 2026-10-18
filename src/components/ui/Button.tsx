@@ -6,8 +6,8 @@ type Variant = 'primary' | 'secondary' | 'ghost'
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    'bg-accent text-accent-ink hover:bg-accent-strong hover:shadow-lg hover:shadow-accent/15 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:shadow-none',
-  secondary: 'border border-white/10 bg-white/[0.03] text-zinc-100 hover:border-white/20 hover:bg-white/[0.06]',
+    'btn-lime font-semibold hover:brightness-105 active:translate-y-px active:shadow-none disabled:bg-none disabled:bg-surface-3 disabled:text-zinc-500 disabled:shadow-none disabled:brightness-100',
+  secondary: 'border border-white/[0.08] bg-surface-2 text-zinc-100 hover:border-white/15 hover:bg-surface-3',
   ghost: 'text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-100',
 }
 
@@ -27,8 +27,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={clsx(
-        'inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-all duration-200 ease-out',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950',
+        'inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-all duration-150 ease-out',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
         'disabled:cursor-not-allowed',
         VARIANTS[variant],
         className,

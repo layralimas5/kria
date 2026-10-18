@@ -26,7 +26,7 @@ const BENEFITS = [
 function useRedirectTarget(): string {
   const location = useLocation()
   const from = (location.state as { from?: unknown } | null)?.from
-  return typeof from === 'string' && from.startsWith('/') ? from : '/estudio'
+  return typeof from === 'string' && from.startsWith('/') && from !== '/' ? from : '/estudio'
 }
 
 export function LoginPage() {
@@ -73,10 +73,10 @@ export function LoginPage() {
           initial={reduceMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-lg"
+          className="max-w-xl"
         >
-          <h1 className="text-4xl font-semibold tracking-tight text-balance text-zinc-50 md:text-5xl">
-            Seu influenciador com IA, pronto para postar.
+          <h1 className="font-headline text-5xl text-balance text-zinc-50 md:text-7xl">
+            Seu influenciador <span className="text-accent">com IA.</span>
           </h1>
           <p className="mt-5 text-lg text-pretty text-zinc-400">
             Crie a persona, gere fotos e vídeos realistas com ela e publique. Tudo em português, num lugar só.
@@ -84,7 +84,7 @@ export function LoginPage() {
           <ul className="mt-8 space-y-3">
             {BENEFITS.map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-3 text-sm text-zinc-300">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/[0.04] text-accent">
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-surface-2 text-accent">
                   <Icon className="size-4" aria-hidden="true" />
                 </span>
                 {text}
@@ -96,11 +96,11 @@ export function LoginPage() {
       </section>
 
       <section className="relative flex items-center justify-center px-6 pb-16 sm:px-10 lg:py-14">
-        <div className="w-full max-w-sm rounded-2xl border border-white/[0.08] bg-zinc-900/60 p-6 backdrop-blur sm:p-8">
-          <h2 className="text-xl font-semibold tracking-tight text-zinc-50">
+        <div className="w-full max-w-sm rounded-3xl bg-surface p-6 ring-1 ring-white/[0.07] sm:p-8">
+          <h2 className="font-headline text-3xl text-zinc-50">
             {mode === 'signup' ? 'Crie sua conta' : 'Entrar'}
           </h2>
-          <p className="mt-1 text-sm text-zinc-400">
+          <p className="mt-2 text-sm text-zinc-400">
             {mode === 'signup' ? 'Ganhe 20 créditos para testar.' : 'Bom te ver de novo.'}
           </p>
 
@@ -131,7 +131,7 @@ export function LoginPage() {
             />
             {error && <Notice tone="error">{error}</Notice>}
             {notice && <Notice tone="success">{notice}</Notice>}
-            <Button type="submit" loading={loading} disabled={!isConfigured} className="w-full">
+            <Button type="submit" loading={loading} disabled={!isConfigured} className="min-h-11 w-full">
               {mode === 'signup' ? 'Criar conta grátis' : 'Entrar'}
             </Button>
           </form>

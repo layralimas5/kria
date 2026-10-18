@@ -24,7 +24,7 @@ export function TikTokBand() {
 
         <div className="relative mx-auto flex max-w-2xl flex-col items-center px-5 py-16 text-center md:py-24">
           <p className="rounded-full bg-black/40 px-3 py-1 text-[13px] font-semibold text-zinc-200 ring-1 ring-white/10">Tutoriais toda semana</p>
-          <h2 id="tiktok-title" className="mt-5 font-display text-5xl font-bold uppercase leading-[0.9] tracking-[-0.045em] text-accent md:text-7xl">
+          <h2 id="tiktok-title" className="mt-5 font-landing text-5xl font-bold uppercase leading-[0.9] tracking-[-0.045em] text-accent md:text-7xl">
             Aprenda no TikTok
           </h2>
           <p className="mt-4 text-pretty text-[17px] font-medium text-zinc-200">

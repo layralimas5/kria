@@ -7,6 +7,8 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { '@': path.resolve(import.meta.dirname, 'src') } },
   build: {
+    // O cliente do modo demo é criado com top-level await.
+    target: 'es2022',
     rollupOptions: {
       output: {
         manualChunks: {

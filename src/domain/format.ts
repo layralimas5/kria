@@ -21,3 +21,14 @@ export function personaPortraitPrompt(description: string): string {
     `Pessoa: ${description.trim()}`,
   ].join(' ')
 }
+
+/** Chips de configuração do modelo (formato, duração, áudio) a partir dos defaults do catálogo. */
+export function modelSpecs(defaults: Record<string, unknown>): string[] {
+  const specs: string[] = []
+  if (typeof defaults.aspect_ratio === 'string' && defaults.aspect_ratio !== 'auto') specs.push(defaults.aspect_ratio)
+  if (typeof defaults.duration === 'string' || typeof defaults.duration === 'number') {
+    specs.push(`${String(defaults.duration).replace(/s$/, '')}s`)
+  }
+  if (defaults.generate_audio === true) specs.push('Áudio')
+  return specs
+}

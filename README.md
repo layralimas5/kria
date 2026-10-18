@@ -1,4 +1,4 @@
-# Kria
+# Kria IA
 
 Influenciadores e vídeos com IA, pagos por crédito.
 
@@ -12,6 +12,7 @@ npm install
 cp .env.example .env.local   # URL e anon key do Supabase
 npm run dev                  # http://localhost:5231
 npm run check                # tipos + testes
+npm run dev:demo             # app com dados de exemplo, sem Supabase
 ```
 
 Deploy: [docs/deploy.md](docs/deploy.md). Escopo: [docs/escopo.md](docs/escopo.md).

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { z } from 'zod'
-import { supabase } from '@/lib/supabase'
+import { isDemo, supabase } from '@/lib/supabase'
 import { useUserId } from './useSession'
 
 interface BalanceState {
@@ -27,6 +27,7 @@ export function BalanceProvider({ children }: { readonly children: ReactNode }) 
 
   useEffect(() => {
     void refresh()
+    if (isDemo) return
     const channel = supabase
       .channel(`balance:${userId}`)
       .on(

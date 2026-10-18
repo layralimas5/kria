@@ -1,6 +1,15 @@
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import { z } from 'zod'
-import { generationSchema, personaSchema, type Generation, type Persona } from '@/domain/types'
+import {
+  generationSchema,
+  personaSchema,
+  PROFILE_COLUMNS,
+  profileSchema,
+  type Generation,
+  type Persona,
+  type Profile,
+  type ProfileUpdate,
+} from '@/domain/types'
 import { supabase } from './supabase'
 
 export class ApiError extends Error {
@@ -66,4 +75,57 @@ export async function deletePersona(id: string): Promise<void> {
 
 export function errorMessage(error: unknown): string {
   return error instanceof ApiError ? error.message : 'Algo deu errado. Tente de novo.'
+}
+
+export async function fetchProfile(userId: string): Promise<Profile> {
+  const { data, error } = await supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', userId).single()
+  if (error) throw new ApiError('profile_unavailable', 'Não deu para carregar seu perfil.')
+  return profileSchema.parse(data)
+}
+
+export async function updateProfile(userId: string, update: ProfileUpdate): Promise<Profile> {
+  const { data, error } = await supabase.from('profiles').update(update).eq('id', userId).select(PROFILE_COLUMNS).single()
+  if (error) {
+    if (error.code === '23505') throw new ApiError('username_taken', 'Esse @ já está em uso. Tente outro.')
+    throw new ApiError('profile_update_failed', 'Não deu para salvar o perfil. Confira os campos.')
+  }
+  return profileSchema.parse(data)
+}
+
+export interface AccountStats {
+  readonly personas: number
+  readonly images: number
+  readonly videos: number
+  /** Soma de tudo que já entrou (boas-vindas, compras, estornos): base da barra de créditos. */
+  readonly creditsReceived: number
+}
+
+async function countRows(table: 'personas' | 'generations', kind?: 'image' | 'video'): Promise<number> {
+  let query = supabase.from(table).select('id', { count: 'exact', head: true })
+  if (kind) query = query.eq('kind', kind).eq('status', 'succeeded')
+  const { count, error } = await query
+  if (error) throw error
+  return count ?? 0
+}
+
+export async function fetchAccountStats(): Promise<AccountStats> {
+  const [personas, images, videos, received] = await Promise.all([
+    countRows('personas'),
+    countRows('generations', 'image'),
+    countRows('generations', 'video'),
+    supabase.from('credit_ledger').select('delta').gt('delta', 0),
+  ])
+  if (received.error) throw received.error
+  const creditsReceived = (received.data ?? []).reduce((total, row) => total + Number(row.delta), 0)
+  return { personas, images, videos, creditsReceived }
+}
+
+export async function changePassword(password: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) throw new ApiError('password_failed', 'Não deu para trocar a senha. Use pelo menos 8 caracteres.')
+}
+
+export async function signOutEverywhere(): Promise<void> {
+  const { error } = await supabase.auth.signOut({ scope: 'global' })
+  if (error) throw new ApiError('signout_failed', 'Não deu para sair dos outros aparelhos.')
 }
