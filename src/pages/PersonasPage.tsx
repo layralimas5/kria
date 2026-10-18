@@ -57,7 +57,7 @@ function PersonaCard({ persona, onDelete }: { readonly persona: Persona; readonl
 export function PersonasPage() {
   const personas = usePersonas()
   const models = useModels()
-  const { balance } = useBalance()
+  const { balance, refresh: refreshBalance } = useBalance()
   const { generations, upsert } = useGenerations()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -78,6 +78,7 @@ export function PersonasPage() {
     try {
       const generation = await generate({ model: PORTRAIT_MODEL, prompt: personaPortraitPrompt(base.description) })
       upsert(generation)
+      void refreshBalance()
       setDraft({ ...base, generationIds: [generation.id, ...base.generationIds] })
     } catch (generateError) {
       setError(errorMessage(generateError))

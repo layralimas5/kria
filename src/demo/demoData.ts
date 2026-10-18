@@ -1,0 +1,86 @@
+// Dados de exemplo do modo demo. Tudo vive em memória e some ao recarregar.
+
+export const DEMO_USER_ID = '00000000-0000-4000-8000-00000000d3e0'
+
+const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString()
+
+export const DEMO_IMAGES = Array.from({ length: 8 }, (_, index) => `demo/img-${index + 1}.svg`)
+export const DEMO_VIDEO = 'demo/video-1.webm'
+
+export type Row = Record<string, unknown>
+
+export interface DemoState {
+  balance: number
+  models: Row[]
+  packs: Row[]
+  personas: Row[]
+  generations: Row[]
+  ledger: Row[]
+  purchases: Row[]
+}
+
+let ledgerSequence = 100
+export const nextLedgerId = () => (ledgerSequence += 1)
+
+export function uuid(): string {
+  return crypto.randomUUID()
+}
+
+function generation(index: number, overrides: Row): Row {
+  return {
+    id: uuid(),
+    user_id: DEMO_USER_ID,
+    model_slug: 'foto',
+    kind: 'image',
+    prompt: '',
+    persona_id: null,
+    source_generation_id: null,
+    credits: 5,
+    status: 'succeeded',
+    output_path: DEMO_IMAGES[index % DEMO_IMAGES.length],
+    output_type: 'image/svg+xml',
+    error: null,
+    created_at: minutesAgo(10 + index * 9),
+    completed_at: minutesAgo(10 + index * 9),
+    ...overrides,
+  }
+}
+
+export function createDemoState(): DemoState {
+  const luna = { id: uuid(), user_id: DEMO_USER_ID, name: 'Luna', description: 'Mulher de 27 anos, cabelo castanho ondulado, estilo casual', image_path: DEMO_IMAGES[0], created_at: minutesAgo(200) }
+  const rafa = { id: uuid(), user_id: DEMO_USER_ID, name: 'Rafa', description: 'Homem de 32 anos, barba curta, estilo esportivo', image_path: DEMO_IMAGES[5], created_at: minutesAgo(260) }
+
+  return {
+    balance: 265,
+    models: [
+      { slug: 'foto', name: 'Foto', description: 'Imagem realista a partir do texto.', kind: 'image', requires_image: false, credits: 5, position: 10 },
+      { slug: 'foto-persona', name: 'Foto com persona', description: 'A mesma pessoa em qualquer cenário.', kind: 'image', requires_image: true, credits: 6, position: 20 },
+      { slug: 'video-kling', name: 'Vídeo Kling', description: 'Anima uma imagem. 5 segundos, com áudio.', kind: 'video', requires_image: true, credits: 40, position: 30 },
+      { slug: 'video-veo', name: 'Vídeo Veo 3.1', description: 'Anima uma imagem com fala e som. 8 segundos.', kind: 'video', requires_image: true, credits: 200, position: 40 },
+    ],
+    packs: [
+      { slug: 'inicial', name: 'Inicial', credits: 100, price_cents: 1990, highlight: false, position: 10 },
+      { slug: 'criador', name: 'Criador', credits: 300, price_cents: 4990, highlight: true, position: 20 },
+      { slug: 'estudio', name: 'Estúdio', credits: 800, price_cents: 11990, highlight: false, position: 30 },
+    ],
+    personas: [luna, rafa],
+    generations: [
+      generation(0, { model_slug: 'video-kling', kind: 'video', credits: 40, persona_id: luna.id, output_path: DEMO_VIDEO, output_type: 'video/webm', prompt: 'Luna olha para a câmera, sorri e acena', created_at: minutesAgo(6), completed_at: minutesAgo(3) }),
+      generation(1, { model_slug: 'foto-persona', credits: 6, persona_id: luna.id, prompt: 'Luna num café em São Paulo segurando um latte, luz da manhã' }),
+      generation(2, { output_path: DEMO_IMAGES[5], prompt: 'Rafa correndo no parque ao amanhecer, roupa de treino' }),
+      generation(3, { status: 'failed', output_path: null, output_type: null, error: 'Conteúdo bloqueado pelo filtro de segurança do modelo.', prompt: 'Retrato em estúdio com luz dura' }),
+      generation(4, { model_slug: 'foto-persona', credits: 6, persona_id: luna.id, prompt: 'Luna mostrando um sérum de skincare para a câmera, banheiro claro' }),
+      generation(5, { prompt: 'Mulher de 30 anos trabalhando no notebook num coworking' }),
+      generation(6, { prompt: 'Homem de 40 anos cozinhando, cozinha rústica, foto de celular' }),
+    ],
+    ledger: [
+      { id: 6, user_id: DEMO_USER_ID, delta: -40, reason: 'generation', note: 'Vídeo Kling', created_at: minutesAgo(6) },
+      { id: 5, user_id: DEMO_USER_ID, delta: 5, reason: 'generation_refund', note: 'Estorno de geração que falhou', created_at: minutesAgo(36) },
+      { id: 4, user_id: DEMO_USER_ID, delta: -5, reason: 'generation', note: 'Foto', created_at: minutesAgo(37) },
+      { id: 3, user_id: DEMO_USER_ID, delta: 300, reason: 'purchase', note: 'Compra de créditos', created_at: minutesAgo(120) },
+      { id: 2, user_id: DEMO_USER_ID, delta: -30, reason: 'generation', note: 'Fotos', created_at: minutesAgo(150) },
+      { id: 1, user_id: DEMO_USER_ID, delta: 20, reason: 'signup_bonus', note: 'Créditos de boas-vindas', created_at: minutesAgo(1440) },
+    ],
+    purchases: [],
+  }
+}

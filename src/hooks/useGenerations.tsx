@@ -2,13 +2,14 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { z } from 'zod'
 import { GENERATION_COLUMNS, generationSchema, isOpen, type Generation } from '@/domain/types'
 import { refreshGenerations } from '@/lib/api'
-import { supabase } from '@/lib/supabase'
+import { isDemo, supabase } from '@/lib/supabase'
 import { useBalance } from './useBalance'
 import { useUserId } from './useSession'
 
 const PAGE_SIZE = 60
-const POLL_INTERVAL_MS = 15_000
-const POLL_AFTER_MS = 20_000
+// No demo não há realtime: a conferência faz o papel dele, bem mais rápido.
+const POLL_INTERVAL_MS = isDemo ? 2_000 : 15_000
+const POLL_AFTER_MS = isDemo ? 0 : 20_000
 
 interface GenerationsState {
   readonly generations: readonly Generation[]
@@ -60,6 +61,7 @@ export function GenerationsProvider({ children }: { readonly children: ReactNode
 
   useEffect(() => {
     void reload()
+    if (isDemo) return
     const channel = supabase
       .channel(`generations:${userId}`)
       .on(

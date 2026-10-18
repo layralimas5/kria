@@ -10,7 +10,7 @@ export const PROMPT_MAX = 2000
 /** Estado e envio do formulário do Estúdio. Lê `?modo=video&origem=<id>` e `?persona=<id>`. */
 export function useStudio(models: readonly Model[]) {
   const [params] = useSearchParams()
-  const { balance } = useBalance()
+  const { balance, refresh: refreshBalance } = useBalance()
   const { upsert } = useGenerations()
 
   const initialSource: ImageSource | null = params.get('origem')
@@ -52,6 +52,7 @@ export function useStudio(models: readonly Model[]) {
         sourceGenerationId: needsSource && source?.type === 'image' ? source.id : undefined,
       })
       upsert(generation)
+      void refreshBalance()
     } catch (submitError) {
       setError(errorMessage(submitError))
     } finally {

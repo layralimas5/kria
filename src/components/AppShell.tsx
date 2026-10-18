@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { Coins, Images, LogOut, Sparkles, UserRound } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useBalance } from '@/hooks/useBalance'
-import { supabase } from '@/lib/supabase'
+import { isDemo, supabase } from '@/lib/supabase'
 import { Logo } from './Logo'
 
 const NAV = [
@@ -44,7 +44,7 @@ export function AppShell() {
       </a>
       <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <NavLink to="/" aria-label="Kria, início" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          <NavLink to="/" aria-label="Kria IA, início" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
             <Logo />
           </NavLink>
           <nav aria-label="Principal" className="hidden items-center gap-1 md:flex">
@@ -56,6 +56,14 @@ export function AppShell() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            {isDemo && (
+              <span
+                className="hidden rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-xs font-medium text-amber-200 sm:inline"
+                title="Dados de exemplo. Nada é salvo nem cobrado."
+              >
+                Demo
+              </span>
+            )}
             <BalancePill />
             <button
               type="button"
