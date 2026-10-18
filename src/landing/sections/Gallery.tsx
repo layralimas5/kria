@@ -4,6 +4,7 @@ import { AnchorButton, CtaLink } from '../components/CtaLink'
 import { LoopVideo } from '../components/LoopVideo'
 import { SectionHeading } from '../components/SectionHeading'
 import { AVATARS, ILLUSTRATIVE_MEDIA, SIGNUP_PATH } from '../content'
+import { CARD_HOVER } from '../styles'
 
 /** Proporções alternadas dão o efeito de mosaico. */
 const ASPECTS = ['aspect-[3/4]', 'aspect-[9/16]', 'aspect-[4/5]', 'aspect-[9/14]', 'aspect-[4/5]', 'aspect-[3/4]', 'aspect-[9/16]', 'aspect-[4/5]'] as const
@@ -30,7 +31,7 @@ export function Gallery() {
                 <li key={clip.id} className="break-inside-avoid">
                   <figure
                     tabIndex={0}
-                    className={`group relative overflow-hidden rounded-2xl bg-panel outline-none focus-visible:ring-2 focus-visible:ring-accent ${ASPECTS[index % ASPECTS.length]}`}
+                    className={`group relative overflow-hidden rounded-2xl bg-panel outline-none focus-visible:ring-2 focus-visible:ring-accent ${CARD_HOVER} ${ASPECTS[index % ASPECTS.length]}`}
                   >
                     <LoopVideo clip={clip} className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
                     <span className="absolute left-3 top-3 rounded-md bg-black/55 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur-md">

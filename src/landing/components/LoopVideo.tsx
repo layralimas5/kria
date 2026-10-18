@@ -25,8 +25,10 @@ export function LoopVideo({ clip, className, eager = false }: LoopVideoProps) {
           return
         }
         element.play().catch((error: unknown) => {
-          // Autoplay bloqueado (economia de dados): o pôster continua visível.
-          if (!(error instanceof DOMException && error.name === 'NotAllowedError')) console.error(error)
+          // NotAllowedError: autoplay bloqueado (economia de dados), o pôster continua visível.
+          // AbortError: o vídeo saiu da tela e foi pausado antes de começar a tocar.
+          const expected = error instanceof DOMException && (error.name === 'NotAllowedError' || error.name === 'AbortError')
+          if (!expected) console.error(error)
         })
       },
       { threshold: 0.2 },

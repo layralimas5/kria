@@ -5,6 +5,7 @@ import { CtaLink } from '../components/CtaLink'
 import { LoopVideo } from '../components/LoopVideo'
 import { Reveal } from '../components/Reveal'
 import { avatar, SIGNUP_PATH, TOOLS, WELCOME_CREDITS, type ToolIcon } from '../content'
+import { CARD_HOVER } from '../styles'
 
 const ICONS: Record<ToolIcon, LucideIcon> = {
   video: Clapperboard,
@@ -50,7 +51,7 @@ export function Tools() {
               <li key={title}>
                 <Link
                   to={SIGNUP_PATH}
-                  className="group flex h-full min-h-[136px] flex-col rounded-2xl border border-white/[0.06] bg-panel p-4 transition-colors hover:border-white/[0.12] hover:bg-panel-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  className={`group flex h-full min-h-[136px] flex-col rounded-2xl border border-white/[0.06] bg-panel p-4 transition-colors hover:border-white/[0.12] hover:bg-panel-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${CARD_HOVER}`}
                 >
                   <span className="flex items-start justify-between">
                     <Icon className="size-5 text-accent" aria-hidden="true" />

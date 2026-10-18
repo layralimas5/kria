@@ -119,28 +119,51 @@ export const CREDIT_PACKS: readonly CreditPack[] = [
   { id: 'estudio', name: 'Estúdio', credits: 800, priceCents: 11990, highlight: false },
 ]
 
-export const FAQ = [
+export type FaqIcon = 'skill' | 'billing' | 'time' | 'refund' | 'safety' | 'device' | 'models'
+
+export interface FaqItem {
+  readonly icon: FaqIcon
+  readonly question: string
+  readonly answer: string
+}
+
+export const FAQ: readonly FaqItem[] = [
   {
+    icon: 'skill',
     question: 'Preciso saber usar IA?',
     answer:
       'Não. Você escreve em português o que quer ver e escolhe entre foto e vídeo. Qual modelo usar, tamanho e formato o Kria resolve.',
   },
   {
+    icon: 'billing',
     question: 'Tem mensalidade?',
     answer: `Não. Você compra créditos quando precisar, por Pix ou cartão, e gasta só no que gerar. Quem cria a conta ganha ${WELCOME_CREDITS} créditos pra testar.`,
   },
   {
+    icon: 'time',
+    question: 'Quanto tempo demora pra ficar pronto?',
+    answer: 'Foto sai em segundos. Vídeo leva alguns minutos e aparece sozinho na sua galeria quando termina, pode fechar a aba.',
+  },
+  {
+    icon: 'refund',
     question: 'E se a geração der erro?',
     answer: 'Os créditos voltam pra sua conta automaticamente. Você só paga pelo que ficou pronto.',
   },
   {
+    icon: 'safety',
     question: 'Posso subir a foto de uma pessoa real?',
     answer:
       'Não. Os influenciadores nascem de imagens geradas dentro do Kria. É assim que a gente evita deepfake de gente de verdade.',
   },
   {
+    icon: 'device',
+    question: 'Funciona no celular?',
+    answer: 'Sim. O Kria roda no navegador, no celular ou no computador, sem instalar nada. O vídeo já sai no formato vertical.',
+  },
+  {
+    icon: 'models',
     question: 'Quais IAs estão por trás?',
     answer:
       'Hoje: Veo 3.1 (Google) e Kling pra vídeo, Nano Banana pra imagem. Quando sai um modelo melhor, ele entra no Kria sem você precisar assinar mais nada.',
   },
-] as const
+]
