@@ -1,7 +1,5 @@
-import clsx from 'clsx'
-import { AudioLines, Clapperboard, ImageIcon, Plus, Wand2, type LucideIcon } from 'lucide-react'
-import { AI_MODELS, type ModelKind } from '../content'
-import { CARD_HOVER } from '../styles'
+import { AudioLines, Clapperboard, ImageIcon, Wand2, type LucideIcon } from 'lucide-react'
+import { AI_MODELS, type AiModel, type ModelKind } from '../content'
 
 const KIND_ICONS: Record<ModelKind, LucideIcon> = {
   Imagem: ImageIcon,
@@ -10,36 +8,47 @@ const KIND_ICONS: Record<ModelKind, LucideIcon> = {
   Edição: Wand2,
 }
 
-const CARD = clsx('flex flex-col rounded-xl border border-accent/25 bg-accent/[0.05] p-3', CARD_HOVER)
+const EDGE_FADE = '[mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]'
+
+function ModelLogo({ kind, logo }: Pick<AiModel, 'kind' | 'logo'>) {
+  if (logo) {
+    return <img src={`/ai-logos/${logo}.svg`} alt="" width={24} height={24} className="size-6 shrink-0" />
+  }
+  const Icon = KIND_ICONS[kind]
+  return <Icon className="size-6 shrink-0 text-accent" aria-hidden="true" />
+}
+
+function ModelList({ hidden = false }: { readonly hidden?: boolean }) {
+  return (
+    <ul
+      aria-hidden={hidden || undefined}
+      className={`flex shrink-0 items-center gap-10 pr-10 md:gap-14 md:pr-14 ${hidden ? 'motion-reduce:hidden' : ''}`}
+    >
+      {AI_MODELS.map((model) => (
+        <li key={model.name} className="flex shrink-0 items-center gap-2.5">
+          <ModelLogo {...model} />
+          <span className="whitespace-nowrap text-[15px] font-semibold text-zinc-100">{model.name}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 export function ModelGrid() {
   return (
-    <div className="mx-auto mt-4 max-w-[1440px] rounded-2xl border border-white/[0.06] bg-panel/50 p-5 md:p-7">
-      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+    <div className="mx-auto mt-4 max-w-[1440px] rounded-2xl border border-white/[0.06] bg-panel/50 py-5 md:py-7">
+      <div className="flex flex-col gap-2 px-5 md:flex-row md:items-end md:justify-between md:px-7">
         <h3 className="font-landing text-xl font-bold uppercase tracking-[-0.02em] text-zinc-50 md:text-2xl">
           As melhores IAs <span className="text-accent">num lugar só</span>
         </h3>
         <p className="text-[13px] text-zinc-400">Todas liberadas no seu plano. Você escolhe o modelo, o krIA cuida do resto.</p>
       </div>
-      <ul className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
-        {AI_MODELS.map(({ name, maker, kind }) => {
-          const Icon = KIND_ICONS[kind]
-          return (
-            <li key={name} className={CARD}>
-              <Icon className="size-4 text-accent" aria-hidden="true" />
-              <span className="mt-3 text-[14px] font-semibold text-zinc-50">{name}</span>
-              <span className="text-[12px] text-zinc-500">
-                {kind} · {maker}
-              </span>
-            </li>
-          )
-        })}
-        <li className={clsx(CARD, 'border-dashed')}>
-          <Plus className="size-4 text-accent" aria-hidden="true" />
-          <span className="mt-3 text-[14px] font-semibold text-zinc-50">Outras IAs</span>
-          <span className="text-[12px] text-zinc-500">Mais modelos no catálogo</span>
-        </li>
-      </ul>
+      <div className={`group mt-6 flex overflow-hidden ${EDGE_FADE}`}>
+        <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused] motion-reduce:w-full motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center">
+          <ModelList />
+          <ModelList hidden />
+        </div>
+      </div>
     </div>
   )
 }

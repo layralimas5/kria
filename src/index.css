@@ -27,6 +27,14 @@
   --color-panel-hover: #1c1f23;
 
   --animate-card-pulse: card-pulse 1.6s ease-in-out infinite;
+  --animate-marquee: marquee 45s linear infinite;
+
+  /* A faixa leva a lista duas vezes; andar metade emenda o fim no começo. */
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
 
   @keyframes card-pulse {
     0%,

@@ -87,40 +87,35 @@ export type ModelKind = 'Imagem' | 'Vídeo' | 'Voz' | 'Edição'
 
 export interface AiModel {
   readonly name: string
-  readonly maker: string
   readonly kind: ModelKind
+  /** Logo em `public/ai-logos`. Sem logo, a faixa usa o ícone do tipo. */
+  readonly logo?: string
 }
 
 // Catálogo de IAs liberadas no krIA. Antes de publicar, cada uma precisa estar
 // ativa na tabela `models` do app; senão a página promete o que o app não gera.
 export const AI_MODELS: readonly AiModel[] = [
-  { name: 'Nano Banana 2', maker: 'Google', kind: 'Imagem' },
-  { name: 'Nano Banana 2 Edit', maker: 'Google', kind: 'Edição' },
-  { name: 'Kling 3.0', maker: 'Kuaishou', kind: 'Vídeo' },
-  { name: 'Veo 3.1', maker: 'Google', kind: 'Vídeo' },
-  { name: 'Sora 2', maker: 'OpenAI', kind: 'Vídeo' },
-  { name: 'Seedance', maker: 'ByteDance', kind: 'Vídeo' },
-  { name: 'Hailuo', maker: 'MiniMax', kind: 'Vídeo' },
-  { name: 'Wan', maker: 'Alibaba', kind: 'Vídeo' },
-  { name: 'GPT Image', maker: 'OpenAI', kind: 'Imagem' },
-  { name: 'Flux', maker: 'Black Forest Labs', kind: 'Imagem' },
-  { name: 'Seedream', maker: 'ByteDance', kind: 'Imagem' },
-  { name: 'Ideogram', maker: 'Ideogram', kind: 'Imagem' },
-  { name: 'ElevenLabs', maker: 'ElevenLabs', kind: 'Voz' },
-  { name: 'Lip Sync', maker: 'Sincronia labial', kind: 'Vídeo' },
-  { name: 'Upscale 4K', maker: 'Mais resolução', kind: 'Edição' },
+  { name: 'Nano Banana 2', kind: 'Imagem', logo: 'nanobanana-color' },
+  { name: 'Nano Banana 2 Edit', kind: 'Edição', logo: 'nanobanana-color' },
+  { name: 'Kling 3.0', kind: 'Vídeo', logo: 'kling-color' },
+  { name: 'Veo 3.1', kind: 'Vídeo', logo: 'deepmind-color' },
+  { name: 'Sora 2', kind: 'Vídeo', logo: 'sora-color' },
+  { name: 'Seedance', kind: 'Vídeo', logo: 'bytedance-color' },
+  { name: 'Hailuo', kind: 'Vídeo', logo: 'hailuo-color' },
+  { name: 'Wan', kind: 'Vídeo', logo: 'alibaba-color' },
+  { name: 'GPT Image', kind: 'Imagem', logo: 'openai' },
+  { name: 'Flux', kind: 'Imagem', logo: 'flux' },
+  { name: 'Seedream', kind: 'Imagem', logo: 'bytedance-color' },
+  { name: 'Ideogram', kind: 'Imagem', logo: 'ideogram' },
+  { name: 'ElevenLabs', kind: 'Voz', logo: 'elevenlabs' },
+  { name: 'Lip Sync', kind: 'Vídeo' },
+  { name: 'Upscale 4K', kind: 'Edição' },
 ]
 
 export const STEPS = [
   { title: 'Descreva', text: 'Escreve em português o que você quer ver. Sem termo técnico, sem prompt em inglês.' },
   { title: 'Escolha', text: 'Foto ou vídeo. O krIA usa o modelo de IA certo por trás e você só vê o resultado.' },
   { title: 'Poste', text: 'Arquivo vertical pronto pro Reels, TikTok ou anúncio. Baixa e publica.' },
-] as const
-
-export const AUDIENCES = [
-  { title: 'Afiliado', text: 'Vídeo do produto sem comprar, sem gravar e sem aparecer.' },
-  { title: 'Comércio local', text: 'Post e anúncio com cara de estúdio, por centavos.' },
-  { title: 'Perfil de IA', text: 'Uma influenciadora que posta todo dia e não existe.' },
 ] as const
 
 export type FaqIcon =

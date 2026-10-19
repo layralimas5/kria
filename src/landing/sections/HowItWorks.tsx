@@ -1,6 +1,6 @@
 import { Reveal } from '../components/Reveal'
 import { SectionHeading } from '../components/SectionHeading'
-import { AUDIENCES, STEPS } from '../content'
+import { STEPS } from '../content'
 import { CARD_HOVER } from '../styles'
 
 export function HowItWorks() {
@@ -17,14 +17,6 @@ export function HowItWorks() {
             </Reveal>
           ))}
         </ol>
-        <ul className="mt-3 grid gap-3 md:grid-cols-3">
-          {AUDIENCES.map(({ title, text }) => (
-            <li key={title} className={`flex items-baseline gap-3 rounded-2xl border border-white/[0.06] px-6 py-4 ${CARD_HOVER}`}>
-              <span className="shrink-0 text-[15px] font-semibold text-zinc-50">{title}</span>
-              <span className="text-pretty text-sm text-zinc-500">{text}</span>
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
   )
