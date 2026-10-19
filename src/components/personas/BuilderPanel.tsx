@@ -1,6 +1,6 @@
 import clsx from 'clsx'
-import { Shuffle, Sparkle } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { Check, Copy, Shuffle, Sparkle } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { Spinner } from '../ui/Spinner'
 
 export type BuilderTab = 'create' | 'motion'
@@ -20,17 +20,47 @@ interface BuilderPanelProps {
   readonly onGenerate: () => void
   /** Só a aba de criação sorteia características. */
   readonly onShuffle?: () => void
+  /** Prompt montado com as escolhas, para copiar e usar em outra ferramenta. */
+  readonly promptToCopy?: string
   readonly className?: string
 }
 
+const SQUARE_BUTTON =
+  'grid size-14 shrink-0 place-items-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:translate-y-px'
+
+function CopyPromptButton({ text }: { readonly text: string }) {
+  const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle')
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text)
+      setState('copied')
+    } catch (copyError) {
+      console.error('copiar prompt', copyError)
+      setState('failed')
+    }
+    window.setTimeout(() => setState('idle'), 2000)
+  }
+
+  const label = state === 'copied' ? 'Prompt copiado' : state === 'failed' ? 'Não deu para copiar' : 'Copiar prompt do personagem'
+  return (
+    <button type="button" onClick={() => void copy()} aria-label={label} title={label} className={clsx(SQUARE_BUTTON, 'bg-surface-3 text-zinc-100 hover:bg-white/15')}>
+      {state === 'copied' ? <Check className="size-5 text-accent" aria-hidden="true" /> : <Copy className="size-5" aria-hidden="true" />}
+      <span className="sr-only" aria-live="polite">
+        {state === 'copied' ? 'Prompt copiado' : state === 'failed' ? 'Não deu para copiar' : ''}
+      </span>
+    </button>
+  )
+}
+
 /** Painel de controle à esquerda: título, abas, conteúdo rolável e rodapé fixo com Gerar. */
-export function BuilderPanel({ tab, onTabChange, children, cost, submitting, error, onGenerate, onShuffle, className }: BuilderPanelProps) {
+export function BuilderPanel({ tab, onTabChange, children, cost, submitting, error, onGenerate, onShuffle, promptToCopy, className }: BuilderPanelProps) {
   return (
     <aside aria-label="Construtor de persona" className={clsx('flex flex-col overflow-hidden rounded-3xl bg-surface ring-1 ring-white/[0.06]', className)}>
       <header className="px-4 pb-3 pt-5 text-center">
-        <p className="text-xs font-semibold text-zinc-400">Crie sua própria persona com</p>
-        <h1 className="font-headline mt-1 text-[28px] text-zinc-50">
-          Influencer <span className="text-accent">IA</span>
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-accent">Seu personagem começa aqui</p>
+        <h1 className="font-headline mt-2 text-[28px] text-balance text-zinc-50 sm:text-[34px]">
+          Monte seu influencer <span className="text-accent">do seu jeito</span>
         </h1>
       </header>
 
@@ -76,11 +106,12 @@ export function BuilderPanel({ tab, onTabChange, children, cost, submitting, err
               onClick={onShuffle}
               aria-label="Sortear características"
               title="Sortear características"
-              className="grid size-14 shrink-0 place-items-center rounded-xl bg-zinc-100 text-zinc-900 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:translate-y-px"
+              className={clsx(SQUARE_BUTTON, 'bg-zinc-100 text-zinc-900 hover:bg-white')}
             >
               <Shuffle className="size-5" aria-hidden="true" />
             </button>
           )}
+          {promptToCopy && <CopyPromptButton text={promptToCopy} />}
           <button
             type="button"
             onClick={onGenerate}

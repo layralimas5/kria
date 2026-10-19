@@ -70,6 +70,7 @@ export function usePersonaBuilder(models: readonly Model[]) {
     error,
     submit,
     summaryOf: (generationId: string) => summaries[generationId] ?? null,
+    prompt: buildPersonaPrompt(selection, extra),
   }
 }
 

@@ -65,7 +65,8 @@ export function PersonasPage() {
         error={active.error ?? pageError}
         onGenerate={() => void handleGenerate()}
         onShuffle={tab === 'create' ? builder.randomize : undefined}
-        className="max-h-[calc(100dvh-9rem)] lg:max-h-none lg:w-[360px] lg:shrink-0"
+        promptToCopy={tab === 'create' ? builder.prompt : undefined}
+        className="max-h-[calc(100dvh-9rem)] lg:max-h-none lg:w-[min(60%,880px)] lg:shrink-0"
       >
         {tab === 'create' ? <CreateTab builder={builder} images={ownImages} /> : <MotionTab motion={motion} personas={personas.data ?? []} />}
       </BuilderPanel>

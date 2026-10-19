@@ -3,11 +3,15 @@ import { checkPrompt } from '../../supabase/functions/_shared/generation'
 import {
   buildPersonaPrompt,
   countSelected,
+  countSelectedInSection,
+  groupsOfSection,
+  isGroupVisible,
   PERSONA_PROMPT_PREFIX,
   PERSONA_TRAIT_GROUPS,
   randomTraits,
   summarizeTraits,
   toggleTrait,
+  TRAIT_SECTIONS,
   type TraitGroup,
 } from './personaTraits'
 
@@ -79,9 +83,9 @@ describe('toggleTrait', () => {
 })
 
 describe('randomTraits', () => {
-  it('escolhe um valor por grupo de escolha única e mantém fundo neutro', () => {
+  it('escolhe um valor por grupo visível de escolha única e mantém fundo neutro', () => {
     const selection = randomTraits(() => 0.4)
-    for (const traitGroup of PERSONA_TRAIT_GROUPS.filter((item) => !item.multiple)) {
+    for (const traitGroup of PERSONA_TRAIT_GROUPS.filter((item) => !item.multiple && isGroupVisible(item, selection))) {
       expect(selection[traitGroup.id]).toHaveLength(1)
     }
     expect(selection.setting).toEqual(['estudio'])
@@ -90,8 +94,38 @@ describe('randomTraits', () => {
   it('não põe barba em persona feminina', () => {
     for (let i = 0; i < 50; i += 1) {
       const selection = randomTraits()
-      if (selection.gender?.[0] === 'feminino') expect(selection.features).not.toContain('barba')
+      if (selection.gender?.[0] === 'feminino') expect(selection.facialHair).toEqual([])
     }
+  })
+})
+
+describe('barba e bigode', () => {
+  it('somem do prompt, do resumo e da contagem quando a persona é feminina', () => {
+    const selection = { gender: ['feminino'], facialHair: ['barba-cheia'] }
+    expect(buildPersonaPrompt(selection)).not.toContain('beard')
+    expect(summarizeTraits(selection)).toBe('Feminino')
+    expect(countSelected(selection)).toBe(1)
+    expect(groupsOfSection('rosto', selection).map((item) => item.id)).not.toContain('facialHair')
+  })
+
+  it('valem para persona masculina', () => {
+    expect(buildPersonaPrompt({ gender: ['masculino'], facialHair: ['cavanhaque'] })).toContain('goatee')
+  })
+})
+
+describe('cor da roupa', () => {
+  it('entra junto do estilo, e sozinha vira "outfit"', () => {
+    expect(buildPersonaPrompt({ outfit: ['streetwear'], outfitColor: ['verde'] })).toContain('wearing a green streetwear outfit')
+    expect(buildPersonaPrompt({ outfitColor: ['vinho'] })).toContain('wearing a burgundy outfit')
+  })
+})
+
+describe('abas', () => {
+  it('todo grupo está numa aba e a contagem por aba soma o total', () => {
+    const selection = { niche: ['fitness'], hairstyle: ['coque'], build: ['atletico'], skin: ['media'], hairColor: ['preto'] }
+    const total = TRAIT_SECTIONS.reduce((sum, section) => sum + countSelectedInSection(selection, section.id), 0)
+    expect(total).toBe(countSelected(selection))
+    expect(countSelectedInSection(selection, 'cores')).toBe(2)
   })
 })
 

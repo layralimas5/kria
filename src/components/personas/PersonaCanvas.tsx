@@ -10,7 +10,8 @@ import { GROUP_ICONS } from './traitIcons'
 export type CanvasTab = 'personas' | 'history'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
-const GRID = 'grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'
+// Colunas pela largura da área, não da tela: o construtor ao lado ocupa boa parte dela.
+const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-2.5'
 
 function PersonaCard({ persona, onDelete }: { readonly persona: Persona; readonly onDelete: (persona: Persona) => void }) {
   return (

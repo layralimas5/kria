@@ -1,13 +1,13 @@
 import clsx from 'clsx'
 import { ImagePlus, X } from 'lucide-react'
 import { useState } from 'react'
-import { countSelected, PERSONA_TRAIT_GROUPS, type TraitGroupId } from '@/domain/personaTraits'
+import { countSelected, countSelectedInSection, groupsOfSection, swatchOf, TRAIT_SECTIONS, type TraitSection } from '@/domain/personaTraits'
 import type { Generation } from '@/domain/types'
 import type { PersonaBuilder } from '@/hooks/usePersonaBuilder'
 import { MediaView } from '../MediaView'
 import { Popover } from '../ui/Popover'
 import { SourcePicker } from '../studio/SourcePicker'
-import { TraitAccordion } from './TraitAccordion'
+import { TraitGroupView } from './TraitGroupView'
 
 interface CreateTabProps {
   readonly builder: PersonaBuilder
@@ -81,24 +81,51 @@ function SourceCard({ builder, images }: CreateTabProps) {
   )
 }
 
-export function CreateTab({ builder, images }: CreateTabProps) {
-  const [openGroups, setOpenGroups] = useState<ReadonlySet<TraitGroupId>>(new Set(['niche']))
-  const selectedCount = countSelected(builder.selection)
+/** As abas de características, no estilo "Cabelo e rosto · Corpo e roupa · Cores". */
+function SectionTabs({ section, onChange, builder }: { section: TraitSection; onChange: (next: TraitSection) => void; builder: PersonaBuilder }) {
+  return (
+    <div role="tablist" aria-label="Características" className="grid grid-cols-2 gap-1 rounded-xl bg-canvas p-1 sm:grid-cols-4">
+      {TRAIT_SECTIONS.map((item) => {
+        const selected = item.id === section
+        const count = countSelectedInSection(builder.selection, item.id)
+        return (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            id={`trait-tab-${item.id}`}
+            aria-selected={selected}
+            aria-controls="trait-panel"
+            onClick={() => onChange(item.id)}
+            className={clsx(
+              'flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-[13px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              selected ? 'bg-accent/15 text-accent' : 'text-zinc-400 hover:text-zinc-100',
+            )}
+          >
+            {item.label}
+            {count > 0 && (
+              <span className={clsx('rounded-full px-1.5 text-[10px] tabular-nums', selected ? 'bg-accent text-accent-ink' : 'bg-white/10 text-zinc-300')}>
+                {count}
+              </span>
+            )}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
-  const setOpen = (id: TraitGroupId, open: boolean) =>
-    setOpenGroups((current) => {
-      const next = new Set(current)
-      if (open) next.add(id)
-      else next.delete(id)
-      return next
-    })
+export function CreateTab({ builder, images }: CreateTabProps) {
+  const [section, setSection] = useState<TraitSection>('rosto')
+  const selectedCount = countSelected(builder.selection)
+  const hairTint = swatchOf('hairColor', builder.selection.hairColor?.[0])
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <SourceCard builder={builder} images={images} />
 
-      <div className="flex items-center justify-between px-1 pt-2">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Características</p>
+      <div className="flex items-center justify-between px-1">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Monte seu personagem</p>
         {selectedCount > 0 && (
           <button
             type="button"
@@ -110,18 +137,21 @@ export function CreateTab({ builder, images }: CreateTabProps) {
         )}
       </div>
 
-      {PERSONA_TRAIT_GROUPS.map((group) => (
-        <TraitAccordion
-          key={group.id}
-          group={group}
-          values={builder.selection[group.id] ?? []}
-          open={openGroups.has(group.id)}
-          onOpenChange={(open) => setOpen(group.id, open)}
-          onToggle={(value) => builder.toggle(group, value)}
-        />
-      ))}
+      <SectionTabs section={section} onChange={setSection} builder={builder} />
 
-      <div className="pt-2">
+      <div id="trait-panel" role="tabpanel" aria-labelledby={`trait-tab-${section}`} className={clsx(section === 'cores' ? 'grid gap-3 lg:grid-cols-2' : 'space-y-6')}>
+        {groupsOfSection(section, builder.selection).map((group) => (
+          <TraitGroupView
+            key={group.id}
+            group={group}
+            values={builder.selection[group.id] ?? []}
+            onToggle={(value) => builder.toggle(group, value)}
+            hairTint={hairTint}
+          />
+        ))}
+      </div>
+
+      <div className="pt-1">
         <label htmlFor="persona-extra" className="mb-1.5 block px-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500">
           Mais algum detalhe? (opcional)
         </label>
