@@ -55,7 +55,7 @@ npx supabase functions deploy asaas-webhook --no-verify-jwt   # de novo: agora t
 
 - **Webhook do Asaas:** além dos eventos acima, marcar `PAYMENT_OVERDUE`,
   `SUBSCRIPTION_DELETED` e `SUBSCRIPTION_INACTIVATED`.
-- **Admin:** depois de criar a sua conta no app, no SQL Editor:
+- **Admin (para o futuro painel de operação, não há tela no app):** no SQL Editor:
   `insert into public.admin_users (user_id) select id from auth.users where email = '<seu e-mail>';`
 - **pg_cron:** em Database > Extensions, ligar `pg_cron` e rodar
   `select cron.schedule('kria-expire-subscriptions', '0 3 * * *', 'select public.expire_lapsed_subscriptions()');`
@@ -64,8 +64,8 @@ npx supabase functions deploy asaas-webhook --no-verify-jwt   # de novo: agora t
 - **Recuperar senha:** em Auth > URL Configuration, incluir `<APP_URL>/nova-senha` nas Redirect URLs.
 - **Google (opcional):** Auth > Providers > Google com o client do Google Cloud; depois
   `VITE_AUTH_GOOGLE=true` no front.
-- **Custos:** no admin > Modelos e preços, preencher o custo real (US$) de cada modelo conferido
-  em `fal.ai/models/<endpoint>`. Sem isso a margem do financeiro fica incompleta.
+- **Custos:** preencher `models.provider_cost_usd` de cada modelo conferido em `fal.ai/models/<endpoint>`
+  (SQL Editor). Sem isso a margem estimada fica incompleta.
 
 ## 5. Front
 

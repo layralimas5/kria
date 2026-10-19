@@ -10,7 +10,6 @@ import {
   Megaphone,
   PenLine,
   Settings,
-  ShieldCheck,
   UserRound,
   Waves,
   type LucideIcon,
@@ -36,7 +35,6 @@ const isStudioMode = (mode: 'image' | 'video') => (pathname: string, params: URL
   pathname === '/estudio' && (params.get('modo') === 'video' ? 'video' : 'image') === mode
 
 const isPath = (path: string) => (pathname: string) => pathname === path
-const isSection = (path: string) => (pathname: string) => pathname === path || pathname.startsWith(`${path}/`)
 const never = () => false
 
 export const HOME_TAB: NavItem = { label: 'Início', to: '/inicio', icon: House, isActive: isPath('/inicio') }
@@ -47,12 +45,11 @@ export const GALLERY_TAB: NavItem = { label: 'Minhas criações', to: '/galeria'
 export const CREDITS_TAB: NavItem = { label: 'Créditos', to: '/creditos', icon: Coins, isActive: isPath('/creditos') }
 export const SUBSCRIPTION_TAB: NavItem = { label: 'Assinatura', to: '/assinatura', icon: CreditCard, isActive: isPath('/assinatura') }
 export const SETTINGS_TAB: NavItem = { label: 'Configurações', to: '/conta/configuracoes', icon: Settings, isActive: isPath('/conta/configuracoes') }
-export const ADMIN_TAB: NavItem = { label: 'Admin', to: '/admin', icon: ShieldCheck, isActive: isSection('/admin') }
 
 const soon = (label: string, icon: LucideIcon): NavItem => ({ label, to: '', icon, soon: true, isActive: never })
 
 export const NAV_GROUPS: readonly NavGroup[] = [
-  { title: 'Kria', items: [HOME_TAB] },
+  { title: 'krIA', items: [HOME_TAB] },
   {
     title: 'Criar',
     items: [

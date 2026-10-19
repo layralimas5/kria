@@ -24,7 +24,6 @@ const CreditsPage = page(() => import('@/pages/CreditsPage'), 'CreditsPage')
 const SubscriptionPage = page(() => import('@/pages/SubscriptionPage'), 'SubscriptionPage')
 const AccountPage = page(() => import('@/pages/AccountPage'), 'AccountPage')
 const AccountSettingsPage = page(() => import('@/pages/AccountSettingsPage'), 'AccountSettingsPage')
-const AdminPage = page(() => import('@/pages/AdminPage'), 'AdminPage')
 const OnboardingPage = page(() => import('@/pages/OnboardingPage'), 'OnboardingPage')
 const ForgotPasswordPage = page(() => import('@/pages/ForgotPasswordPage'), 'ForgotPasswordPage')
 const ResetPasswordPage = page(() => import('@/pages/ResetPasswordPage'), 'ResetPasswordPage')
@@ -82,7 +81,6 @@ export function App() {
                 <Route path="assinatura" element={<SubscriptionPage />} />
                 <Route path="conta" element={<AccountPage />} />
                 <Route path="conta/configuracoes" element={<AccountSettingsPage />} />
-                <Route path="admin" element={<AdminPage />} />
               </Route>
             </Route>
             {/* A raiz vai para a landing quando ela entrar (branch feat/landing). */}

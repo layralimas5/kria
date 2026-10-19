@@ -8,7 +8,6 @@ import {
   LogOut,
   ReceiptText,
   Settings,
-  ShieldCheck,
   UserRound,
   type LucideIcon,
 } from 'lucide-react'
@@ -59,7 +58,7 @@ function MenuLink({ to, icon: Icon, label, onSelect }: ItemProps) {
 export function UserMenu() {
   const { profile, stats, refreshStats } = useProfile()
   const { balance } = useBalance()
-  const { plan, isAdmin } = useAccount()
+  const { plan } = useAccount()
   const name = displayNameOf(profile)
 
   return (
@@ -131,7 +130,6 @@ export function UserMenu() {
             <MenuLink to="/conta/configuracoes" icon={Settings} label="Gerenciar conta" onSelect={close} />
             <MenuLink to="/creditos" icon={ReceiptText} label="Créditos e extrato" onSelect={close} />
             <MenuLink to="/assinatura" icon={CreditCard} label={plan ? `Assinatura · ${plan.name}` : 'Assinatura'} onSelect={close} />
-            {isAdmin && <MenuLink to="/admin" icon={ShieldCheck} label="Painel admin" onSelect={close} />}
             <div className="flex min-h-10 items-center gap-3 px-3 text-[14px] font-semibold text-zinc-200">
               <Languages className="size-4 text-zinc-400" aria-hidden="true" />
               Idioma

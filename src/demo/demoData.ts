@@ -23,10 +23,6 @@ export interface DemoState {
   generations: Row[]
   ledger: Row[]
   purchases: Row[]
-  pricing: Row
-  audit: Row[]
-  /** Contas de exemplo do painel admin (só existem no demo). */
-  otherUsers: Row[]
 }
 
 const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60_000).toISOString()
@@ -88,13 +84,6 @@ export function createDemoState(): DemoState {
     subscriptions: [proSubscription],
     subscriptionPayments: [
       { id: uuid(), subscription_id: proSubscription.id, user_id: DEMO_USER_ID, amount_cents: 7990, status: 'confirmed', invoice_url: null, paid_at: minutesAgo(60 * 24 * 12) },
-    ],
-    pricing: { usd_brl: 5.6, fx_buffer: 0.1, markup: 2.5, credit_value_brl: 0.1 },
-    audit: [],
-    otherUsers: [
-      { id: uuid(), email: 'ana.souza@exemplo.com', display_name: 'Ana Souza', username: 'anasouza', balance: 940, subscription_balance: 900, purchased_balance: 40, plan_slug: 'studio', subscription_status: 'active', suspended_at: null, created_at: minutesAgo(60 * 24 * 20), generations: 58 },
-      { id: uuid(), email: 'bruno.lima@exemplo.com', display_name: 'Bruno Lima', username: 'brunolima', balance: 12, subscription_balance: 0, purchased_balance: 12, plan_slug: null, subscription_status: null, suspended_at: null, created_at: minutesAgo(60 * 24 * 6), generations: 4 },
-      { id: uuid(), email: 'carla.reis@exemplo.com', display_name: 'Carla Reis', username: 'carlareis', balance: 210, subscription_balance: 210, purchased_balance: 0, plan_slug: 'starter', subscription_status: 'past_due', suspended_at: null, created_at: minutesAgo(60 * 24 * 33), generations: 21 },
     ],
     profile: {
       id: DEMO_USER_ID,

@@ -3,6 +3,9 @@
 Branch `feat/saas-core`, saiu de `feat/mvp`. Nada do que já funcionava foi trocado: o mesmo
 Supabase, o mesmo Asaas, o mesmo fal.ai e o mesmo modo demo.
 
+> **19/10:** o painel `/admin` saiu do app, que é só o painel do usuário. As funções `admin_*` e a
+> auditoria continuam no banco (testadas) para um painel de operação separado.
+
 ## 1. Funcionalidades implementadas
 
 | Área | O que entrou |
