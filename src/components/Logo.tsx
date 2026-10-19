@@ -11,12 +11,13 @@ export function LogoMark() {
   )
 }
 
+/** Marca escrita "krIA": o IA faz parte do nome, em laranja. */
 export function Logo() {
   return (
     <span className="flex items-center gap-2.5">
       <LogoMark />
-      <span className="text-[17px] font-semibold tracking-tight text-zinc-50">
-        Kria <span className="text-accent">IA</span>
+      <span className="font-display text-[19px] font-bold leading-none tracking-[-0.03em] text-zinc-50" aria-label="krIA">
+        kr<span className="text-accent">IA</span>
       </span>
     </span>
   )
