@@ -31,7 +31,7 @@ export function PhoneVideo({ clip, className, eager = false, social = false }: P
             </div>
             <div className="absolute inset-x-3 bottom-3 text-[10px] leading-snug text-white">
               <p className="font-semibold">@kria.ia</p>
-              <p className="mt-0.5 line-clamp-2 text-white/80">{clip.title} feito no Kria</p>
+              <p className="mt-0.5 line-clamp-2 text-white/80">{clip.title} feito no krIA</p>
             </div>
           </div>
         )}

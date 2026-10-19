@@ -35,7 +35,7 @@ export function PlanComparison({ plans }: { readonly plans: readonly Subscriptio
       {/* Só a tabela rola na horizontal no celular; a página não. */}
       <div className="relative mt-8 overflow-x-auto rounded-2xl border border-white/[0.06]" tabIndex={0} role="region" aria-labelledby="comparar-title">
         <table className="w-full min-w-[620px] border-collapse text-sm">
-          <caption className="sr-only">Recursos de cada plano do Kria IA</caption>
+          <caption className="sr-only">Recursos de cada plano do krIA</caption>
           <thead>
             <tr className="bg-panel">
               <th scope="col" className="sticky left-0 z-10 bg-panel px-4 py-4 text-left font-medium text-zinc-400">

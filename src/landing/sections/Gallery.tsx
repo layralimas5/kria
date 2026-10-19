@@ -15,7 +15,7 @@ export function Gallery() {
       <div className="mx-auto max-w-[1440px]">
         <SectionHeading
           id="galeria-title"
-          title="Feito no Kria"
+          title="Feito no krIA"
           lead="Cada vídeo começou com uma frase. Passa o mouse (ou toca) pra ver o prompt que gerou."
           actions={
             <>

@@ -20,7 +20,7 @@ function PlansJsonLd({ plans }: { readonly plans: readonly SubscriptionPlan[] })
   const data = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: 'Kria IA',
+    name: 'krIA',
     description: 'Plataforma brasileira de criação com IA: personagens, imagens e vídeos.',
     offers: plans.map((plan) => ({
       '@type': 'Offer',

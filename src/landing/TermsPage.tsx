@@ -9,10 +9,10 @@ const UPDATED_AT = '18 de outubro de 2026'
 
 const SECTIONS: readonly { title: string; paragraphs: readonly string[] }[] = [
   {
-    title: 'O que é o Kria IA',
+    title: 'O que é o krIA',
     paragraphs: [
-      'O Kria IA é uma ferramenta online que gera imagens e vídeos com inteligência artificial a partir do texto que você escreve. Por trás, usamos modelos de terceiros, como Veo 3.1 (Google), Kling e Nano Banana, acessados pela plataforma fal.ai.',
-      'Todo conteúdo criado no Kria é gerado por IA. Pessoas, rostos e cenas não existem na vida real.',
+      'O krIA é uma ferramenta online que gera imagens e vídeos com inteligência artificial a partir do texto que você escreve. Por trás, usamos modelos de terceiros, como Veo 3.1 (Google), Kling e Nano Banana, acessados pela plataforma fal.ai.',
+      'Todo conteúdo criado no krIA é gerado por IA. Pessoas, rostos e cenas não existem na vida real.',
     ],
   },
   {
@@ -25,7 +25,7 @@ const SECTIONS: readonly { title: string; paragraphs: readonly string[] }[] = [
   {
     title: 'Planos, créditos e pagamento',
     paragraphs: [
-      'O Kria funciona por créditos. Cada geração consome uma quantidade de créditos que aparece antes de você confirmar. Se uma geração falhar, os créditos usados nela voltam automaticamente pro seu saldo.',
+      'O krIA funciona por créditos. Cada geração consome uma quantidade de créditos que aparece antes de você confirmar. Se uma geração falhar, os créditos usados nela voltam automaticamente pro seu saldo.',
       'Os planos (Starter, Pro e Studio) são assinaturas mensais cobradas no cartão de crédito pelo Asaas, com renovação automática a cada mês. Cada cobrança paga adiciona os créditos do plano à sua conta. O plano e os créditos só são liberados depois que o Asaas confirma o pagamento.',
       'Os créditos não vencem: o que sobra de um mês continua na conta. Também é possível comprar pacotes avulsos de créditos, pagos uma vez por Pix ou cartão.',
       'Você pode trocar de plano a qualquer momento. O limite de personagens muda na hora; o novo valor e os créditos do novo plano valem a partir da próxima cobrança.',
@@ -36,7 +36,7 @@ const SECTIONS: readonly { title: string; paragraphs: readonly string[] }[] = [
   {
     title: 'O que não pode',
     paragraphs: [
-      'Não é permitido usar o Kria pra criar conteúdo que imite uma pessoa real sem autorização (deepfake), incluindo famosos. Por isso o Kria não aceita upload de foto de rosto: os influenciadores nascem de imagens geradas aqui dentro.',
+      'Não é permitido usar o krIA pra criar conteúdo que imite uma pessoa real sem autorização (deepfake), incluindo famosos. Por isso o krIA não aceita upload de foto de rosto: os influenciadores nascem de imagens geradas aqui dentro.',
       'Também é proibido gerar conteúdo sexual envolvendo menores, conteúdo sexual explícito, violência real, discurso de ódio, golpe, desinformação ou qualquer coisa ilegal. Pedidos assim são bloqueados, e a conta pode ser encerrada sem reembolso dos créditos.',
     ],
   },
@@ -64,7 +64,7 @@ const SECTIONS: readonly { title: string; paragraphs: readonly string[] }[] = [
 
 export function TermsPage() {
   useEffect(() => {
-    document.title = 'Termos de uso · Kria IA'
+    document.title = 'Termos de uso · krIA'
     window.scrollTo(0, 0)
   }, [])
 
@@ -72,7 +72,7 @@ export function TermsPage() {
     <div className="min-h-dvh bg-stage">
       <header className="border-b border-white/[0.05]">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
-          <Link to="/" aria-label="Kria IA, página inicial" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          <Link to="/" aria-label="krIA, página inicial" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
             <Logo />
           </Link>
           <Link

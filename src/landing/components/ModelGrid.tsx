@@ -19,7 +19,7 @@ export function ModelGrid() {
         <h3 className="font-landing text-xl font-bold uppercase tracking-[-0.02em] text-zinc-50 md:text-2xl">
           As melhores IAs <span className="text-accent">num lugar só</span>
         </h3>
-        <p className="text-[13px] text-zinc-400">Todas liberadas no seu plano. Você escolhe o modelo, o Kria cuida do resto.</p>
+        <p className="text-[13px] text-zinc-400">Todas liberadas no seu plano. Você escolhe o modelo, o krIA cuida do resto.</p>
       </div>
       <ul className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
         {AI_MODELS.map(({ name, maker, kind }) => {

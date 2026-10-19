@@ -48,7 +48,7 @@ export const LAYOUT_PREVIEW: readonly Testimonial[] = [
     messages: [
       { from: 'cliente', time: '19:30', text: 'Aqui entra a mensagem real que a pessoa mandou' },
       { from: 'kria', time: '19:31', text: 'E a resposta de vocês' },
-      { from: 'cliente', time: '19:33', text: 'Pode ter imagem ou vídeo do que ela criou no Kria' },
+      { from: 'cliente', time: '19:33', text: 'Pode ter imagem ou vídeo do que ela criou no krIA' },
     ],
   },
 ]

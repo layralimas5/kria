@@ -186,7 +186,7 @@ grant execute on function public.grant_subscription_payment(uuid, text, text, te
 insert into public.subscription_plans
   (slug, name, tagline, price_cents, monthly_credits, max_personas, cta_label, badge, highlight, features, comparison, position)
 values
-  ('starter', 'Kria Starter', 'Seu primeiro passo na criação com IA.', 5990, 300, 2, 'Começar com Starter', null, false,
+  ('starter', 'krIA Starter', 'Seu primeiro passo na criação com IA.', 5990, 300, 2, 'Começar com Starter', null, false,
    '[
      {"label": "300 créditos por mês", "soon": false},
      {"label": "Até 2 personagens de IA salvos", "soon": false},
@@ -201,7 +201,7 @@ values
      "ugc": "no", "copy": "soon", "prompts": "soon", "premium_models": "no", "history": "yes",
      "priority": "no", "support": "E-mail"}',
    10),
-  ('pro', 'Kria Pro', 'Crie mais, experimente mais e produza conteúdos incríveis.', 7990, 700, 5, 'Quero ser Pro', 'Mais popular', true,
+  ('pro', 'krIA Pro', 'Crie mais, experimente mais e produza conteúdos incríveis.', 7990, 700, 5, 'Quero ser Pro', 'Mais popular', true,
    '[
      {"label": "700 créditos por mês", "soon": false},
      {"label": "Até 5 personagens salvos", "soon": false},
@@ -218,7 +218,7 @@ values
      "ugc": "soon", "copy": "soon", "prompts": "soon", "premium_models": "no", "history": "yes",
      "priority": "no", "support": "E-mail"}',
    20),
-  ('studio', 'Kria Studio', 'Para creators, marcas e profissionais que querem produzir em escala.', 14990, 1500, 15, 'Escolher Studio', null, false,
+  ('studio', 'krIA Studio', 'Para creators, marcas e profissionais que querem produzir em escala.', 14990, 1500, 15, 'Escolher Studio', null, false,
    '[
      {"label": "1.500 créditos por mês", "soon": false},
      {"label": "Até 15 personagens salvos", "soon": false},

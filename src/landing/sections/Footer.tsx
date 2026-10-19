@@ -18,9 +18,9 @@ export function Footer() {
         </div>
         <div className="flex flex-col items-center justify-between gap-2 border-t border-white/[0.05] pt-6 text-center text-[13px] md:flex-row md:text-left">
           <p className="max-w-2xl text-pretty">
-            Todo conteúdo criado no Kria, incluindo os exemplos desta página, é gerado por inteligência artificial. As pessoas mostradas não existem.
+            Todo conteúdo criado no krIA, incluindo os exemplos desta página, é gerado por inteligência artificial. As pessoas mostradas não existem.
           </p>
-          <p className="shrink-0">© {new Date().getFullYear()} Kria IA</p>
+          <p className="shrink-0">© {new Date().getFullYear()} krIA</p>
         </div>
       </div>
     </footer>

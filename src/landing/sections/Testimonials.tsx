@@ -60,7 +60,7 @@ export function Testimonials() {
         <h2 id="depoimentos-title" className="mt-3 text-balance font-landing text-3xl font-bold uppercase leading-[0.95] tracking-[-0.03em] text-zinc-50 md:text-5xl">
           O que estão criando <span className="text-accent">e falando</span>
         </h2>
-        <p className="mt-4 text-pretty text-[15px] text-zinc-400 md:text-base">Mensagens e vídeos que mandaram pra gente depois de criar no Kria.</p>
+        <p className="mt-4 text-pretty text-[15px] text-zinc-400 md:text-base">Mensagens e vídeos que mandaram pra gente depois de criar no krIA.</p>
         {preview && (
           <p className="mt-4 rounded-xl border border-dashed border-accent/50 px-4 py-2 text-sm text-accent">
             Exemplo de layout: só aparece em desenvolvimento. No site, a seção some até existir depoimento real em testimonials.json.

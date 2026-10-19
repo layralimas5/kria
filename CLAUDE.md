@@ -1,4 +1,4 @@
-# Kria IA
+# krIA
 
 SaaS de criação com IA: a pessoa cria influenciadores (personas com rosto
 consistente) e gera fotos e vídeos com eles, pagando por crédito. Repositório na pasta `pessoais/kria`.

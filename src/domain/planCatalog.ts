@@ -10,7 +10,7 @@ const feature = (label: string, soon = false) => ({ label, soon })
 export const PLAN_CATALOG: SubscriptionPlan[] = [
   {
     slug: 'starter',
-    name: 'Kria Starter',
+    name: 'krIA Starter',
     tagline: 'Seu primeiro passo na criação com IA.',
     price_cents: 5990,
     monthly_credits: 300,
@@ -33,7 +33,7 @@ export const PLAN_CATALOG: SubscriptionPlan[] = [
   },
   {
     slug: 'pro',
-    name: 'Kria Pro',
+    name: 'krIA Pro',
     tagline: 'Crie mais, experimente mais e produza conteúdos incríveis.',
     price_cents: 7990,
     monthly_credits: 700,
@@ -58,7 +58,7 @@ export const PLAN_CATALOG: SubscriptionPlan[] = [
   },
   {
     slug: 'studio',
-    name: 'Kria Studio',
+    name: 'krIA Studio',
     tagline: 'Para creators, marcas e profissionais que querem produzir em escala.',
     price_cents: 14990,
     monthly_credits: 1500,

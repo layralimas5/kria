@@ -1,4 +1,4 @@
-/** Só o símbolo: quadrado lima com o K. Usado na barra lateral recolhida. */
+/** Só o símbolo: quadrado laranja com o K. Usado na barra lateral recolhida. */
 export function LogoMark() {
   return (
     <span className="grid size-8 place-items-center rounded-[9px] bg-accent" aria-hidden="true">
@@ -15,8 +15,9 @@ export function Logo() {
   return (
     <span className="flex items-center gap-2.5">
       <LogoMark />
-      <span className="text-[17px] font-semibold tracking-tight text-zinc-50">
-        Kria <span className="text-accent">IA</span>
+      {/* krIA: o "IA" faz parte do nome, em laranja. */}
+      <span className="text-[18px] font-bold tracking-tight text-zinc-50" aria-label="krIA">
+        kr<span className="text-accent">IA</span>
       </span>
     </span>
   )

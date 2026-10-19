@@ -22,7 +22,7 @@ export function Feed() {
               <LoopVideo clip={clip} className="aspect-[9/16] w-full object-cover" />
               <figcaption className="flex items-center justify-between gap-2 px-3 py-2.5 text-[12px]">
                 <span className="truncate font-semibold text-zinc-100">{clip.title}</span>
-                <span className="shrink-0 text-zinc-500">Kria</span>
+                <span className="shrink-0 text-zinc-500">krIA</span>
               </figcaption>
             </figure>
           </li>
