@@ -1,0 +1,32 @@
+import { Sparkles } from 'lucide-react'
+
+/** O que mudou na plataforma e o que vem. Sem botões: o que ainda não existe não tem ação. */
+const NEWS: readonly { readonly title: string; readonly text: string; readonly soon?: true }[] = [
+  { title: 'Planos mensais', text: 'Starter, Pro e Studio com créditos que renovam todo mês.' },
+  { title: 'Construtor de personagem', text: 'Monte rosto, cabelo e estilo e reaproveite em fotos e vídeos.' },
+  { title: 'Motion Control', text: 'Transferir o movimento de um vídeo para o seu personagem.', soon: true },
+  { title: 'Estúdio UGC e Copys', text: 'Roteiro, cena e vídeo de anúncio num fluxo só.', soon: true },
+]
+
+export function PlatformNews() {
+  return (
+    <section aria-labelledby="news-title" className="rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+      <h2 id="news-title" className="font-headline flex items-center gap-2 text-lg text-zinc-100">
+        <Sparkles className="size-4 text-accent" aria-hidden="true" /> Novidades
+      </h2>
+      <ul className="mt-4 space-y-4">
+        {NEWS.map((item) => (
+          <li key={item.title}>
+            <p className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
+              {item.title}
+              {item.soon && (
+                <span className="rounded-md bg-white/[0.06] px-1.5 py-px text-[10px] font-bold uppercase tracking-wide text-zinc-400">Em breve</span>
+              )}
+            </p>
+            <p className="mt-0.5 text-sm text-zinc-400">{item.text}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

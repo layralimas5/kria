@@ -1,0 +1,72 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/space-grotesk';
+
+/* Mesma identidade da landing (pessoais/kria-landing): laranja, grafite e Space Grotesk. */
+@theme {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --color-accent: #ff6b2c;
+  --color-accent-strong: #ff8a50;
+  --color-accent-deep: #b8410f;
+  --color-accent-ink: #0b0b0f;
+  --color-hot: #ff3d8b;
+
+  /* Superfícies em degraus, do fundo ao elemento mais alto. */
+  --color-canvas: #0f1113;
+  --color-surface: #16181b;
+  --color-surface-2: #1c1f23;
+  --color-surface-3: #262a2f;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-canvas font-sans text-zinc-100 antialiased;
+}
+
+::selection {
+  @apply bg-accent text-accent-ink;
+}
+
+/* Títulos como na landing: caixa alta, negrito, bem apertados. */
+@utility font-headline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+}
+
+/* Botão principal "com degrau": a sombra sólida embaixo some ao apertar. */
+@utility btn-accent {
+  background-color: var(--color-accent);
+  color: var(--color-accent-ink);
+  box-shadow: 0 3px 0 0 var(--color-accent-deep);
+  &:hover {
+    background-color: var(--color-accent-strong);
+  }
+  &:active {
+    transform: translateY(3px);
+    box-shadow: none;
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
