@@ -7,7 +7,6 @@ import { Header } from './sections/Header'
 import { Hero } from './sections/Hero'
 import { HowItWorks } from './sections/HowItWorks'
 import { Pricing } from './sections/Pricing'
-import { Testimonials } from './sections/Testimonials'
 import { Tools } from './sections/Tools'
 
 export function LandingPage() {
@@ -26,7 +25,6 @@ export function LandingPage() {
         <Tools />
         <Gallery />
         <HowItWorks />
-        <Testimonials />
         <Pricing />
         <Faq />
         <FinalCta />
