@@ -8,7 +8,7 @@ const KIND_ICONS: Record<ModelKind, LucideIcon> = {
   Edição: Wand2,
 }
 
-const EDGE_FADE = '[mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]'
+const EDGE_FADE = '[mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]'
 
 function ModelLogo({ kind, logo }: Pick<AiModel, 'kind' | 'logo'>) {
   if (logo) {
@@ -36,8 +36,9 @@ function ModelList({ hidden = false }: { readonly hidden?: boolean }) {
 
 export function ModelGrid() {
   return (
-    <div className="mx-auto mt-4 max-w-[1440px] rounded-2xl border border-white/[0.06] bg-panel/50 py-5 md:py-7">
-      <div className="flex flex-col gap-2 px-5 md:flex-row md:items-end md:justify-between md:px-7">
+    // -mx-4 desfaz o px-4 da seção pra faixa ir de ponta a ponta da tela.
+    <div className="-mx-4 mt-10 md:mt-14">
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-4 md:flex-row md:items-end md:justify-between">
         <h3 className="font-landing text-xl font-bold uppercase tracking-[-0.02em] text-zinc-50 md:text-2xl">
           As melhores IAs <span className="text-accent">num lugar só</span>
         </h3>
