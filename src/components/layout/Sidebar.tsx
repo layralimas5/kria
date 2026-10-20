@@ -4,7 +4,6 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { formatCredits } from '@/domain/format'
 import { useAccount } from '@/hooks/useAccount'
 import { useBalance } from '@/hooks/useBalance'
-import { isDemo } from '@/lib/supabase'
 import { Logo, LogoMark } from '../Logo'
 import { Badge } from '../ui/Badge'
 import { NAV_GROUPS, type NavItem } from './nav'
@@ -120,18 +119,10 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       aria-label="Menu"
       className="fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar-w)] flex-col border-r border-white/[0.05] bg-canvas transition-[width] duration-200 ease-out md:flex"
     >
-      <div className={clsx('flex h-16 shrink-0 items-center', collapsed ? 'justify-center' : 'justify-between px-4')}>
+      <div className={clsx('flex h-16 shrink-0 items-center', collapsed ? 'justify-center' : 'px-4')}>
         <Link to="/inicio" aria-label="Kria IA, início" className={clsx('rounded-lg', FOCUS)}>
           {collapsed ? <LogoMark /> : <Logo />}
         </Link>
-        {!collapsed && isDemo && (
-          <span
-            className="rounded-md border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200"
-            title="Dados de exemplo. Nada é salvo nem cobrado."
-          >
-            Demo
-          </span>
-        )}
       </div>
 
       <nav aria-label="Principal" className={clsx('flex-1 space-y-4 overflow-y-auto py-2', collapsed ? 'px-3' : 'px-3')}>
