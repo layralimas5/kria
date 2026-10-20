@@ -20,7 +20,7 @@ Momentumm). Os pacotes avulsos de `credit_packs` continuam como créditos adicio
 |---|---|
 | Plano vigente = ativa, em atraso ou cancelada com período pago no futuro | `current_plan()` (0003) |
 | Limite de personagens pelo plano; sem plano, `plan_settings.free_max_personas` (1) | `create_persona` (0003) |
-| Créditos não vencem, acumulam | `credit_ledger`, sem expiração |
+| Créditos não vencem, acumulam (**descartado em 20/10**: vale a regra do app, crédito do plano renova e não acumula; avulso e boas-vindas não vencem. Os textos da LP já seguem o app; esta implementação sai no merge) | `credit_ledger`, sem expiração |
 | Trocar de plano: limite na hora, valor e créditos novos na próxima cobrança | function `subscribe` |
 | Cancelar: sem nova cobrança, plano até o fim do período, créditos ficam | function `cancel-subscription` |
 | Estorno/chargeback corta o plano na hora; créditos já usados não voltam | `asaas-webhook` |

@@ -27,8 +27,8 @@ const SECTIONS: readonly { title: string; paragraphs: readonly string[] }[] = [
     paragraphs: [
       'O krIA funciona por créditos. Cada geração consome uma quantidade de créditos que aparece antes de você confirmar. Se uma geração falhar, os créditos usados nela voltam automaticamente pro seu saldo.',
       'Os planos (Starter, Pro e Studio) são assinaturas mensais cobradas no cartão de crédito pelo Asaas, com renovação automática a cada mês. Cada cobrança paga adiciona os créditos do plano à sua conta. O plano e os créditos só são liberados depois que o Asaas confirma o pagamento.',
-      'Os créditos não vencem: o que sobra de um mês continua na conta. Também é possível comprar pacotes avulsos de créditos, pagos uma vez por Pix ou cartão.',
-      'Você pode trocar de plano a qualquer momento. O limite de personagens muda na hora; o novo valor e os créditos do novo plano valem a partir da próxima cobrança.',
+      'Os créditos do plano valem para o período pago e não acumulam: a cada renovação, o saldo do plano é substituído pelos créditos do novo período. A geração usa primeiro os créditos do plano. Também é possível comprar pacotes avulsos de créditos, pagos uma vez por Pix ou cartão; esses créditos, assim como os de boas-vindas, não vencem.',
+      'Você pode trocar de plano a qualquer momento. A troca vale quando o pagamento do novo plano é confirmado: o plano anterior é encerrado e os créditos do plano passam a ser os do novo.',
       'Você pode cancelar quando quiser na página Assinatura, sem multa. Depois do cancelamento não há nova cobrança, e o plano continua até o fim do período já pago. Pedidos de reembolso seguem o Código de Defesa do Consumidor.',
       'Preços, créditos por plano e recursos podem mudar. Mudança de preço vale a partir da cobrança seguinte.',
     ],

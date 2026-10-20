@@ -29,7 +29,7 @@ export function CreditsExplainer() {
             conteúdo. Você sempre saberá o custo antes de gerar.
           </p>
           <p className="mt-3 text-pretty text-[15px] leading-relaxed text-zinc-400">
-            Os créditos do plano não vencem, e se uma geração falhar eles voltam sozinhos.
+            Os créditos do plano renovam todo mês e não acumulam. Os de pacote avulso nunca vencem. Se uma geração falhar, o crédito volta sozinho.
           </p>
         </div>
         <ul className="grid gap-3 sm:grid-cols-2">

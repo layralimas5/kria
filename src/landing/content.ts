@@ -171,19 +171,20 @@ export const FAQ: readonly FaqItem[] = [
   {
     icon: 'rollover',
     question: 'Os créditos acumulam para o mês seguinte?',
-    answer: 'Sim. Os créditos não vencem: o que sobrar de um mês continua na conta e soma com os créditos do mês seguinte.',
+    answer:
+      'Os créditos do plano renovam todo mês: a cada cobrança paga você recebe os créditos do plano de novo, e o que sobrou do mês anterior não passa para o seguinte. Os créditos de pacote avulso e os de boas-vindas nunca vencem.',
   },
   {
     icon: 'change',
     question: 'Posso mudar de plano?',
     answer:
-      'Pode, na página Assinatura da sua conta. O limite de personagens muda na hora; o novo valor e os créditos do novo plano valem a partir da próxima cobrança.',
+      'Pode, na página Assinatura da sua conta. A troca vale quando o pagamento do novo plano é confirmado: o anterior é encerrado e os créditos do plano passam a ser os do novo.',
   },
   {
     icon: 'cancel',
     question: 'Como funciona o cancelamento?',
     answer:
-      'Você cancela quando quiser na página Assinatura, sem multa. Não há nova cobrança, o plano continua até o fim do período já pago e os créditos que estão na conta ficam com você.',
+      'Você cancela quando quiser na página Assinatura, sem multa. Não há nova cobrança e o plano continua até o fim do período já pago, com os créditos dele. Os créditos de pacote avulso ficam com você.',
   },
   {
     icon: 'extra',

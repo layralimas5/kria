@@ -13,7 +13,7 @@ const TRUST = [
   { icon: CreditCard, text: 'Cobrança mensal no cartão, pelo Asaas' },
   { icon: RefreshCw, text: 'Cancele quando quiser, sem multa' },
   { icon: Gift, text: `${WELCOME_CREDITS} créditos grátis ao criar a conta` },
-  { icon: ShieldCheck, text: 'Créditos não vencem' },
+  { icon: ShieldCheck, text: 'Falhou? O crédito volta' },
 ] as const
 
 /** Dados estruturados dos planos, montados com os valores do banco. */
