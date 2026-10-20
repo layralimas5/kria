@@ -1,4 +1,4 @@
-// Catálogo de planos embutido: os mesmos valores do seed da migration 0003.
+// Catálogo de planos embutido: os mesmos valores do seed (0003) com os benefícios da 0004.
 // Usado quando o app roda sem Supabase (prévia local, modo demo) para a seção
 // de planos aparecer. Com Supabase configurado, os planos vêm sempre do banco.
 // `planCatalog.test.ts` falha se este arquivo e o seed se separarem.
@@ -21,15 +21,15 @@ export const PLAN_CATALOG: SubscriptionPlan[] = [
     position: 10,
     features: [
       feature('300 créditos por mês'),
-      feature('Até 2 personagens de IA salvos'),
-      feature('Geração de imagens com IA'),
-      feature('Vídeos com IA nos modelos habilitados'),
-      feature('Histórico de criações'),
-      feature('Download do que ficou pronto'),
-      feature('Legendas, roteiros e copys', true),
+      feature('Até 2 personagens salvos'),
+      feature('Fotos com IA e com seus personagens'),
+      feature('Vídeo com Kling 3.0'),
+      feature('3 gerações ao mesmo tempo'),
+      feature('Histórico e download das criações'),
+      feature('Copys e roteiros', true),
       feature('Biblioteca de prompts', true),
     ],
-    comparison: { credits: '300 por mês', personas: 'Até 2', images: 'yes', videos: 'yes', motion_control: 'no', ugc: 'no', copy: 'soon', prompts: 'soon', premium_models: 'no', history: 'yes', priority: 'no', support: 'E-mail' },
+    comparison: { credits: '300 por mês', personas: 'Até 2', concurrent: '3', images: 'yes', kling: 'yes', veo: 'no', history: 'yes', copy: 'soon', prompts: 'soon', motion_control: 'no', ugc: 'no', projects: 'no' },
   },
   {
     slug: 'pro',
@@ -47,14 +47,11 @@ export const PLAN_CATALOG: SubscriptionPlan[] = [
       feature('Até 5 personagens salvos'),
       feature('Tudo do Starter'),
       feature('Vídeo com fala e som (Veo 3.1)'),
-      feature('Personagens como referência visual'),
+      feature('4 gerações ao mesmo tempo'),
       feature('Motion Control', true),
-      feature('Recursos avançados de UGC', true),
-      feature('Templates de vídeos virais', true),
-      feature('Anúncios e roteiros comerciais', true),
-      feature('Biblioteca de prompts premium', true),
+      feature('Estúdio UGC', true),
     ],
-    comparison: { credits: '700 por mês', personas: 'Até 5', images: 'yes', videos: 'yes', motion_control: 'soon', ugc: 'soon', copy: 'soon', prompts: 'soon', premium_models: 'no', history: 'yes', priority: 'no', support: 'E-mail' },
+    comparison: { credits: '700 por mês', personas: 'Até 5', concurrent: '4', images: 'yes', kling: 'yes', veo: 'yes', history: 'yes', copy: 'soon', prompts: 'soon', motion_control: 'soon', ugc: 'soon', projects: 'no' },
   },
   {
     slug: 'studio',
@@ -71,14 +68,9 @@ export const PLAN_CATALOG: SubscriptionPlan[] = [
       feature('1.500 créditos por mês'),
       feature('Até 15 personagens salvos'),
       feature('Tudo do Pro'),
-      feature('Histórico completo e exportação'),
-      feature('Modelos premium', true),
-      feature('Projetos e campanhas organizados', true),
-      feature('Processamento prioritário', true),
-      feature('Biblioteca de anúncios UGC', true),
-      feature('Templates profissionais', true),
-      feature('Suporte prioritário', true),
+      feature('6 gerações ao mesmo tempo'),
+      feature('Meus projetos', true),
     ],
-    comparison: { credits: '1.500 por mês', personas: 'Até 15', images: 'yes', videos: 'yes', motion_control: 'soon', ugc: 'soon', copy: 'soon', prompts: 'soon', premium_models: 'soon', history: 'yes', priority: 'soon', support: 'soon' },
+    comparison: { credits: '1.500 por mês', personas: 'Até 15', concurrent: '6', images: 'yes', kling: 'yes', veo: 'yes', history: 'yes', copy: 'soon', prompts: 'soon', motion_control: 'soon', ugc: 'soon', projects: 'soon' },
   },
 ]

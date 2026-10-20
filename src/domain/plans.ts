@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-// Planos de assinatura, como vêm de `subscription_plans` (migration 0003).
+// Planos de assinatura, como vêm de `subscription_plans` (migrations 0003 e 0004).
 // Preço, créditos, limites, benefícios e tabela comparativa são editados no
 // banco; aqui só ficam o formato e os rótulos das linhas da comparação.
 
@@ -52,16 +52,16 @@ export const SUBSCRIPTION_COLUMNS = 'id, plan_slug, status, price_cents, current
 export const COMPARISON_ROWS: readonly { readonly key: string; readonly label: string }[] = [
   { key: 'credits', label: 'Créditos' },
   { key: 'personas', label: 'Personagens salvos' },
-  { key: 'images', label: 'Geração de imagens' },
-  { key: 'videos', label: 'Geração de vídeos' },
-  { key: 'motion_control', label: 'Motion Control' },
-  { key: 'ugc', label: 'Recursos de UGC' },
+  { key: 'concurrent', label: 'Gerações ao mesmo tempo' },
+  { key: 'images', label: 'Fotos com IA e com personagens' },
+  { key: 'kling', label: 'Vídeo com Kling 3.0' },
+  { key: 'veo', label: 'Vídeo com fala e som (Veo 3.1)' },
+  { key: 'history', label: 'Histórico e download' },
   { key: 'copy', label: 'Copys e roteiros' },
   { key: 'prompts', label: 'Biblioteca de prompts' },
-  { key: 'premium_models', label: 'Modelos premium' },
-  { key: 'history', label: 'Histórico de criações' },
-  { key: 'priority', label: 'Processamento prioritário' },
-  { key: 'support', label: 'Suporte' },
+  { key: 'motion_control', label: 'Motion Control' },
+  { key: 'ugc', label: 'Estúdio UGC' },
+  { key: 'projects', label: 'Meus projetos' },
 ]
 
 /** O plano vale enquanto o período pago não acabou, mesmo cancelado. Pendente nunca vale. */

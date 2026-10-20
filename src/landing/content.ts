@@ -160,7 +160,7 @@ export const FAQ: readonly FaqItem[] = [
   {
     icon: 'video',
     question: 'Posso transformar imagens em vídeos?',
-    answer: 'Sim. Qualquer imagem gerada no krIA pode virar vídeo com Kling (5 segundos, com áudio) ou Veo 3.1 (8 segundos, com fala e som).',
+    answer: 'Sim. Qualquer imagem gerada no krIA pode virar vídeo com Kling (5 segundos, com áudio) ou, a partir do Pro, Veo 3.1 (8 segundos, com fala e som).',
   },
   {
     icon: 'commercial',
@@ -194,6 +194,6 @@ export const FAQ: readonly FaqItem[] = [
     icon: 'tools',
     question: 'Quais ferramentas de IA estão disponíveis?',
     answer:
-      'Para imagem: Nano Banana 2, GPT Image, Flux, Seedream e Ideogram. Para vídeo: Kling 3.0, Veo 3.1, Sora 2, Seedance, Hailuo e Wan. Também tem voz com ElevenLabs, sincronia labial e upscale 4K. Copys, Motion Control e templates aparecem como "Em breve" até estarem prontos.',
+      'Para imagem: Nano Banana 2, GPT Image, Flux, Seedream e Ideogram. Para vídeo: Kling 3.0, Veo 3.1, Sora 2, Seedance, Hailuo e Wan. Também tem voz com ElevenLabs, sincronia labial e upscale 4K. Copys, biblioteca de prompts, Motion Control, Estúdio UGC e projetos aparecem como "Em breve" nos planos que vão ter acesso, até estarem prontos.',
   },
 ]
