@@ -498,4 +498,60 @@ await test('preferências: cada pessoa grava só a própria meta', async (db) =>
   assert.equal(rows[0].goal, 'ugc_ads')
 })
 
+/** Gera e conclui uma foto para poder virar persona. */
+async function finishedImage(db, userId) {
+  const { rows } = await create(db, userId, 'foto')
+  await db.query(`select complete_generation($1, $2, 'image/png')`, [rows[0].id, `${userId}/${rows[0].id}.png`])
+  return rows[0].id
+}
+
+const savePersona = (db, userId, generationId) =>
+  as(db, 'authenticated', userId, () => db.query(`select * from create_persona($1, 'Luna')`, [generationId]))
+
+await test('o limite de personagens vem do plano (grátis 1, starter 2, pro 5, studio 15)', async (db) => {
+  const { rows } = await db.query(`select slug, max_personas from subscription_plans order by position`)
+  assert.deepEqual(rows, [
+    { slug: 'gratis', max_personas: 1 },
+    { slug: 'starter', max_personas: 2 },
+    { slug: 'pro', max_personas: 5 },
+    { slug: 'studio', max_personas: 15 },
+  ])
+
+  const ana = await newUser(db, 'ana@x.com')
+  await setWallet(db, ana, 500)
+  await savePersona(db, ana, await finishedImage(db, ana))
+  await expectError(savePersona(db, ana, await finishedImage(db, ana)), 'too_many_personas')
+
+  await activate(db, await newSubscription(db, ana, 'starter'), 'pay_1')
+  await savePersona(db, ana, await finishedImage(db, ana))
+  await expectError(savePersona(db, ana, await finishedImage(db, ana)), 'too_many_personas')
+})
+
+await test('Veo 3.1 só gera no Pro e no Studio', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const { rows } = await create(db, ana, 'foto')
+  await db.query(`select complete_generation($1, $2, 'image/png')`, [rows[0].id, `${ana}/${rows[0].id}.png`])
+  await setWallet(db, ana, 0, 1000)
+
+  await activate(db, await newSubscription(db, ana, 'starter'), 'pay_1')
+  await expectError(create(db, ana, 'video-veo', 'ela acena', null, rows[0].id), 'plan_required')
+  const kling = await create(db, ana, 'video-kling', 'ela acena', null, rows[0].id)
+  assert.equal(kling.rows[0].status, 'queued')
+
+  await activate(db, await newSubscription(db, ana, 'studio'), 'pay_2')
+  const veo = await create(db, ana, 'video-veo', 'ela acena', null, rows[0].id)
+  assert.equal(veo.rows[0].status, 'queued')
+})
+
+await test('ferramentas do menu por plano', async (db) => {
+  const { rows } = await db.query(`select slug, tools from subscription_plans order by position`)
+  assert.deepEqual(rows, [
+    { slug: 'gratis', tools: ['copy', 'prompt_library'] },
+    { slug: 'starter', tools: ['copy', 'prompt_library'] },
+    { slug: 'pro', tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio'] },
+    { slug: 'studio', tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio', 'projects'] },
+  ])
+  await expectError(db.query(`update subscription_plans set tools = array['hackear'] where slug = 'pro'`), 'check')
+})
+
 console.log(`\n${passed} testes do banco passaram`)

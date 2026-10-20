@@ -6,7 +6,7 @@ import { useAccount } from '@/hooks/useAccount'
 import { useBalance } from '@/hooks/useBalance'
 import { Logo, LogoMark } from '../Logo'
 import { Badge } from '../ui/Badge'
-import { NAV_GROUPS, type NavItem } from './nav'
+import { navGroupsFor, type NavItem } from './nav'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
@@ -113,6 +113,7 @@ function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { pathname } = useLocation()
   const [params] = useSearchParams()
+  const { plan } = useAccount()
 
   return (
     <aside
@@ -126,7 +127,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </div>
 
       <nav aria-label="Principal" className={clsx('flex-1 space-y-4 overflow-y-auto py-2', collapsed ? 'px-3' : 'px-3')}>
-        {NAV_GROUPS.map((group) => (
+        {navGroupsFor(plan).map((group) => (
           <div key={group.title}>
             {collapsed ? (
               <div aria-hidden="true" className="mx-auto mb-2 h-px w-6 bg-white/10" />

@@ -8,6 +8,7 @@ import { PersonaCanvas, type CanvasTab } from '@/components/personas/PersonaCanv
 import { PERSONA_PROMPT_PREFIX } from '@/domain/personaTraits'
 import type { Generation, Persona } from '@/domain/types'
 import { deletePersona, errorMessage } from '@/lib/api'
+import { useAccount } from '@/hooks/useAccount'
 import { useModels, usePersonas } from '@/hooks/useCatalog'
 import { useGenerations } from '@/hooks/useGenerations'
 import { usePersonaBuilder } from '@/hooks/usePersonaBuilder'
@@ -21,6 +22,7 @@ function isPersonaWork(generation: Generation): boolean {
 
 export function PersonasPage() {
   const personas = usePersonas()
+  const { plan } = useAccount()
   const models = useModels()
   const { generations } = useGenerations()
   const builder = usePersonaBuilder(models.data ?? [])
@@ -76,6 +78,7 @@ export function PersonasPage() {
         onTabChange={setCanvasTab}
         personas={personas.data ?? []}
         personasError={personas.error}
+        maxPersonas={plan?.max_personas ?? null}
         history={history}
         modelNames={modelNames}
         onDelete={(persona) => void handleDelete(persona)}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canUseModel, currentSubscription, pricePerCredit } from './plans'
+import { canUseModel, currentSubscription, planIncludes, pricePerCredit } from './plans'
 import type { Subscription } from './types'
 
 const NOW = new Date('2026-10-18T12:00:00Z').getTime()
@@ -50,5 +50,14 @@ describe('canUseModel', () => {
     expect(canUseModel(null, 'gratis')).toBe(true)
     expect(canUseModel(['pro', 'studio'], 'gratis')).toBe(false)
     expect(canUseModel(['pro', 'studio'], 'pro')).toBe(true)
+  })
+})
+
+describe('planIncludes', () => {
+  it('libera só as ferramentas do plano e nada enquanto o plano não carregou', () => {
+    const starter = { tools: ['copy', 'prompt_library'] }
+    expect(planIncludes(starter, 'copy')).toBe(true)
+    expect(planIncludes(starter, 'motion_control')).toBe(false)
+    expect(planIncludes(null, 'copy')).toBe(false)
   })
 })

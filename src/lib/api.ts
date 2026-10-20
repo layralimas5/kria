@@ -102,7 +102,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
 
 const PERSONA_ERRORS: Record<string, string> = {
   source_not_found: 'Essa imagem não pode virar persona.',
-  too_many_personas: 'Você chegou ao limite de 30 personas.',
+  too_many_personas: 'Você chegou ao limite de personagens do seu plano. Remova um ou veja os planos em Assinatura.',
 }
 
 export async function createPersona(generationId: string, name: string, description: string): Promise<Persona> {

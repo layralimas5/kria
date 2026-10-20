@@ -7,7 +7,7 @@
 import { createDemoState, DEMO_IMAGES, DEMO_USER_ID, DEMO_VIDEO, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
-const SESSION_KEY = 'kria-demo-state-v2'
+const SESSION_KEY = 'kria-demo-state-v3'
 
 function loadState(): DemoState {
   try {
@@ -245,7 +245,8 @@ function account(body: Row): Response {
 
 function createPersona(body: Row): Response {
   const source = state.generations.find((item) => item.id === body.p_generation_id && item.status === 'succeeded')
-  if (!source || source.kind !== 'image') return json({ message: 'source_not_found' }, 400)
+  if (!source || source.kind !== 'image') return rpcFail('source_not_found')
+  if (state.personas.length >= Number(currentPlan().max_personas)) return rpcFail('too_many_personas')
   const persona = {
     id: uuid(),
     user_id: DEMO_USER_ID,
