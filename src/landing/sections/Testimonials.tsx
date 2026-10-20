@@ -1,9 +1,7 @@
 import clsx from 'clsx'
 import { CheckCheck } from 'lucide-react'
-import { IllustratedAvatar } from '../components/IllustratedAvatar'
 import { Reveal } from '../components/Reveal'
-import { SCENARIOS, type AvatarPalette } from '../scenarios'
-import { TESTIMONIALS, type ChatMessage } from '../testimonials'
+import { LAYOUT_PREVIEW, TESTIMONIALS, type ChatMessage, type Testimonial } from '../testimonials'
 
 // Cores do tema escuro do WhatsApp, para o print ser reconhecido de cara.
 const WA = {
@@ -11,13 +9,6 @@ const WA = {
   incoming: 'bg-[#202c33] text-[#e9edef]',
   outgoing: 'bg-[#005c4b] text-[#e9edef]',
 } as const
-
-interface Conversation {
-  readonly id: string
-  readonly author: string
-  readonly avatar?: AvatarPalette
-  readonly messages: readonly ChatMessage[]
-}
 
 function Bubble({ message }: { readonly message: ChatMessage }) {
   const outgoing = message.from === 'kria'
@@ -38,27 +29,17 @@ function Bubble({ message }: { readonly message: ChatMessage }) {
   )
 }
 
-function Avatar({ conversation }: { readonly conversation: Conversation }) {
-  if (conversation.avatar) return <IllustratedAvatar {...conversation.avatar} />
-  return (
-    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent/20 text-sm font-bold text-accent" aria-hidden="true">
-      {conversation.author.charAt(0)}
-    </span>
-  )
-}
-
-function Chat({ conversation, illustrative }: { readonly conversation: Conversation; readonly illustrative: boolean }) {
+function Chat({ testimonial }: { readonly testimonial: Testimonial }) {
   return (
     <figure className="w-[300px] shrink-0 snap-center overflow-hidden rounded-2xl border border-white/[0.06] sm:w-[340px]">
       <figcaption className="flex items-center gap-3 bg-[#202c33] px-4 py-3">
-        <Avatar conversation={conversation} />
-        <span className="flex min-w-0 flex-col">
-          <span className="truncate text-[15px] font-medium text-[#e9edef]">{conversation.author}</span>
-          {illustrative && <span className="text-[11px] font-semibold uppercase tracking-wide text-accent">Exemplo ilustrativo</span>}
+        <span className="grid size-9 place-items-center rounded-full bg-accent/20 text-sm font-bold text-accent" aria-hidden="true">
+          {testimonial.author.charAt(0)}
         </span>
+        <span className="text-[15px] font-medium text-[#e9edef]">{testimonial.author}</span>
       </figcaption>
-      <ul className={clsx('flex min-h-[360px] flex-col gap-1.5 p-3', WA.wallpaper)} aria-label={`Conversa com ${conversation.author}`}>
-        {conversation.messages.map((message, index) => (
+      <ul className={clsx('flex min-h-[360px] flex-col gap-1.5 p-3', WA.wallpaper)} aria-label={`Conversa com ${testimonial.author}`}>
+        {testimonial.messages.map((message, index) => (
           <Bubble key={index} message={message} />
         ))}
       </ul>
@@ -66,36 +47,30 @@ function Chat({ conversation, illustrative }: { readonly conversation: Conversat
   )
 }
 
-/** Depoimento real autorizado tem prioridade; sem nenhum, mostra conversas ilustrativas sinalizadas. */
+/** Aparece só com depoimento real autorizado. No dev, sem nenhum, mostra um exemplo marcado como exemplo. */
 export function Testimonials() {
-  const illustrative = TESTIMONIALS.length === 0
-  const items: readonly Conversation[] = illustrative ? SCENARIOS : TESTIMONIALS
+  const preview = TESTIMONIALS.length === 0 && import.meta.env.DEV
+  const items = preview ? LAYOUT_PREVIEW : TESTIMONIALS
+  if (items.length === 0) return null
 
   return (
     <section aria-labelledby="depoimentos-title" className="pt-20 md:pt-28">
       <Reveal className="mx-auto max-w-2xl px-4 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">{illustrative ? 'Na prática' : 'Quem já está criando'}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Quem já está criando</p>
         <h2 id="depoimentos-title" className="mt-3 text-balance font-landing text-3xl font-bold uppercase leading-[0.95] tracking-[-0.03em] text-zinc-50 md:text-5xl">
-          {illustrative ? (
-            <>
-              Como cada um <span className="text-accent">usa o krIA</span>
-            </>
-          ) : (
-            <>
-              O que estão criando <span className="text-accent">e falando</span>
-            </>
-          )}
+          O que estão criando <span className="text-accent">e falando</span>
         </h2>
-        <p className="mt-4 text-pretty text-[15px] text-zinc-400 md:text-base">
-          {illustrative
-            ? 'Conversas ilustrativas, com pessoas fictícias, pra mostrar o krIA no dia a dia.'
-            : 'Mensagens e vídeos que mandaram pra gente depois de criar no krIA.'}
-        </p>
+        <p className="mt-4 text-pretty text-[15px] text-zinc-400 md:text-base">Mensagens e vídeos que mandaram pra gente depois de criar no krIA.</p>
+        {preview && (
+          <p className="mt-4 rounded-xl border border-dashed border-accent/50 px-4 py-2 text-sm text-accent">
+            Exemplo de layout: só aparece em desenvolvimento. No site, a seção some até existir depoimento real em testimonials.json.
+          </p>
+        )}
       </Reveal>
       <ul className="scrollbar-none mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 lg:justify-center">
-        {items.map((conversation) => (
-          <li key={conversation.id}>
-            <Chat conversation={conversation} illustrative={illustrative} />
+        {items.map((testimonial) => (
+          <li key={testimonial.id}>
+            <Chat testimonial={testimonial} />
           </li>
         ))}
       </ul>

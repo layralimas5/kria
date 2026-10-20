@@ -38,3 +38,17 @@ export function parseTestimonials(input: unknown): Testimonial[] {
 }
 
 export const TESTIMONIALS: readonly Testimonial[] = parseTestimonials(raw)
+
+/** Só no desenvolvimento, para ver o layout enquanto não há depoimento real. Nunca aparece no site publicado. */
+export const LAYOUT_PREVIEW: readonly Testimonial[] = [
+  {
+    id: 'exemplo',
+    author: 'Exemplo de layout',
+    consent: true,
+    messages: [
+      { from: 'cliente', time: '19:30', text: 'Aqui entra a mensagem real que a pessoa mandou' },
+      { from: 'kria', time: '19:31', text: 'E a resposta de vocês' },
+      { from: 'cliente', time: '19:33', text: 'Pode ter imagem ou vídeo do que ela criou no krIA' },
+    ],
+  },
+]
