@@ -96,6 +96,8 @@ interface PersonaCanvasProps {
   readonly onTabChange: (tab: CanvasTab) => void
   readonly personas: readonly Persona[]
   readonly personasError: string | null
+  /** Quantos personagens o plano deixa salvar; nulo enquanto o plano carrega. */
+  readonly maxPersonas: number | null
   readonly history: readonly Generation[]
   readonly modelNames: ReadonlyMap<string, string>
   readonly onDelete: (persona: Persona) => void
@@ -108,6 +110,7 @@ export function PersonaCanvas({
   onTabChange,
   personas,
   personasError,
+  maxPersonas,
   history,
   modelNames,
   onDelete,
@@ -115,8 +118,8 @@ export function PersonaCanvas({
   className,
 }: PersonaCanvasProps) {
   const tabs = [
-    { value: 'personas', label: 'Personas', icon: UsersRound, count: personas.length },
-    { value: 'history', label: 'Histórico', icon: History, count: history.length },
+    { value: 'personas', label: 'Personas', icon: UsersRound, count: maxPersonas === null ? `${personas.length}` : `${personas.length}/${maxPersonas}` },
+    { value: 'history', label: 'Histórico', icon: History, count: history.length > 0 ? `${history.length}` : '' },
   ] as const
 
   return (
@@ -137,7 +140,7 @@ export function PersonaCanvas({
           >
             <Icon className="size-4" aria-hidden="true" />
             {label}
-            {count > 0 && <span className="tabular-nums opacity-60">{count}</span>}
+            {count && <span className="tabular-nums opacity-60">{count}</span>}
           </button>
         ))}
       </div>

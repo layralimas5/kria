@@ -126,7 +126,7 @@ export function HomePage() {
           {models.data && <ModelsOverview models={models.data} planSlug={plan?.slug ?? 'gratis'} usage={usage} />}
         </div>
 
-        <PlatformNews />
+        <PlatformNews plan={plan} />
       </div>
     </div>
   )

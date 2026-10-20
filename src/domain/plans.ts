@@ -34,3 +34,21 @@ export function pricePerCredit(plan: Pick<Plan, 'price_cents' | 'monthly_credits
 export function canUseModel(allowedPlans: readonly string[] | null, planSlug: string): boolean {
   return allowedPlans === null || allowedPlans.includes(planSlug)
 }
+
+/** Ferramentas do menu que dependem do plano. Espelha o check de `subscription_plans.tools` (0005). */
+export const PLAN_TOOLS = ['motion_control', 'ugc_studio', 'copy', 'prompt_library', 'projects'] as const
+export type PlanTool = (typeof PLAN_TOOLS)[number]
+
+/** Nome de cada ferramenta e se já existe. A que não existe aparece como "Breve", sem ação. */
+export const PLAN_TOOL_INFO: Record<PlanTool, { readonly label: string; readonly ready: boolean }> = {
+  motion_control: { label: 'Motion Control', ready: false },
+  ugc_studio: { label: 'Estúdio UGC', ready: false },
+  copy: { label: 'Copys e roteiros', ready: false },
+  prompt_library: { label: 'Biblioteca de prompts', ready: false },
+  projects: { label: 'Meus projetos', ready: false },
+}
+
+/** Sem plano carregado ainda, nada que dependa dele aparece: evita mostrar e depois sumir. */
+export function planIncludes(plan: Pick<Plan, 'tools'> | null, tool: PlanTool): boolean {
+  return plan?.tools.includes(tool) ?? false
+}

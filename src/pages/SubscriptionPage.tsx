@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { PaymentHistory } from '@/components/billing/PaymentHistory'
 import { PlanCard } from '@/components/billing/PlanCard'
+import { PlanComparison } from '@/components/billing/PlanComparison'
 import { Button } from '@/components/ui/Button'
 import { Notice } from '@/components/ui/Notice'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -12,6 +13,7 @@ import { STATUS_LABELS } from '@/domain/plans'
 import type { Plan, Subscription } from '@/domain/types'
 import { useAccount } from '@/hooks/useAccount'
 import { useBalance } from '@/hooks/useBalance'
+import { useModels } from '@/hooks/useCatalog'
 import { cancelSubscription, errorMessage, startSubscription } from '@/lib/api'
 
 const POLICIES = [
@@ -87,6 +89,7 @@ function CheckoutReturn({ subscriptionId, subscriptions }: { readonly subscripti
 export function SubscriptionPage() {
   const [params] = useSearchParams()
   const { plans, plan, subscription, subscriptions, error: accountError, refresh } = useAccount()
+  const models = useModels()
   const [busy, setBusy] = useState<string | null>(null)
   const [canceling, setCanceling] = useState(false)
   const [message, setMessage] = useState<{ tone: 'error' | 'success'; text: string } | null>(null)
@@ -158,6 +161,11 @@ export function SubscriptionPage() {
           ))}
         </ul>
       </section>
+
+      {models.error && <Notice tone="error">{models.error}</Notice>}
+      {publicPlans.length > 0 && models.data && (
+        <PlanComparison plans={publicPlans} models={models.data} currentSlug={live?.plan_slug ?? null} />
+      )}
 
       <PaymentHistory key={`${subscription?.id ?? 'none'}:${subscription?.current_period_end ?? ''}:${subscriptions.length}`} />
     </div>

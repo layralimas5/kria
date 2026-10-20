@@ -24,6 +24,8 @@ consistente) e gera fotos e vídeos com eles, pagando por crédito. Repositório
   é o que impede deepfake de pessoa real. Não abrir upload sem moderação de rosto.
 - Webhook do fal não confia no corpo: confere a assinatura HMAC do id e consulta o fal.
 - Trocar modelo ou preço = `update public.models`. Não precisa de deploy.
+- O que cada plano libera vem de `subscription_plans` (0005): `max_personas`, `tools` (abas do menu: quem não tem
+  não vê a aba) e `models.allowed_plans`. Segue a tabela de planos da landing; mudar = `update`, sem deploy.
 
 ## Comandos
 
