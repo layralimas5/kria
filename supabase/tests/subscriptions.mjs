@@ -37,8 +37,8 @@ await test('planos ativos são públicos e vêm do banco com preço e créditos'
   )
   assert.deepEqual(rows, [
     { slug: 'starter', price_cents: 5990, monthly_credits: 300, max_personas: 2, highlight: false },
-    { slug: 'pro', price_cents: 7990, monthly_credits: 700, max_personas: 5, highlight: true },
-    { slug: 'studio', price_cents: 14990, monthly_credits: 1500, max_personas: 15, highlight: false },
+    { slug: 'pro', price_cents: 7990, monthly_credits: 450, max_personas: 5, highlight: true },
+    { slug: 'studio', price_cents: 14990, monthly_credits: 1000, max_personas: 15, highlight: false },
   ])
   await db.query(`update subscription_plans set active = false where slug = 'studio'`)
   const visible = await as(db, 'anon', null, () => db.query(`select slug from subscription_plans`))
@@ -50,12 +50,12 @@ await test('pagamento confirmado ativa o plano e credita uma vez, mesmo com webh
   const sub = await openSubscription(db, ana, 'pro')
   assert.equal((await grant(db, sub, 'pay_1')).rows[0].ok, true)
   assert.equal((await grant(db, sub, 'pay_1')).rows[0].ok, false)
-  assert.equal(await balanceOf(db, ana), 20 + 700)
+  assert.equal(await balanceOf(db, ana), 20 + 450)
 
   const { rows } = await db.query(`select status, provider_subscription_id from subscriptions where id = $1`, [sub])
   assert.deepEqual(rows[0], { status: 'active', provider_subscription_id: 'sub_1' })
   const ledger = await db.query(`select delta from credit_ledger where user_id = $1 and reason = 'subscription'`, [ana])
-  assert.deepEqual(ledger.rows, [{ delta: 700 }])
+  assert.deepEqual(ledger.rows, [{ delta: 450 }])
 })
 
 await test('renovação credita de novo e créditos que sobraram continuam na conta', async (db) => {

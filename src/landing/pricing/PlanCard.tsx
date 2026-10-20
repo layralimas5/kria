@@ -3,7 +3,9 @@ import { Check, Clock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { formatBRL } from '@/domain/format'
 import type { SubscriptionPlan } from '@/domain/plans'
+import { SIGNUP_PATH } from '../content'
 import { CARD_HOVER } from '../styles'
+import { isFreePlan } from './freePlan'
 
 export function subscribePath(slug: string): string {
   return `/assinar/${slug}`
@@ -13,6 +15,7 @@ export function PlanCard({ plan }: { readonly plan: SubscriptionPlan }) {
   const available = plan.features.filter((feature) => !feature.soon)
   const upcoming = plan.features.filter((feature) => feature.soon)
   const titleId = `plano-${plan.slug}`
+  const free = isFreePlan(plan)
 
   return (
     <article
@@ -34,15 +37,18 @@ export function PlanCard({ plan }: { readonly plan: SubscriptionPlan }) {
       <p className="mt-1.5 min-h-[2.5rem] text-pretty text-sm text-zinc-400">{plan.tagline}</p>
 
       <p className="mt-5 flex items-baseline gap-1">
-        <span className="font-landing text-[2.75rem] font-bold leading-none tracking-[-0.045em] text-zinc-50">{formatBRL(plan.price_cents)}</span>
-        <span className="text-sm text-zinc-500">/mês</span>
+        <span className="font-landing text-[2.75rem] font-bold leading-none tracking-[-0.045em] text-zinc-50">
+          {free ? 'R$ 0' : formatBRL(plan.price_cents)}
+        </span>
+        {!free && <span className="text-sm text-zinc-500">/mês</span>}
       </p>
       <p className="mt-2 text-sm text-zinc-300">
-        <span className="font-semibold text-accent">{plan.monthly_credits.toLocaleString('pt-BR')} créditos</span> todo mês
+        <span className="font-semibold text-accent">{plan.monthly_credits.toLocaleString('pt-BR')} créditos</span>{' '}
+        {free ? 'ao criar a conta' : 'todo mês'}
       </p>
 
       <Link
-        to={subscribePath(plan.slug)}
+        to={free ? SIGNUP_PATH : subscribePath(plan.slug)}
         className={clsx(
           'mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-xl text-sm font-semibold transition-[transform,box-shadow,background-color] duration-150 active:translate-y-[3px] active:shadow-none',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-stage',

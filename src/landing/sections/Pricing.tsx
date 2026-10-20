@@ -6,6 +6,7 @@ import { SectionHeading } from '../components/SectionHeading'
 import { WELCOME_CREDITS } from '../content'
 import { CreditsExplainer } from '../pricing/CreditsExplainer'
 import { PlanCard, PlanCardSkeleton, subscribePath } from '../pricing/PlanCard'
+import { FREE_PLAN } from '../pricing/freePlan'
 import { PlanComparison } from '../pricing/PlanComparison'
 
 const TRUST = [
@@ -69,7 +70,8 @@ export function Pricing() {
         />
 
         {loading && !plans && (
-          <div className="mx-auto mt-12 grid max-w-6xl gap-5 md:grid-cols-3" role="status" aria-label="Carregando planos">
+          <div className="mx-auto mt-12 grid max-w-7xl gap-5 md:grid-cols-2 xl:grid-cols-4" role="status" aria-label="Carregando planos">
+            <PlanCardSkeleton />
             <PlanCardSkeleton />
             <PlanCardSkeleton />
             <PlanCardSkeleton />
@@ -80,9 +82,9 @@ export function Pricing() {
         {plans && plans.length > 0 && (
           <>
             <PlansJsonLd plans={plans} />
-            <ul className="mx-auto mt-12 grid max-w-6xl gap-5 md:grid-cols-3 md:items-stretch">
-              {plans.map((plan, index) => (
-                <Reveal key={plan.slug} as="li" delay={index * 0.06} className={plan.highlight ? 'md:-mt-3' : 'md:mt-3'}>
+            <ul className="mx-auto mt-12 grid max-w-7xl gap-5 md:grid-cols-2 md:items-stretch xl:grid-cols-4">
+              {[FREE_PLAN, ...plans].map((plan, index) => (
+                <Reveal key={plan.slug} as="li" delay={index * 0.06} className={plan.highlight ? 'xl:-mt-3' : 'xl:mt-3'}>
                   <PlanCard plan={plan} />
                 </Reveal>
               ))}
@@ -95,9 +97,9 @@ export function Pricing() {
                 </li>
               ))}
             </ul>
-            <div className="mx-auto max-w-6xl">
+            <div className="mx-auto max-w-7xl">
               <CreditsExplainer />
-              <PlanComparison plans={plans} />
+              <PlanComparison plans={[FREE_PLAN, ...plans]} />
             </div>
           </>
         )}

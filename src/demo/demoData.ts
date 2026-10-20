@@ -74,7 +74,7 @@ export function createDemoState(): DemoState {
     packs: [
       { slug: 'inicial', name: 'Inicial', credits: 100, price_cents: 1990, highlight: false, position: 10 },
       { slug: 'criador', name: 'Criador', credits: 300, price_cents: 4990, highlight: true, position: 20 },
-      { slug: 'estudio', name: 'Estúdio', credits: 800, price_cents: 11990, highlight: false, position: 30 },
+      { slug: 'estudio', name: 'Estúdio', credits: 800, price_cents: 13990, highlight: false, position: 30 },
     ],
     personas: [luna, rafa],
     generations: [

@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { Check, Minus } from 'lucide-react'
 import { formatBRL } from '@/domain/format'
 import { COMPARISON_ROWS, type SubscriptionPlan } from '@/domain/plans'
+import { isFreePlan } from './freePlan'
 
 function Cell({ value }: { readonly value: string | undefined }) {
   if (value === undefined || value === 'no') {
@@ -44,7 +45,7 @@ export function PlanComparison({ plans }: { readonly plans: readonly Subscriptio
               {plans.map((plan) => (
                 <th key={plan.slug} scope="col" className={clsx('px-4 py-4 text-center', plan.highlight && 'bg-accent/[0.07]')}>
                   <span className="block font-semibold text-zinc-50">{plan.name}</span>
-                  <span className="block text-[13px] font-normal text-zinc-500">{formatBRL(plan.price_cents)}/mês</span>
+                  <span className="block text-[13px] font-normal text-zinc-500">{isFreePlan(plan) ? 'Grátis' : `${formatBRL(plan.price_cents)}/mês`}</span>
                 </th>
               ))}
             </tr>
