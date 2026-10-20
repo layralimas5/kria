@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canUseModel, currentSubscription, planIncludes, pricePerCredit } from './plans'
+import { canUseModel, currentSubscription, planIncludes, planYield, pricePerCredit, WELCOME_CREDITS } from './plans'
 import type { Subscription } from './types'
 
 const NOW = new Date('2026-10-18T12:00:00Z').getTime()
@@ -42,6 +42,26 @@ describe('pricePerCredit', () => {
   it('divide o preço pelos créditos do mês', () => {
     expect(pricePerCredit({ price_cents: 5990, monthly_credits: 300 })).toBeCloseTo(0.1997, 3)
     expect(pricePerCredit({ price_cents: 0, monthly_credits: 0 })).toBeNull()
+  })
+})
+
+describe('planYield', () => {
+  const models = [
+    { name: 'Nano Banana 2', credits: 5, allowed_plans: null },
+    { name: 'Kling 3.0', credits: 40, allowed_plans: null },
+    { name: 'Veo 3.1', credits: 200, allowed_plans: ['pro', 'studio'] },
+  ]
+
+  it('conta quantas gerações cabem nos créditos do mês, por modelo liberado', () => {
+    expect(planYield({ slug: 'pro', monthly_credits: 450 }, models)).toEqual([
+      { model: 'Nano Banana 2', count: 90 },
+      { model: 'Kling 3.0', count: 11 },
+      { model: 'Veo 3.1', count: 2 },
+    ])
+  })
+
+  it('deixa de fora o modelo que o plano não libera e o que não cabe nenhuma vez', () => {
+    expect(planYield({ slug: 'gratis', monthly_credits: 0 }, models, WELCOME_CREDITS)).toEqual([{ model: 'Nano Banana 2', count: 4 }])
   })
 })
 

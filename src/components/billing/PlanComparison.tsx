@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { Check, Minus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { formatBRL } from '@/domain/format'
-import { canUseModel, PLAN_TOOL_INFO, PLAN_TOOLS } from '@/domain/plans'
+import { canUseModel, isFreePlan, PLAN_TOOL_INFO, PLAN_TOOLS, WELCOME_CREDITS } from '@/domain/plans'
 import type { Model, Plan } from '@/domain/types'
 
 interface PlanComparisonProps {
@@ -41,9 +41,12 @@ function Soon() {
 
 function buildRows(models: readonly Model[]): Row[] {
   return [
-    { label: 'Preço por mês', cell: (plan) => formatBRL(plan.price_cents) },
-    { label: 'Créditos por mês', cell: (plan) => plan.monthly_credits.toLocaleString('pt-BR') },
-    { label: 'Personagens salvos', cell: (plan) => `Até ${plan.max_personas}` },
+    { label: 'Preço por mês', cell: (plan) => (isFreePlan(plan) ? 'Grátis' : formatBRL(plan.price_cents)) },
+    {
+      label: 'Créditos por mês',
+      cell: (plan) => (isFreePlan(plan) ? `${WELCOME_CREDITS} de boas-vindas` : plan.monthly_credits.toLocaleString('pt-BR')),
+    },
+    { label: 'Personagens salvos', cell: (plan) => (plan.max_personas === 1 ? '1' : `Até ${plan.max_personas}`) },
     { label: 'Gerações ao mesmo tempo', cell: (plan) => plan.max_concurrent },
     ...models.map((model) => ({
       label: model.name,

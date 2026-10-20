@@ -22,7 +22,7 @@ Conferir no painel: tabelas `models` (4 linhas) e `credit_packs` (3 linhas), buc
 
 **Antes de abrir para o público:** abrir `fal.ai/models/<endpoint>` de cada linha de
 `models`, conferir se o endpoint ainda existe e o preço por geração, e ajustar
-`credits` para manter margem de 2x a 3x. O crédito vende a ~R$ 0,17-0,20.
+`credits` para manter margem de 2x a 3x. O crédito vende a R$ 0,15-0,20 (preços de 20/10 na migration 0006).
 
 ## 3. Segredos e funções
 

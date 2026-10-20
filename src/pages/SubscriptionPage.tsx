@@ -9,7 +9,7 @@ import { Notice } from '@/components/ui/Notice'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Spinner } from '@/components/ui/Spinner'
 import { formatBRL, formatCredits, formatDate } from '@/domain/format'
-import { STATUS_LABELS } from '@/domain/plans'
+import { isFreePlan, STATUS_LABELS } from '@/domain/plans'
 import type { Plan, Subscription } from '@/domain/types'
 import { useAccount } from '@/hooks/useAccount'
 import { useBalance } from '@/hooks/useBalance'
@@ -94,8 +94,10 @@ export function SubscriptionPage() {
   const [canceling, setCanceling] = useState(false)
   const [message, setMessage] = useState<{ tone: 'error' | 'success'; text: string } | null>(null)
   const returning = params.get('assinatura')
-  const publicPlans = plans.filter((item) => item.public)
+  // O Grátis não tem checkout (`public` falso), mas aparece para comparar com os pagos.
+  const shownPlans = plans.filter((item) => item.public || isFreePlan(item))
   const live = subscription && (subscription.status === 'active' || subscription.status === 'past_due') ? subscription : null
+  const currentSlug = live?.plan_slug ?? plan?.slug ?? null
 
   async function subscribe(target: Plan) {
     setBusy(target.slug)
@@ -139,12 +141,13 @@ export function SubscriptionPage() {
         <h2 id="plans-title" className="font-headline text-lg text-zinc-100">
           Planos
         </h2>
-        <div className="grid gap-4 pt-2 md:grid-cols-3">
-          {publicPlans.map((item) => (
+        <div className="grid gap-4 pt-2 md:grid-cols-2 xl:grid-cols-4">
+          {shownPlans.map((item) => (
             <PlanCard
               key={item.slug}
               plan={item}
-              current={live?.plan_slug === item.slug}
+              models={models.data ?? []}
+              current={currentSlug === item.slug}
               switching={live !== null}
               busy={busy === item.slug}
               disabled={busy !== null}
@@ -163,8 +166,8 @@ export function SubscriptionPage() {
       </section>
 
       {models.error && <Notice tone="error">{models.error}</Notice>}
-      {publicPlans.length > 0 && models.data && (
-        <PlanComparison plans={publicPlans} models={models.data} currentSlug={live?.plan_slug ?? null} />
+      {shownPlans.length > 0 && models.data && (
+        <PlanComparison plans={shownPlans} models={models.data} currentSlug={currentSlug} />
       )}
 
       <PaymentHistory key={`${subscription?.id ?? 'none'}:${subscription?.current_period_end ?? ''}:${subscriptions.length}`} />

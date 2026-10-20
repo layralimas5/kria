@@ -1,12 +1,14 @@
 import clsx from 'clsx'
 import { Check, Clock } from 'lucide-react'
 import { formatBRL } from '@/domain/format'
-import { PLAN_TOOL_INFO, PLAN_TOOLS, pricePerCredit } from '@/domain/plans'
-import type { Plan } from '@/domain/types'
+import { isFreePlan, PLAN_TOOL_INFO, PLAN_TOOLS, planYield, pricePerCredit, WELCOME_CREDITS } from '@/domain/plans'
+import type { Model, Plan } from '@/domain/types'
 import { Button } from '../ui/Button'
 
 interface PlanCardProps {
   readonly plan: Plan
+  /** Para traduzir os créditos no que o plano rende. */
+  readonly models: readonly Model[]
   readonly current: boolean
   /** Já existe outro plano ativo: o botão vira "trocar". */
   readonly switching: boolean
@@ -15,8 +17,17 @@ interface PlanCardProps {
   readonly onSubscribe: () => void
 }
 
-export function PlanCard({ plan, current, switching, busy, disabled, onSubscribe }: PlanCardProps) {
+function buttonLabel(plan: Plan, current: boolean, switching: boolean): string {
+  if (current) return 'Seu plano atual'
+  if (isFreePlan(plan)) return 'Sem mensalidade'
+  return switching ? `Trocar para ${plan.name}` : `Assinar ${plan.name}`
+}
+
+export function PlanCard({ plan, models, current, switching, busy, disabled, onSubscribe }: PlanCardProps) {
+  const free = isFreePlan(plan)
   const perCredit = pricePerCredit(plan)
+  const credits = free ? WELCOME_CREDITS : plan.monthly_credits
+  const yields = planYield(plan, models, credits)
   const upcoming = PLAN_TOOLS.filter((tool) => plan.tools.includes(tool) && !PLAN_TOOL_INFO[tool].ready)
   return (
     <article
@@ -33,13 +44,28 @@ export function PlanCard({ plan, current, switching, busy, disabled, onSubscribe
       <h3 className="font-headline text-xl text-zinc-100">{plan.name}</h3>
       <p className="mt-1 text-sm text-zinc-400">{plan.description}</p>
       <p className="mt-5 flex items-baseline gap-1.5">
-        <span className="text-3xl font-bold tabular-nums text-zinc-50">{formatBRL(plan.price_cents)}</span>
-        <span className="text-sm text-zinc-500">/mês</span>
+        <span className="text-3xl font-bold tabular-nums text-zinc-50">{free ? 'Grátis' : formatBRL(plan.price_cents)}</span>
+        {!free && <span className="text-sm text-zinc-500">/mês</span>}
       </p>
       <p className="mt-1 text-xs text-zinc-500">
-        {plan.monthly_credits.toLocaleString('pt-BR')} créditos por mês
+        {free ? `${credits} créditos de boas-vindas` : `${credits.toLocaleString('pt-BR')} créditos por mês`}
         {perCredit !== null && ` · R$ ${perCredit.toFixed(2).replace('.', ',')} por crédito`}
       </p>
+      {yields.length > 0 && (
+        <div className="mt-4 rounded-2xl bg-white/[0.03] p-3">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+            {free ? 'Dá para gerar' : 'Rende por mês'}, num modelo só
+          </p>
+          <ul className="mt-2 space-y-1 text-sm text-zinc-300">
+            {yields.map((item) => (
+              <li key={item.model} className="flex items-baseline gap-2">
+                <span className="w-9 text-right font-semibold tabular-nums text-zinc-50">{item.count}</span>
+                {item.model}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="mt-5 flex-1 border-t border-white/[0.06] pt-5">
         <ul className="space-y-2 text-sm text-zinc-300">
@@ -70,9 +96,9 @@ export function PlanCard({ plan, current, switching, busy, disabled, onSubscribe
         variant={plan.highlight && !current ? 'primary' : 'secondary'}
         onClick={onSubscribe}
         loading={busy}
-        disabled={current || disabled}
+        disabled={current || free || disabled}
       >
-        {current ? 'Seu plano atual' : switching ? `Trocar para ${plan.name}` : `Assinar ${plan.name}`}
+        {buttonLabel(plan, current, switching)}
       </Button>
     </article>
   )

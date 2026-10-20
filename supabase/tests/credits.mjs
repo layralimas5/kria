@@ -334,7 +334,7 @@ await test('ciclo pago da assinatura credita uma vez, mesmo com webhook repetido
   const again = await activate(db, sub, 'pay_1', 'sub_asaas_1')
   assert.equal(first.rows[0].result.outcome, 'activated')
   assert.equal(again.rows[0].result.outcome, 'already_applied')
-  assert.deepEqual(await walletOf(db, ana), { balance: 720, subscription_balance: 700, purchased_balance: 20 })
+  assert.deepEqual(await walletOf(db, ana), { balance: 470, subscription_balance: 450, purchased_balance: 20 })
   const { rows } = await db.query(
     `select status, provider_subscription_id, current_period_end > now() as live from subscriptions where id = $1`,
     [sub],
@@ -370,7 +370,7 @@ await test('trocar de plano encerra a assinatura anterior e devolve o id dela pa
   assert.deepEqual(rows[0].result.replaced, ['sub_old'])
   const statuses = await db.query(`select plan_slug, status from subscriptions where user_id = $1`, [ana])
   assert.deepEqual(statuses.rows.map((row) => `${row.plan_slug}:${row.status}`).sort(), ['starter:expired', 'studio:active'])
-  assert.equal((await walletOf(db, ana)).subscription_balance, 1500)
+  assert.equal((await walletOf(db, ana)).subscription_balance, 1000)
 })
 
 await test('assinatura vencida expira e zera só o balde do plano', async (db) => {
@@ -461,6 +461,7 @@ await test('admin: busca, suspensão, plano e modelo', async (db) => {
   const lay = await newUser(db, 'lay@x.com')
   const ana = await newUser(db, 'ana.souza@x.com')
   await makeAdmin(db, lay)
+  const proVersion = (await db.query(`select version from subscription_plans where slug = 'pro'`)).rows[0].version
   await as(db, 'authenticated', lay, async () => {
     const found = await db.query(`select id, email, balance from admin_search_users('souza')`)
     assert.deepEqual(found.rows, [{ id: ana, email: 'ana.souza@x.com', balance: 20 }])
@@ -469,7 +470,7 @@ await test('admin: busca, suspensão, plano e modelo', async (db) => {
     await expectError(db.query(`select admin_set_suspended($1, true, 'teste de si')`, [lay]), 'cannot_suspend_self')
 
     const plan = await db.query(`select * from admin_update_plan('pro', 8990, 800, 4, true, null)`)
-    assert.equal(plan.rows[0].version, 2)
+    assert.equal(plan.rows[0].version, proVersion + 1)
 
     await db.query(`select admin_update_model('video-veo', true, 250, 3.2, array['pro', 'studio'])`)
     await expectError(db.query(`select admin_update_model('foto', true, 5, null, array['vip'])`), 'plan_not_found')

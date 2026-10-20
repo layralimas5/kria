@@ -64,7 +64,7 @@ export function createDemoState(): DemoState {
     plan_slug: 'pro',
     status: 'active',
     price_cents: 7990,
-    monthly_credits: 700,
+    monthly_credits: 450,
     current_period_start: minutesAgo(60 * 24 * 12),
     current_period_end: daysFromNow(18),
     canceled_at: null,
@@ -73,13 +73,13 @@ export function createDemoState(): DemoState {
 
   return {
     purchasedBalance: 265,
-    subscriptionBalance: 480,
+    subscriptionBalance: 230,
     preferences: { user_id: DEMO_USER_ID, goal: null, onboarded_at: null },
     plans: [
-      { slug: 'gratis', name: 'Grátis', description: 'Créditos avulsos, sem mensalidade.', price_cents: 0, monthly_credits: 0, max_concurrent: 2, max_personas: 1, tools: ['copy', 'prompt_library'], features: ['20 créditos de boas-vindas', '1 personagem salvo', 'Pacotes avulsos com Pix'], public: false, highlight: false, active: true, position: 0, version: 1 },
+      { slug: 'gratis', name: 'Grátis', description: 'Teste com seus personagens antes de assinar.', price_cents: 0, monthly_credits: 0, max_concurrent: 2, max_personas: 1, tools: ['copy', 'prompt_library'], features: ['20 créditos de boas-vindas', '1 personagem salvo', 'Fotos com IA e com seu personagem', 'Vídeo com Kling 3.0 comprando um pacote', 'Pacotes avulsos com Pix'], public: false, highlight: false, active: true, position: 0, version: 1 },
       { slug: 'starter', name: 'Starter', description: 'Para começar a publicar toda semana.', price_cents: 5990, monthly_credits: 300, max_concurrent: 3, max_personas: 2, tools: ['copy', 'prompt_library'], features: ['300 créditos por mês', 'Até 2 personagens salvos', 'Fotos com IA e com seus personagens', 'Vídeo com Kling 3.0', '3 gerações ao mesmo tempo', 'Histórico e download das criações'], public: true, highlight: false, active: true, position: 10, version: 1 },
-      { slug: 'pro', name: 'Pro', description: 'Para quem publica todo dia.', price_cents: 7990, monthly_credits: 700, max_concurrent: 4, max_personas: 5, tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio'], features: ['700 créditos por mês', 'Até 5 personagens salvos', 'Tudo do Starter', 'Vídeo com fala e som (Veo 3.1)', '4 gerações ao mesmo tempo'], public: true, highlight: true, active: true, position: 20, version: 1 },
-      { slug: 'studio', name: 'Studio', description: 'Para operação de conteúdo e anúncios.', price_cents: 14990, monthly_credits: 1500, max_concurrent: 6, max_personas: 15, tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio', 'projects'], features: ['1.500 créditos por mês', 'Até 15 personagens salvos', 'Tudo do Pro', '6 gerações ao mesmo tempo'], public: true, highlight: false, active: true, position: 30, version: 1 },
+      { slug: 'pro', name: 'Pro', description: 'Para quem publica todo dia.', price_cents: 7990, monthly_credits: 450, max_concurrent: 4, max_personas: 5, tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio'], features: ['450 créditos por mês', 'Até 5 personagens salvos', 'Tudo do Starter', 'Vídeo com fala e som (Veo 3.1)', '4 gerações ao mesmo tempo'], public: true, highlight: true, active: true, position: 20, version: 1 },
+      { slug: 'studio', name: 'Studio', description: 'Para operação de conteúdo e anúncios.', price_cents: 14990, monthly_credits: 1000, max_concurrent: 6, max_personas: 15, tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio', 'projects'], features: ['1.000 créditos por mês', 'Até 15 personagens salvos', 'Tudo do Pro', '6 gerações ao mesmo tempo'], public: true, highlight: false, active: true, position: 30, version: 1 },
     ],
     subscriptions: [proSubscription],
     subscriptionPayments: [
@@ -106,7 +106,7 @@ export function createDemoState(): DemoState {
     packs: [
       { slug: 'inicial', name: 'Inicial', credits: 100, price_cents: 1990, highlight: false, position: 10 },
       { slug: 'criador', name: 'Criador', credits: 300, price_cents: 4990, highlight: true, position: 20 },
-      { slug: 'estudio', name: 'Estúdio', credits: 800, price_cents: 11990, highlight: false, position: 30 },
+      { slug: 'estudio', name: 'Estúdio', credits: 800, price_cents: 13990, highlight: false, position: 30 },
     ],
     personas: [luna, rafa],
     generations: [
@@ -119,7 +119,7 @@ export function createDemoState(): DemoState {
       generation(6, { prompt: 'Homem de 40 anos cozinhando, cozinha rústica, foto de celular' }),
     ],
     ledger: [
-      { id: 7, user_id: DEMO_USER_ID, delta: 700, reason: 'subscription_grant', note: 'Créditos do plano', balance_after: null, created_at: minutesAgo(60 * 24 * 12) },
+      { id: 7, user_id: DEMO_USER_ID, delta: 450, reason: 'subscription_grant', note: 'Créditos do plano', balance_after: null, created_at: minutesAgo(60 * 24 * 12) },
       { id: 6, user_id: DEMO_USER_ID, delta: -40, reason: 'generation', note: 'Kling 3.0', balance_after: null, created_at: minutesAgo(6) },
       { id: 5, user_id: DEMO_USER_ID, delta: 5, reason: 'generation_refund', note: 'Estorno de geração que falhou', balance_after: null, created_at: minutesAgo(36) },
       { id: 4, user_id: DEMO_USER_ID, delta: -5, reason: 'generation', note: 'Nano Banana 2', balance_after: null, created_at: minutesAgo(37) },
