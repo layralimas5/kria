@@ -2,7 +2,6 @@ import clsx from 'clsx'
 import { Coins } from 'lucide-react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useBalance } from '@/hooks/useBalance'
-import { isDemo } from '@/lib/supabase'
 import { UserMenu } from '../account/UserMenu'
 import { Logo } from '../Logo'
 import { MOBILE_TABS } from './nav'
@@ -17,11 +16,6 @@ export function MobileTopBar() {
       <Link to="/inicio" aria-label="Kria IA, início" className={clsx('rounded-lg', FOCUS)}>
         <Logo />
       </Link>
-      {isDemo && (
-        <span className="rounded-md border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-200">
-          Demo
-        </span>
-      )}
       <Link
         to="/creditos"
         className={clsx('ml-auto flex min-h-8 items-center gap-1.5 rounded-lg bg-surface-2 px-2.5 text-[13px] font-bold tabular-nums', FOCUS)}
