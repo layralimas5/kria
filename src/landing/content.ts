@@ -160,7 +160,7 @@ export const FAQ: readonly FaqItem[] = [
   {
     icon: 'video',
     question: 'Posso transformar imagens em vídeos?',
-    answer: 'Sim. Qualquer imagem gerada no Vynkio pode virar vídeo com Kling (5 segundos, com áudio) ou, a partir do Pro, Veo 3.1 (8 segundos, com fala e som).',
+    answer: 'Sim. Qualquer imagem gerada no Vynkio pode virar vídeo com Kling (5 segundos, com áudio) ou, em qualquer plano pago, Veo 3.1 (8 segundos, com fala e som).',
   },
   {
     icon: 'commercial',

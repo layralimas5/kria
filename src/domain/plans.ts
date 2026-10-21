@@ -62,6 +62,8 @@ export const COMPARISON_ROWS: readonly { readonly key: string; readonly label: s
   { key: 'motion_control', label: 'Motion Control' },
   { key: 'ugc', label: 'Estúdio UGC' },
   { key: 'projects', label: 'Meus projetos' },
+  { key: 'support', label: 'Suporte' },
+  { key: 'community', label: 'Acesso à comunidade' },
 ]
 
 /** O plano vale enquanto o período pago não acabou, mesmo cancelado. Pendente nunca vale. */

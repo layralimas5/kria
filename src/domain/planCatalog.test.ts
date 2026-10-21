@@ -9,6 +9,7 @@ const seed = migration('0003_subscriptions.sql')
 const benefits = migration('0004_plan_benefits.sql')
 const pricing = migration('0005_pricing_v2.sql')
 const rebrand = migration('0006_rebrand_vynkio.sql')
+const access = migration('0007_starter_veo_support.sql')
 
 /** O `update` de uma migration que termina em `where slug = '<slug>'`. */
 function updateFor(sql: string, slug: string): string {
@@ -32,12 +33,14 @@ describe('PLAN_CATALOG', () => {
     else expect(seed).toContain(`${row}${plan.monthly_credits}, ${plan.max_personas}`)
   })
 
-  it.each(PLAN_CATALOG)('$slug tem os benefícios da 0005 e a comparação da 0004 com os créditos da 0005', (plan) => {
-    const own = updateFor(pricing, plan.slug)
+  it.each(PLAN_CATALOG)('$slug tem os benefícios da 0007 e a comparação somada da 0004 à 0007', (plan) => {
+    const own = updateFor(access, plan.slug)
     for (const feature of plan.features) expect(own).toContain(`{"label": "${feature.label}", "soon": ${feature.soon}}`)
-    const { credits, ...rest } = plan.comparison
-    const comparison = updateFor(benefits, plan.slug)
-    for (const [key, value] of Object.entries(rest)) expect(comparison).toContain(`"${key}": "${value}"`)
-    expect(own.includes(`"credits": "${credits}"`) || comparison.includes(`"credits": "${credits}"`)).toBe(true)
+    // Cada chave da comparação vale pela migration mais nova que a define.
+    const layers = [access, pricing, benefits].map((sql) => updateFor(sql, plan.slug))
+    for (const [key, value] of Object.entries(plan.comparison)) {
+      const latest = layers.find((layer) => layer.includes(`"${key}":`))
+      expect(latest, key).toContain(`"${key}": "${value}"`)
+    }
   })
 })

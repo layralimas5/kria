@@ -37,6 +37,8 @@ export const FREE_PLAN: SubscriptionPlan = {
     motion_control: 'no',
     ugc: 'no',
     projects: 'no',
+    support: 'no',
+    community: 'no',
   },
 }
 

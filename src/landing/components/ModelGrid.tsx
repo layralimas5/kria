@@ -42,7 +42,7 @@ export function ModelGrid() {
         <h3 className="font-landing text-xl font-bold uppercase tracking-[-0.02em] text-zinc-50 md:text-2xl">
           As melhores IAs <span className="text-accent-soft">num lugar só</span>
         </h3>
-        <p className="text-[13px] text-zinc-400">Você escolhe o modelo, o Vynkio cuida do resto. Veo 3.1 a partir do Pro.</p>
+        <p className="text-[13px] text-zinc-400">Você escolhe o modelo, o Vynkio cuida do resto. Veo 3.1 em todos os planos pagos.</p>
       </div>
       <div className={`group mt-6 flex overflow-hidden ${EDGE_FADE}`}>
         <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused] motion-reduce:w-full motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center">
