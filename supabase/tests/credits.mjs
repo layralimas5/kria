@@ -528,18 +528,17 @@ await test('o limite de personagens vem do plano (grátis 1, starter 2, pro 5, s
   await expectError(savePersona(db, ana, await finishedImage(db, ana)), 'too_many_personas')
 })
 
-await test('Veo 3.1 só gera no Pro e no Studio', async (db) => {
+await test('Veo 3.1 gera em qualquer plano pago, não no Grátis', async (db) => {
   const ana = await newUser(db, 'ana@x.com')
   const { rows } = await create(db, ana, 'foto')
   await db.query(`select complete_generation($1, $2, 'image/png')`, [rows[0].id, `${ana}/${rows[0].id}.png`])
   await setWallet(db, ana, 0, 1000)
 
-  await activate(db, await newSubscription(db, ana, 'starter'), 'pay_1')
   await expectError(create(db, ana, 'video-veo', 'ela acena', null, rows[0].id), 'plan_required')
   const kling = await create(db, ana, 'video-kling', 'ela acena', null, rows[0].id)
   assert.equal(kling.rows[0].status, 'queued')
 
-  await activate(db, await newSubscription(db, ana, 'studio'), 'pay_2')
+  await activate(db, await newSubscription(db, ana, 'starter'), 'pay_1')
   const veo = await create(db, ana, 'video-veo', 'ela acena', null, rows[0].id)
   assert.equal(veo.rows[0].status, 'queued')
 })
