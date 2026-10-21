@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-BR">
+  <body style="margin:0;padding:0;background:#0b0a1a;font-family:Arial,Helvetica,sans-serif;color:#e4e4e7">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0b0a1a;padding:32px 16px">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;background:#13112a;border-radius:20px;padding:32px">
+            <tr>
+              <td style="font-size:22px;font-weight:bold;color:#fafafa;padding-bottom:24px">Vynkio</td>
+            </tr>
+            <tr>
+              <td style="font-size:18px;font-weight:bold;color:#fafafa;padding-bottom:8px">Seu código para redefinir a senha</td>
+            </tr>
+            <tr>
+              <td style="font-size:14px;line-height:22px;color:#a1a1aa;padding-bottom:24px">
+                Volte para a tela de login do Vynkio e digite este código. Ele vale por 15 minutos.
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="background:#1a1735;border-radius:14px;padding:18px 0;font-size:34px;font-weight:bold;letter-spacing:10px;color:#a78bfa">
+                {{ .Token }}
+              </td>
+            </tr>
+            <tr>
+              <td style="font-size:13px;line-height:20px;color:#71717a;padding-top:24px">
+                Não pediu para trocar a senha? Ignore este e-mail. Sua senha continua a mesma e ninguém entra sem este código.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

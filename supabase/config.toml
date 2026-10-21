@@ -9,6 +9,16 @@ minimum_password_length = 8
 
 [auth.email]
 enable_confirmations = true
+# Recuperar senha é por código (não por link): 6 dígitos, válido por 15 minutos.
+# Espelha RESET_CODE_LENGTH em src/domain/resetCode.ts.
+otp_length = 6
+otp_expiry = 900
+# Um e-mail de código por minuto por pessoa (o reenvio da tela espera o mesmo tempo).
+max_frequency = "60s"
+
+[auth.email.template.recovery]
+subject = "Seu código do Vynkio"
+content_path = "./supabase/templates/recovery.html"
 
 # Quem chama estas duas é o fal.ai e o Asaas, não uma pessoa logada.
 [functions.fal-webhook]

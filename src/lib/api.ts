@@ -95,9 +95,20 @@ export async function saveGoal(userId: string, goal: Goal): Promise<Preferences>
   return preferencesSchema.parse(data)
 }
 
+/** Manda por e-mail o código de recuperação (template `recovery` mostra o `{{ .Token }}`). */
 export async function requestPasswordReset(email: string): Promise<void> {
-  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/nova-senha` })
-  if (error) throw new ApiError('reset_failed', 'Não deu para enviar o e-mail agora. Tente de novo em instantes.')
+  const { error } = await supabase.auth.resetPasswordForEmail(email)
+  if (!error) return
+  if (error.status === 429) throw new ApiError('reset_rate_limited', 'Muitos pedidos seguidos. Espere um minuto e peça de novo.')
+  throw new ApiError('reset_failed', 'Não deu para enviar o e-mail agora. Tente de novo em instantes.')
+}
+
+/** Confere o código do e-mail. Se bater, o Supabase abre a sessão e a pessoa já pode trocar a senha. */
+export async function verifyResetCode(email: string, code: string): Promise<void> {
+  const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'recovery' })
+  if (!error) return
+  if (error.status === 429) throw new ApiError('code_rate_limited', 'Muitas tentativas. Espere um minuto e tente de novo.')
+  throw new ApiError('code_invalid', 'Código errado ou vencido. Confira o e-mail ou peça um novo.')
 }
 
 const PERSONA_ERRORS: Record<string, string> = {

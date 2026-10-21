@@ -8,7 +8,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { changePassword, errorMessage } from '@/lib/api'
 import { useSession } from '@/hooks/useSession'
 
-/** Destino do link de recuperação: o Supabase abre a sessão pelo link e aqui a pessoa define a senha. */
+/** Depois do código certo: o Supabase já abriu a sessão de recuperação e aqui a pessoa define a senha nova. */
 export function ResetPasswordPage() {
   const { session, loading } = useSession()
   const navigate = useNavigate()
@@ -41,20 +41,20 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <AuthCard title="Nova senha" description="Escolha uma senha com pelo menos 8 caracteres.">
+    <AuthCard title="Redefinir sua senha" description="Escolha uma senha nova com pelo menos 8 caracteres.">
       {!session ? (
         <div className="space-y-4">
-          <Notice tone="error">O link expirou ou já foi usado. Peça um novo.</Notice>
+          <Notice tone="error">O código expirou ou já foi usado. Peça um novo para continuar.</Notice>
           <Link
             to="/recuperar-senha"
             className="btn-accent flex min-h-11 items-center justify-center rounded-xl text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
-            Pedir novo link
+            Pedir novo código
           </Link>
         </div>
       ) : (
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          <TextField label="Nova senha" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} />
+          <TextField label="Nova senha" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} autoFocus />
           <TextField label="Repita a nova senha" type="password" autoComplete="new-password" value={confirm} onChange={(event) => setConfirm(event.target.value)} minLength={8} />
           {error && <Notice tone="error">{error}</Notice>}
           <Button type="submit" loading={saving} className="min-h-11 w-full">

@@ -61,7 +61,11 @@ npx supabase functions deploy asaas-webhook --no-verify-jwt   # de novo: agora t
   `select cron.schedule('kria-expire-subscriptions', '0 3 * * *', 'select public.expire_lapsed_subscriptions()');`
   (a migration agenda sozinha se a extensão já existir). Sem o cron a expiração ainda acontece na
   próxima geração da pessoa, só o painel demora a refletir.
-- **Recuperar senha:** em Auth > URL Configuration, incluir `<APP_URL>/nova-senha` nas Redirect URLs.
+- **Recuperar senha (por código):** em Auth > Email Templates > Reset Password, colar o conteúdo de
+  `supabase/templates/recovery.html` (assunto "Seu código do Vynkio"); ele mostra o `{{ .Token }}`, não um link.
+  Em Auth > Providers > Email: OTP length 6 e OTP expiration 900 s (iguais ao `supabase/config.toml`).
+  O SMTP padrão do Supabase manda poucos e-mails por hora: antes de abrir ao público, ligar um SMTP próprio
+  (ex.: Resend, grátis até 3.000 e-mails por mês) em Auth > SMTP Settings.
 - **Google (opcional):** Auth > Providers > Google com o client do Google Cloud; depois
   `VITE_AUTH_GOOGLE=true` no front.
 - **Custos:** preencher `models.provider_cost_usd` de cada modelo conferido em `fal.ai/models/<endpoint>`
@@ -84,6 +88,6 @@ npx supabase functions deploy asaas-webhook --no-verify-jwt   # de novo: agora t
 7. Assinar o Starter no sandbox (cartão de teste do Asaas) e ver 300 créditos do plano entrarem e o
    plano aparecer em Assinatura. Trocar para o Pro e conferir que o Starter foi cancelado no painel do Asaas.
 8. Cancelar a assinatura: o plano segue até a data de renovação.
-9. Pedir "Esqueci minha senha", abrir o link e trocar a senha.
+9. Pedir "Esqueci minha senha", receber o código, digitar na tela de login e trocar a senha.
 10. Exportar os dados em Configurações; excluir uma conta de teste e conferir que sumiu do Auth e do Storage.
 11. Trocar `ASAAS_ENV=production` e a chave de produção; repetir os passos 6 e 7 com dinheiro real.
