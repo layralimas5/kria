@@ -30,7 +30,7 @@ export function BuilderPanel({ tab, onTabChange, children, cost, submitting, err
       <header className="px-4 pb-3 pt-5 text-center">
         <p className="text-xs font-semibold text-zinc-400">Crie sua própria persona com</p>
         <h1 className="font-headline mt-1 text-[28px] text-zinc-50">
-          Influencer <span className="text-accent">IA</span>
+          Influencer <span className="text-accent-soft">IA</span>
         </h1>
       </header>
 

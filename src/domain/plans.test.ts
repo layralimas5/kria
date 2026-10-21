@@ -30,7 +30,7 @@ describe('isEntitled', () => {
 describe('subscriptionPlanSchema', () => {
   it('benefício sem "soon" conta como disponível', () => {
     const plan = subscriptionPlanSchema.parse({
-      slug: 'pro', name: 'Kria Pro', tagline: '', price_cents: 7990, monthly_credits: 700, max_personas: 5,
+      slug: 'pro', name: 'Vynkio Pro', tagline: '', price_cents: 7990, monthly_credits: 700, max_personas: 5,
       cta_label: 'Quero ser Pro', badge: 'Mais popular', highlight: true, position: 20,
       features: [{ label: '700 créditos' }, { label: 'Motion Control', soon: true }],
       comparison: { credits: '700 por mês' },

@@ -8,6 +8,7 @@ const migration = (file: string) => fs.readFileSync(path.resolve(__dirname, '../
 const seed = migration('0003_subscriptions.sql')
 const benefits = migration('0004_plan_benefits.sql')
 const pricing = migration('0005_pricing_v2.sql')
+const rebrand = migration('0006_rebrand_vynkio.sql')
 
 /** O `update` de uma migration que termina em `where slug = '<slug>'`. */
 function updateFor(sql: string, slug: string): string {
@@ -20,8 +21,10 @@ describe('PLAN_CATALOG', () => {
     for (const plan of PLAN_CATALOG) expect(() => subscriptionPlanSchema.parse(plan)).not.toThrow()
   })
 
-  it.each(PLAN_CATALOG)('$slug tem preço e limite do seed e os créditos da 0005', (plan) => {
-    const row = `('${plan.slug}', '${plan.name}', '${plan.tagline}', ${plan.price_cents}, `
+  it.each(PLAN_CATALOG)('$slug tem preço e limite do seed, os créditos da 0005 e o nome da 0006', (plan) => {
+    expect(rebrand).toContain(`set name = '${plan.name}' where slug = '${plan.slug}'`)
+    const seedName = seed.match(new RegExp(`\\('${plan.slug}', '([^']+)'`))?.[1]
+    const row = `('${plan.slug}', '${seedName}', '${plan.tagline}', ${plan.price_cents}, `
     expect(seed).toContain(row)
     expect(seed).toContain(`, ${plan.max_personas}, '${plan.cta_label}'`)
     const credits = updateFor(pricing, plan.slug).match(/monthly_credits = (\d+)/)?.[1]

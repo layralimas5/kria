@@ -25,7 +25,7 @@ export function MotionTab({ motion, personas }: MotionTabProps) {
         {personas.length === 0 ? (
           <p className="rounded-2xl bg-surface-2 p-4 text-sm text-zinc-400">
             Você ainda não tem persona. Crie uma na aba ao lado ou{' '}
-            <Link to="/galeria" className="font-semibold text-accent hover:underline">
+            <Link to="/galeria" className="font-semibold text-accent-soft hover:underline">
               salve uma imagem da galeria
             </Link>
             .
@@ -111,7 +111,7 @@ export function MotionTab({ motion, personas }: MotionTabProps) {
                   selected ? 'bg-surface-2 ring-accent/60' : 'bg-surface-2/60 ring-white/[0.05] hover:bg-surface-2',
                 )}
               >
-                <Clapperboard className={clsx('size-5 shrink-0', selected ? 'text-accent' : 'text-zinc-400')} aria-hidden="true" />
+                <Clapperboard className={clsx('size-5 shrink-0', selected ? 'text-accent-soft' : 'text-zinc-400')} aria-hidden="true" />
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-1.5 text-sm font-bold text-zinc-100">
                     {model.name}

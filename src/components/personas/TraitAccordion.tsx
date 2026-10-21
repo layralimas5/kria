@@ -117,7 +117,7 @@ export function TraitAccordion({ group, values, open, onOpenChange, onToggle }: 
           onClick={() => onOpenChange(!open)}
           className={clsx('flex min-h-11 w-full items-center gap-2.5 rounded-2xl px-3.5 text-left', FOCUS)}
         >
-          <Icon className={clsx('size-4 shrink-0', summary ? 'text-accent' : 'text-zinc-400')} aria-hidden="true" />
+          <Icon className={clsx('size-4 shrink-0', summary ? 'text-accent-soft' : 'text-zinc-400')} aria-hidden="true" />
           <span className="shrink-0 text-[14px] font-semibold text-zinc-300">
             {group.label} <span className="text-zinc-500">· {group.options.length}</span>
           </span>

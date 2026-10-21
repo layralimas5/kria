@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import type { ToolBadge } from '../content'
 
 const STYLES: Record<ToolBadge, { label: string; className: string }> = {
-  top: { label: 'TOP', className: 'bg-[#ff3d8b] text-white' },
+  top: { label: 'TOP', className: 'bg-hot text-stage' },
   novo: { label: 'NOVO', className: 'bg-accent text-accent-ink' },
   breve: { label: 'EM BREVE', className: 'bg-white/10 text-zinc-300' },
 }

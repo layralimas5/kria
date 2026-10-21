@@ -15,7 +15,7 @@ function ModelLogo({ kind, logo }: Pick<AiModel, 'kind' | 'logo'>) {
     return <img src={`/ai-logos/${logo}.svg`} alt="" width={24} height={24} className="size-6 shrink-0" />
   }
   const Icon = KIND_ICONS[kind]
-  return <Icon className="size-6 shrink-0 text-accent" aria-hidden="true" />
+  return <Icon className="size-6 shrink-0 text-accent-soft" aria-hidden="true" />
 }
 
 function ModelList({ hidden = false }: { readonly hidden?: boolean }) {
@@ -40,9 +40,9 @@ export function ModelGrid() {
     <div className="-mx-4 mt-10 md:mt-14">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-4 md:flex-row md:items-end md:justify-between">
         <h3 className="font-landing text-xl font-bold uppercase tracking-[-0.02em] text-zinc-50 md:text-2xl">
-          As melhores IAs <span className="text-accent">num lugar só</span>
+          As melhores IAs <span className="text-accent-soft">num lugar só</span>
         </h3>
-        <p className="text-[13px] text-zinc-400">Você escolhe o modelo, o krIA cuida do resto. Veo 3.1 a partir do Pro.</p>
+        <p className="text-[13px] text-zinc-400">Você escolhe o modelo, o Vynkio cuida do resto. Veo 3.1 a partir do Pro.</p>
       </div>
       <div className={`group mt-6 flex overflow-hidden ${EDGE_FADE}`}>
         <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused] motion-reduce:w-full motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center">

@@ -15,7 +15,7 @@ export function Gallery() {
       <div className="mx-auto max-w-[1440px]">
         <SectionHeading
           id="galeria-title"
-          title="Feito no krIA"
+          title="Feito no Vynkio"
           lead="Cada vídeo começou com uma frase. Passa o mouse (ou toca) pra ver o prompt que gerou."
           actions={
             <>
@@ -51,7 +51,7 @@ export function Gallery() {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-56 items-end justify-center bg-gradient-to-t from-stage via-stage/80 to-transparent pb-6">
             <Link
               to={SIGNUP_PATH}
-              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-xl bg-accent/20 px-5 text-[15px] font-bold text-accent ring-1 ring-accent/30 backdrop-blur-md transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-xl bg-accent/20 px-5 text-[15px] font-bold text-accent-soft ring-1 ring-accent/30 backdrop-blur-md transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               Criar o meu agora
               <ArrowUpRight className="size-4" aria-hidden="true" />

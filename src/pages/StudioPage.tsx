@@ -21,7 +21,7 @@ function EmptyHero() {
         <span className="absolute h-24 w-20 translate-x-20 rotate-12 rounded-xl border-2 border-white/10" />
       </div>
       <h2 className="font-headline text-4xl text-balance text-zinc-50 md:text-6xl">
-        Crie. Anime. <span className="text-accent">Publique.</span>
+        Crie. Anime. <span className="text-accent-soft">Publique.</span>
       </h2>
       <p className="mt-5 max-w-lg text-pretty text-zinc-400">
         Escreva o que você quer ver logo abaixo. Gere uma foto, transforme em persona e anime em vídeo.

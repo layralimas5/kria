@@ -2,7 +2,7 @@
 // shader WebGL, renderizadas quadro a quadro (tempo fixo por quadro, sem engasgo)
 // e montadas em WebM pelo ffmpeg que vem com o Playwright. Também salva um pôster jpg.
 // Nada aqui imita pessoa ou marca real.
-// Quando houver vídeos reais gerados no Kria, salvar em public/landing e apontar
+// Quando houver vídeos reais gerados no Vynkio, salvar em public/landing e apontar
 // em src/landing/content.ts (ver docs/landing.md).
 // Roda com: npm run landing:assets
 import { spawn } from 'node:child_process'
@@ -44,7 +44,7 @@ vec3 nrm(vec3 p){vec2 e=vec2(.002,0);return normalize(vec3(map(p+e.xyy)-map(p-e.
 vec3 env(vec3 d){
   float y=d.y*.5+.5;
   vec3 c=mix(vec3(.05,.05,.08),vec3(.55,.55,.62),smoothstep(-.1,.9,d.y));
-  c+=vec3(1.,.42,.17)*pow(max(dot(d,normalize(vec3(.8,.3,.5))),0.),6.)*1.4;
+  c+=vec3(.23,.51,.96)*pow(max(dot(d,normalize(vec3(.8,.3,.5))),0.),6.)*1.4;
   c+=vec3(.55,.35,1.)*pow(max(dot(d,normalize(vec3(-.9,.0,.4))),0.),4.)*1.3;
   c+=vec3(1.)*smoothstep(.985,1.,dot(d,normalize(vec3(.1,.9,.4))))*2.;
   return c;}
@@ -52,7 +52,7 @@ vec3 scene(vec2 uv,vec2 p){
   vec3 ro=vec3(0,0,4.),rd=normalize(vec3(p,-1.6));
   float t=0.;for(int i=0;i<64;i++){float d=map(ro+rd*t);if(d<.001||t>8.)break;t+=d;}
   vec3 col=mix(vec3(.03,.03,.05),vec3(.07,.05,.12),uv.y);
-  col+=vec3(1.,.42,.17)*.06*exp(-6.*length(p-vec2(.3,.4)));
+  col+=vec3(.23,.51,.96)*.06*exp(-6.*length(p-vec2(.3,.4)));
   if(t<8.){vec3 pos=ro+rd*t,n=nrm(pos),r=reflect(rd,n);
     float fr=pow(1.-max(dot(n,-rd),0.),3.);
     col=env(r)*(.6+.4*fr)+vec3(.02);}
@@ -67,7 +67,7 @@ vec3 scene(vec2 uv,vec2 p){
   for(int i=0;i<5;i++){float fi=float(i);
     float y=.55+fi*.06+.08*sin(uv.x*3.+T+fi)+.05*fbm(vec2(uv.x*2.5+T*.4+fi,fi));
     float band=exp(-pow((uv.y-y)*14.,2.))*(.55+.45*fbm(vec2(uv.x*5.-T*.6,fi*3.)));
-    vec3 tint=mix(vec3(1.,.5,.25),vec3(.55,.3,1.),fi/4.);
+    vec3 tint=mix(vec3(.23,.51,.96),vec3(.55,.3,1.),fi/4.);
     col+=tint*band*.55;
     col+=tint*.25*smoothstep(y,y+.25,uv.y)*exp(-(uv.y-y)*5.)*band*3.;}
   float ridge=.18+.06*fbm(vec2(uv.x*3.,1.))+.03*sin(uv.x*9.);
@@ -103,7 +103,7 @@ vec3 scene(vec2 uv,vec2 p){
   float z=.35/r+T/6.2831*4.;
   float ring=pow(abs(sin(z*3.14159*2.)),24.);
   float ribs=pow(abs(sin(a*6.+z*.5)),40.);
-  vec3 c1=vec3(1.,.42,.17),c2=vec3(.6,.35,1.);
+  vec3 c1=vec3(.23,.51,.96),c2=vec3(.6,.35,1.);
   vec3 col=mix(c2,c1,.5+.5*sin(z*.8))*(ring*1.2+ribs*.6);
   col*=smoothstep(0.,.6,r);
   col+=mix(c2,c1,.5)*.12*exp(-r*3.);

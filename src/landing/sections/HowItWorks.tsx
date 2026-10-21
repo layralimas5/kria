@@ -11,7 +11,7 @@ export function HowItWorks() {
         <ol className="mt-10 grid gap-3 md:grid-cols-3">
           {STEPS.map(({ title, text }, index) => (
             <Reveal key={title} as="li" delay={index * 0.06} className={`rounded-2xl border border-white/[0.06] bg-panel p-6 ${CARD_HOVER}`}>
-              <span className="font-landing text-6xl font-bold leading-none tracking-[-0.05em] text-accent">0{index + 1}</span>
+              <span className="font-landing text-6xl font-bold leading-none tracking-[-0.05em] text-accent-soft">0{index + 1}</span>
               <h3 className="mt-6 font-landing text-xl font-bold uppercase tracking-[-0.02em] text-zinc-50">{title}</h3>
               <p className="mt-1.5 text-pretty text-[15px] text-zinc-400">{text}</p>
             </Reveal>

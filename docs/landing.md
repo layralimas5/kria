@@ -2,7 +2,8 @@
 
 Rota `/` (`src/landing`). O app saiu de `/` e foi pra `/estudio`. Todo CTA leva pra `/entrar`.
 Visual inspirado na home da Higgsfield: fundo grafite, títulos em Space Grotesk caixa alta,
-laranja do Kria (#ff6b2c), botão "com degrau", grade de mídia de ponta a ponta.
+botão "com degrau", grade de mídia de ponta a ponta. Desde 20/10 a marca é Vynkio, na
+paleta da Nivora (fundo noite, roxo, azul e dourado; tokens em `src/index.css`).
 
 - Textos, vídeos, ferramentas, pacotes e FAQ: `src/landing/content.ts`. Preços e custos espelham
   `credit_packs` e `models`; se mudar no banco, mudar lá também.

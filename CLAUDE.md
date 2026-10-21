@@ -1,7 +1,13 @@
-# krIA
+# Vynkio
 
 SaaS de criação com IA: a pessoa cria influenciadores (personas com rosto
 consistente) e gera fotos e vídeos com eles, pagando por crédito. Repositório na pasta `pessoais/kria`.
+
+**Marca (20/10/2026):** o produto se chama **Vynkio** ("o Vynkio"). A paleta é a da Nivora:
+fundo noite `#0b0a1a`, roxo `#7c3aed` (botão e selo, texto branco), roxo claro `#a78bfa`
+(texto e ícone sobre o escuro), azul `#3b82f6` (gradiente da marca) e dourado `#f5b841`
+(selo TOP e destaque). Tokens em `src/index.css`. A pasta e os identificadores internos
+(`kria-*` no localStorage, cron, project_id) continuam com o nome antigo.
 
 ## Stack
 

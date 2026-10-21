@@ -1,4 +1,4 @@
-# Kria IA
+# Vynkio
 
 Influenciadores e vídeos com IA, pagos por crédito.
 

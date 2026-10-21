@@ -73,7 +73,7 @@ function SourceSlot({ studio, personas, images }: ComposerProps) {
             aria-label={path ? 'Trocar persona ou imagem' : 'Escolher persona ou imagem'}
             className={clsx(
               'grid size-14 shrink-0 place-items-center overflow-hidden rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              path ? 'ring-2 ring-accent' : 'border border-dashed border-white/20 text-zinc-400 hover:border-accent/60 hover:text-accent',
+              path ? 'ring-2 ring-accent' : 'border border-dashed border-white/20 text-zinc-400 hover:border-accent/60 hover:text-accent-soft',
             )}
           >
             {path ? <MediaView path={path} kind="image" alt="" className="size-full" /> : <Plus className="size-5" aria-hidden="true" />}
@@ -147,7 +147,7 @@ export function Composer({ studio, personas, images }: ComposerProps) {
             {!studio.canAfford && (
               <>
                 {' '}
-                <Link to="/creditos" className="font-semibold text-accent underline-offset-4 hover:underline">
+                <Link to="/creditos" className="font-semibold text-accent-soft underline-offset-4 hover:underline">
                   Comprar créditos
                 </Link>
               </>

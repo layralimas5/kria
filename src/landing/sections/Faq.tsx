@@ -57,7 +57,7 @@ function Question({ item, index, open, onToggle }: QuestionProps) {
     <li
       className={clsx(
         'rounded-2xl border transition-colors duration-300',
-        open ? 'border-accent/40 bg-[linear-gradient(180deg,rgba(255,107,44,0.07),transparent)]' : 'border-white/[0.06] bg-panel hover:border-white/[0.12]',
+        open ? 'border-accent/40 bg-[linear-gradient(180deg,rgba(124,58,237,0.07),transparent)]' : 'border-white/[0.06] bg-panel hover:border-white/[0.12]',
       )}
     >
       <h3>
@@ -72,7 +72,7 @@ function Question({ item, index, open, onToggle }: QuestionProps) {
           <span
             className={clsx(
               'grid size-10 shrink-0 place-items-center rounded-xl transition-colors duration-300',
-              open ? 'bg-accent text-accent-ink' : 'bg-white/[0.05] text-accent',
+              open ? 'bg-accent text-accent-ink' : 'bg-white/[0.05] text-accent-soft',
             )}
           >
             <Icon className="size-[18px]" aria-hidden="true" />
@@ -81,7 +81,7 @@ function Question({ item, index, open, onToggle }: QuestionProps) {
             <span className="block font-mono text-[11px] text-zinc-500">{String(index + 1).padStart(2, '0')}</span>
             <span className="block text-[15px] font-semibold text-zinc-50 md:text-base">{item.question}</span>
           </span>
-          <Plus className={clsx('size-5 shrink-0 text-accent transition-transform duration-300', open && 'rotate-45')} aria-hidden="true" />
+          <Plus className={clsx('size-5 shrink-0 text-accent-soft transition-transform duration-300', open && 'rotate-45')} aria-hidden="true" />
         </button>
       </h3>
       <AnimatePresence initial={false}>
@@ -115,7 +115,7 @@ export function Faq() {
           <ul className="mt-8 space-y-2">
             {PROMISES.map(({ icon: Icon, title, text }) => (
               <li key={title} className="flex items-center gap-3 rounded-2xl border border-white/[0.06] px-4 py-3">
-                <Icon className="size-5 shrink-0 text-accent" aria-hidden="true" />
+                <Icon className="size-5 shrink-0 text-accent-soft" aria-hidden="true" />
                 <span>
                   <span className="block text-sm font-semibold text-zinc-100">{title}</span>
                   <span className="block text-[13px] text-zinc-500">{text}</span>

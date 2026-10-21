@@ -35,7 +35,7 @@ export function CreditsExplainer() {
         <ul className="grid gap-3 sm:grid-cols-2">
           {USES.map(({ icon: Icon, title, text, soon }) => (
             <li key={title} className="flex gap-3 rounded-2xl border border-white/[0.06] bg-stage/60 p-4">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent-soft">
                 <Icon className="size-5" aria-hidden="true" />
               </span>
               <span>

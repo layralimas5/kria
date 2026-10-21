@@ -92,7 +92,7 @@ export interface AiModel {
   readonly logo?: string
 }
 
-// Catálogo de IAs liberadas no krIA. Antes de publicar, cada uma precisa estar
+// Catálogo de IAs liberadas no Vynkio. Antes de publicar, cada uma precisa estar
 // ativa na tabela `models` do app; senão a página promete o que o app não gera.
 export const AI_MODELS: readonly AiModel[] = [
   { name: 'Nano Banana 2', kind: 'Imagem', logo: 'nanobanana-color' },
@@ -114,7 +114,7 @@ export const AI_MODELS: readonly AiModel[] = [
 
 export const STEPS = [
   { title: 'Descreva', text: 'Escreve em português o que você quer ver. Sem termo técnico, sem prompt em inglês.' },
-  { title: 'Escolha', text: 'Foto ou vídeo. O krIA usa o modelo de IA certo por trás e você só vê o resultado.' },
+  { title: 'Escolha', text: 'Foto ou vídeo. O Vynkio usa o modelo de IA certo por trás e você só vê o resultado.' },
   { title: 'Poste', text: 'Arquivo vertical pronto pro Reels, TikTok ou anúncio. Baixa e publica.' },
 ] as const
 
@@ -141,7 +141,7 @@ export interface FaqItem {
 export const FAQ: readonly FaqItem[] = [
   {
     icon: 'what',
-    question: 'O que é o krIA?',
+    question: 'O que é o Vynkio?',
     answer:
       'Uma plataforma brasileira que junta ferramentas de IA num lugar só: você cria personagens virtuais e gera imagens e vídeos com eles, escrevendo em português.',
   },
@@ -155,18 +155,18 @@ export const FAQ: readonly FaqItem[] = [
     icon: 'persona',
     question: 'Posso criar influenciadores virtuais?',
     answer:
-      'Sim. Você descreve a pessoa, gera retratos até gostar e salva como personagem, que mantém o mesmo rosto nas próximas criações. Por segurança, personagens nascem só de imagens geradas no krIA: não dá para usar foto de gente real.',
+      'Sim. Você descreve a pessoa, gera retratos até gostar e salva como personagem, que mantém o mesmo rosto nas próximas criações. Por segurança, personagens nascem só de imagens geradas no Vynkio: não dá para usar foto de gente real.',
   },
   {
     icon: 'video',
     question: 'Posso transformar imagens em vídeos?',
-    answer: 'Sim. Qualquer imagem gerada no krIA pode virar vídeo com Kling (5 segundos, com áudio) ou, a partir do Pro, Veo 3.1 (8 segundos, com fala e som).',
+    answer: 'Sim. Qualquer imagem gerada no Vynkio pode virar vídeo com Kling (5 segundos, com áudio) ou, a partir do Pro, Veo 3.1 (8 segundos, com fala e som).',
   },
   {
     icon: 'commercial',
     question: 'Posso utilizar minhas criações comercialmente?',
     answer:
-      'Sim, em perfis, anúncios e projetos, respeitando os termos de uso do krIA e dos provedores dos modelos de IA. Você responde pelo uso e deve marcar o conteúdo como gerado por IA quando a rede social pedir.',
+      'Sim, em perfis, anúncios e projetos, respeitando os termos de uso do Vynkio e dos provedores dos modelos de IA. Você responde pelo uso e deve marcar o conteúdo como gerado por IA quando a rede social pedir.',
   },
   {
     icon: 'rollover',

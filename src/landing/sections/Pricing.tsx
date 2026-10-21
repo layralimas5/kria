@@ -21,7 +21,7 @@ function PlansJsonLd({ plans }: { readonly plans: readonly SubscriptionPlan[] })
   const data = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: 'krIA',
+    name: 'Vynkio',
     description: 'Plataforma brasileira de criação com IA: personagens, imagens e vídeos.',
     offers: plans.map((plan) => ({
       '@type': 'Offer',
@@ -92,7 +92,7 @@ export function Pricing() {
             <ul className="mx-auto mt-8 flex max-w-6xl flex-wrap justify-center gap-x-6 gap-y-2 text-[13px] text-zinc-400">
               {TRUST.map(({ icon: Icon, text }) => (
                 <li key={text} className="flex items-center gap-1.5">
-                  <Icon className="size-4 text-accent" aria-hidden="true" />
+                  <Icon className="size-4 text-accent-soft" aria-hidden="true" />
                   {text}
                 </li>
               ))}

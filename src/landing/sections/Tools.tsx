@@ -25,7 +25,7 @@ function PromoCard() {
       <h2 id="ferramentas-title" className="font-landing text-[2rem] font-bold uppercase leading-[0.92] tracking-[-0.035em] text-zinc-50 md:text-[2.5rem]">
         Crie sua conta e ganhe
         <br />
-        <span className="text-accent">{WELCOME_CREDITS} créditos</span>
+        <span className="text-accent-soft">{WELCOME_CREDITS} créditos</span>
       </h2>
       <ul className="mt-4 space-y-1.5 text-sm font-medium text-zinc-200">
         {PERKS.map((perk) => (
@@ -55,7 +55,7 @@ export function Tools() {
                   className={`group flex h-full min-h-[136px] flex-col rounded-2xl border border-white/[0.06] bg-panel p-4 transition-colors hover:border-white/[0.12] hover:bg-panel-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${CARD_HOVER}`}
                 >
                   <span className="flex items-start justify-between">
-                    <Icon className="size-5 text-accent" aria-hidden="true" />
+                    <Icon className="size-5 text-accent-soft" aria-hidden="true" />
                     <ArrowUpRight className="size-4 text-zinc-600 transition-colors group-hover:text-zinc-200" aria-hidden="true" />
                   </span>
                   <span className="mt-auto flex flex-wrap items-center gap-2 pt-6 text-[15px] font-semibold text-zinc-50">

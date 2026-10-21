@@ -9,22 +9,27 @@
   /* Títulos da landing (estilo Higgsfield). */
   --font-landing: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
 
-  /* Laranja do Kria IA (trocado do lima em 18/10 a pedido da Lay). */
-  --color-accent: #ff6b2c;
-  --color-accent-strong: #ff8a50;
-  --color-accent-deep: #b8410f;
-  --color-accent-ink: #0b0b0f;
+  /* Vynkio (20/10): paleta da Nivora. Roxo galáxia para fundos de botão e selo
+     (texto branco, 5,7:1), roxo claro para texto e ícone sobre o escuro, azul no
+     gradiente da marca e dourado nos destaques. */
+  --color-accent: #7c3aed;
+  --color-accent-strong: #8b5cf6;
+  --color-accent-deep: #5b21b6;
+  --color-accent-ink: #ffffff;
+  --color-accent-soft: #a78bfa;
+  --color-galaxy: #3b82f6;
+  --color-hot: #f5b841;
 
   /* Superfícies em degraus, do fundo ao elemento mais alto. */
-  --color-canvas: #0a0a0b;
-  --color-surface: #131315;
-  --color-surface-2: #1a1a1d;
-  --color-surface-3: #232327;
+  --color-canvas: #08071a;
+  --color-surface: #13112a;
+  --color-surface-2: #1a1735;
+  --color-surface-3: #24203f;
 
-  /* Superfícies da landing. */
-  --color-stage: #0f1113;
-  --color-panel: #16181b;
-  --color-panel-hover: #1c1f23;
+  /* Superfícies da landing: o fundo noite da Nivora. */
+  --color-stage: #0b0a1a;
+  --color-panel: #13112a;
+  --color-panel-hover: #1a1735;
 
   --animate-card-pulse: card-pulse 1s ease-in-out infinite;
   --animate-marquee: marquee 45s linear infinite;

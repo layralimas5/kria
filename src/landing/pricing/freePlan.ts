@@ -6,7 +6,7 @@ import { WELCOME_CREDITS } from '../content'
 // plano `gratis` do app (0006_pricing_v2), que também não tem checkout.
 export const FREE_PLAN: SubscriptionPlan = {
   slug: 'gratis',
-  name: 'krIA Grátis',
+  name: 'Vynkio Grátis',
   tagline: 'Teste com seus personagens antes de assinar.',
   price_cents: 0,
   monthly_credits: WELCOME_CREDITS,

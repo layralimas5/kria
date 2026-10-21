@@ -28,7 +28,7 @@ export function ModelTiles({ models, selected, onSelect }: ModelTilesProps) {
             )}
           >
             <span className="flex items-start justify-between gap-2">
-              <ModelIcon model={model} className={clsx('size-5', active ? 'text-accent' : 'text-zinc-300')} />
+              <ModelIcon model={model} className={clsx('size-5', active ? 'text-accent-soft' : 'text-zinc-300')} />
               <span className="rounded-md bg-surface-3 px-1.5 py-0.5 text-[11px] font-semibold text-zinc-400">
                 {model.kind === 'video' ? 'Vídeo' : 'Imagem'}
               </span>

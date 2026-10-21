@@ -99,7 +99,7 @@ export function UserMenu() {
             </Link>
             <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3">
               <span className="flex items-center gap-2 text-[14px] font-bold text-zinc-100">
-                <Crown className="size-4 text-accent" aria-hidden="true" />
+                <Crown className="size-4 text-accent-soft" aria-hidden="true" />
                 Mais créditos
               </span>
               <Link

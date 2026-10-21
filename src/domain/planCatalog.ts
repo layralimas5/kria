@@ -10,7 +10,7 @@ const feature = (label: string, soon = false) => ({ label, soon })
 export const PLAN_CATALOG: SubscriptionPlan[] = [
   {
     slug: 'starter',
-    name: 'krIA Starter',
+    name: 'Vynkio Starter',
     tagline: 'Seu primeiro passo na criação com IA.',
     price_cents: 5990,
     monthly_credits: 300,
@@ -34,7 +34,7 @@ export const PLAN_CATALOG: SubscriptionPlan[] = [
   },
   {
     slug: 'pro',
-    name: 'krIA Pro',
+    name: 'Vynkio Pro',
     tagline: 'Crie mais, experimente mais e produza conteúdos incríveis.',
     price_cents: 7990,
     monthly_credits: 450,
@@ -57,7 +57,7 @@ export const PLAN_CATALOG: SubscriptionPlan[] = [
   },
   {
     slug: 'studio',
-    name: 'krIA Studio',
+    name: 'Vynkio Studio',
     tagline: 'Para creators, marcas e profissionais que querem produzir em escala.',
     price_cents: 14990,
     monthly_credits: 1000,

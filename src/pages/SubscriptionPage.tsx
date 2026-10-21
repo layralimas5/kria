@@ -139,14 +139,14 @@ function PlanOptions({ plans, currentSlug }: { plans: SubscriptionPlan[]; curren
               </p>
               <ul className="mt-3 space-y-1.5 text-sm text-zinc-300">
                 <li className="flex items-center gap-2">
-                  <CreditCard className="size-4 text-accent" aria-hidden="true" /> {plan.monthly_credits.toLocaleString('pt-BR')} créditos por mês
+                  <CreditCard className="size-4 text-accent-soft" aria-hidden="true" /> {plan.monthly_credits.toLocaleString('pt-BR')} créditos por mês
                 </li>
                 <li className="flex items-center gap-2">
-                  <UserRound className="size-4 text-accent" aria-hidden="true" /> Até {plan.max_personas} personagens
+                  <UserRound className="size-4 text-accent-soft" aria-hidden="true" /> Até {plan.max_personas} personagens
                 </li>
               </ul>
               {current ? (
-                <p className="mt-4 flex items-center gap-1.5 text-sm font-medium text-accent">
+                <p className="mt-4 flex items-center gap-1.5 text-sm font-medium text-accent-soft">
                   <Check className="size-4" aria-hidden="true" /> Plano atual
                 </p>
               ) : (

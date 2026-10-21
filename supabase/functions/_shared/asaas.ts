@@ -39,7 +39,7 @@ async function call<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: u
       accept: 'application/json',
       'content-type': 'application/json',
       access_token: Deno.env.get('ASAAS_API_KEY') ?? '',
-      'User-Agent': 'krIA',
+      'User-Agent': 'Vynkio',
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
@@ -79,7 +79,7 @@ export function createCreditCheckout(input: CreditCheckoutInput): Promise<AsaasC
     callback: { successUrl: input.successUrl, cancelUrl: input.cancelUrl, expiredUrl: input.cancelUrl },
     items: [
       {
-        name: `krIA ${input.packName}`.slice(0, 30),
+        name: `Vynkio ${input.packName}`.slice(0, 30),
         description: `${input.credits} créditos para gerar imagens e vídeos`.slice(0, 150),
         quantity: 1,
         value: input.priceCents / 100,
@@ -111,7 +111,7 @@ export function createSubscriptionCheckout(input: SubscriptionCheckoutInput): Pr
     items: [
       {
         name: input.planName.slice(0, 30),
-        description: `${input.monthlyCredits} créditos por mês no krIA`.slice(0, 150),
+        description: `${input.monthlyCredits} créditos por mês no Vynkio`.slice(0, 150),
         quantity: 1,
         value: input.priceCents / 100,
         imageBase64: PRODUCT_IMAGE_BASE64,

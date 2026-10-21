@@ -205,7 +205,7 @@ await test('conta nova ganha um @ único e válido a partir do e-mail', async (d
   assert.notEqual(rows[0].username, rows[1].username)
   const short = await newUser(db, 'x@x.com')
   const { rows: shortRows } = await db.query(`select username from profiles where id = $1`, [short])
-  assert.match(shortRows[0].username, /^kria\d{4}$/)
+  assert.match(shortRows[0].username, /^vynkio\d{4}$/)
 })
 
 await test('perfil: a pessoa edita o próprio, com avatar só da própria pasta', async (db) => {

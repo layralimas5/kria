@@ -22,7 +22,7 @@ export function Feed() {
               <LoopVideo clip={clip} className="aspect-[9/16] w-full object-cover" />
               <figcaption className="flex items-center justify-between gap-2 px-3 py-2.5 text-[12px]">
                 <span className="truncate font-semibold text-zinc-100">{clip.title}</span>
-                <span className="shrink-0 text-zinc-500">krIA</span>
+                <span className="shrink-0 text-zinc-500">Vynkio</span>
               </figcaption>
             </figure>
           </li>
@@ -31,9 +31,9 @@ export function Feed() {
 
       <div className="mx-auto max-w-6xl px-4 pt-20 md:pt-28">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Influenciadores de IA</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-soft">Influenciadores de IA</p>
           <h2 id="feed-title" className="mt-3 text-balance font-landing text-3xl font-bold uppercase leading-[0.95] tracking-[-0.03em] text-zinc-50 md:text-5xl">
-            Eles já estão no seu feed. <span className="text-accent">Você só não sabia que eram IA.</span>
+            Eles já estão no seu feed. <span className="text-accent-soft">Você só não sabia que eram IA.</span>
           </h2>
           <p className="mt-4 text-pretty text-[15px] text-zinc-400 md:text-base">
             Personagens que parecem gente de verdade, em situações absurdas, que chegam a milhões de visualizações. Agora você cria o seu.
@@ -42,7 +42,7 @@ export function Feed() {
         <ul className="mt-10 grid gap-4 md:grid-cols-3">
           {REASONS.map(({ icon: Icon, title, text }, index) => (
             <Reveal key={title} as="li" delay={index * 0.06} className={`rounded-2xl border border-white/[0.06] bg-panel p-6 ${CARD_HOVER}`}>
-              <span className="grid size-11 place-items-center rounded-xl bg-accent/10 text-accent ring-1 ring-accent/20">
+              <span className="grid size-11 place-items-center rounded-xl bg-accent/10 text-accent-soft ring-1 ring-accent/20">
                 <Icon className="size-5" aria-hidden="true" />
               </span>
               <h3 className="mt-5 text-lg font-semibold text-zinc-50">{title}</h3>

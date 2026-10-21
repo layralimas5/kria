@@ -60,10 +60,10 @@ export function SubscribePage() {
           </div>
         ) : (
           <div className="mt-10 flex flex-col items-center gap-4" role="status">
-            <Spinner className="size-7 text-accent" />
+            <Spinner className="size-7 text-accent-soft" />
             <p className="text-lg font-semibold text-zinc-50">Abrindo o pagamento seguro</p>
             <p className="flex items-center gap-1.5 text-sm text-zinc-400">
-              <Lock className="size-3.5" aria-hidden="true" /> Checkout do Asaas. O Kria não vê os dados do seu cartão.
+              <Lock className="size-3.5" aria-hidden="true" /> Checkout do Asaas. O Vynkio não vê os dados do seu cartão.
             </p>
           </div>
         )}

@@ -23,7 +23,7 @@ export function PlanCard({ plan }: { readonly plan: SubscriptionPlan }) {
       className={clsx(
         'relative flex h-full flex-col rounded-2xl border p-6 md:p-7',
         CARD_HOVER,
-        plan.highlight ? 'border-accent/70 bg-[linear-gradient(180deg,rgba(255,107,44,0.09),transparent_45%)] bg-panel' : 'border-white/[0.07] bg-panel',
+        plan.highlight ? 'border-accent/70 bg-[linear-gradient(180deg,rgba(124,58,237,0.09),transparent_45%)] bg-panel' : 'border-white/[0.07] bg-panel',
       )}
     >
       {plan.badge && (
@@ -43,7 +43,7 @@ export function PlanCard({ plan }: { readonly plan: SubscriptionPlan }) {
         {!free && <span className="text-sm text-zinc-500">/mês</span>}
       </p>
       <p className="mt-2 text-sm text-zinc-300">
-        <span className="font-semibold text-accent">{plan.monthly_credits.toLocaleString('pt-BR')} créditos</span>{' '}
+        <span className="font-semibold text-accent-soft">{plan.monthly_credits.toLocaleString('pt-BR')} créditos</span>{' '}
         {free ? 'ao criar a conta' : 'todo mês'}
       </p>
 
@@ -63,7 +63,7 @@ export function PlanCard({ plan }: { readonly plan: SubscriptionPlan }) {
       <ul className="mt-6 space-y-2.5 border-t border-white/[0.06] pt-5 text-sm" aria-label={`O que vem no ${plan.name}`}>
         {available.map((feature) => (
           <li key={feature.label} className="flex gap-2.5 text-zinc-200">
-            <Check className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
+            <Check className="mt-0.5 size-4 shrink-0 text-accent-soft" aria-hidden="true" />
             {feature.label}
           </li>
         ))}

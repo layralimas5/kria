@@ -10,7 +10,7 @@ const NAV: readonly { href: string; label: string; badge?: ToolBadge }[] = [
   { href: '#ferramentas', label: 'Vídeo' },
   { href: '#ferramentas', label: 'Imagem' },
   { href: '#ferramentas', label: 'Influenciador', badge: 'novo' },
-  { href: '#galeria', label: 'Feito no krIA' },
+  { href: '#galeria', label: 'Feito no Vynkio' },
   { href: '#precos', label: 'Preços' },
 ]
 
@@ -26,7 +26,7 @@ export function Header() {
       )}
     >
       <div className="mx-auto grid h-14 max-w-[1440px] grid-cols-[1fr_auto] items-center gap-6 px-4 lg:grid-cols-[1fr_auto_1fr]">
-        <a href="#topo" aria-label="krIA, topo da página" className="justify-self-start rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+        <a href="#topo" aria-label="Vynkio, topo da página" className="justify-self-start rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
           <Logo />
         </a>
         <nav aria-label="Seções" className="hidden items-center gap-1 lg:flex">
@@ -38,7 +38,7 @@ export function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-2 justify-self-end">
-          <Link to={SIGNUP_PATH} className={`${LINK} hidden px-3 text-accent hover:text-accent-strong sm:inline-flex`}>
+          <Link to={SIGNUP_PATH} className={`${LINK} hidden px-3 text-accent-soft hover:text-accent-strong sm:inline-flex`}>
             Entrar
           </Link>
           <CtaLink size="sm" className="rounded-lg">

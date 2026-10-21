@@ -29,13 +29,13 @@ export function Hero() {
     <section
       id="topo"
       aria-labelledby="hero-title"
-      className="relative overflow-hidden bg-[radial-gradient(75%_65%_at_50%_0%,#2a2420_0%,#141517_60%,#0f1113_100%)] pt-14 lg:min-h-dvh"
+      className="relative overflow-hidden bg-[radial-gradient(75%_65%_at_50%_0%,#241a45_0%,#110f24_60%,#0b0a1a_100%)] pt-14 lg:min-h-dvh"
     >
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 opacity-50 [background-image:linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(70%_70%_at_50%_40%,black,transparent)]"
       />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(45%_70%_at_50%_100%,rgba(255,107,44,0.18),transparent)]" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(45%_70%_at_50%_100%,rgba(124,58,237,0.18),transparent)]" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-stage to-transparent" />
 
       {SIDE_PHONES.map(({ clip, className, from }, index) => (
@@ -47,7 +47,7 @@ export function Hero() {
       <div className="relative mx-auto flex max-w-3xl flex-col items-center px-5 pb-14 pt-16 text-center md:pt-24 lg:pb-28 lg:pt-28">
         <motion.p
           {...enter(0)}
-          className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-[13px] font-semibold text-accent ring-1 ring-accent/30"
+          className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-[13px] font-semibold text-accent-soft ring-1 ring-accent/30"
         >
           <Gift className="size-3.5" aria-hidden="true" />
           {WELCOME_CREDITS} créditos grátis
@@ -60,7 +60,7 @@ export function Hero() {
           id="hero-title"
           className="mt-3 text-balance font-landing text-[3.1rem] font-bold uppercase leading-[0.88] tracking-[-0.045em] text-zinc-50 sm:text-7xl lg:text-[6.4rem]"
         >
-          Você descreve. <span className="text-accent">A IA grava.</span>
+          Você descreve. <span className="text-accent-soft">A IA grava.</span>
         </motion.h1>
         <motion.p {...enter(0.16)} className="mt-6 max-w-xl text-pretty text-[17px] font-medium text-zinc-400">
           Crie influenciadores e vídeos com gente na tela, sem câmera e sem você aparecer. Tudo em português.

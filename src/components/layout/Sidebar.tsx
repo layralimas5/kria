@@ -31,7 +31,7 @@ function Tab({ item, collapsed, active }: { readonly item: NavItem; readonly col
       )}
     >
       {active && <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-accent" />}
-      <Icon className={clsx('size-[18px] shrink-0', active && 'text-accent')} aria-hidden="true" />
+      <Icon className={clsx('size-[18px] shrink-0', active && 'text-accent-soft')} aria-hidden="true" />
       {!collapsed && (
         <>
           <span className="flex-1">{item.label}</span>
@@ -53,7 +53,7 @@ function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
         aria-label={balance === null ? 'Créditos' : `${balance} créditos. Comprar mais`}
         className={clsx('flex flex-col items-center gap-1 rounded-xl bg-surface-2 py-2.5 text-[11px] font-bold tabular-nums text-zinc-100', FOCUS)}
       >
-        <Coins className="size-4 text-accent" aria-hidden="true" />
+        <Coins className="size-4 text-accent-soft" aria-hidden="true" />
         {balance ?? '...'}
       </Link>
     )
@@ -63,7 +63,7 @@ function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
     <div className="rounded-2xl bg-surface-2 p-3 ring-1 ring-white/[0.05]">
       <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Seu saldo</p>
       <p className="mt-1 flex items-center gap-1.5 text-lg font-bold tabular-nums text-zinc-50">
-        <Coins className="size-4 text-accent" aria-hidden="true" />
+        <Coins className="size-4 text-accent-soft" aria-hidden="true" />
         {balance === null ? '...' : formatCredits(balance)}
       </p>
       <Link
@@ -86,7 +86,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       className="fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar-w)] flex-col border-r border-white/[0.05] bg-canvas transition-[width] duration-200 ease-out md:flex"
     >
       <div className={clsx('flex h-16 shrink-0 items-center', collapsed ? 'justify-center' : 'justify-between px-4')}>
-        <Link to="/estudio?modo=imagem" aria-label="Kria IA, início" className={clsx('rounded-lg', FOCUS)}>
+        <Link to="/estudio?modo=imagem" aria-label="Vynkio, início" className={clsx('rounded-lg', FOCUS)}>
           {collapsed ? <LogoMark /> : <Logo />}
         </Link>
         {!collapsed && isDemo && (
