@@ -9,6 +9,7 @@ import { BalanceProvider } from '@/hooks/useBalance'
 import { GenerationsProvider } from '@/hooks/useGenerations'
 import { ProfileProvider } from '@/hooks/useProfile'
 import { SessionProvider } from '@/hooks/useSession'
+import { LandingPage } from '@/landing/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
 
 /** Página carregada sob demanda a partir do export nomeado. */
@@ -27,6 +28,8 @@ const AccountSettingsPage = page(() => import('@/pages/AccountSettingsPage'), 'A
 const OnboardingPage = page(() => import('@/pages/OnboardingPage'), 'OnboardingPage')
 const ForgotPasswordPage = page(() => import('@/pages/ForgotPasswordPage'), 'ForgotPasswordPage')
 const ResetPasswordPage = page(() => import('@/pages/ResetPasswordPage'), 'ResetPasswordPage')
+const SubscribePage = page(() => import('@/pages/SubscribePage'), 'SubscribePage')
+const TermsPage = page(() => import('@/landing/TermsPage'), 'TermsPage')
 
 function PageFallback() {
   return (
@@ -61,11 +64,14 @@ export function App() {
       <BrowserRouter>
         <Suspense fallback={<PageFallback />}>
           <Routes>
+            <Route index element={<LandingPage />} />
+            <Route path="/termos" element={<TermsPage />} />
             <Route path="/entrar" element={<LoginPage />} />
             <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
             <Route path="/nova-senha" element={<ResetPasswordPage />} />
             <Route element={<SignedIn />}>
               <Route path="boas-vindas" element={<OnboardingPage />} />
+              <Route path="assinar/:plan" element={<SubscribePage />} />
               <Route
                 element={
                   <OnboardingGate>
@@ -83,9 +89,7 @@ export function App() {
                 <Route path="conta/configuracoes" element={<AccountSettingsPage />} />
               </Route>
             </Route>
-            {/* A raiz vai para a landing quando ela entrar (branch feat/landing). */}
-            <Route index element={<Navigate to="/inicio" replace />} />
-            <Route path="*" element={<Navigate to="/inicio" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

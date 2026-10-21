@@ -2,7 +2,7 @@
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/space-grotesk';
 
-/* Vynkio: paleta da Nivora (roxo galáxia, azul e dourado sobre o fundo noite), igual à landing. */
+/* Vynkio: paleta da Nivora (roxo galáxia, azul e dourado sobre o fundo noite), no app e na landing. */
 @theme {
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
@@ -23,10 +23,44 @@
   --color-surface: #13112a;
   --color-surface-2: #1a1735;
   --color-surface-3: #24203f;
+
+  /* Landing (rota /): títulos e superfícies próprias. */
+  --font-landing: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-stage: #0b0a1a;
+  --color-panel: #13112a;
+  --color-panel-hover: #1a1735;
+
+  --animate-card-pulse: card-pulse 1s ease-in-out infinite;
+  --animate-marquee: marquee 45s linear infinite;
+
+  /* A faixa leva a lista duas vezes; andar metade emenda o fim no começo. */
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes card-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgb(124 58 237 / 0);
+    }
+    50% {
+      transform: scale(1.025);
+      box-shadow: 0 0 0 1px rgb(124 58 237 / 0.6), 0 20px 50px -16px rgb(124 58 237 / 0.5);
+    }
+  }
 }
 
 :root {
   color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {

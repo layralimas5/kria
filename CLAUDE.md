@@ -9,6 +9,12 @@ fundo noite `#0b0a1a`, roxo `#7c3aed` (botão e selo, texto branco), roxo claro 
 (selo TOP e destaque). Tokens em `src/index.css`. A pasta e os identificadores internos
 (`kria-*` no localStorage, cron, project_id) continuam com o nome antigo.
 
+**Landing (21/10):** vive no mesmo app, em `/` (`src/landing`), com `/termos` e `/assinar/:plan`
+(ponte para o checkout; exige login). Os planos da vitrine são um catálogo fixo em
+`src/landing/pricing/catalog.ts`: textos e selos ficam lá, mas preço, créditos, limite de
+personagens e acesso ao Veo precisam bater com as migrations (`catalog.test.ts` falha se não
+baterem). Mudou um plano no banco, muda o catálogo junto. Guia em `docs/landing.md`.
+
 ## Stack
 
 - Front: React 19 + TypeScript strict + Vite + Tailwind v4 + Framer Motion (`src/`)

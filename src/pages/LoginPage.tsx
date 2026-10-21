@@ -64,7 +64,7 @@ export function LoginPage() {
     const result =
       mode === 'signin'
         ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
+        : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}${target}` } })
     setLoading(false)
     if (result.error) {
       setError(AUTH_ERRORS[result.error.message] ?? 'Não deu para continuar. Confira os dados e tente de novo.')

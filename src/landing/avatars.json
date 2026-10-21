@@ -1,0 +1,58 @@
+[
+  {
+    "id": "seu-juca",
+    "title": "Seu Juca na Paulista",
+    "image": "Vídeo vertical de celular, foto ultrarrealista: senhor brasileiro de 70 anos, óculos fundo de garrafa, bigode grosso grisalho, terno marrom largo e tênis branco, no meio da Avenida Paulista à noite com gente passando, luz dos postes e letreiros, granulado de câmera de celular, nada de estúdio",
+    "motion": "Ele começa a dançar funk com passinhos exagerados, aponta para a câmera e ri, pessoas ao fundo olham e filmam, câmera de celular tremida acompanhando",
+    "placeholder": "tunnel"
+  },
+  {
+    "id": "tia-gloria",
+    "title": "Tia Glória no sertanejo",
+    "image": "Selfie vertical de celular, ultrarrealista: tia brasileira de 55 anos com bobes no cabelo, óculos escuros enormes e roupão de oncinha, segurando um copo de chopp numa balada sertaneja lotada, luzes coloridas e fumaça ao fundo",
+    "motion": "Ela canta junto gritando, levanta o copo, joga o cabelo e manda beijo para a câmera, a multidão pula atrás",
+    "placeholder": "silk"
+  },
+  {
+    "id": "mano-franja",
+    "title": "Mano Franja na praia",
+    "image": "Vídeo vertical de celular à noite, ultrarrealista: rapaz brasileiro magro de 24 anos com franja reta cor laranja, bigode fino e conjunto esportivo roxo brilhante, na areia da praia de Copacabana com amigos ao fundo e luzes da orla, flash de celular",
+    "motion": "Ele dança desengonçado com um copo na mão, os amigos riem, ele olha sério para a câmera e volta a dançar",
+    "placeholder": "dunes"
+  },
+  {
+    "id": "doutor-churrasco",
+    "title": "Doutor do churrasco",
+    "image": "Selfie vertical de celular, ultrarrealista: homem brasileiro de 40 anos de jaleco branco de médico, estetoscópio e boné de aba reta, numa laje com churrasqueira fumegando e caixa de som, bairro de periferia ao fundo no fim da tarde",
+    "motion": "Ele examina uma picanha com o estetoscópio com cara séria, faz um diagnóstico para a câmera e corta a carne",
+    "placeholder": "chrome"
+  },
+  {
+    "id": "vovo-gamer",
+    "title": "Vovó gamer",
+    "image": "Imagem de webcam vertical, ultrarrealista: idosa brasileira de 80 anos de cabelo branco preso, headset gamer com luz RGB e blusa de crochê, sentada numa cadeira gamer num quarto com cortina de renda e luz neon roxa",
+    "motion": "Ela joga concentrada, vence a partida, levanta os braços gritando e dá um tapinha na mesa rindo para a câmera",
+    "placeholder": "aurora"
+  },
+  {
+    "id": "gemeos-bigode",
+    "title": "Gêmeos no Cristo",
+    "image": "Vídeo vertical de celular, ultrarrealista: dois irmãos gêmeos idênticos de 30 anos, bigode fino, cabelo mullet e camisas floridas iguais, no mirante do Cristo Redentor com turistas ao redor e o Rio de Janeiro ao fundo em dia de sol",
+    "motion": "Os dois fazem a mesma dancinha sincronizada, um erra o passo, o outro olha bravo para ele e os dois caem na risada",
+    "placeholder": "planet"
+  },
+  {
+    "id": "faria-lima",
+    "title": "Faria Lima no metrô",
+    "image": "Selfie vertical de celular, ultrarrealista: executivo brasileiro de 35 anos com colete puffer azul marinho, camisa social, fone sem fio e topete com gel, espremido dentro de um vagão de metrô lotado de São Paulo",
+    "motion": "Ele explica investimentos para a câmera com muita confiança enquanto o metrô balança e alguém atrás faz cara de quem não aguenta mais",
+    "placeholder": "silk"
+  },
+  {
+    "id": "rainha-pastel",
+    "title": "Rainha do pastel",
+    "image": "Vídeo vertical de celular, ultrarrealista: mulher brasileira de 45 anos de tiara de miss, faixa de rainha e vestido de festa brilhante, atrás de uma barraca de pastel numa feira de rua de manhã, óleo fervendo e fregueses ao redor",
+    "motion": "Ela frita um pastel com pose de desfile, acena como miss para a câmera e entrega o pastel para um freguês sorrindo",
+    "placeholder": "dunes"
+  }
+]
