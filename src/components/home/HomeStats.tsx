@@ -15,7 +15,7 @@ function StatCard({ icon, label, to, children }: { icon: ReactNode; label: strin
       className={clsx('group rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06] transition-colors hover:bg-surface-2', FOCUS)}
     >
       <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-        <span className="text-accent">{icon}</span>
+        <span className="text-accent-soft">{icon}</span>
         {label}
       </p>
       <div className="mt-3">{children}</div>

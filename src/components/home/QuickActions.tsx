@@ -27,7 +27,7 @@ export function QuickActions({ actions }: { readonly actions: readonly QuickActi
               <span className="flex items-start justify-between gap-3">
                 <span className="font-semibold text-zinc-50">{action.title}</span>
                 <ArrowUpRight
-                  className="size-4 shrink-0 text-zinc-500 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
+                  className="size-4 shrink-0 text-zinc-500 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent-soft"
                   aria-hidden="true"
                 />
               </span>

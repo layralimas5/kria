@@ -19,7 +19,7 @@ function EmptyWork({ icon: Icon, title, description, actionLabel, actionTo }: Em
         <span className="absolute inset-0 -rotate-6 rounded-2xl bg-surface-3" />
         <span className="absolute inset-0 rotate-3 rounded-2xl bg-surface-2 ring-1 ring-white/10" />
         <span className="absolute inset-0 grid place-items-center rounded-2xl bg-gradient-to-br from-surface-3 to-surface ring-1 ring-white/10">
-          <Icon className="size-8 text-accent" />
+          <Icon className="size-8 text-accent-soft" />
         </span>
       </div>
       <div>

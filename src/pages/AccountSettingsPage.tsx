@@ -14,7 +14,7 @@ function SettingsCard({ icon, title, description, children }: { icon: ReactNode;
   return (
     <section className="rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06] sm:p-6">
       <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-3 text-accent">{icon}</span>
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-3 text-accent-soft">{icon}</span>
         <div>
           <h2 className="text-lg font-bold text-zinc-50">{title}</h2>
           <p className="text-sm text-zinc-400">{description}</p>
@@ -69,7 +69,7 @@ export function AccountSettingsPage() {
   const [error, setError] = useState<string | null>(null)
 
   async function handleSignOutEverywhere() {
-    if (!window.confirm('Sair da Kria em todos os aparelhos, inclusive neste?')) return
+    if (!window.confirm('Sair do Vynkio em todos os aparelhos, inclusive neste?')) return
     setSigningOut(true)
     try {
       await signOutEverywhere()
@@ -86,7 +86,7 @@ export function AccountSettingsPage() {
       </Link>
       <PageHeader title="Configurações" description="Acesso, preferências e privacidade da sua conta." />
 
-      <SettingsCard icon={<Mail className="size-5" aria-hidden="true" />} title="E-mail" description="É com ele que você entra na Kria.">
+      <SettingsCard icon={<Mail className="size-5" aria-hidden="true" />} title="E-mail" description="É com ele que você entra no Vynkio.">
         <p className="rounded-xl bg-surface-2 px-4 py-3 text-[15px] font-semibold text-zinc-100">{session?.user.email ?? '–'}</p>
       </SettingsCard>
 
@@ -105,7 +105,7 @@ export function AccountSettingsPage() {
         </Button>
       </SettingsCard>
 
-      <SettingsCard icon={<Target className="size-5" aria-hidden="true" />} title="Preferências" description="O que você mais quer criar na Kria.">
+      <SettingsCard icon={<Target className="size-5" aria-hidden="true" />} title="Preferências" description="O que você mais quer criar no Vynkio.">
         <GoalSelect />
       </SettingsCard>
 

@@ -2,22 +2,27 @@
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/space-grotesk';
 
-/* Mesma identidade da landing (pessoais/kria-landing): laranja, grafite e Space Grotesk. */
+/* Vynkio: paleta da Nivora (roxo galáxia, azul e dourado sobre o fundo noite), igual à landing. */
 @theme {
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
 
-  --color-accent: #ff6b2c;
-  --color-accent-strong: #ff8a50;
-  --color-accent-deep: #b8410f;
-  --color-accent-ink: #0b0b0f;
-  --color-hot: #ff3d8b;
+  /* Roxo da Nivora para fundos de botão e selo (texto branco, 5,7:1). */
+  --color-accent: #7c3aed;
+  --color-accent-strong: #8b5cf6;
+  --color-accent-deep: #5b21b6;
+  --color-accent-ink: #ffffff;
+  /* Roxo claro para texto e ícone sobre o fundo escuro: o #7c3aed não passa no AA ali. */
+  --color-accent-soft: #a78bfa;
+  --color-galaxy: #3b82f6;
+  /* Dourado da Nivora: selo TOP e destaques. */
+  --color-hot: #f5b841;
 
-  /* Superfícies em degraus, do fundo ao elemento mais alto. */
-  --color-canvas: #0f1113;
-  --color-surface: #16181b;
-  --color-surface-2: #1c1f23;
-  --color-surface-3: #262a2f;
+  /* Superfícies em degraus, do fundo noite ao elemento mais alto. */
+  --color-canvas: #0b0a1a;
+  --color-surface: #13112a;
+  --color-surface-2: #1a1735;
+  --color-surface-3: #24203f;
 }
 
 :root {

@@ -1,4 +1,4 @@
-// Renderiza o ícone da Kria IA em PNG: favicon do app e imagem do item no
+// Renderiza o ícone da Vynkio em PNG: favicon do app e imagem do item no
 // checkout do Asaas (campo obrigatório). Roda com: npm run billing:image
 import fs from 'node:fs'
 import path from 'node:path'
@@ -9,9 +9,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const SIZE = 180
 
 const html = `<!doctype html><html><body style="margin:0;background:transparent">
-<div style="width:${SIZE}px;height:${SIZE}px;border-radius:40px;background:#ff6b2c;display:grid;place-items:center">
-  <svg width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M6 4v16"/><path d="M18 4 9.5 12 18 20"/><circle cx="18.5" cy="12" r="1.6" fill="#0b0b0f" stroke="none"/>
+<div style="width:${SIZE}px;height:${SIZE}px;border-radius:40px;background:linear-gradient(135deg,#7c3aed,#3b82f6);display:grid;place-items:center">
+  <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 6.5 12 19l7-12.5"/><circle cx="12" cy="5.2" r="1.9" fill="#f5b841" stroke="none"/>
   </svg>
 </div></body></html>`
 
@@ -24,7 +24,7 @@ await browser.close()
 fs.writeFileSync(path.join(ROOT, 'public', 'icon.png'), png)
 fs.writeFileSync(
   path.join(ROOT, 'supabase', 'functions', '_shared', 'product-image.ts'),
-  `// Ícone da Kria em base64, exigido pelo checkout do Asaas no item.\n` +
+  `// Ícone da Vynkio em base64, exigido pelo checkout do Asaas no item.\n` +
     `// GERADO por 'npm run billing:image'. Não editar.\n` +
     `export const PRODUCT_IMAGE_BASE64 = '${png.toString('base64')}'\n`,
 )

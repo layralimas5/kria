@@ -25,7 +25,7 @@ export function ModelMenu({ models, value, onChange }: ModelMenuProps) {
       className="w-[min(88vw,22rem)]"
       trigger={({ open, toggle, controls }) => (
         <button type="button" onClick={toggle} aria-expanded={open} aria-controls={controls} aria-haspopup="dialog" className={CHIP}>
-          {value && <ModelIcon model={value} className="text-accent" />}
+          {value && <ModelIcon model={value} className="text-accent-soft" />}
           {value?.name ?? 'Modelo'}
           <ChevronDown className={clsx('size-3.5 text-zinc-500 transition-transform', open && 'rotate-180')} aria-hidden="true" />
         </button>
@@ -63,7 +63,7 @@ export function ModelMenu({ models, value, onChange }: ModelMenuProps) {
                 </span>
                 <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold tabular-nums text-zinc-400">
                   {model.credits} cr
-                  {selected && <Check className="size-4 text-accent" aria-hidden="true" />}
+                  {selected && <Check className="size-4 text-accent-soft" aria-hidden="true" />}
                 </span>
               </button>
             )

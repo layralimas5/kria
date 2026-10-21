@@ -12,7 +12,7 @@ export interface GoalOption {
   readonly description: string
 }
 
-/** As respostas de "Qual é seu principal objetivo com o Kria IA?". */
+/** As respostas de "Qual é seu principal objetivo com o Vynkio?". */
 export const GOALS: readonly GoalOption[] = [
   { value: 'influencers', label: 'Criar influenciadores de IA', description: 'Uma persona com o mesmo rosto em tudo que você postar.' },
   { value: 'viral_videos', label: 'Criar vídeos virais', description: 'Fotos que viram vídeo com movimento e som.' },

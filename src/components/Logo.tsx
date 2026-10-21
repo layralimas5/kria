@@ -1,24 +1,21 @@
-/** Só o símbolo: quadrado lima com o K. Usado na barra lateral recolhida. */
+/** Só o símbolo: o V do Vynkio no gradiente roxo e azul da Nivora, com o ponto dourado. */
 export function LogoMark() {
   return (
-    <span className="grid size-8 place-items-center rounded-[9px] bg-accent" aria-hidden="true">
-      <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="#0b0b0f" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 4v16" />
-        <path d="M18 4 9.5 12 18 20" />
-        <circle cx="18.5" cy="12" r="1.6" fill="#0b0b0f" stroke="none" />
+    <span className="grid size-8 place-items-center rounded-[9px] bg-[linear-gradient(135deg,var(--color-accent),var(--color-galaxy))]" aria-hidden="true">
+      <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="#ffffff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 6.5 12 19l7-12.5" />
+        <circle cx="12" cy="5.2" r="1.9" fill="var(--color-hot)" stroke="none" />
       </svg>
     </span>
   )
 }
 
-/** Marca escrita "krIA": o IA faz parte do nome, em laranja. */
+/** Marca escrita "Vynkio". */
 export function Logo() {
   return (
     <span className="flex items-center gap-2.5">
       <LogoMark />
-      <span className="font-display text-[19px] font-bold leading-none tracking-[-0.03em] text-zinc-50" aria-label="krIA">
-        kr<span className="text-accent">IA</span>
-      </span>
+      <span className="font-display text-[19px] font-bold leading-none tracking-[-0.03em] text-zinc-50">Vynkio</span>
     </span>
   )
 }

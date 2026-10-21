@@ -55,9 +55,9 @@ export function OnboardingPage() {
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="relative mt-12 sm:mt-16"
       >
-        <p className="text-sm font-semibold text-accent">Boas-vindas à Kria</p>
+        <p className="text-sm font-semibold text-accent-soft">Boas-vindas ao Vynkio</p>
         <h1 id="goal-title" className="font-headline mt-3 text-4xl text-balance text-zinc-50 sm:text-5xl">
-          Qual é seu principal objetivo com o Kria IA?
+          Qual é seu principal objetivo com o Vynkio?
         </h1>
         <p className="mt-4 text-pretty text-zinc-400">A gente organiza os atalhos do início com base na sua resposta. Dá para mudar depois.</p>
 

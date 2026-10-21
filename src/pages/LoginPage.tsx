@@ -88,7 +88,7 @@ export function LoginPage() {
           className="max-w-xl"
         >
           <h1 className="font-headline text-5xl text-balance text-zinc-50 md:text-7xl">
-            Seu influenciador <span className="text-accent">com IA.</span>
+            Seu influenciador <span className="text-accent-soft">com IA.</span>
           </h1>
           <p className="mt-5 text-lg text-pretty text-zinc-400">
             Crie a persona, gere fotos e vídeos realistas com ela e publique. Tudo em português, num lugar só.
@@ -96,7 +96,7 @@ export function LoginPage() {
           <ul className="mt-8 space-y-3">
             {BENEFITS.map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-3 text-sm text-zinc-300">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-surface-2 text-accent">
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-surface-2 text-accent-soft">
                   <Icon className="size-4" aria-hidden="true" />
                 </span>
                 {text}
@@ -178,7 +178,7 @@ export function LoginPage() {
                 setError(null)
                 setNotice(null)
               }}
-              className="font-medium text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="font-medium text-accent-soft underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               {mode === 'signup' ? 'Entrar' : 'Criar conta'}
             </button>

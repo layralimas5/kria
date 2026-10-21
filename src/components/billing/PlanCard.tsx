@@ -71,7 +71,7 @@ export function PlanCard({ plan, models, current, switching, busy, disabled, onS
         <ul className="space-y-2 text-sm text-zinc-300">
           {plan.features.map((feature) => (
             <li key={feature} className="flex items-start gap-2">
-              <Check className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
+              <Check className="mt-0.5 size-4 shrink-0 text-accent-soft" aria-hidden="true" />
               {feature}
             </li>
           ))}

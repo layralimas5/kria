@@ -64,7 +64,7 @@ function PackCard({ pack, models, busy, onBuy }: PackCardProps) {
       <ul className="mt-5 space-y-2 border-t border-white/[0.06] pt-5 text-sm text-zinc-300">
         {yieldLines(pack, models).map((line) => (
           <li key={line} className="flex items-center gap-2">
-            <Check className="size-4 shrink-0 text-accent" aria-hidden="true" />
+            <Check className="size-4 shrink-0 text-accent-soft" aria-hidden="true" />
             Até {line}
           </li>
         ))}
@@ -134,7 +134,7 @@ export function CreditsPage() {
         description="Pacotes avulsos, sem mensalidade. Para receber créditos todo mês, veja os planos em Assinatura."
         action={
           <div className="flex items-center gap-3 rounded-2xl bg-surface px-4 py-3 ring-1 ring-white/[0.06]">
-            <Coins className="size-5 text-accent" aria-hidden="true" />
+            <Coins className="size-5 text-accent-soft" aria-hidden="true" />
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Seu saldo</p>
               <p className="text-lg font-bold tabular-nums text-zinc-50">{balance === null ? '...' : formatCredits(balance)}</p>
@@ -158,7 +158,7 @@ export function CreditsPage() {
         <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-400">
           {PERKS.map((perk) => (
             <li key={perk} className="flex items-center gap-1.5">
-              <Check className="size-4 text-accent" aria-hidden="true" /> {perk}
+              <Check className="size-4 text-accent-soft" aria-hidden="true" /> {perk}
             </li>
           ))}
         </ul>
@@ -188,7 +188,7 @@ export function CreditsPage() {
                   {entry.balance_after !== null && ` · saldo ${entry.balance_after.toLocaleString('pt-BR')}`}
                 </p>
               </div>
-              <span className={clsx('shrink-0 font-bold tabular-nums', entry.delta > 0 ? 'text-accent' : 'text-zinc-400')}>
+              <span className={clsx('shrink-0 font-bold tabular-nums', entry.delta > 0 ? 'text-accent-soft' : 'text-zinc-400')}>
                 {entry.delta > 0 ? '+' : ''}
                 {entry.delta}
               </span>

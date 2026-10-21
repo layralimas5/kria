@@ -54,7 +54,7 @@ export const SETTINGS_TAB: NavItem = { label: 'Configurações', to: '/conta/con
 const toolTab = (tool: PlanTool, icon: LucideIcon): NavItem => ({ label: PLAN_TOOL_INFO[tool].label, to: '', icon, soon: true, tool, isActive: never })
 
 const NAV_GROUPS: readonly NavGroup[] = [
-  { title: 'krIA', items: [HOME_TAB] },
+  { title: 'Vynkio', items: [HOME_TAB] },
   {
     title: 'Criar',
     items: [

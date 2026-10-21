@@ -23,7 +23,7 @@ export function PlatformNews({ plan }: { readonly plan: Plan | null }) {
   return (
     <section aria-labelledby="news-title" className="rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
       <h2 id="news-title" className="font-headline flex items-center gap-2 text-lg text-zinc-100">
-        <Sparkles className="size-4 text-accent" aria-hidden="true" /> Novidades
+        <Sparkles className="size-4 text-accent-soft" aria-hidden="true" /> Novidades
       </h2>
       <ul className="mt-4 space-y-4">
         {news.map((item) => (

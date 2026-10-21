@@ -64,7 +64,7 @@ export function SourcePicker({ personas, images, value, onChange }: SourcePicker
     return (
       <p className="p-2 text-sm text-zinc-400">
         Esse modelo parte de uma imagem. Gere uma foto primeiro ou{' '}
-        <Link to="/personas" className="font-semibold text-accent underline-offset-4 hover:underline">
+        <Link to="/personas" className="font-semibold text-accent-soft underline-offset-4 hover:underline">
           crie uma persona
         </Link>
         .

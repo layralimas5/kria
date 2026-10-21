@@ -74,7 +74,7 @@ function IconTile({ option, selected, multiple, onToggle }: OptionProps) {
         selected ? 'bg-accent/10 text-zinc-50 ring-2 ring-accent' : 'bg-surface-2 text-zinc-300 ring-white/[0.06] hover:ring-white/25',
       )}
     >
-      <Icon className={clsx('size-6', selected ? 'text-accent' : 'text-zinc-400')} aria-hidden="true" />
+      <Icon className={clsx('size-6', selected ? 'text-accent-soft' : 'text-zinc-400')} aria-hidden="true" />
       <span className="text-[12px] font-semibold">{option.label}</span>
       {selected && <SelectedMark />}
     </button>

@@ -42,7 +42,7 @@ export function ForgotPasswordPage() {
         </form>
       )}
       <p className="mt-6 text-center text-sm text-zinc-400">
-        <Link to="/entrar" className="font-medium text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+        <Link to="/entrar" className="font-medium text-accent-soft underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
           Voltar para entrar
         </Link>
       </p>

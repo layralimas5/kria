@@ -3,7 +3,7 @@ import clsx from 'clsx'
 /** Selo curto inclinado, igual ao da landing: NOVO em laranja, TOP em rosa. */
 const TONES: Record<string, string> = {
   NOVO: 'bg-accent text-accent-ink',
-  TOP: 'bg-hot text-white',
+  TOP: 'bg-hot text-canvas',
 }
 
 export function Badge({ children, className }: { readonly children: string; readonly className?: string }) {

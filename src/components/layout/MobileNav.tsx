@@ -13,7 +13,7 @@ export function MobileTopBar() {
   const { balance } = useBalance()
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-2 bg-canvas/90 px-4 backdrop-blur-xl md:hidden">
-      <Link to="/inicio" aria-label="Kria IA, início" className={clsx('rounded-lg', FOCUS)}>
+      <Link to="/inicio" aria-label="Vynkio, início" className={clsx('rounded-lg', FOCUS)}>
         <Logo />
       </Link>
       <Link
@@ -21,7 +21,7 @@ export function MobileTopBar() {
         className={clsx('ml-auto flex min-h-8 items-center gap-1.5 rounded-lg bg-surface-2 px-2.5 text-[13px] font-bold tabular-nums', FOCUS)}
         aria-label={balance === null ? 'Créditos' : `${balance} créditos`}
       >
-        <Coins className="size-3.5 text-accent" aria-hidden="true" />
+        <Coins className="size-3.5 text-accent-soft" aria-hidden="true" />
         {balance ?? '...'}
       </Link>
       <UserMenu />
@@ -49,7 +49,7 @@ export function MobileTabBar() {
                 aria-current={active ? 'page' : undefined}
                 className={clsx(
                   'flex min-h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent',
-                  active ? 'text-accent' : 'text-zinc-500',
+                  active ? 'text-accent-soft' : 'text-zinc-500',
                 )}
               >
                 <Icon className="size-5" aria-hidden="true" />

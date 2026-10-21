@@ -82,7 +82,7 @@ export function PaymentHistory() {
                   href={payment.invoiceUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 rounded text-xs font-semibold text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  className="inline-flex items-center gap-1 rounded text-xs font-semibold text-accent-soft hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   Fatura <ExternalLink className="size-3" aria-hidden="true" />
                   <span className="sr-only">(abre em nova aba)</span>

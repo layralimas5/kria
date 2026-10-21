@@ -99,7 +99,7 @@ function SectionTabs({ section, onChange, builder }: { section: TraitSection; on
             onClick={() => onChange(item.id)}
             className={clsx(
               'flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-[13px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              selected ? 'bg-accent/15 text-accent' : 'text-zinc-400 hover:text-zinc-100',
+              selected ? 'bg-accent/15 text-accent-soft' : 'text-zinc-400 hover:text-zinc-100',
             )}
           >
             {item.label}

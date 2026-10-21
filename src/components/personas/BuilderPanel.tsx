@@ -45,7 +45,7 @@ function CopyPromptButton({ text }: { readonly text: string }) {
   const label = state === 'copied' ? 'Prompt copiado' : state === 'failed' ? 'Não deu para copiar' : 'Copiar prompt do personagem'
   return (
     <button type="button" onClick={() => void copy()} aria-label={label} title={label} className={clsx(SQUARE_BUTTON, 'bg-surface-3 text-zinc-100 hover:bg-white/15')}>
-      {state === 'copied' ? <Check className="size-5 text-accent" aria-hidden="true" /> : <Copy className="size-5" aria-hidden="true" />}
+      {state === 'copied' ? <Check className="size-5 text-accent-soft" aria-hidden="true" /> : <Copy className="size-5" aria-hidden="true" />}
       <span className="sr-only" aria-live="polite">
         {state === 'copied' ? 'Prompt copiado' : state === 'failed' ? 'Não deu para copiar' : ''}
       </span>
@@ -58,9 +58,9 @@ export function BuilderPanel({ tab, onTabChange, children, cost, submitting, err
   return (
     <aside aria-label="Construtor de persona" className={clsx('flex flex-col overflow-hidden rounded-3xl bg-surface ring-1 ring-white/[0.06]', className)}>
       <header className="px-4 pb-3 pt-5 text-center">
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-accent">Seu personagem começa aqui</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-accent-soft">Seu personagem começa aqui</p>
         <h1 className="font-headline mt-2 text-[28px] text-balance text-zinc-50 sm:text-[34px]">
-          Monte seu influencer <span className="text-accent">do seu jeito</span>
+          Monte seu influencer <span className="text-accent-soft">do seu jeito</span>
         </h1>
       </header>
 

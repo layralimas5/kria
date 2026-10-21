@@ -63,7 +63,7 @@ export function HomePage() {
       >
         {name && <p className="text-sm font-semibold text-zinc-400">Oi, {name}</p>}
         <h1 className="font-headline mt-2 text-4xl text-balance text-zinc-50 md:text-6xl">
-          O que vamos <span className="text-accent">criar hoje?</span>
+          O que vamos <span className="text-accent-soft">criar hoje?</span>
         </h1>
       </motion.header>
 
@@ -79,7 +79,7 @@ export function HomePage() {
           <EmptyState
             icon={<Images className="size-5" aria-hidden="true" />}
             title="Nada por aqui ainda"
-            description="Sua primeira foto leva menos de um minuto. Escreva o que você quer ver e a Kria gera."
+            description="Sua primeira foto leva menos de um minuto. Escreva o que você quer ver e o Vynkio gera."
             action={
               <Link to="/estudio?modo=imagem" className={clsx('btn-accent inline-flex min-h-10 items-center rounded-xl px-4 text-sm font-semibold', FOCUS)}>
                 Gerar imagem
@@ -105,7 +105,7 @@ export function HomePage() {
             <SectionTitle id="personas-title" title="Personagens salvos" to="/personas" linkLabel="Criar personagem" />
             {personas.data && personas.data.length === 0 ? (
               <p className="flex items-center gap-3 rounded-3xl bg-surface p-5 text-sm text-zinc-400 ring-1 ring-white/[0.06]">
-                <UserRound className="size-5 shrink-0 text-accent" aria-hidden="true" />
+                <UserRound className="size-5 shrink-0 text-accent-soft" aria-hidden="true" />
                 Você ainda não salvou nenhum personagem. Ele mantém o mesmo rosto nas fotos e vídeos.
               </p>
             ) : (

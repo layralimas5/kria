@@ -116,7 +116,7 @@ export function ProfileCard({ profile, stats, balance, onEdit }: ProfileCardProp
         <span className="scale-75 opacity-60 grayscale">
           <LogoMark />
         </span>
-        Na Kria desde {joined.format(new Date(profile.created_at))}
+        No Vynkio desde {joined.format(new Date(profile.created_at))}
       </p>
     </div>
   )

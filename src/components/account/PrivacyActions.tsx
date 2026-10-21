@@ -11,12 +11,12 @@ function download(data: unknown) {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `kria-meus-dados-${new Date().toISOString().slice(0, 10)}.json`
+  link.download = `vynkio-meus-dados-${new Date().toISOString().slice(0, 10)}.json`
   link.click()
   URL.revokeObjectURL(url)
 }
 
-/** Baixa tudo o que a Kria guarda da pessoa (LGPD, art. 18). */
+/** Baixa tudo o que o Vynkio guarda da pessoa (LGPD, art. 18). */
 export function ExportData() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)

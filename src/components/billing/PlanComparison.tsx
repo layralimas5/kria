@@ -20,7 +20,7 @@ interface Row {
 function Included() {
   return (
     <>
-      <Check className="mx-auto size-4 text-accent" aria-hidden="true" />
+      <Check className="mx-auto size-4 text-accent-soft" aria-hidden="true" />
       <span className="sr-only">Incluso</span>
     </>
   )
@@ -82,7 +82,7 @@ export function PlanComparison({ plans, models, currentSlug }: PlanComparisonPro
                 <th
                   key={plan.slug}
                   scope="col"
-                  className={clsx('px-4 py-3 text-center font-headline text-base', plan.slug === currentSlug ? 'bg-accent/[0.08] text-accent' : 'text-zinc-100')}
+                  className={clsx('px-4 py-3 text-center font-headline text-base', plan.slug === currentSlug ? 'bg-accent/[0.08] text-accent-soft' : 'text-zinc-100')}
                 >
                   {plan.name}
                   {plan.slug === currentSlug && <span className="block text-[10px] font-bold uppercase tracking-wide">Seu plano</span>}
