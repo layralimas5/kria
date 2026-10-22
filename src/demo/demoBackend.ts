@@ -4,10 +4,12 @@
 // Imita as regras do banco (baldes da carteira, plano, idempotência) só o
 // suficiente para as telas se comportarem como no ar.
 
+import { assistantToolSchema } from '@/domain/types'
+import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_IMAGES, DEMO_USER_ID, DEMO_VIDEO, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
-const SESSION_KEY = 'kria-demo-state-v3'
+const SESSION_KEY = 'kria-demo-state-v4'
 
 function loadState(): DemoState {
   try {
@@ -56,6 +58,8 @@ const TABLES: Record<string, () => Row[]> = {
   subscription_payments: () => state.subscriptionPayments,
   user_preferences: () => [state.preferences],
   personas: () => state.personas,
+  brands: () => state.brands,
+  projects: () => state.projects,
   generations: () => state.generations,
   credit_ledger: () => state.ledger,
   purchases: () => state.purchases,
@@ -149,6 +153,8 @@ function generate(body: Row): Response {
     prompt: String(body.prompt ?? ''),
     persona_id: body.personaId ?? null,
     source_generation_id: body.sourceGenerationId ?? null,
+    brand_id: body.brandId ?? null,
+    project_id: body.projectId ?? null,
     credits,
     status: 'running',
     output_path: null,
@@ -262,6 +268,89 @@ function createPersona(body: Row): Response {
 
 
 
+/** No demo o texto sai na hora, de um modelo pronto; cobra e entra no extrato como no ar. */
+async function assistant(body: Row): Promise<Response> {
+  const key = typeof body.idempotencyKey === 'string' ? body.idempotencyKey : null
+  const repeated = key ? state.generations.find((item) => item.idempotency_key === key) : undefined
+  if (repeated) return json({ generation: repeated })
+
+  const tool = assistantToolSchema.safeParse(body.tool)
+  const model = tool.success ? state.models.find((item) => item.slug === tool.data) : undefined
+  if (!tool.success || !model) return fail(400, 'invalid_body', 'Pedido inválido.')
+  const allowed = model.allowed_plans as string[] | null
+  if (allowed && !allowed.includes(String(currentPlan().slug))) {
+    return fail(403, 'plan_required', 'Essa ferramenta faz parte de um plano pago. Veja os planos em Assinatura.')
+  }
+  const credits = Number(model.credits)
+  if (balanceOf() < credits) return fail(402, 'insufficient_credits', 'Créditos insuficientes.')
+
+  // Um respiro para a tela mostrar o "escrevendo".
+  await new Promise((resolve) => setTimeout(resolve, 1500))
+  const brand = state.brands.find((item) => item.id === body.brandId)
+  const brief = String(body.brief ?? '')
+  const generation: Row = {
+    id: uuid(),
+    user_id: DEMO_USER_ID,
+    model_slug: tool.data,
+    kind: 'text',
+    prompt: brief,
+    persona_id: null,
+    source_generation_id: null,
+    brand_id: brand?.id ?? null,
+    project_id: body.projectId ?? null,
+    credits,
+    status: 'succeeded',
+    output_path: null,
+    output_type: 'application/json',
+    output_text: JSON.stringify(demoAssistantOutput(tool.data, brief, brand ? String(brand.name) : null)),
+    error: null,
+    idempotency_key: key,
+    created_at: new Date().toISOString(),
+    completed_at: new Date().toISOString(),
+  }
+  state.generations.unshift(generation)
+  const fromSubscription = Math.min(state.subscriptionBalance, credits)
+  addLedger(-fromSubscription, -(credits - fromSubscription), 'generation', String(model.name))
+  persist()
+  return json({ generation }, 201)
+}
+
+const WORKSPACE_FIELDS: Record<'brands' | 'projects', readonly string[]> = {
+  brands: ['name', 'niche', 'audience', 'tone', 'offer', 'avoid', 'visual_style'],
+  projects: ['name', 'goal', 'brand_id', 'status'],
+}
+
+function pick(body: Row, fields: readonly string[]): Row {
+  return Object.fromEntries(fields.filter((field) => field in body).map((field) => [field, body[field]]))
+}
+
+/** Insere, edita e apaga marcas e projetos com as mesmas travas do banco (0009). */
+function workspaceWrite(table: 'brands' | 'projects', method: string, url: URL, body: Row): Response {
+  const rows = table === 'brands' ? state.brands : state.projects
+  const id = url.searchParams.get('id')?.replace('eq.', '')
+  const plan = currentPlan()
+
+  if (method === 'DELETE') {
+    if (table === 'brands') state.brands = state.brands.filter((row) => row.id !== id)
+    else state.projects = state.projects.filter((row) => row.id !== id)
+    persist()
+    return new Response(null, { status: 204 })
+  }
+  if (method === 'POST') {
+    if (table === 'brands' && rows.length >= Number(plan.max_brands)) return rpcFail('too_many_brands')
+    if (table === 'projects' && !(plan.tools as string[]).includes('projects')) return rpcFail('plan_required')
+    const row = { id: uuid(), user_id: DEMO_USER_ID, ...pick(body, WORKSPACE_FIELDS[table]), created_at: new Date().toISOString() }
+    rows.unshift(row)
+    persist()
+    return json(row, 201)
+  }
+  const row = rows.find((item) => item.id === id)
+  if (!row) return json({ message: 'not_found', code: 'PGRST116' }, 406)
+  Object.assign(row, pick(body, WORKSPACE_FIELDS[table]))
+  persist()
+  return json(row)
+}
+
 function rpc(name: string, body: Row): Response {
   if (name === 'create_persona') return createPersona(body)
   return rpcFail('not_found')
@@ -294,6 +383,7 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
     if (name === 'subscribe') return subscribe(body)
     if (name === 'cancel-subscription') return cancelSubscription()
     if (name === 'account') return account(body)
+    if (name === 'assistant') return assistant(body)
     return fail(404, 'not_found', 'Função desconhecida.')
   }
 
@@ -301,6 +391,9 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
 
   if (route.startsWith('rest/')) {
     const table = route.slice('rest/'.length)
+    if ((table === 'brands' || table === 'projects') && method !== 'GET' && method !== 'HEAD') {
+      return workspaceWrite(table, method, url, await readBody(init))
+    }
     if (method === 'DELETE' && table === 'personas') {
       const id = url.searchParams.get('id')?.replace('eq.', '')
       state.personas = state.personas.filter((persona) => persona.id !== id)

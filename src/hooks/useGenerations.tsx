@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { z } from 'zod'
-import { GENERATION_COLUMNS, generationSchema, isOpen, type Generation } from '@/domain/types'
+import { GENERATION_COLUMNS, generationSchema, isOpen, MEDIA_KINDS, type Generation } from '@/domain/types'
 import { refreshGenerations } from '@/lib/api'
 import { isDemo, supabase } from '@/lib/supabase'
 import { useBalance } from './useBalance'
@@ -44,6 +44,7 @@ export function GenerationsProvider({ children }: { readonly children: ReactNode
     const { data, error: queryError } = await supabase
       .from('generations')
       .select(GENERATION_COLUMNS)
+      .in('kind', MEDIA_KINDS)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE)
     setLoading(false)

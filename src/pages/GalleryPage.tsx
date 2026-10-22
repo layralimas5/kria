@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { Images, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { GenerationCard } from '@/components/GenerationCard'
 import { MakePersonaDialog } from '@/components/MakePersonaDialog'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -38,15 +38,23 @@ export function GalleryPage() {
   const [filter, setFilter] = useState<Filter>('all')
   const [personaSource, setPersonaSource] = useState<Generation | null>(null)
 
+  // `?projeto=<id>` mostra só o que foi gerado dentro de um projeto (vindo de Meus projetos).
+  const [params] = useSearchParams()
+  const projectId = params.get('projeto')
+  const scoped = useMemo(
+    () => (projectId ? generations.filter((item) => item.project_id === projectId) : generations),
+    [generations, projectId],
+  )
+
   const modelNames = useMemo(() => new Map((models.data ?? []).map((model) => [model.slug, model.name])), [models.data])
-  const visible = filter === 'all' ? generations : generations.filter((item) => item.kind === filter)
+  const visible = filter === 'all' ? scoped : scoped.filter((item) => item.kind === filter)
   const counts = useMemo(
     () => ({
-      all: generations.length,
-      image: generations.filter((item) => item.kind === 'image').length,
-      video: generations.filter((item) => item.kind === 'video').length,
+      all: scoped.length,
+      image: scoped.filter((item) => item.kind === 'image').length,
+      video: scoped.filter((item) => item.kind === 'video').length,
     }),
-    [generations],
+    [scoped],
   )
 
   return (
@@ -76,6 +84,14 @@ export function GalleryPage() {
         }
       />
 
+      {projectId && (
+        <Notice>
+          Mostrando só as criações de um projeto.{' '}
+          <Link to="/galeria" className="font-semibold text-accent-soft hover:underline">
+            Ver tudo
+          </Link>
+        </Notice>
+      )}
       {error && <Notice tone="error">{error}</Notice>}
       {loading ? (
         <GallerySkeleton />

@@ -33,14 +33,16 @@ const PRODUCT: QuickAction = {
     'Minha persona segurando [descreva o produto] e mostrando para a câmera, como num vídeo de criadora, luz natural, foto de celular',
   )}`,
 }
+const IDEAS: QuickAction = { title: 'Ideias de conteúdo', description: 'Pautas pensadas para o público da sua marca.', to: '/assistente/ideias' }
+const SCRIPT: QuickAction = { title: 'Roteiro de vídeo', description: 'Gancho, cenas e CTA, com as cenas prontas para o Studio.', to: '/assistente/roteiro' }
 const GALLERY: QuickAction = { title: 'Minhas criações', description: 'Tudo o que você já gerou, pronto para baixar.', to: '/galeria' }
 
 /** Atalhos do início, na ordem que faz sentido para cada objetivo. Só ferramentas que já funcionam. */
 export const QUICK_ACTIONS: Record<Goal, readonly QuickAction[]> = {
   influencers: [PERSONA, MOTION, PHOTO, GALLERY],
-  viral_videos: [VIDEO, MOTION, PHOTO, GALLERY],
-  ugc_ads: [PRODUCT, PERSONA, VIDEO, GALLERY],
+  viral_videos: [SCRIPT, VIDEO, MOTION, PHOTO],
+  ugc_ads: [PRODUCT, SCRIPT, PERSONA, VIDEO],
   images: [PHOTO, PERSONA, VIDEO, GALLERY],
-  social_content: [PHOTO, VIDEO, PERSONA, GALLERY],
-  all_tools: [PHOTO, VIDEO, PERSONA, GALLERY],
+  social_content: [IDEAS, SCRIPT, PHOTO, VIDEO],
+  all_tools: [IDEAS, PHOTO, VIDEO, PERSONA],
 }

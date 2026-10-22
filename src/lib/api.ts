@@ -1,17 +1,29 @@
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import { z } from 'zod'
+import type { Channel } from '@/domain/assistant'
 import {
+  BRAND_COLUMNS,
+  brandSchema,
   generationSchema,
   personaSchema,
   preferencesSchema,
   PROFILE_COLUMNS,
   profileSchema,
+  PROJECT_COLUMNS,
+  projectSchema,
+  textGenerationSchema,
+  type AssistantTool,
+  type Brand,
+  type BrandInput,
   type Generation,
   type Goal,
   type Persona,
   type Preferences,
   type Profile,
   type ProfileUpdate,
+  type Project,
+  type ProjectInput,
+  type TextGeneration,
 } from '@/domain/types'
 import { supabase } from './supabase'
 
@@ -42,6 +54,8 @@ export interface GenerateInput {
   readonly prompt: string
   readonly personaId?: string
   readonly sourceGenerationId?: string
+  readonly brandId?: string
+  readonly projectId?: string
   /** Mesma chave = mesmo pedido: o servidor não cobra nem gera duas vezes. */
   readonly idempotencyKey: string
 }
@@ -184,4 +198,70 @@ export async function changePassword(password: string): Promise<void> {
 export async function signOutEverywhere(): Promise<void> {
   const { error } = await supabase.auth.signOut({ scope: 'global' })
   if (error) throw new ApiError('signout_failed', 'Não deu para sair dos outros aparelhos.')
+}
+
+// ------------------------------------------------------------------ workspace
+
+const WORKSPACE_ERRORS: Record<string, string> = {
+  too_many_brands: 'Você chegou ao limite de marcas do seu plano. Remova uma ou veja os planos em Assinatura.',
+  too_many_projects: 'Você chegou ao limite de projetos.',
+  plan_required: 'Projetos fazem parte do plano Studio. Veja os planos em Assinatura.',
+  brand_not_found: 'Essa marca não existe mais. Escolha outra.',
+}
+
+function workspaceError(error: { message: string }, fallback: string): ApiError {
+  return new ApiError(error.message, WORKSPACE_ERRORS[error.message] ?? fallback)
+}
+
+export async function fetchBrands(): Promise<Brand[]> {
+  const { data, error } = await supabase.from('brands').select(BRAND_COLUMNS).order('created_at', { ascending: false })
+  if (error) throw new ApiError('brands_unavailable', 'Não deu para carregar suas marcas.')
+  return z.array(brandSchema).parse(data)
+}
+
+export async function saveBrand(input: BrandInput, id?: string): Promise<Brand> {
+  const query = id ? supabase.from('brands').update(input).eq('id', id) : supabase.from('brands').insert(input)
+  const { data, error } = await query.select(BRAND_COLUMNS).single()
+  if (error) throw workspaceError(error, 'Não deu para salvar a marca. Confira os campos.')
+  return brandSchema.parse(data)
+}
+
+export async function deleteBrand(id: string): Promise<void> {
+  const { error } = await supabase.from('brands').delete().eq('id', id)
+  if (error) throw new ApiError('delete_failed', 'Não deu para remover a marca.')
+}
+
+export async function fetchProjects(): Promise<Project[]> {
+  const { data, error } = await supabase.from('projects').select(PROJECT_COLUMNS).order('created_at', { ascending: false })
+  if (error) throw new ApiError('projects_unavailable', 'Não deu para carregar seus projetos.')
+  return z.array(projectSchema).parse(data)
+}
+
+export async function saveProject(input: ProjectInput, id?: string): Promise<Project> {
+  const query = id ? supabase.from('projects').update(input).eq('id', id) : supabase.from('projects').insert(input)
+  const { data, error } = await query.select(PROJECT_COLUMNS).single()
+  if (error) throw workspaceError(error, 'Não deu para salvar o projeto. Confira os campos.')
+  return projectSchema.parse(data)
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  const { error } = await supabase.from('projects').delete().eq('id', id)
+  if (error) throw new ApiError('delete_failed', 'Não deu para remover o projeto.')
+}
+
+// ----------------------------------------------------------------- assistente
+
+export interface AssistantInput {
+  readonly tool: AssistantTool
+  readonly brief: string
+  readonly channel: Channel
+  readonly brandId?: string
+  readonly projectId?: string
+  readonly idempotencyKey: string
+}
+
+/** Pede o texto e espera: a function só responde quando o Claude termina (10 a 40 s). */
+export async function runAssistant(input: AssistantInput): Promise<TextGeneration> {
+  const data = await invoke('assistant', { ...input })
+  return z.object({ generation: textGenerationSchema }).parse(data).generation
 }
