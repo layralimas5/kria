@@ -9,6 +9,8 @@ Ordem que funciona. Cada passo diz o que conferir antes do próximo.
 2. **fal.ai:** criar conta, colocar saldo (US$ 10 dá para testar tudo) e gerar a
    chave em *Keys*.
 3. **Asaas:** usar a conta sandbox primeiro. Gerar a chave da API.
+4. **Anthropic:** criar a chave em console.anthropic.com (Vynkio AI: ideias, copys e roteiros).
+   Pôr um limite de gasto mensal no painel antes de abrir ao público.
 
 ## 2. Banco
 
@@ -70,6 +72,22 @@ npx supabase functions deploy asaas-webhook --no-verify-jwt   # de novo: agora t
   `VITE_AUTH_GOOGLE=true` no front.
 - **Custos:** preencher `models.provider_cost_usd` de cada modelo conferido em `fal.ai/models/<endpoint>`
   (SQL Editor). Sem isso a margem estimada fica incompleta.
+
+## 4c. Vynkio AI e Workspace (0009 e 0010)
+
+Marcas, projetos e as ferramentas de texto. Detalhes e custos em `docs/vynkio-ecossistema.md`.
+
+```bash
+npx supabase db push                                   # aplica 0009_workspace e 0010_assistant
+npx supabase secrets set ANTHROPIC_API_KEY=<chave>
+npx supabase functions deploy assistant
+npx supabase functions deploy generate                 # de novo: agora grava marca e projeto
+```
+
+- O modelo de cada ferramenta é o `endpoint` da linha em `models` (`claude-opus-5-5`) e o esforço vem de
+  `defaults.effort`. Trocar modelo, esforço ou preço em créditos é `update`, sem deploy.
+- Na primeira semana, conferir no painel da Anthropic o custo por pedido (a function registra os tokens
+  no log como `assistant usage`) e preencher `models.provider_cost_usd` das quatro ferramentas de texto.
 
 ## 5. Front
 

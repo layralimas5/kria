@@ -1,5 +1,8 @@
 # Kria IA: escopo
 
+> Desde 21/10/2026 o plano do produto como ecossistema (Studio, Vynkio AI, Content, Analytics,
+> Growth, Workspace), com diagnóstico e roadmap, está em `docs/vynkio-ecossistema.md`.
+
 ## Ideia
 
 Uma ferramenta, vários modelos de IA por trás. A pessoa não precisa saber o que é
