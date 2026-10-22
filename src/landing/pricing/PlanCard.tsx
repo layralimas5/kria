@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { Check, Clock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { formatBRL } from '@/domain/format'
+import { track } from '@/lib/analytics'
 import type { MarketingPlan } from './catalog'
 import { SIGNUP_PATH } from '../content'
 import { CARD_HOVER } from '../styles'
@@ -16,6 +17,7 @@ export function PlanCard({ plan }: { readonly plan: MarketingPlan }) {
   const upcoming = plan.features.filter((feature) => feature.soon)
   const titleId = `plano-${plan.slug}`
   const free = isFreePlan(plan)
+  const destination = free ? SIGNUP_PATH : subscribePath(plan.slug)
 
   return (
     <article
@@ -46,9 +48,12 @@ export function PlanCard({ plan }: { readonly plan: MarketingPlan }) {
         <span className="font-semibold text-accent-soft">{plan.monthly_credits.toLocaleString('pt-BR')} créditos</span>{' '}
         {free ? 'ao criar a conta' : 'todo mês'}
       </p>
+      <p className="mt-1 text-[13px] text-zinc-400">{free ? 'Não vencem. Sem cartão.' : 'Renovam a cada cobrança paga, não acumulam.'}</p>
+      {plan.highlight_reason && <p className="mt-3 rounded-xl bg-accent/10 px-3 py-2 text-[13px] text-zinc-200 ring-1 ring-accent/20">{plan.highlight_reason}</p>}
 
       <Link
-        to={free ? SIGNUP_PATH : subscribePath(plan.slug)}
+        to={destination}
+        onClick={() => track({ name: 'cta_click', params: { cta_id: `plan_${plan.slug}`, destination } })}
         className={clsx(
           'mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-xl text-sm font-semibold transition-[transform,box-shadow,background-color] duration-150 active:translate-y-[3px] active:shadow-none',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-stage',

@@ -1,13 +1,13 @@
 import clsx from 'clsx'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
-  ArrowLeftRight,
   Briefcase,
   CalendarCheck,
-  Clapperboard,
   Coins,
-  Cpu,
   Gift,
+  GraduationCap,
+  Layers,
+  LayoutGrid,
   PlusCircle,
   Plus,
   RefreshCw,
@@ -24,15 +24,29 @@ import { FAQ, WELCOME_CREDITS, type FaqIcon, type FaqItem } from '../content'
 
 const ICONS: Record<FaqIcon, LucideIcon> = {
   what: Sparkles,
+  beginner: GraduationCap,
   credits: Coins,
-  persona: UserRound,
-  video: Clapperboard,
   commercial: Briefcase,
+  formats: LayoutGrid,
+  persona: UserRound,
+  plans: Layers,
   rollover: CalendarCheck,
-  change: ArrowLeftRight,
   cancel: XCircle,
   extra: PlusCircle,
-  tools: Cpu,
+}
+
+/** Dados estruturados das perguntas, com o mesmo texto que aparece na página. */
+function FaqJsonLd() {
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: { '@type': 'Answer', text: item.answer },
+    })),
+  }
+  return <script type="application/ld+json">{JSON.stringify(data)}</script>
 }
 
 const PROMISES: readonly { icon: LucideIcon; title: string; text: string }[] = [
@@ -108,22 +122,25 @@ export function Faq() {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   return (
-    <section aria-labelledby="faq-title" className="px-4 pt-20 md:pt-28">
+    <section id="faq" aria-labelledby="faq-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
+      <FaqJsonLd />
       <div className="mx-auto grid max-w-[1440px] gap-8 lg:grid-cols-[1fr_1.5fr] lg:gap-12">
         <div className="lg:sticky lg:top-24 lg:self-start">
-          <SectionHeading id="faq-title" title="Antes de começar" lead="As dúvidas que todo mundo tem na primeira vez, respondidas sem letra miúda." />
+          <SectionHeading id="faq-title" title="Perguntas frequentes" lead="As dúvidas de quem está começando, respondidas com as regras que o app aplica." />
           <ul className="mt-8 space-y-2">
             {PROMISES.map(({ icon: Icon, title, text }) => (
               <li key={title} className="flex items-center gap-3 rounded-2xl border border-white/[0.06] px-4 py-3">
                 <Icon className="size-5 shrink-0 text-accent-soft" aria-hidden="true" />
                 <span>
                   <span className="block text-sm font-semibold text-zinc-100">{title}</span>
-                  <span className="block text-[13px] text-zinc-500">{text}</span>
+                  <span className="block text-[13px] text-zinc-400">{text}</span>
                 </span>
               </li>
             ))}
           </ul>
-          <CtaLink className="mt-6 w-full sm:w-auto" />
+          <CtaLink cta="faq" className="mt-6 w-full sm:w-auto">
+            Criar conta grátis
+          </CtaLink>
         </div>
         <ul className="space-y-2.5">
           {FAQ.map((item, index) => (

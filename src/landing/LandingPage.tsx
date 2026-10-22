@@ -1,15 +1,22 @@
+import { useEffect } from 'react'
+import { track } from '@/lib/analytics'
+import { REAL_GALLERY } from './content'
 import { Faq } from './sections/Faq'
-import { Feed } from './sections/Feed'
+import { Features } from './sections/Features'
 import { FinalCta } from './sections/FinalCta'
 import { Footer } from './sections/Footer'
 import { Gallery } from './sections/Gallery'
 import { Header } from './sections/Header'
 import { Hero } from './sections/Hero'
 import { HowItWorks } from './sections/HowItWorks'
+import { Pipeline } from './sections/Pipeline'
 import { Pricing } from './sections/Pricing'
-import { Tools } from './sections/Tools'
+import { Problem } from './sections/Problem'
+import { UseCases } from './sections/UseCases'
 
 export function LandingPage() {
+  useEffect(() => track({ name: 'landing_view' }), [])
+
   return (
     <div className="min-h-dvh bg-stage">
       <a
@@ -21,10 +28,12 @@ export function LandingPage() {
       <Header />
       <main id="conteudo">
         <Hero />
-        <Feed />
-        <Tools />
-        <Gallery />
+        <Problem />
+        <Features />
         <HowItWorks />
+        <UseCases />
+        <Pipeline />
+        {REAL_GALLERY && <Gallery />}
         <Pricing />
         <Faq />
         <FinalCta />

@@ -14,6 +14,7 @@ export const FREE_PLAN: MarketingPlan = {
   cta_label: 'Criar conta grátis',
   badge: null,
   highlight: false,
+  highlight_reason: null,
   position: 0,
   features: [
     { label: `${WELCOME_CREDITS} créditos de boas-vindas`, soon: false },

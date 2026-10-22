@@ -14,6 +14,7 @@
     "db:test": "node supabase/tests/credits.mjs",
     "check": "npm run typecheck && npm run typecheck:functions && npm test && npm run db:test",
     "billing:image": "node scripts/billing-image.mjs",
+    "landing:screens": "node scripts/landing-screens.mjs",
     "demo:assets": "node scripts/demo-assets.mjs",
     "landing:assets": "node scripts/landing-assets.mjs",
     "landing:avatars": "node scripts/landing-avatars.mjs"

@@ -5,6 +5,8 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_ANON_KEY: string
   /** 'true' quando o login com Google estiver ligado no Supabase. */
   readonly VITE_AUTH_GOOGLE?: string
+  /** ID do GA4 (G-XXXX). Sem ele, os eventos de conversão não saem do navegador. */
+  readonly VITE_GA_MEASUREMENT_ID?: string
 }
 
 interface ImportMeta {

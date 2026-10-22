@@ -1,17 +1,16 @@
 import clsx from 'clsx'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
-import { Badge } from '../components/Badge'
 import { CtaLink } from '../components/CtaLink'
-import { SIGNUP_PATH, type ToolBadge } from '../content'
+import { SIGNUP_PATH } from '../content'
 import { useScrolled } from '../hooks/useScrolled'
 
-const NAV: readonly { href: string; label: string; badge?: ToolBadge }[] = [
-  { href: '#ferramentas', label: 'Vídeo' },
-  { href: '#ferramentas', label: 'Imagem' },
-  { href: '#ferramentas', label: 'Influenciador', badge: 'novo' },
-  { href: '#galeria', label: 'Feito no Vynkio' },
+const NAV: readonly { href: string; label: string }[] = [
+  { href: '#recursos', label: 'Recursos' },
+  { href: '#como-funciona', label: 'Como funciona' },
+  { href: '#para-quem', label: 'Para quem' },
   { href: '#precos', label: 'Preços' },
+  { href: '#faq', label: 'Dúvidas' },
 ]
 
 const LINK = 'rounded-md px-2 py-1.5 text-[14px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
@@ -30,10 +29,9 @@ export function Header() {
           <Logo />
         </a>
         <nav aria-label="Seções" className="hidden items-center gap-1 lg:flex">
-          {NAV.map(({ href, label, badge }) => (
-            <a key={label} href={href} className={`${LINK} flex items-center gap-1.5 text-zinc-300 hover:text-zinc-50`}>
+          {NAV.map(({ href, label }) => (
+            <a key={href} href={href} className={`${LINK} text-zinc-300 hover:text-zinc-50`}>
               {label}
-              {badge && <Badge kind={badge} />}
             </a>
           ))}
         </nav>
@@ -41,8 +39,8 @@ export function Header() {
           <Link to={SIGNUP_PATH} className={`${LINK} hidden px-3 text-accent-soft hover:text-accent-strong sm:inline-flex`}>
             Entrar
           </Link>
-          <CtaLink size="sm" className="rounded-lg">
-            Criar conta
+          <CtaLink cta="header" size="sm" className="rounded-lg">
+            Começar a criar
           </CtaLink>
         </div>
       </div>

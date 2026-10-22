@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import { AnchorButton, CtaLink } from '../components/CtaLink'
 import { LoopVideo } from '../components/LoopVideo'
 import { SectionHeading } from '../components/SectionHeading'
-import { AVATARS, ILLUSTRATIVE_MEDIA, SIGNUP_PATH } from '../content'
+import { AVATARS, SIGNUP_PATH } from '../content'
 import { CARD_HOVER } from '../styles'
+
+// Só entra na página quando `REAL_GALLERY` (todos os vídeos gerados de verdade).
 
 /** Proporções alternadas dão o efeito de mosaico. */
 const ASPECTS = ['aspect-[3/4]', 'aspect-[9/16]', 'aspect-[4/5]', 'aspect-[9/14]', 'aspect-[4/5]', 'aspect-[3/4]', 'aspect-[9/16]', 'aspect-[4/5]'] as const
@@ -19,7 +21,7 @@ export function Gallery() {
           lead="Cada vídeo começou com uma frase. Passa o mouse (ou toca) pra ver o prompt que gerou."
           actions={
             <>
-              <CtaLink>Começar a criar</CtaLink>
+              <CtaLink cta="gallery">Começar a criar</CtaLink>
               <AnchorButton href="#precos">Ver preços</AnchorButton>
             </>
           }
@@ -58,7 +60,6 @@ export function Gallery() {
             </Link>
           </div>
         </div>
-        {ILLUSTRATIVE_MEDIA && <p className="mt-3 text-center text-xs text-zinc-600">Vídeos ilustrativos enquanto os exemplos reais são gerados.</p>}
       </div>
     </section>
   )

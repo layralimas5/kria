@@ -22,6 +22,8 @@ export interface MarketingPlan {
   readonly cta_label: string
   readonly badge: string | null
   readonly highlight: boolean
+  /** Por que o plano em destaque é o recomendado. Sem motivo real, sem destaque. */
+  readonly highlight_reason: string | null
   readonly position: number
   readonly features: readonly PlanFeature[]
   readonly comparison: Readonly<Record<string, ComparisonValue>>
@@ -60,6 +62,7 @@ export const PLAN_CATALOG: readonly MarketingPlan[] = [
     cta_label: 'Começar com Starter',
     badge: null,
     highlight: false,
+    highlight_reason: null,
     position: 10,
     features: [
       feature('300 créditos por mês'),
@@ -79,14 +82,15 @@ export const PLAN_CATALOG: readonly MarketingPlan[] = [
   {
     slug: 'pro',
     name: 'Vynkio Pro',
-    tagline: 'Crie mais, experimente mais e produza conteúdos incríveis.',
+    tagline: 'Para quem publica toda semana e precisa de UGC e mais de uma marca.',
     price_cents: 7990,
     monthly_credits: 450,
     max_personas: 5,
     max_brands: 3,
     cta_label: 'Quero ser Pro',
-    badge: 'Mais popular',
+    badge: 'Recomendado',
     highlight: true,
+    highlight_reason: 'Por R$ 20 a mais que o Starter: 150 créditos a mais, Roteiro UGC, 3 marcas e suporte pelo WhatsApp.',
     position: 20,
     features: [
       feature('450 créditos por mês'),
@@ -113,6 +117,7 @@ export const PLAN_CATALOG: readonly MarketingPlan[] = [
     cta_label: 'Escolher Studio',
     badge: null,
     highlight: false,
+    highlight_reason: null,
     position: 30,
     features: [
       feature('1.000 créditos por mês'),

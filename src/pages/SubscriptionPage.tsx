@@ -1,5 +1,5 @@
 import { CalendarClock, Info } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { PaymentHistory } from '@/components/billing/PaymentHistory'
 import { PlanCard } from '@/components/billing/PlanCard'
@@ -14,6 +14,7 @@ import type { Plan, Subscription } from '@/domain/types'
 import { useAccount } from '@/hooks/useAccount'
 import { useBalance } from '@/hooks/useBalance'
 import { useModels } from '@/hooks/useCatalog'
+import { track } from '@/lib/analytics'
 import { cancelSubscription, errorMessage, startSubscription } from '@/lib/api'
 
 const POLICIES = [
@@ -72,9 +73,23 @@ function CurrentPlan({ plan, subscription, onCancel, canceling }: {
   )
 }
 
+/** Conta a assinatura confirmada uma vez por página (o webhook pode chegar depois do retorno). */
+function useConversion(subscription: Subscription | undefined) {
+  const reported = useRef<string | null>(null)
+  useEffect(() => {
+    if (subscription?.status !== 'active' || reported.current === subscription.id) return
+    reported.current = subscription.id
+    track({
+      name: 'purchase',
+      params: { plan: subscription.plan_slug, value: subscription.price_cents / 100, currency: 'BRL', transaction_id: subscription.id },
+    })
+  }, [subscription])
+}
+
 /** Volta do checkout: espera o webhook confirmar o pagamento. */
 function CheckoutReturn({ subscriptionId, subscriptions }: { readonly subscriptionId: string; readonly subscriptions: readonly Subscription[] }) {
   const pending = subscriptions.find((item) => item.id === subscriptionId)
+  useConversion(pending)
   if (pending?.status === 'active') return <Notice tone="success">Assinatura confirmada. Os créditos do plano já estão na sua conta.</Notice>
   if (pending?.status === 'expired') return <Notice tone="error">O pagamento não foi concluído. Você pode tentar de novo abaixo.</Notice>
   return (
@@ -102,6 +117,7 @@ export function SubscriptionPage() {
   async function subscribe(target: Plan) {
     setBusy(target.slug)
     setMessage(null)
+    track({ name: 'begin_checkout', params: { plan: target.slug } })
     try {
       window.location.assign(await startSubscription(target.slug))
     } catch (subscribeError) {

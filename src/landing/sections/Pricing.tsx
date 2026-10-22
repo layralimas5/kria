@@ -49,8 +49,8 @@ export function Pricing() {
         <SectionHeading
           id="precos-title"
           align="center"
-          title="Uma plataforma. Infinitas possibilidades de criação."
-          lead="Crie personagens, vídeos, imagens e conteúdos com inteligência artificial. Escolha o plano ideal para transformar suas ideias em realidade."
+          title="Planos e preços"
+          lead="Comece com os créditos grátis. Quando quiser criar todo mês, escolha um plano: o que muda é o saldo, os limites e as ferramentas liberadas."
         />
 
         <PlansJsonLd plans={PLAN_CATALOG} />
