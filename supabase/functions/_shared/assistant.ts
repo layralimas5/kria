@@ -3,10 +3,10 @@
 
 import { z } from 'npm:zod@3'
 
-export const ASSISTANT_TOOLS = ['copy', 'roteiro', 'ideias', 'ugc-roteiro'] as const
+export const ASSISTANT_TOOLS = ['copy', 'roteiro', 'ideias', 'ugc-roteiro', 'planejamento'] as const
 export type AssistantTool = (typeof ASSISTANT_TOOLS)[number]
 
-export const CHANNELS = ['instagram', 'tiktok', 'youtube', 'shorts', 'anuncio', 'whatsapp'] as const
+export const CHANNELS = ['instagram', 'tiktok', 'youtube', 'shorts', 'anuncio', 'whatsapp', 'linkedin', 'facebook'] as const
 export type Channel = (typeof CHANNELS)[number]
 
 const CHANNEL_LABELS: Record<Channel, string> = {
@@ -16,6 +16,58 @@ const CHANNEL_LABELS: Record<Channel, string> = {
   shorts: 'YouTube Shorts',
   anuncio: 'anúncio pago (Meta Ads ou Google Ads)',
   whatsapp: 'WhatsApp e status',
+  linkedin: 'LinkedIn',
+  facebook: 'Facebook',
+}
+
+/** Tipo de texto pedido na ferramenta de copy. */
+export const COPY_FORMATS = [
+  'legenda',
+  'anuncio',
+  'descricao-produto',
+  'titulo',
+  'gancho',
+  'texto-vendas',
+  'adaptacao',
+  'reescrita',
+  'analise',
+] as const
+export type CopyFormat = (typeof COPY_FORMATS)[number]
+
+const COPY_FORMAT_TASKS: Record<CopyFormat, string> = {
+  legenda: 'Escreva 3 legendas prontas para publicar, cada uma com um ângulo diferente, gancho na primeira linha e CTA no fim.',
+  anuncio: 'Escreva 3 textos de anúncio com título curto, texto principal e CTA, cada um com um ângulo (dor, desejo, prova).',
+  'descricao-produto': 'Escreva 3 descrições do produto ou serviço do pedido: benefício primeiro, detalhes depois, sem exagero.',
+  titulo: 'Sugira 8 títulos curtos para o conteúdo do pedido, variando o ângulo. `text` traz o título; `label`, o ângulo.',
+  gancho: 'Sugira 8 ganchos para os 3 primeiros segundos de um vídeo ou a primeira linha de um post. `label` diz o tipo de gancho.',
+  'texto-vendas': 'Escreva um texto de vendas em blocos: problema, solução, como funciona, objeções, oferta e CTA. Um bloco por item.',
+  adaptacao: 'Adapte o texto do pedido para o canal indicado, mantendo a mensagem. Entregue 3 versões, cada uma no formato nativo do canal.',
+  reescrita: 'Reescreva o texto do pedido em 3 versões melhores (mais clara, mais curta, mais persuasiva). `label` diz o que mudou.',
+  analise: [
+    'Analise o texto do pedido como copy. Um item por ponto: o que funciona, o que enfraquece e uma sugestão concreta de ajuste.',
+    'Separe o que é observável no texto do que é hipótese sobre a reação do público, e diga qual é qual.',
+  ].join(' '),
+}
+
+export const GOALS = ['engajamento', 'alcance', 'vendas', 'leads', 'autoridade', 'lancamento'] as const
+export type ContentGoal = (typeof GOALS)[number]
+
+const GOAL_LABELS: Record<ContentGoal, string> = {
+  engajamento: 'gerar comentários, salvamentos e compartilhamentos',
+  alcance: 'alcançar gente nova',
+  vendas: 'vender',
+  leads: 'captar contatos interessados',
+  autoridade: 'mostrar que a marca entende do assunto',
+  lancamento: 'lançar algo novo',
+}
+
+export const LENGTHS = ['curto', 'medio', 'longo'] as const
+export type TextLength = (typeof LENGTHS)[number]
+
+const LENGTH_LABELS: Record<TextLength, string> = {
+  curto: 'curto e direto',
+  medio: 'tamanho médio',
+  longo: 'mais longo e completo',
 }
 
 /** O contexto da marca que vai para o modelo. Campos vazios não entram. */
@@ -27,6 +79,11 @@ export interface BrandContext {
   readonly offer: string
   readonly avoid: string
   readonly visual_style: string
+  readonly description: string
+  readonly goals: string
+  readonly platforms: readonly string[]
+  readonly communication: string
+  readonly references_notes: string
 }
 
 export interface AssistantRequest {
@@ -34,6 +91,12 @@ export interface AssistantRequest {
   readonly brief: string
   readonly channel: Channel
   readonly brand: BrandContext | null
+  /** Só a ferramenta de copy usa; nas outras é ignorado. */
+  readonly format?: CopyFormat
+  readonly goal?: ContentGoal
+  readonly length?: TextLength
+  /** Tom pedido para este texto; vence o tom da marca. */
+  readonly tone?: string
 }
 
 const TOOL_TASKS: Record<AssistantTool, string> = {
@@ -55,11 +118,19 @@ const TOOL_TASKS: Record<AssistantTool, string> = {
     '`visual_prompt` fica vazio.',
   ].join(' '),
   'ugc-roteiro': [
-    'Escreva um roteiro de vídeo UGC (estilo cliente real gravando no celular), de 20 a 40 segundos, em cenas.',
-    'Tom de conversa, primeira pessoa, sem cara de anúncio. Comece por uma situação real ou um problema.',
+    'Escreva um roteiro de vídeo no estilo UGC (criador gravando no celular), de 20 a 40 segundos, em cenas.',
+    'Tom de conversa, sem cara de comercial. A pessoa apresenta, demonstra e explica o produto, começando por uma situação ou um problema.',
+    'Não escreva como depoimento de cliente nem invente experiência de uso, tempo de uso ou resultado: nada de "eu usei e mudou".',
+    'O último item lembra que, em anúncio, o vídeo precisa ser identificado como publicidade e como conteúdo gerado por IA.',
     'Em `label`, a cena e o tempo. Em `text`, a fala. Em `visual_prompt`, a cena para o gerador de imagem:',
     'pessoa segurando ou usando o produto, ângulo de selfie ou celular apoiado, lugar comum, luz natural.',
     'Sem texto escrito na imagem e sem pessoa famosa.',
+  ].join(' '),
+  planejamento: [
+    'Monte um planejamento editorial com a quantidade de posts e o período do pedido (sem período, 7 dias).',
+    'Um item por post, na ordem de publicação. Em `label`, "Dia N, formato" (ex.: "Dia 3, Reels").',
+    'Em `text`, o tema, o gancho e o objetivo do post. Varie formatos e objetivos ao longo do período.',
+    '`visual_prompt` fica vazio.',
   ].join(' '),
 }
 
@@ -81,12 +152,17 @@ function brandBlock(brand: BrandContext | null): string {
   if (!brand) return 'Marca: não informada. Escreva para um público geral do nicho que o pedido sugerir.'
   const lines: [string, string][] = [
     ['Marca', brand.name],
+    ['Sobre a marca', brand.description],
     ['Nicho', brand.niche],
     ['Público', brand.audience],
     ['Tom de voz', brand.tone],
     ['O que vende', brand.offer],
+    ['Objetivos', brand.goals],
+    ['Plataformas', brand.platforms.join(', ')],
+    ['Preferências de comunicação', brand.communication],
     ['Evitar', brand.avoid],
     ['Estilo visual', brand.visual_style],
+    ['Referências autorizadas', brand.references_notes],
   ]
   return lines
     .filter(([, value]) => value.trim().length > 0)
@@ -96,9 +172,16 @@ function brandBlock(brand: BrandContext | null): string {
 
 /** O pedido do usuário vai entre marcadores: é dado, não instrução para o modelo. */
 export function buildUserMessage(request: AssistantRequest): string {
+  const task = request.tool === 'copy' && request.format ? COPY_FORMAT_TASKS[request.format] : TOOL_TASKS[request.tool]
+  const extras = [
+    request.goal ? `Objetivo: ${GOAL_LABELS[request.goal]}.` : null,
+    request.length ? `Tamanho: ${LENGTH_LABELS[request.length]}.` : null,
+    request.tone?.trim() ? `Tom pedido para este texto (vence o tom da marca): ${request.tone.trim()}.` : null,
+  ].filter((line): line is string => line !== null)
   return [
-    `Tarefa: ${TOOL_TASKS[request.tool]}`,
+    `Tarefa: ${task}`,
     `Canal: ${CHANNEL_LABELS[request.channel]}.`,
+    ...extras,
     '',
     brandBlock(request.brand),
     '',

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildProviderInput, checkPrompt, extractOutput, storagePathFor, type ModelRow } from './generation.ts'
+import { buildProviderInput, checkPrompt, extractOutput, parseModelOptions, resolveOptions, storagePathFor, type ModelRow } from './generation.ts'
+import { providerFor } from './providers.ts'
 import { signGenerationId, verifyGenerationId } from './signature.ts'
 
 const model = (overrides: Partial<ModelRow> = {}): ModelRow => ({
@@ -11,6 +12,7 @@ const model = (overrides: Partial<ModelRow> = {}): ModelRow => ({
   requires_image: false,
   credits: 5,
   defaults: { num_images: 1 },
+  options: {},
   ...overrides,
 })
 
@@ -31,6 +33,29 @@ describe('buildProviderInput', () => {
 
   it('o prompt do usuário vence um prompt nos defaults', () => {
     expect(buildProviderInput(model({ defaults: { prompt: 'x' } }), 'meu', null).prompt).toBe('meu')
+  })
+})
+
+describe('opções do modelo', () => {
+  const allowed = { aspect_ratio: ['4:5', '1:1', '9:16'] }
+
+  it('aceita valor da lista do catálogo', () => {
+    expect(resolveOptions(allowed, { aspect_ratio: '9:16' })).toEqual({ ok: true, values: { aspect_ratio: '9:16' } })
+  })
+
+  it('recusa valor fora da lista e opção que o modelo não tem', () => {
+    expect(resolveOptions(allowed, { aspect_ratio: '21:9' }).ok).toBe(false)
+    expect(resolveOptions(allowed, { duration: '10' }).ok).toBe(false)
+  })
+
+  it('a opção escolhida vence o default e não troca o prompt', () => {
+    const input = buildProviderInput(model({ defaults: { aspect_ratio: '4:5' } }), 'um café', null, { aspect_ratio: '1:1' })
+    expect(input).toEqual({ aspect_ratio: '1:1', prompt: 'um café' })
+  })
+
+  it('lê do banco só listas de texto', () => {
+    expect(parseModelOptions({ aspect_ratio: ['1:1'], duration: 5, quality: [], style: [1] })).toEqual({ aspect_ratio: ['1:1'] })
+    expect(parseModelOptions(null)).toEqual({})
   })
 })
 
@@ -86,5 +111,13 @@ describe('assinatura do webhook', () => {
 
   it('recusa segredo curto', async () => {
     await expect(signGenerationId('curto', 'g1')).rejects.toThrow()
+  })
+})
+
+describe('providerFor', () => {
+  it('aceita a modalidade do fornecedor e recusa o resto', () => {
+    expect(providerFor('fal', 'video').async).toBe(true)
+    expect(() => providerFor('fal', 'text')).toThrow()
+    expect(() => providerFor('higgsfield', 'video')).toThrow()
   })
 })

@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { ASSISTANT_TOOLS as APP_TOOLS, CHANNELS as APP_CHANNELS } from '../../../src/domain/assistant'
+import {
+  ASSISTANT_TOOLS as APP_TOOLS,
+  CHANNELS as APP_CHANNELS,
+  COPY_FORMATS as APP_FORMATS,
+  CONTENT_GOALS as APP_GOALS,
+  TEXT_LENGTHS as APP_LENGTHS,
+} from '../../../src/domain/assistant'
 import {
   ASSISTANT_TOOLS,
   buildUserMessage,
   CHANNELS,
+  COPY_FORMATS,
   effortFrom,
+  GOALS,
+  LENGTHS,
   parseAssistantOutput,
   SYSTEM_PROMPT,
   type BrandContext,
@@ -18,6 +27,11 @@ const brand: BrandContext = {
   offer: '',
   avoid: 'gíria',
   visual_style: '',
+  description: '',
+  goals: 'encher o balcão das 7h às 9h',
+  platforms: ['instagram', 'whatsapp'],
+  communication: '',
+  references_notes: '',
 }
 
 describe('buildUserMessage', () => {
@@ -26,8 +40,38 @@ describe('buildUserMessage', () => {
     expect(message).toContain('Marca: Café da Ana')
     expect(message).toContain('Tom de voz: leve e próximo')
     expect(message).toContain('Evitar: gíria')
+    expect(message).toContain('Objetivos: encher o balcão')
+    expect(message).toContain('Plataformas: instagram, whatsapp')
     expect(message).not.toContain('O que vende')
+    expect(message).not.toContain('Sobre a marca')
     expect(message).toContain('Instagram')
+  })
+
+  it('o tipo de texto troca a tarefa da copy e o tom pedido vence o da marca', () => {
+    const message = buildUserMessage({
+      tool: 'copy',
+      brief: 'texto antigo do anúncio',
+      channel: 'anuncio',
+      brand,
+      format: 'analise',
+      goal: 'vendas',
+      length: 'curto',
+      tone: 'mais sério',
+    })
+    expect(message).toContain('Analise o texto do pedido')
+    expect(message).toContain('hipótese')
+    expect(message).toContain('Objetivo: vender.')
+    expect(message).toContain('Tamanho: curto e direto.')
+    expect(message).toContain('vence o tom da marca): mais sério')
+  })
+
+  it('o tipo de texto não muda as outras ferramentas', () => {
+    const message = buildUserMessage({ tool: 'ideias', brief: 'x x x', channel: 'tiktok', brand: null, format: 'gancho' })
+    expect(message).toContain('Sugira 6 ideias')
+  })
+
+  it('o planejamento numera os posts por dia', () => {
+    expect(buildUserMessage({ tool: 'planejamento', brief: 'um mês', channel: 'instagram', brand: null })).toContain('"Dia N, formato"')
   })
 
   it('isola o pedido entre marcadores', () => {
@@ -73,5 +117,8 @@ describe('contrato com o app', () => {
   it('o app oferece as mesmas ferramentas e canais que a function aceita', () => {
     expect(APP_TOOLS.map((info) => info.tool).sort()).toEqual([...ASSISTANT_TOOLS].sort())
     expect([...APP_CHANNELS]).toEqual([...CHANNELS])
+    expect([...APP_FORMATS]).toEqual([...COPY_FORMATS])
+    expect([...APP_GOALS]).toEqual([...GOALS])
+    expect([...APP_LENGTHS]).toEqual([...LENGTHS])
   })
 })

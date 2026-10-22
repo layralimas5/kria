@@ -228,7 +228,7 @@ await test('RLS: cada pessoa só enxerga o que é dela', async (db) => {
   assert.deepEqual(seen.generations, [{ user_id: ana }])
   assert.deepEqual(seen.balances, [{ user_id: ana }])
   assert.deepEqual(seen.ledger, [{ user_id: ana }])
-  assert.equal(seen.models, 8)
+  assert.equal(seen.models, 9)
   await as(db, 'authenticated', ana, () =>
     expectError(db.query(`select provider_cost_usd from models`), 'permission denied'),
   )
@@ -657,6 +657,135 @@ await test('roteiro UGC é do Pro e do Studio', async (db) => {
   await activate(db, await newSubscription(db, ana, 'pro'), 'pay_1')
   const { rows } = await create(db, ana, 'ugc-roteiro', 'review do creme')
   assert.equal(rows[0].status, 'queued')
+})
+
+// ------------------------------------------------------- contexto de marca (0011)
+
+const setActiveBrand = (db, userId, brandId) =>
+  as(db, 'authenticated', userId, () =>
+    db.query(
+      `insert into user_preferences (user_id, active_brand_id) values ($1, $2)
+       on conflict (user_id) do update set active_brand_id = excluded.active_brand_id`,
+      [userId, brandId],
+    ),
+  )
+
+await test('marca ativa só aponta para marca própria e some quando a marca é apagada', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const brandOfBia = (await newBrand(db, bia)).rows[0].id
+  await expectError(setActiveBrand(db, ana, brandOfBia), 'brand_not_found')
+
+  const brandOfAna = (await newBrand(db, ana)).rows[0].id
+  await setActiveBrand(db, ana, brandOfAna)
+  await as(db, 'authenticated', ana, () => db.query(`delete from brands where id = $1`, [brandOfAna]))
+  const { rows } = await db.query(`select active_brand_id from user_preferences where user_id = $1`, [ana])
+  assert.equal(rows[0].active_brand_id, null)
+})
+
+await test('perfil da marca aceita só plataformas conhecidas', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const brandId = (await newBrand(db, ana)).rows[0].id
+  const edit = (platforms) =>
+    as(db, 'authenticated', ana, () =>
+      db.query(`update brands set platforms = $2, goals = 'vender o kit' where id = $1`, [brandId, platforms]),
+    )
+  await edit(['instagram', 'tiktok'])
+  await expectError(edit(['orkut']), 'check constraint')
+})
+
+await test('personagem só liga a marca própria e só o dono muda', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const persona = (await savePersona(db, ana, await finishedImage(db, ana))).rows[0].id
+  const brandOfBia = (await newBrand(db, bia)).rows[0].id
+  const brandOfAna = (await newBrand(db, ana)).rows[0].id
+  const link = (userId, brandId) =>
+    as(db, 'authenticated', userId, () => db.query(`update personas set brand_id = $2 where id = $1`, [persona, brandId]))
+
+  await expectError(link(ana, brandOfBia), 'brand_not_found')
+  const stolen = await link(bia, brandOfBia)
+  assert.equal(stolen.affectedRows ?? 0, 0)
+  await link(ana, brandOfAna)
+  const { rows } = await db.query(`select brand_id from personas where id = $1`, [persona])
+  assert.equal(rows[0].brand_id, brandOfAna)
+  await expectError(
+    as(db, 'authenticated', ana, () => db.query(`update personas set name = 'Outra' where id = $1`, [persona])),
+    'permission denied',
+  )
+})
+
+await test('cliente lê as opções do modelo', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const { rows } = await as(db, 'authenticated', ana, () => db.query(`select options from models where slug = 'foto'`))
+  assert.deepEqual(rows[0].options.aspect_ratio, ['4:5', '1:1', '9:16', '16:9'])
+})
+
+await test('planejamento editorial é texto de 3 créditos para todos os planos', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const { rows } = await create(db, ana, 'planejamento', 'um mês de posts para a loja de café')
+  assert.equal(rows[0].kind, 'text')
+  assert.equal(await balanceOf(db, ana), 17)
+})
+
+// --------------------------------------------------------------- conteúdos (0012)
+
+const newContent = (db, userId, fields = {}) => {
+  const row = { title: 'Reels da rotina', status: 'idea', brand_id: null, asset_ids: [], source_generation_id: null, ...fields }
+  return as(db, 'authenticated', userId, () =>
+    db.query(
+      `insert into content_items (title, status, brand_id, asset_ids, source_generation_id)
+       values ($1, $2, $3, $4, $5) returning id, status, published_at`,
+      [row.title, row.status, row.brand_id, row.asset_ids, row.source_generation_id],
+    ),
+  )
+}
+
+await test('conteúdo só aponta para marca, imagem e texto do próprio dono', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const brandOfBia = (await newBrand(db, bia)).rows[0].id
+  await expectError(newContent(db, ana, { brand_id: brandOfBia }), 'brand_not_found')
+
+  const imageOfBia = await finishedImage(db, bia)
+  await expectError(newContent(db, ana, { asset_ids: [imageOfBia] }), 'asset_not_found')
+
+  const imageOfAna = await finishedImage(db, ana)
+  await expectError(newContent(db, ana, { source_generation_id: imageOfAna }), 'source_not_found')
+  const { rows } = await newContent(db, ana, { asset_ids: [imageOfAna] })
+  assert.equal(rows[0].status, 'idea')
+})
+
+await test('imagem ainda gerando não entra no conteúdo', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const open = (await create(db, ana, 'foto')).rows[0].id
+  await expectError(newContent(db, ana, { asset_ids: [open] }), 'asset_not_found')
+})
+
+await test('publicado marca a data e voltar o status apaga', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const { rows } = await newContent(db, ana, { status: 'published' })
+  assert.ok(rows[0].published_at)
+  const back = await as(db, 'authenticated', ana, () =>
+    db.query(`update content_items set status = 'review' where id = $1 returning published_at`, [rows[0].id]),
+  )
+  assert.equal(back.rows[0].published_at, null)
+})
+
+await test('RLS: conteúdo de uma pessoa não aparece nem muda para outra', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const { rows } = await newContent(db, ana)
+  const seen = await as(db, 'authenticated', bia, () => db.query(`select id from content_items`))
+  assert.equal(seen.rows.length, 0)
+  const changed = await as(db, 'authenticated', bia, () =>
+    db.query(`update content_items set title = 'roubado' where id = $1`, [rows[0].id]),
+  )
+  assert.equal(changed.affectedRows ?? 0, 0)
+  await expectError(
+    as(db, 'authenticated', ana, () => db.query(`update content_items set published_at = now() where id = $1`, [rows[0].id])),
+    'permission denied',
+  )
 })
 
 console.log(`\n${passed} testes do banco passaram`)

@@ -1,4 +1,4 @@
-// POST { tool, brief, channel, brandId?, projectId?, idempotencyKey? }
+// POST { tool, brief, channel, format?, goal?, length?, tone?, brandId?, projectId?, idempotencyKey? }
 // Vynkio AI: reserva os créditos, pede o texto ao Claude com o contexto da marca
 // e conclui na hora. Se o Claude falhar ou recusar, a reserva volta.
 
@@ -7,12 +7,16 @@ import {
   ASSISTANT_TOOLS,
   buildUserMessage,
   CHANNELS,
+  COPY_FORMATS,
   effortFrom,
+  GOALS,
+  LENGTHS,
   parseAssistantOutput,
   SYSTEM_PROMPT,
   type BrandContext,
 } from '../_shared/assistant.ts'
 import { ClaudeError, generateText } from '../_shared/claude.ts'
+import { providerFor } from '../_shared/providers.ts'
 import { checkPrompt } from '../_shared/generation.ts'
 import {
   adminClient,
@@ -29,12 +33,17 @@ const bodySchema = z.object({
   tool: z.enum(ASSISTANT_TOOLS),
   brief: z.string().trim().min(3).max(2000),
   channel: z.enum(CHANNELS).default('instagram'),
+  format: z.enum(COPY_FORMATS).optional(),
+  goal: z.enum(GOALS).optional(),
+  length: z.enum(LENGTHS).optional(),
+  tone: z.string().trim().max(80).optional(),
   brandId: z.string().uuid().optional(),
   projectId: z.string().uuid().optional(),
   idempotencyKey: z.string().regex(/^[A-Za-z0-9-]{8,80}$/).optional(),
 })
 
-const BRAND_COLUMNS = 'name, niche, audience, tone, offer, avoid, visual_style'
+const BRAND_COLUMNS =
+  'name, niche, audience, tone, offer, avoid, visual_style, description, goals, platforms, communication, references_notes'
 
 Deno.serve(
   handle(async (request) => {
@@ -81,16 +90,26 @@ Deno.serve(
 
       const { data: model, error: modelError } = await admin
         .from('models')
-        .select('endpoint, defaults')
+        .select('provider, endpoint, defaults')
         .eq('slug', body.tool)
-        .single<{ endpoint: string; defaults: Record<string, unknown> }>()
+        .single<{ provider: string; endpoint: string; defaults: Record<string, unknown> }>()
       if (modelError || !model) throw new Error(`modelo: ${modelError?.message}`)
+      providerFor(model.provider, 'text')
 
       const result = await generateText(requireEnv('ANTHROPIC_API_KEY'), {
         model: model.endpoint,
         effort: effortFrom(model.defaults),
         system: SYSTEM_PROMPT,
-        userMessage: buildUserMessage({ tool: body.tool, brief: body.brief, channel: body.channel, brand }),
+        userMessage: buildUserMessage({
+          tool: body.tool,
+          brief: body.brief,
+          channel: body.channel,
+          brand,
+          format: body.format,
+          goal: body.goal,
+          length: body.length,
+          tone: body.tone,
+        }),
       })
       const output = parseAssistantOutput(result.json)
       if (!output) throw new ClaudeError('saída fora do formato', 'A resposta veio incompleta. Tente de novo.')

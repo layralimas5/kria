@@ -3,6 +3,7 @@
 
 import Anthropic from 'npm:@anthropic-ai/sdk@0.131.0'
 import { ASSISTANT_OUTPUT_JSON_SCHEMA, type Effort } from './assistant.ts'
+import { PROVIDERS } from './providers.ts'
 
 export class ClaudeError extends Error {
   /** Mensagem que pode ir para a pessoa. */
@@ -32,12 +33,10 @@ export interface ClaudeResult {
   readonly usage: ClaudeUsage
 }
 
-// Abaixo do limite de tempo da edge function, com uma nova tentativa automática do SDK.
-const TIMEOUT_MS = 90_000
 const MAX_OUTPUT_TOKENS = 8_000
 
 export async function generateText(apiKey: string, request: ClaudeRequest): Promise<ClaudeResult> {
-  const client = new Anthropic({ apiKey, timeout: TIMEOUT_MS, maxRetries: 1 })
+  const client = new Anthropic({ apiKey, timeout: PROVIDERS.anthropic.timeoutMs, maxRetries: 1 })
   let response: Anthropic.Beta.BetaMessage
   try {
     response = await client.beta.messages.create({

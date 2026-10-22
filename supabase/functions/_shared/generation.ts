@@ -1,5 +1,7 @@
 // Regras puras da geração: sem rede, sem Deno. Testadas em generation.test.ts.
 
+import { PROVIDERS } from './providers.ts'
+
 export type ImageInput = 'image_url' | 'image_urls' | 'start_image_url'
 
 export interface ModelRow {
@@ -11,6 +13,37 @@ export interface ModelRow {
   readonly requires_image: boolean
   readonly credits: number
   readonly defaults: Record<string, unknown>
+  /** O que a pessoa pode escolher e os valores aceitos (`models.options`, 0011). O primeiro é o padrão. */
+  readonly options: ModelOptions
+}
+
+export type ModelOptions = Readonly<Record<string, readonly string[]>>
+export type ChosenOptions = Readonly<Record<string, string>>
+
+export type OptionsCheck = { readonly ok: true; readonly values: ChosenOptions } | { readonly ok: false; readonly reason: string }
+
+/** Lê `models.options` do banco: só listas de texto entram; o resto é ignorado. */
+export function parseModelOptions(raw: unknown): ModelOptions {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
+  return Object.fromEntries(
+    Object.entries(raw).filter(
+      (entry): entry is [string, string[]] =>
+        Array.isArray(entry[1]) && entry[1].length > 0 && entry[1].every((value) => typeof value === 'string'),
+    ),
+  )
+}
+
+/**
+ * Confere o que a pessoa escolheu contra o catálogo, antes de reservar crédito.
+ * Opção que o modelo não aceita, ou valor fora da lista, recusa o pedido.
+ */
+export function resolveOptions(allowed: ModelOptions, requested: ChosenOptions): OptionsCheck {
+  for (const [key, value] of Object.entries(requested)) {
+    const accepted = allowed[key]
+    if (!accepted) return { ok: false, reason: 'Esse modelo não aceita essa opção.' }
+    if (!accepted.includes(value)) return { ok: false, reason: 'Valor de opção não aceito por esse modelo.' }
+  }
+  return { ok: true, values: requested }
 }
 
 export interface GeneratedFile {
@@ -18,9 +51,14 @@ export interface GeneratedFile {
   readonly contentType: string
 }
 
-/** O corpo enviado ao fal.ai: defaults do catálogo, o prompt e a imagem no campo que o modelo espera. */
-export function buildProviderInput(model: ModelRow, prompt: string, imageUrl: string | null): Record<string, unknown> {
-  const input: Record<string, unknown> = { ...model.defaults, prompt }
+/** O corpo enviado ao fal.ai: defaults do catálogo, as opções já conferidas, o prompt e a imagem no campo que o modelo espera. */
+export function buildProviderInput(
+  model: ModelRow,
+  prompt: string,
+  imageUrl: string | null,
+  options: ChosenOptions = {},
+): Record<string, unknown> {
+  const input: Record<string, unknown> = { ...model.defaults, ...options, prompt }
   if (!model.image_input || !imageUrl) return input
   input[model.image_input] = model.image_input === 'image_urls' ? [imageUrl] : imageUrl
   return input
@@ -93,4 +131,4 @@ export function checkPrompt(prompt: string): PromptCheck {
 }
 
 /** Geração aberta há mais que isso é dada como perdida e estornada. */
-export const GENERATION_TIMEOUT_MS = 30 * 60 * 1000
+export const GENERATION_TIMEOUT_MS = PROVIDERS.fal.timeoutMs
