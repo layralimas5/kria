@@ -19,7 +19,6 @@ export interface MarketingPlan {
   readonly max_personas: number
   /** Marcas com contexto no Workspace. Precisa bater com `max_brands` (0009). */
   readonly max_brands: number
-  readonly cta_label: string
   readonly badge: string | null
   readonly highlight: boolean
   /** Por que o plano em destaque é o recomendado. Sem motivo real, sem destaque. */
@@ -59,7 +58,6 @@ export const PLAN_CATALOG: readonly MarketingPlan[] = [
     monthly_credits: 300,
     max_personas: 2,
     max_brands: 1,
-    cta_label: 'Começar com Starter',
     badge: null,
     highlight: false,
     highlight_reason: null,
@@ -87,7 +85,6 @@ export const PLAN_CATALOG: readonly MarketingPlan[] = [
     monthly_credits: 450,
     max_personas: 5,
     max_brands: 3,
-    cta_label: 'Quero ser Pro',
     badge: 'Recomendado',
     highlight: true,
     highlight_reason: 'Por R$ 20 a mais que o Starter: 150 créditos a mais, Roteiro UGC, 3 marcas e suporte pelo WhatsApp.',
@@ -114,7 +111,6 @@ export const PLAN_CATALOG: readonly MarketingPlan[] = [
     monthly_credits: 1000,
     max_personas: 15,
     max_brands: 10,
-    cta_label: 'Escolher Studio',
     badge: null,
     highlight: false,
     highlight_reason: null,

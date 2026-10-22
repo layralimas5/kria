@@ -1,38 +1,19 @@
 import clsx from 'clsx'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import {
-  Briefcase,
-  CalendarCheck,
-  Coins,
-  Gift,
-  GraduationCap,
-  Layers,
-  LayoutGrid,
-  PlusCircle,
-  Plus,
-  RefreshCw,
-  ShieldCheck,
-  Sparkles,
-  UserRound,
-  XCircle,
-  type LucideIcon,
-} from 'lucide-react'
+import { Briefcase, Clock, Coins, Gift, GraduationCap, Lock, Plus, RefreshCw, ShieldCheck, UserX, XCircle, type LucideIcon } from 'lucide-react'
 import { useId, useState } from 'react'
 import { CtaLink } from '../components/CtaLink'
 import { SectionHeading } from '../components/SectionHeading'
 import { FAQ, WELCOME_CREDITS, type FaqIcon, type FaqItem } from '../content'
 
 const ICONS: Record<FaqIcon, LucideIcon> = {
-  what: Sparkles,
   beginner: GraduationCap,
-  credits: Coins,
+  price: Coins,
+  time: Clock,
   commercial: Briefcase,
-  formats: LayoutGrid,
-  persona: UserRound,
-  plans: Layers,
-  rollover: CalendarCheck,
   cancel: XCircle,
-  extra: PlusCircle,
+  security: Lock,
+  notfor: UserX,
 }
 
 /** Dados estruturados das perguntas, com o mesmo texto que aparece na página. */
@@ -126,7 +107,7 @@ export function Faq() {
       <FaqJsonLd />
       <div className="mx-auto grid max-w-[1440px] gap-8 lg:grid-cols-[1fr_1.5fr] lg:gap-12">
         <div className="lg:sticky lg:top-24 lg:self-start">
-          <SectionHeading id="faq-title" title="Perguntas frequentes" lead="As dúvidas de quem está começando, respondidas com as regras que o app aplica." />
+          <SectionHeading id="faq-title" title="Antes de assinar, você deve estar pensando" lead="As dúvidas que pesam na decisão, respondidas com as regras que o app aplica." />
           <ul className="mt-8 space-y-2">
             {PROMISES.map(({ icon: Icon, title, text }) => (
               <li key={title} className="flex items-center gap-3 rounded-2xl border border-white/[0.06] px-4 py-3">
@@ -138,9 +119,7 @@ export function Faq() {
               </li>
             ))}
           </ul>
-          <CtaLink cta="faq" className="mt-6 w-full sm:w-auto">
-            Criar conta grátis
-          </CtaLink>
+          <CtaLink cta="faq" className="mt-6 w-full sm:w-auto" />
         </div>
         <ul className="space-y-2.5">
           {FAQ.map((item, index) => (

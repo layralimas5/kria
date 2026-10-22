@@ -1,10 +1,21 @@
 // Conteúdo fixo da landing. Planos, preços e custos por geração ficam em `pricing/`
 // e são conferidos contra as migrations nos testes de lá.
+import { formatBRL } from '../domain/format'
 import avatarSpecs from './avatars.json'
 import generatedMedia from './avatars.generated.json'
+import { PLAN_CATALOG } from './pricing/catalog'
 
 export const SIGNUP_PATH = '/entrar'
 export const WELCOME_CREDITS = 20
+
+/** Seção "Seus dados" dos termos, linkada como Privacidade no rodapé. */
+export const PRIVACY_ANCHOR = 'seus-dados'
+
+/** O modelo de LP pede a mesma ação, com o mesmo texto, em todos os botões da página. */
+export const CTA_LABEL = 'Começar a criar'
+
+/** Linha de segurança que acompanha os botões de decisão (planos e chamada final). */
+export const SAFETY_LINE = `${WELCOME_CREDITS} créditos grátis, sem cartão · Cancele quando quiser, sem multa · Falhou, o crédito volta`
 
 const PLACEHOLDERS = ['chrome', 'aurora', 'dunes', 'tunnel', 'silk', 'planet'] as const
 type Placeholder = (typeof PLACEHOLDERS)[number]
@@ -81,83 +92,74 @@ export interface Feature {
   readonly icon: FeatureIcon
   readonly name: string
   readonly benefit: string
+  /** Duas linhas: o problema que a ferramenta resolve e como. */
   readonly description: string
   readonly screen: Screen
   readonly screenAlt: string
-  readonly cta: string
-  /** Rota do app: quem não está logado passa pelo cadastro e volta para cá. */
-  readonly to: string
   /** Restrição de plano, quando existe. */
   readonly plans?: string
 }
 
+// Ordem do modelo de LP: do que mais resolve a dor de quem cria para o complementar.
+// Os três primeiros ganham bloco grande com print; os outros, card compacto.
 export const FEATURES: readonly Feature[] = [
+  {
+    id: 'personagens',
+    icon: 'persona',
+    name: 'Personagens consistentes',
+    benefit: 'O mesmo rosto em todo post',
+    description:
+      'Em gerador comum, cada imagem sai com uma pessoa diferente. Aqui você monta o personagem por cabelo, rosto, corpo e roupa, salva e ele aparece igual nas próximas fotos e vídeos.',
+    screen: 'personagem',
+    screenAlt: 'Construtor de personagem do Vynkio com opções de corte de cabelo e dois personagens salvos',
+  },
   {
     id: 'imagens',
     icon: 'image',
     name: 'Imagens com IA',
-    benefit: 'Da frase à foto realista',
-    description: 'Descreva a cena em português e receba uma foto pronta para o feed. O custo em créditos aparece no botão antes de gerar.',
+    benefit: 'Da frase à foto realista, em português',
+    description:
+      'Sem prompt em inglês nem configuração técnica: descreva a cena como falaria com alguém e receba a foto pronta para o feed. O custo em créditos aparece no botão antes de gerar.',
     screen: 'imagem',
     screenAlt: 'Caixa de descrição da foto no Studio do Vynkio, com o modelo Nano Banana 2 e o botão Gerar mostrando 5 créditos',
-    cta: 'Gerar uma imagem',
-    to: '/estudio?modo=imagem',
   },
   {
     id: 'videos',
     icon: 'video',
     name: 'Vídeos com IA',
     benefit: 'Sua imagem ganha movimento e som',
-    description: 'Escolha uma criação ou personagem e diga o que acontece. Kling 3.0 faz 5 segundos com áudio; Veo 3.1 faz 8 segundos com fala.',
+    description:
+      'Nada de baixar a foto e subir em outro site. Escolha a criação ou o personagem e diga o que acontece: Kling 3.0 faz 5 segundos com áudio, Veo 3.1 faz 8 segundos com fala.',
     screen: 'video',
     screenAlt: 'Tela de vídeo do Studio do Vynkio com a escolha entre Kling 3.0 e Veo 3.1 e as criações recentes',
-    cta: 'Criar um vídeo',
-    to: '/estudio?modo=video',
-  },
-  {
-    id: 'personagens',
-    icon: 'persona',
-    name: 'Personagens consistentes',
-    benefit: 'O mesmo rosto em todo post',
-    description: 'Monte o personagem por cabelo, rosto, corpo e roupa, salve e use de novo em fotos e vídeos sem perder a identidade.',
-    screen: 'personagem',
-    screenAlt: 'Construtor de personagem do Vynkio com opções de corte de cabelo e dois personagens salvos',
-    cta: 'Montar um personagem',
-    to: '/personas',
-  },
-  {
-    id: 'ugc',
-    icon: 'ugc',
-    name: 'Conteúdos UGC',
-    benefit: 'Vídeo com cara de cliente real',
-    description: 'O roteiro UGC sai em cenas, com fala e descrição visual. Cada cena vai para o Studio com um clique.',
-    screen: 'ugc',
-    screenAlt: 'Roteiro UGC gerado no Vynkio, dividido em cenas com fala, descrição da cena e o botão Criar a cena no Studio',
-    cta: 'Escrever um roteiro UGC',
-    to: '/assistente/ugc',
-    plans: 'Planos Pro e Studio',
   },
   {
     id: 'roteiros',
     icon: 'copy',
     name: 'Copys e roteiros',
     benefit: 'Texto no tom da sua marca',
-    description: 'Legendas, anúncios e roteiros com gancho, cenas e CTA. Cadastre a marca uma vez e o Vynkio AI escreve com o público e o tom dela.',
+    description: 'Legendas, anúncios e roteiros com gancho, cenas e CTA, sem explicar o tom de novo a cada pedido: a marca fica salva.',
     screen: 'roteiro',
     screenAlt: 'Roteiro de vídeo gerado no Vynkio, com cenas cronometradas, fala e descrição visual',
-    cta: 'Escrever um roteiro',
-    to: '/assistente/roteiro',
+  },
+  {
+    id: 'ugc',
+    icon: 'ugc',
+    name: 'Conteúdos UGC',
+    benefit: 'Vídeo com cara de cliente real',
+    description: 'O roteiro UGC sai dividido em cenas, com fala e descrição visual. Cada cena vai para o Studio com um clique.',
+    screen: 'ugc',
+    screenAlt: 'Roteiro UGC gerado no Vynkio, dividido em cenas com fala, descrição da cena e o botão Criar a cena no Studio',
+    plans: 'Planos Pro e Studio',
   },
   {
     id: 'ideias',
     icon: 'ideas',
     name: 'Ideias para redes sociais',
     benefit: 'Pauta pronta quando a ideia some',
-    description: 'Peça ideias para o seu público e receba formato e gancho de cada uma. A que você escolher segue para o roteiro com um clique.',
+    description: 'Peça ideias para o seu público e receba formato e gancho de cada uma. A escolhida segue para o roteiro com um clique.',
     screen: 'ideias',
     screenAlt: 'Lista de ideias de conteúdo gerada no Vynkio, cada uma com formato e gancho',
-    cta: 'Pedir ideias',
-    to: '/assistente/ideias',
   },
 ]
 
@@ -179,13 +181,6 @@ export const AI_MODELS: readonly AiModel[] = [
   { name: 'Veo 3.1', kind: 'Vídeo', logo: 'deepmind-color' },
   { name: 'Claude', kind: 'Texto' },
 ]
-
-export const STEPS = [
-  { title: 'Escolha o tipo de conteúdo', text: 'Imagem, vídeo, personagem, roteiro, copy ou ideias. Cada um tem a sua ferramenta, todas no mesmo painel.' },
-  { title: 'Descreva ou peça ajuda', text: 'Escreva a ideia em português. Sem ideia? O Vynkio AI sugere pautas e escreve o roteiro com você.' },
-  { title: 'Personalize e gere', text: 'Escolha modelo, personagem e marca. O custo em créditos aparece antes de você gerar, e volta se falhar.' },
-  { title: 'Salve, adapte e use', text: 'Imagens e vídeos ficam em Minhas criações para baixar. Uma cena do roteiro vira imagem, e a imagem vira vídeo.' },
-] as const
 
 export interface UseCase {
   readonly audience: string
@@ -211,7 +206,17 @@ export const PIPELINE = [
   { step: 'Vídeo', tool: 'Studio · Kling ou Veo', text: 'A foto ganha movimento, áudio ou fala' },
 ] as const
 
-export type FaqIcon = 'what' | 'beginner' | 'credits' | 'commercial' | 'formats' | 'persona' | 'plans' | 'rollover' | 'cancel' | 'extra'
+export type AdvancedIcon = 'brands' | 'concurrent' | 'projects' | 'models'
+
+/** Recursos avançados: nome e uma frase, sem print, sem repetir os blocos de cima. */
+export const ADVANCED: readonly { readonly icon: AdvancedIcon; readonly title: string; readonly text: string }[] = [
+  { icon: 'brands', title: 'Marcas com público e tom', text: 'Cadastre a marca uma vez e todo texto sai na voz dela. De 1 marca no Starter a 10 no Studio.' },
+  { icon: 'concurrent', title: 'Várias gerações ao mesmo tempo', text: 'Enquanto um vídeo fica pronto, as próximas fotos já estão saindo. De 3 a 6 ao mesmo tempo, conforme o plano.' },
+  { icon: 'projects', title: 'Meus projetos', text: 'Criações separadas por cliente ou campanha, para quem produz para mais de uma conta. No Studio.' },
+  { icon: 'models', title: 'Modelos de ponta num lugar só', text: 'Nano Banana 2, Kling 3.0, Veo 3.1 e Claude com uma conta e um saldo, sem assinar cada um em dólar.' },
+]
+
+export type FaqIcon = 'beginner' | 'price' | 'time' | 'commercial' | 'cancel' | 'security' | 'notfor'
 
 export interface FaqItem {
   readonly icon: FaqIcon
@@ -219,66 +224,56 @@ export interface FaqItem {
   readonly answer: string
 }
 
-// Respostas presas às regras implementadas (migrations 0004 a 0010, functions de
-// assinatura e o webhook do Asaas). Mudou a regra, muda a resposta.
+function starterPlan() {
+  const plan = PLAN_CATALOG.find((item) => item.slug === 'starter')
+  if (!plan) throw new Error('O plano starter sumiu de pricing/catalog.ts')
+  return plan
+}
+const STARTER = starterPlan()
+
+// Objeções de compra, escritas como alguém perguntaria em voz alta. As respostas
+// seguem as regras implementadas (migrations 0004 a 0010, functions de assinatura,
+// webhook do Asaas e bucket privado). Mudou a regra, muda a resposta.
 export const FAQ: readonly FaqItem[] = [
   {
-    icon: 'what',
-    question: 'O que é o Vynkio?',
-    answer:
-      'Uma plataforma brasileira de criação com IA. No mesmo painel você cria personagens, imagens e vídeos e escreve ideias, roteiros e copys, tudo em português e pago com os mesmos créditos.',
-  },
-  {
     icon: 'beginner',
-    question: 'Preciso ter experiência com IA?',
+    question: 'Nunca usei IA. Vou conseguir?',
     answer:
-      'Não. Você descreve o que quer em português, do jeito que falaria com alguém. Não precisa escrever prompt em inglês nem escolher configuração técnica: cada ferramenta já vem com o modelo e o formato certos.',
+      'Vai. Você descreve o que quer em português, do jeito que falaria com alguém. Não precisa escrever prompt em inglês nem escolher configuração técnica: cada ferramenta já vem com o modelo e o formato certos.',
   },
   {
-    icon: 'credits',
-    question: 'Como funcionam os créditos?',
+    icon: 'price',
+    question: 'Quanto vou gastar de verdade?',
+    answer: `O ${STARTER.name} custa ${formatBRL(STARTER.price_cents)} por mês com ${STARTER.monthly_credits} créditos, o bastante para até 60 fotos ou 7 vídeos com Kling. O custo de cada geração aparece no botão antes de gerar, e não há cobrança por tempo de uso. Para testar, a conta nova ganha ${WELCOME_CREDITS} créditos, sem cartão.`,
+  },
+  {
+    icon: 'time',
+    question: 'Quanto tempo leva para sair um vídeo?',
     answer:
-      'Cada criação gasta uma quantidade fixa de créditos: 5 por foto, 6 por foto com personagem, 40 por vídeo Kling, 200 por vídeo Veo 3.1 e 3 por pedido de texto. O custo aparece no botão antes de gerar. Se a geração falhar ou for bloqueada pelo filtro do provedor, os créditos voltam sozinhos.',
+      'A foto sai em menos de um minuto e o vídeo leva alguns minutos. Você não fica esperando: dá para seguir criando enquanto isso, com 3 a 6 gerações ao mesmo tempo conforme o plano. Se a geração falhar, os créditos voltam sozinhos.',
   },
   {
     icon: 'commercial',
-    question: 'Posso produzir conteúdo comercial?',
+    question: 'Posso usar no meu perfil e com clientes?',
     answer:
-      'Sim, em perfis, anúncios e projetos de clientes, respeitando os termos de uso do Vynkio e dos provedores dos modelos de IA. Você responde pelo uso e deve marcar o conteúdo como gerado por IA quando a rede social pedir.',
-  },
-  {
-    icon: 'formats',
-    question: 'Quais formatos são disponibilizados?',
-    answer:
-      'Imagens na proporção 4:5, a do feed. Vídeos com Kling 3.0 têm 5 segundos com áudio e seguem a proporção da imagem de origem; com Veo 3.1 têm 8 segundos, 720p, vertical 9:16, com fala e som. Imagens e vídeos ficam em Minhas criações para baixar; os textos ficam no histórico do Vynkio AI, prontos para copiar.',
-  },
-  {
-    icon: 'persona',
-    question: 'Posso criar personagens recorrentes?',
-    answer:
-      'Sim. Você monta o personagem, gera retratos até gostar e salva. Ele mantém o mesmo rosto nas próximas fotos e vídeos. O limite é de 1 no Grátis, 2 no Starter, 5 no Pro e 15 no Studio. Por segurança, personagens nascem só de imagens geradas no Vynkio: não dá para usar foto de pessoa real.',
-  },
-  {
-    icon: 'plans',
-    question: 'Como funcionam os planos?',
-    answer:
-      'São assinaturas mensais no cartão. Cada plano traz um saldo de créditos por mês e libera ferramentas e limites diferentes (personagens, marcas, gerações ao mesmo tempo, suporte). Para trocar, vá em Assinatura na sua conta: o novo plano vale quando o pagamento dele é confirmado.',
-  },
-  {
-    icon: 'rollover',
-    question: 'Os créditos acumulam para o mês seguinte?',
-    answer:
-      'Os créditos do plano renovam a cada cobrança paga, e o que sobrou do mês anterior não passa para o seguinte. Os créditos de pacote avulso e os de boas-vindas nunca vencem.',
+      'Pode, em perfis, anúncios e projetos de clientes, respeitando os termos de uso do Vynkio e dos provedores dos modelos de IA. Você responde pelo uso e deve marcar o conteúdo como gerado por IA quando a rede social pedir.',
   },
   {
     icon: 'cancel',
-    question: 'Posso cancelar minha assinatura?',
+    question: 'E se eu quiser cancelar?',
     answer:
-      'Pode, quando quiser, na página Assinatura, sem multa. Não há nova cobrança e o plano continua até o fim do período já pago, com os créditos dele. Os créditos de pacote avulso ficam com você.',
+      'Cancela quando quiser, na página Assinatura, sem multa. Não há nova cobrança e o plano continua até o fim do período pago. Os créditos do plano renovam a cada mês e não acumulam; os de pacote avulso e os de boas-vindas nunca vencem.',
   },
   {
-    icon: 'extra',
-    question: 'Posso comprar créditos adicionais?',
-    answer: 'Sim. Além do plano, dá para comprar pacotes avulsos por Pix ou cartão na página Créditos, inclusive sem assinar.',
+    icon: 'security',
+    question: 'Minhas criações e meus dados ficam seguros?',
+    answer:
+      'Suas criações ficam num armazenamento privado que só a sua conta acessa. O pagamento é feito na página do Asaas, então o Vynkio não recebe os dados do seu cartão. Em Configurações você exporta seus dados ou exclui a conta.',
+  },
+  {
+    icon: 'notfor',
+    question: 'Para quem o Vynkio não serve?',
+    answer:
+      'Para quem precisa editar vídeo longo numa linha do tempo: os vídeos têm 5 a 8 segundos, pensados para Reels, TikTok e anúncios. E para quem quer recriar uma pessoa real: personagem só nasce de imagem gerada no Vynkio, sem upload de foto de rosto.',
   },
 ]

@@ -1,12 +1,11 @@
-import { ArrowUpRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { AnchorButton, CtaLink } from '../components/CtaLink'
+import { CtaLink } from '../components/CtaLink'
 import { LoopVideo } from '../components/LoopVideo'
 import { SectionHeading } from '../components/SectionHeading'
-import { AVATARS, SIGNUP_PATH } from '../content'
+import { AVATARS } from '../content'
 import { CARD_HOVER } from '../styles'
 
-// Só entra na página quando `REAL_GALLERY` (todos os vídeos gerados de verdade).
+// Prova social do modelo de LP: só entra na página quando `REAL_GALLERY` (todos os
+// vídeos gerados de verdade). Depoimento entra aqui só se for real, com nome e consentimento.
 
 /** Proporções alternadas dão o efeito de mosaico. */
 const ASPECTS = ['aspect-[3/4]', 'aspect-[9/16]', 'aspect-[4/5]', 'aspect-[9/14]', 'aspect-[4/5]', 'aspect-[3/4]', 'aspect-[9/16]', 'aspect-[4/5]'] as const
@@ -19,12 +18,7 @@ export function Gallery() {
           id="galeria-title"
           title="Feito no Vynkio"
           lead="Cada vídeo começou com uma frase. Passa o mouse (ou toca) pra ver o prompt que gerou."
-          actions={
-            <>
-              <CtaLink cta="gallery">Começar a criar</CtaLink>
-              <AnchorButton href="#precos">Ver preços</AnchorButton>
-            </>
-          }
+          actions={<CtaLink cta="gallery" />}
         />
         <div className="relative mt-8">
           <ul className="columns-2 gap-3 md:columns-3 xl:columns-4 [&>li]:mb-3">
@@ -50,15 +44,6 @@ export function Gallery() {
               )
             })}
           </ul>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-56 items-end justify-center bg-gradient-to-t from-stage via-stage/80 to-transparent pb-6">
-            <Link
-              to={SIGNUP_PATH}
-              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-xl bg-accent/20 px-5 text-[15px] font-bold text-accent-soft ring-1 ring-accent/30 backdrop-blur-md transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              Criar o meu agora
-              <ArrowUpRight className="size-4" aria-hidden="true" />
-            </Link>
-          </div>
         </div>
       </div>
     </section>

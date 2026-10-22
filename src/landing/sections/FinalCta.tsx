@@ -1,5 +1,5 @@
 import { CtaLink } from '../components/CtaLink'
-import { WELCOME_CREDITS } from '../content'
+import { SAFETY_LINE } from '../content'
 
 export function FinalCta() {
   return (
@@ -12,14 +12,13 @@ export function FinalCta() {
         <div aria-hidden="true" className="absolute -bottom-24 left-1/2 -z-10 h-64 w-[70%] -translate-x-1/2 rounded-full bg-galaxy/20 blur-3xl" />
         <div className="mx-auto flex max-w-3xl flex-col items-center px-5 py-20 text-center md:py-28">
           <h2 id="final-title" className="text-balance font-landing text-[2.6rem] font-bold uppercase leading-[0.9] tracking-[-0.045em] text-zinc-50 md:text-[4.75rem]">
-            Da primeira ideia <span className="text-accent-soft">à próxima criação.</span>
+            Da ideia ao vídeo <span className="text-accent-soft">sem trocar de aba.</span>
           </h2>
           <p className="mt-6 max-w-xl text-pretty text-[17px] font-medium text-zinc-300">
-            Crie a conta, use os {WELCOME_CREDITS} créditos de boas-vindas e veja o fluxo inteiro funcionando antes de escolher um plano.
+            Roteiro, foto com o mesmo personagem e vídeo, tudo em português e num saldo só. Teste o fluxo inteiro antes de escolher um plano.
           </p>
-          <CtaLink cta="final" size="lg" className="mt-9">
-            Começar no Vynkio
-          </CtaLink>
+          <CtaLink cta="final" size="lg" className="mt-9" />
+          <p className="mt-4 text-pretty text-[13px] text-zinc-400">{SAFETY_LINE}</p>
         </div>
       </div>
     </section>

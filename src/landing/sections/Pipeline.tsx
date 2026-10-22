@@ -29,9 +29,7 @@ export function Pipeline() {
               </Reveal>
             ))}
           </ol>
-          <CtaLink cta="pipeline" to="/assistente/ideias" className="mt-8">
-            Começar por uma ideia
-          </CtaLink>
+          <CtaLink cta="pipeline" to="/assistente/ideias" className="mt-8" />
         </div>
         <Reveal>
           <BrowserFrame label="Roteiro de vídeo">

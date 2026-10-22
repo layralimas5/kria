@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { track } from '@/lib/analytics'
-import { SIGNUP_PATH } from '../content'
+import { CTA_LABEL, SIGNUP_PATH } from '../content'
 
 const BASE =
   'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-[transform,box-shadow,background-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-stage active:translate-y-[3px]'
@@ -40,7 +40,7 @@ export function CtaLink({ cta, className, children, size = 'md', tone = 'accent'
       onClick={() => track({ name: 'cta_click', params: { cta_id: cta, destination: to } })}
       className={clsx(BASE, SIZES[size], PRESSABLE[tone], className)}
     >
-      {children ?? 'Começar a criar'}
+      {children ?? CTA_LABEL}
     </Link>
   )
 }

@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { Gift } from 'lucide-react'
-import { AnchorButton, CtaLink } from '../components/CtaLink'
+import { CtaLink } from '../components/CtaLink'
 import { BrowserFrame, PhoneFrame, ScreenImage } from '../components/ScreenFrame'
 import { WELCOME_CREDITS } from '../content'
 import { useMediaQuery } from '../hooks/useMediaQuery'
@@ -40,21 +40,15 @@ export function Hero() {
         <motion.h1
           {...enter(0.08)}
           id="hero-title"
-          className="mt-6 text-balance font-landing text-[2.6rem] font-bold uppercase leading-[0.9] tracking-[-0.045em] text-zinc-50 sm:text-6xl lg:text-[5.4rem]"
+          className="mt-6 text-balance font-landing text-[2.35rem] font-bold uppercase leading-[0.92] tracking-[-0.045em] text-zinc-50 sm:text-[3.4rem] lg:text-[4.6rem]"
         >
-          Sua ideia merece <span className="text-accent-soft">mais do que um prompt.</span>
+          Para quem cria: ideia, roteiro e vídeo com IA <span className="text-accent-soft">num lugar só.</span>
         </motion.h1>
         <motion.p {...enter(0.14)} className="mt-6 max-w-2xl text-pretty text-[17px] font-medium text-zinc-400 md:text-lg">
-          Crie vídeos, imagens, personagens, roteiros e conteúdos com inteligência artificial. Tudo em um só lugar, do primeiro conceito à
-          produção final.
+          Você descreve em português, o Vynkio escreve o roteiro, gera as fotos com o mesmo personagem e transforma em vídeo.
         </motion.p>
-        <motion.div {...enter(0.2)} className="mt-9 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
-          <CtaLink cta="hero_primary" size="lg" className="w-full sm:w-auto">
-            Começar a criar
-          </CtaLink>
-          <AnchorButton href="#recursos" size="lg" tone="ghost" className="w-full sm:w-auto">
-            Explorar recursos
-          </AnchorButton>
+        <motion.div {...enter(0.2)} className="mt-9 flex w-full justify-center sm:w-auto">
+          <CtaLink cta="hero_primary" size="lg" className="w-full sm:w-auto" />
         </motion.div>
         <motion.ul {...enter(0.26)} className="mt-7 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[13px] text-zinc-400">
           {TRUST.map((item) => (

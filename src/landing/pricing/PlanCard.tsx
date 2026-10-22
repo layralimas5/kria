@@ -4,9 +4,8 @@ import { Link } from 'react-router-dom'
 import { formatBRL } from '@/domain/format'
 import { track } from '@/lib/analytics'
 import type { MarketingPlan } from './catalog'
-import { SIGNUP_PATH } from '../content'
+import { CTA_LABEL } from '../content'
 import { CARD_HOVER } from '../styles'
-import { isFreePlan } from './freePlan'
 
 export function subscribePath(slug: string): string {
   return `/assinar/${slug}`
@@ -16,8 +15,7 @@ export function PlanCard({ plan }: { readonly plan: MarketingPlan }) {
   const available = plan.features.filter((feature) => !feature.soon)
   const upcoming = plan.features.filter((feature) => feature.soon)
   const titleId = `plano-${plan.slug}`
-  const free = isFreePlan(plan)
-  const destination = free ? SIGNUP_PATH : subscribePath(plan.slug)
+  const destination = subscribePath(plan.slug)
 
   return (
     <article
@@ -40,15 +38,15 @@ export function PlanCard({ plan }: { readonly plan: MarketingPlan }) {
 
       <p className="mt-5 flex items-baseline gap-1">
         <span className="font-landing text-[2.75rem] font-bold leading-none tracking-[-0.045em] text-zinc-50">
-          {free ? 'R$ 0' : formatBRL(plan.price_cents)}
+          {formatBRL(plan.price_cents)}
         </span>
-        {!free && <span className="text-sm text-zinc-500">/mês</span>}
+        <span className="text-sm text-zinc-500">/mês</span>
       </p>
       <p className="mt-2 text-sm text-zinc-300">
         <span className="font-semibold text-accent-soft">{plan.monthly_credits.toLocaleString('pt-BR')} créditos</span>{' '}
-        {free ? 'ao criar a conta' : 'todo mês'}
+        todo mês
       </p>
-      <p className="mt-1 text-[13px] text-zinc-400">{free ? 'Não vencem. Sem cartão.' : 'Renovam a cada cobrança paga, não acumulam.'}</p>
+      <p className="mt-1 text-[13px] text-zinc-400">Renovam a cada cobrança paga, não acumulam.</p>
       {plan.highlight_reason && <p className="mt-3 rounded-xl bg-accent/10 px-3 py-2 text-[13px] text-zinc-200 ring-1 ring-accent/20">{plan.highlight_reason}</p>}
 
       <Link
@@ -62,7 +60,7 @@ export function PlanCard({ plan }: { readonly plan: MarketingPlan }) {
             : 'bg-zinc-50 text-zinc-950 shadow-[0_3px_0_0_#a1a1aa] hover:bg-white',
         )}
       >
-        {plan.cta_label}
+        {CTA_LABEL}
       </Link>
 
       <ul className="mt-6 space-y-2.5 border-t border-white/[0.06] pt-5 text-sm" aria-label={`O que vem no ${plan.name}`}>

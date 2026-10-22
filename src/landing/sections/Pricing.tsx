@@ -1,19 +1,13 @@
-import { CreditCard, Gift, RefreshCw, ShieldCheck } from 'lucide-react'
+import { Gift } from 'lucide-react'
+import { CtaLink } from '../components/CtaLink'
 import { Reveal } from '../components/Reveal'
 import { SectionHeading } from '../components/SectionHeading'
-import { WELCOME_CREDITS } from '../content'
+import { SAFETY_LINE, WELCOME_CREDITS } from '../content'
 import { CreditsExplainer } from '../pricing/CreditsExplainer'
 import { PLAN_CATALOG, type MarketingPlan } from '../pricing/catalog'
 import { PlanCard, subscribePath } from '../pricing/PlanCard'
 import { FREE_PLAN } from '../pricing/freePlan'
 import { PlanComparison } from '../pricing/PlanComparison'
-
-const TRUST = [
-  { icon: CreditCard, text: 'Cobrança mensal no cartão, pelo Asaas' },
-  { icon: RefreshCw, text: 'Cancele quando quiser, sem multa' },
-  { icon: Gift, text: `${WELCOME_CREDITS} créditos grátis ao criar a conta` },
-  { icon: ShieldCheck, text: 'Falhou? O crédito volta' },
-] as const
 
 /** Dados estruturados dos planos, montados com os valores do banco. */
 function PlansJsonLd({ plans }: { readonly plans: readonly MarketingPlan[] }) {
@@ -39,8 +33,23 @@ function PlansJsonLd({ plans }: { readonly plans: readonly MarketingPlan[] }) {
   return <script type="application/ld+json">{JSON.stringify(data)}</script>
 }
 
-/** O Grátis abre a vitrine; os pagos vêm do catálogo. */
-const PLANS = [FREE_PLAN, ...PLAN_CATALOG]
+/** O modelo de LP pede de dois a três planos nos cards; o Grátis fica na faixa de teste e na comparação. */
+const COMPARED_PLANS = [FREE_PLAN, ...PLAN_CATALOG]
+
+function FreeTrial() {
+  return (
+    <div className="mx-auto mt-6 flex max-w-6xl flex-col items-start gap-4 rounded-2xl border border-white/[0.07] bg-panel/60 p-5 sm:flex-row sm:items-center sm:justify-between md:px-7">
+      <p className="flex items-start gap-3 text-sm text-zinc-300">
+        <Gift className="mt-0.5 size-5 shrink-0 text-accent-soft" aria-hidden="true" />
+        <span>
+          <span className="font-semibold text-zinc-50">Ainda não quer assinar?</span> Crie a conta e teste com {WELCOME_CREDITS} créditos e 1 personagem, sem
+          cartão. Os créditos de boas-vindas não vencem.
+        </span>
+      </p>
+      <CtaLink cta="pricing_free" tone="light" className="shrink-0" />
+    </div>
+  )
+}
 
 export function Pricing() {
   return (
@@ -49,29 +58,23 @@ export function Pricing() {
         <SectionHeading
           id="precos-title"
           align="center"
-          title="Planos e preços"
-          lead="Comece com os créditos grátis. Quando quiser criar todo mês, escolha um plano: o que muda é o saldo, os limites e as ferramentas liberadas."
+          title="Escolha pelo quanto você cria"
+          lead="Testando os primeiros posts? Starter. Publica toda semana ou cuida de mais de uma marca? Pro. Produz para clientes? Studio."
         />
 
         <PlansJsonLd plans={PLAN_CATALOG} />
-        <ul className="mx-auto mt-12 grid max-w-7xl gap-5 md:grid-cols-2 md:items-stretch xl:grid-cols-4">
-          {PLANS.map((plan, index) => (
-            <Reveal key={plan.slug} as="li" delay={index * 0.06} className={plan.highlight ? 'xl:-mt-3' : 'xl:mt-3'}>
+        <ul className="mx-auto mt-12 grid max-w-6xl gap-5 md:grid-cols-3 md:items-stretch">
+          {PLAN_CATALOG.map((plan, index) => (
+            <Reveal key={plan.slug} as="li" delay={index * 0.06} className={plan.highlight ? 'md:-mt-3' : 'md:mt-3'}>
               <PlanCard plan={plan} />
             </Reveal>
           ))}
         </ul>
-        <ul className="mx-auto mt-8 flex max-w-6xl flex-wrap justify-center gap-x-6 gap-y-2 text-[13px] text-zinc-400">
-          {TRUST.map(({ icon: Icon, text }) => (
-            <li key={text} className="flex items-center gap-1.5">
-              <Icon className="size-4 text-accent-soft" aria-hidden="true" />
-              {text}
-            </li>
-          ))}
-        </ul>
+        <p className="mx-auto mt-6 max-w-6xl text-center text-[13px] text-zinc-400">Cobrança mensal no cartão, pelo Asaas · {SAFETY_LINE}</p>
+        <FreeTrial />
         <div className="mx-auto max-w-7xl">
           <CreditsExplainer />
-          <PlanComparison plans={PLANS} />
+          <PlanComparison plans={COMPARED_PLANS} />
         </div>
       </div>
     </section>

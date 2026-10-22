@@ -6,10 +6,9 @@ import { SIGNUP_PATH } from '../content'
 import { useScrolled } from '../hooks/useScrolled'
 
 const NAV: readonly { href: string; label: string }[] = [
-  { href: '#recursos', label: 'Recursos' },
-  { href: '#como-funciona', label: 'Como funciona' },
+  { href: '#recursos', label: 'Por dentro' },
   { href: '#para-quem', label: 'Para quem' },
-  { href: '#precos', label: 'Preços' },
+  { href: '#precos', label: 'Planos' },
   { href: '#faq', label: 'Dúvidas' },
 ]
 
@@ -36,12 +35,10 @@ export function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-2 justify-self-end">
-          <Link to={SIGNUP_PATH} className={`${LINK} hidden px-3 text-accent-soft hover:text-accent-strong sm:inline-flex`}>
+          <Link to={SIGNUP_PATH} className={`${LINK} inline-flex px-2 text-accent-soft hover:text-accent-strong sm:px-3`}>
             Entrar
           </Link>
-          <CtaLink cta="header" size="sm" className="rounded-lg">
-            Começar a criar
-          </CtaLink>
+          <CtaLink cta="header" size="sm" className="rounded-lg" />
         </div>
       </div>
     </header>
