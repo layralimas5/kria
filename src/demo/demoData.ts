@@ -21,6 +21,7 @@ export interface DemoState {
   subscriptionPayments: Row[]
   personas: Row[]
   brands: Row[]
+  contents: Row[]
   projects: Row[]
   generations: Row[]
   ledger: Row[]
@@ -28,6 +29,34 @@ export interface DemoState {
 }
 
 const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60_000).toISOString()
+/** Só a data (`AAAA-MM-DD`), no fuso de quem abre o demo. */
+const dayFromNow = (days: number) => {
+  const date = new Date(Date.now() + days * 24 * 60 * 60_000)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+function content(overrides: Row): Row {
+  return {
+    id: uuid(),
+    user_id: DEMO_USER_ID,
+    title: '',
+    channel: 'instagram',
+    format: 'reels',
+    status: 'idea',
+    planned_for: null,
+    brand_id: null,
+    project_id: null,
+    script: '',
+    copy: '',
+    notes: '',
+    source_generation_id: null,
+    asset_ids: [],
+    published_at: null,
+    created_at: minutesAgo(400),
+    updated_at: minutesAgo(400),
+    ...overrides,
+  }
+}
 
 let ledgerSequence = 100
 export const nextLedgerId = () => (ledgerSequence += 1)
@@ -70,6 +99,11 @@ export function createDemoState(): DemoState {
     offer: 'Sérum de vitamina C e hidratante facial, vendidos pelo Instagram e WhatsApp.',
     avoid: 'promessa de resultado, termos médicos',
     visual_style: 'luz natural de manhã, tons claros, banheiro e penteadeira',
+    description: 'Marca pequena de skincare natural, criada por uma esteticista, que vende direto pelas redes.',
+    goals: 'Vender o kit de rotina e trazer seguidoras novas pelo Reels.',
+    platforms: ['instagram', 'tiktok', 'whatsapp'],
+    communication: 'Fala como amiga que entende do assunto, explica o porquê de cada passo.',
+    references_notes: '',
     created_at: minutesAgo(300),
   }
 
@@ -89,7 +123,7 @@ export function createDemoState(): DemoState {
   return {
     purchasedBalance: 265,
     subscriptionBalance: 230,
-    preferences: { user_id: DEMO_USER_ID, goal: null, onboarded_at: null },
+    preferences: { user_id: DEMO_USER_ID, goal: null, onboarded_at: null, active_brand_id: lunaBrand.id },
     plans: [
       { slug: 'gratis', name: 'Grátis', description: 'Teste com seus personagens antes de assinar.', price_cents: 0, monthly_credits: 0, max_concurrent: 2, max_personas: 1, max_brands: 1, tools: ['copy', 'prompt_library'], features: ['20 créditos de boas-vindas', '1 personagem salvo', 'Fotos com IA e com seu personagem', 'Vídeo com Kling 3.0 comprando um pacote', 'Pacotes avulsos com Pix'], public: false, highlight: false, active: true, position: 0, version: 1 },
       { slug: 'starter', name: 'Starter', description: 'Para começar a publicar toda semana.', price_cents: 5990, monthly_credits: 300, max_concurrent: 3, max_personas: 2, max_brands: 1, tools: ['copy', 'prompt_library'], features: ['300 créditos por mês', 'Até 2 personagens salvos', 'Fotos com IA e com seus personagens', 'Vídeo com Kling 3.0', 'Vídeo com fala e som (Veo 3.1)', '3 gerações ao mesmo tempo', 'Histórico e download das criações', 'Suporte por e-mail'], public: true, highlight: false, active: true, position: 10, version: 1 },
@@ -113,14 +147,15 @@ export function createDemoState(): DemoState {
       created_at: minutesAgo(60 * 24 * 3),
     },
     models: [
-      { slug: 'foto', name: 'Nano Banana 2', description: 'Foto realista a partir do texto.', kind: 'image', requires_image: false, credits: 5, position: 10, badge: null, defaults: { aspect_ratio: '4:5' }, allowed_plans: null, provider: 'fal', endpoint: 'fal-ai/nano-banana-2', provider_cost_usd: null, active: true },
-      { slug: 'foto-persona', name: 'Nano Banana 2 Persona', description: 'A mesma pessoa em qualquer cenário.', kind: 'image', requires_image: true, credits: 6, position: 20, badge: 'TOP', defaults: { aspect_ratio: '4:5' }, allowed_plans: null, provider: 'fal', endpoint: 'fal-ai/nano-banana-2/edit', provider_cost_usd: null, active: true },
+      { slug: 'foto', name: 'Nano Banana 2', description: 'Foto realista a partir do texto.', kind: 'image', requires_image: false, credits: 5, position: 10, badge: null, defaults: { aspect_ratio: '4:5' }, options: { aspect_ratio: ['4:5', '1:1', '9:16', '16:9'] }, allowed_plans: null, provider: 'fal', endpoint: 'fal-ai/nano-banana-2', provider_cost_usd: null, active: true },
+      { slug: 'foto-persona', name: 'Nano Banana 2 Persona', description: 'A mesma pessoa em qualquer cenário.', kind: 'image', requires_image: true, credits: 6, position: 20, badge: 'TOP', defaults: { aspect_ratio: '4:5' }, options: { aspect_ratio: ['4:5', '1:1', '9:16', '16:9'] }, allowed_plans: null, provider: 'fal', endpoint: 'fal-ai/nano-banana-2/edit', provider_cost_usd: null, active: true },
       { slug: 'video-kling', name: 'Kling 3.0', description: 'Anima uma imagem com movimento natural e áudio.', kind: 'video', requires_image: true, credits: 40, position: 30, badge: 'NOVO', defaults: { duration: '5', generate_audio: true }, allowed_plans: null, provider: 'fal', endpoint: 'fal-ai/kling-video/v3/standard/image-to-video', provider_cost_usd: null, active: true },
-      { slug: 'video-veo', name: 'Veo 3.1', description: 'Vídeo com fala sincronizada e som ambiente.', kind: 'video', requires_image: true, credits: 200, position: 40, badge: 'TOP', defaults: { duration: '8s', aspect_ratio: '9:16', generate_audio: true }, allowed_plans: ['starter', 'pro', 'studio'], provider: 'fal', endpoint: 'fal-ai/veo3.1/image-to-video', provider_cost_usd: null, active: true },
+      { slug: 'video-veo', name: 'Veo 3.1', description: 'Vídeo com fala sincronizada e som ambiente.', kind: 'video', requires_image: true, credits: 200, position: 40, badge: 'TOP', defaults: { duration: '8s', aspect_ratio: '9:16', generate_audio: true }, options: { aspect_ratio: ['9:16', '16:9'] }, allowed_plans: ['starter', 'pro', 'studio'], provider: 'fal', endpoint: 'fal-ai/veo3.1/image-to-video', provider_cost_usd: null, active: true },
       { slug: 'copy', name: 'Copy e legenda', description: 'Legendas, anúncios, títulos e textos de venda.', kind: 'text', requires_image: false, credits: 3, position: 100, badge: null, defaults: { effort: 'low' }, allowed_plans: null, provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
       { slug: 'roteiro', name: 'Roteiro de vídeo', description: 'Gancho, cenas e CTA para Reels, TikTok e Shorts.', kind: 'text', requires_image: false, credits: 3, position: 110, badge: null, defaults: { effort: 'low' }, allowed_plans: null, provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
       { slug: 'ideias', name: 'Ideias de conteúdo', description: 'Pautas pensadas para o público da marca.', kind: 'text', requires_image: false, credits: 3, position: 120, badge: null, defaults: { effort: 'low' }, allowed_plans: null, provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
-      { slug: 'ugc-roteiro', name: 'Roteiro UGC', description: 'Vídeo estilo cliente real, com cenas prontas para o Studio.', kind: 'text', requires_image: false, credits: 3, position: 130, badge: 'NOVO', defaults: { effort: 'low' }, allowed_plans: ['pro', 'studio'], provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
+      { slug: 'planejamento', name: 'Planejamento editorial', description: 'Uma semana ou um mês de posts com formato, gancho e objetivo.', kind: 'text', requires_image: false, credits: 3, position: 140, badge: 'NOVO', defaults: { effort: 'low' }, allowed_plans: null, provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
+      { slug: 'ugc-roteiro', name: 'Roteiro UGC', description: 'Vídeo estilo criador apresentando o produto, com cenas para o Studio.', kind: 'text', requires_image: false, credits: 3, position: 130, badge: 'NOVO', defaults: { effort: 'low' }, allowed_plans: ['pro', 'studio'], provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
     ],
     packs: [
       { slug: 'inicial', name: 'Inicial', credits: 100, price_cents: 1990, highlight: false, position: 10 },
@@ -129,6 +164,13 @@ export function createDemoState(): DemoState {
     ],
     personas: [luna, rafa],
     brands: [lunaBrand],
+    contents: [
+      content({ title: 'Rotina de 3 passos em 30 segundos', status: 'planned', planned_for: dayFromNow(1), brand_id: lunaBrand.id, copy: 'Sua pele não precisa de 10 passos. Precisa de constância.' }),
+      content({ title: 'Vitamina C: manhã ou noite?', format: 'carrossel', status: 'producing', planned_for: dayFromNow(3), brand_id: lunaBrand.id }),
+      content({ title: 'Bastidor da produção do sérum', format: 'story', status: 'idea', brand_id: lunaBrand.id }),
+      content({ title: 'Textura do sérum em close', status: 'review', planned_for: dayFromNow(5), brand_id: lunaBrand.id, notes: 'Falta escolher a trilha.' }),
+      content({ title: 'Kit da semana com CTA para o WhatsApp', format: 'post', status: 'published', planned_for: dayFromNow(-2), published_at: daysFromNow(-2), brand_id: lunaBrand.id }),
+    ],
     projects: [],
     generations: [
       generation(0, { model_slug: 'video-kling', kind: 'video', credits: 40, persona_id: luna.id, output_path: DEMO_VIDEO, output_type: 'video/webm', prompt: 'Luna olha para a câmera, sorri e acena', created_at: minutesAgo(6), completed_at: minutesAgo(3) }),

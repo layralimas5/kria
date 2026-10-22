@@ -4,6 +4,7 @@ import { canUseModel } from '@/domain/plans'
 import type { ImageSource, MediaKind, Model } from '@/domain/types'
 import { errorMessage, generate } from '@/lib/api'
 import { useAccount } from './useAccount'
+import { useActiveBrand } from './useActiveBrand'
 import { useBalance } from './useBalance'
 import { useGenerations } from './useGenerations'
 import { useIdempotencyKey } from './useIdempotencyKey'
@@ -47,7 +48,10 @@ export function useStudio(models: readonly Model[]) {
   const [prompt, setPrompt] = useState(() => (params.get('prompt') ?? '').slice(0, PROMPT_MAX))
   const [source, setSource] = useState<ImageSource | null>(() => sourceFromParams(params))
   // Vindo de um roteiro ou de Meus projetos, a geração fica no projeto e na marca de origem.
-  const [context, setContext] = useState(() => ({ brandId: params.get('marca'), projectId: params.get('projeto') }))
+  const { activeBrandId } = useActiveBrand()
+  const [context, setContext] = useState(() => ({ brandId: params.get('marca') ?? activeBrandId, projectId: params.get('projeto') }))
+  // Escolhas da pessoa entre as opções do modelo (`models.options`); o que não foi escolhido usa o padrão.
+  const [chosenOptions, setChosenOptions] = useState<Readonly<Record<string, string>>>({})
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -57,7 +61,7 @@ export function useStudio(models: readonly Model[]) {
   useEffect(() => {
     setError(null)
     requestKey.rotate()
-  }, [prompt, source, modelSlug, kind, requestKey])
+  }, [prompt, source, modelSlug, kind, chosenOptions, requestKey])
 
   const modelsOfKind = useMemo(() => models.filter((model) => model.kind === kind), [models, kind])
 
@@ -69,6 +73,12 @@ export function useStudio(models: readonly Model[]) {
   }, [modelsOfKind, modelSlug, source])
 
   const model = modelsOfKind.find((item) => item.slug === modelSlug) ?? null
+  // Só vai para o servidor o que o modelo atual aceita; trocar de modelo não carrega escolha inválida.
+  const options = useMemo(
+    () => Object.fromEntries(Object.entries(chosenOptions).filter(([key, value]) => model?.options[key]?.includes(value))),
+    [chosenOptions, model],
+  )
+  const setOption = useCallback((key: string, value: string) => setChosenOptions((current) => ({ ...current, [key]: value })), [])
   const needsSource = model?.requires_image ?? false
   const canAfford = model !== null && balance !== null && balance >= model.credits
   const ready = model !== null && prompt.trim().length >= 3 && (!needsSource || source !== null) && canAfford
@@ -102,6 +112,7 @@ export function useStudio(models: readonly Model[]) {
       const generation = await generate({
         model: model.slug,
         prompt: prompt.trim(),
+        options,
         personaId: needsSource && source?.type === 'persona' ? source.id : undefined,
         sourceGenerationId: needsSource && source?.type === 'image' ? source.id : undefined,
         brandId: context.brandId ?? undefined,
@@ -131,6 +142,8 @@ export function useStudio(models: readonly Model[]) {
     needsSource,
     canAfford,
     ready,
+    options,
+    setOption,
     projectId: context.projectId,
     leaveProject: () => setContext({ brandId: null, projectId: null }),
     submitting,

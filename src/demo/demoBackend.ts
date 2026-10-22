@@ -9,7 +9,7 @@ import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_IMAGES, DEMO_USER_ID, DEMO_VIDEO, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
-const SESSION_KEY = 'kria-demo-state-v4'
+const SESSION_KEY = 'kria-demo-state-v5'
 
 function loadState(): DemoState {
   try {
@@ -60,6 +60,7 @@ const TABLES: Record<string, () => Row[]> = {
   personas: () => state.personas,
   brands: () => state.brands,
   projects: () => state.projects,
+  content_items: () => state.contents,
   generations: () => state.generations,
   credit_ledger: () => state.ledger,
   purchases: () => state.purchases,
@@ -139,6 +140,12 @@ function generate(body: Row): Response {
   if (allowed && !allowed.includes(String(plan.slug))) {
     return fail(403, 'plan_required', 'Esse modelo faz parte de um plano pago. Veja os planos em Assinatura.')
   }
+  // Mesma regra da function: opção fora de `models.options` não passa.
+  const requested = (body.options ?? {}) as Record<string, string>
+  const accepted = (model.options ?? {}) as Record<string, string[]>
+  if (Object.entries(requested).some(([key, value]) => !accepted[key]?.includes(value))) {
+    return fail(400, 'invalid_option', 'Valor de opção não aceito por esse modelo.')
+  }
   const credits = Number(model.credits)
   if (balanceOf() < credits) return fail(402, 'insufficient_credits', 'Créditos insuficientes.')
   if (state.generations.filter((item) => item.status === 'running').length >= Number(plan.max_concurrent)) {
@@ -155,6 +162,7 @@ function generate(body: Row): Response {
     source_generation_id: body.sourceGenerationId ?? null,
     brand_id: body.brandId ?? null,
     project_id: body.projectId ?? null,
+    options: requested,
     credits,
     status: 'running',
     output_path: null,
@@ -315,38 +323,62 @@ async function assistant(body: Row): Promise<Response> {
   return json({ generation }, 201)
 }
 
-const WORKSPACE_FIELDS: Record<'brands' | 'projects', readonly string[]> = {
-  brands: ['name', 'niche', 'audience', 'tone', 'offer', 'avoid', 'visual_style'],
+type OwnedTable = 'brands' | 'projects' | 'content_items'
+
+const WORKSPACE_FIELDS: Record<OwnedTable, readonly string[]> = {
+  brands: ['name', 'description', 'niche', 'audience', 'tone', 'offer', 'goals', 'platforms', 'communication', 'avoid', 'visual_style', 'references_notes'],
   projects: ['name', 'goal', 'brand_id', 'status'],
+  content_items: ['title', 'channel', 'format', 'status', 'planned_for', 'brand_id', 'project_id', 'script', 'copy', 'notes', 'source_generation_id', 'asset_ids'],
+}
+
+const OWNED_ROWS: Record<OwnedTable, () => Row[]> = {
+  brands: () => state.brands,
+  projects: () => state.projects,
+  content_items: () => state.contents,
+}
+
+function replaceOwnedRows(table: OwnedTable, rows: Row[]) {
+  if (table === 'brands') state.brands = rows
+  else if (table === 'projects') state.projects = rows
+  else state.contents = rows
+}
+
+/** Publicado ganha a data na hora; voltar o status apaga. Espelha `enforce_content_rules` (0012). */
+function stampPublished(row: Row) {
+  if (row.status === 'published' && !row.published_at) row.published_at = new Date().toISOString()
+  if (row.status !== 'published') row.published_at = null
 }
 
 function pick(body: Row, fields: readonly string[]): Row {
   return Object.fromEntries(fields.filter((field) => field in body).map((field) => [field, body[field]]))
 }
 
-/** Insere, edita e apaga marcas e projetos com as mesmas travas do banco (0009). */
-function workspaceWrite(table: 'brands' | 'projects', method: string, url: URL, body: Row): Response {
-  const rows = table === 'brands' ? state.brands : state.projects
+/** Insere, edita e apaga marcas, projetos e conteúdos com as mesmas travas do banco (0009, 0012). */
+function workspaceWrite(table: OwnedTable, method: string, url: URL, body: Row): Response {
+  const rows = OWNED_ROWS[table]()
   const id = url.searchParams.get('id')?.replace('eq.', '')
   const plan = currentPlan()
 
   if (method === 'DELETE') {
-    if (table === 'brands') state.brands = state.brands.filter((row) => row.id !== id)
-    else state.projects = state.projects.filter((row) => row.id !== id)
+    replaceOwnedRows(table, rows.filter((row) => row.id !== id))
+    if (table === 'brands' && state.preferences.active_brand_id === id) state.preferences = { ...state.preferences, active_brand_id: null }
     persist()
     return new Response(null, { status: 204 })
   }
   if (method === 'POST') {
     if (table === 'brands' && rows.length >= Number(plan.max_brands)) return rpcFail('too_many_brands')
     if (table === 'projects' && !(plan.tools as string[]).includes('projects')) return rpcFail('plan_required')
-    const row = { id: uuid(), user_id: DEMO_USER_ID, ...pick(body, WORKSPACE_FIELDS[table]), created_at: new Date().toISOString() }
+    const now = new Date().toISOString()
+    const row: Row = { id: uuid(), user_id: DEMO_USER_ID, ...pick(body, WORKSPACE_FIELDS[table]), created_at: now, updated_at: now }
+    if (table === 'content_items') stampPublished(row)
     rows.unshift(row)
     persist()
     return json(row, 201)
   }
   const row = rows.find((item) => item.id === id)
   if (!row) return json({ message: 'not_found', code: 'PGRST116' }, 406)
-  Object.assign(row, pick(body, WORKSPACE_FIELDS[table]))
+  Object.assign(row, pick(body, WORKSPACE_FIELDS[table]), { updated_at: new Date().toISOString() })
+  if (table === 'content_items') stampPublished(row)
   persist()
   return json(row)
 }
@@ -391,12 +423,20 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
 
   if (route.startsWith('rest/')) {
     const table = route.slice('rest/'.length)
-    if ((table === 'brands' || table === 'projects') && method !== 'GET' && method !== 'HEAD') {
+    if ((table === 'brands' || table === 'projects' || table === 'content_items') && method !== 'GET' && method !== 'HEAD') {
       return workspaceWrite(table, method, url, await readBody(init))
     }
     if (method === 'DELETE' && table === 'personas') {
       const id = url.searchParams.get('id')?.replace('eq.', '')
       state.personas = state.personas.filter((persona) => persona.id !== id)
+      persist()
+      return new Response(null, { status: 204 })
+    }
+    if (method === 'PATCH' && table === 'personas') {
+      const id = url.searchParams.get('id')?.replace('eq.', '')
+      const { brand_id: brandId } = await readBody(init)
+      if (brandId && !state.brands.some((brand) => brand.id === brandId)) return rpcFail('brand_not_found')
+      state.personas = state.personas.map((persona) => (persona.id === id ? { ...persona, brand_id: brandId ?? null } : persona))
       persist()
       return new Response(null, { status: 204 })
     }

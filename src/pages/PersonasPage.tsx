@@ -7,8 +7,9 @@ import { MotionTab } from '@/components/personas/MotionTab'
 import { PersonaCanvas, type CanvasTab } from '@/components/personas/PersonaCanvas'
 import { PERSONA_PROMPT_PREFIX } from '@/domain/personaTraits'
 import type { Generation, Persona } from '@/domain/types'
-import { deletePersona, errorMessage } from '@/lib/api'
+import { deletePersona, errorMessage, linkPersonaBrand } from '@/lib/api'
 import { useAccount } from '@/hooks/useAccount'
+import { useActiveBrand } from '@/hooks/useActiveBrand'
 import { useModels, usePersonas } from '@/hooks/useCatalog'
 import { useGenerations } from '@/hooks/useGenerations'
 import { usePersonaBuilder } from '@/hooks/usePersonaBuilder'
@@ -23,6 +24,7 @@ function isPersonaWork(generation: Generation): boolean {
 export function PersonasPage() {
   const personas = usePersonas()
   const { plan } = useAccount()
+  const { brands } = useActiveBrand()
   const models = useModels()
   const { generations } = useGenerations()
   const builder = usePersonaBuilder(models.data ?? [])
@@ -57,6 +59,16 @@ export function PersonasPage() {
     }
   }
 
+  async function handleLinkBrand(persona: Persona, brandId: string | null) {
+    try {
+      setPageError(null)
+      await linkPersonaBrand(persona.id, brandId)
+      await personas.reload()
+    } catch (linkError) {
+      setPageError(errorMessage(linkError))
+    }
+  }
+
   return (
     <div className="mx-auto flex max-w-[1600px] flex-col gap-3 lg:h-[calc(100dvh-7rem)] lg:flex-row">
       <BuilderPanel
@@ -82,6 +94,8 @@ export function PersonasPage() {
         history={history}
         modelNames={modelNames}
         onDelete={(persona) => void handleDelete(persona)}
+        brands={brands.data ?? []}
+        onLinkBrand={(persona, brandId) => void handleLinkBrand(persona, brandId)}
         onMakePersona={setSaving}
         className="min-h-[70vh] flex-1 lg:min-h-0"
       />

@@ -12,10 +12,10 @@ interface NewsItem {
 }
 
 const NEWS: readonly NewsItem[] = [
-  { title: 'Planos mensais', text: 'Starter, Pro e Studio com créditos que renovam todo mês.' },
-  { title: 'Construtor de personagem', text: 'Monte rosto, cabelo e estilo e reaproveite em fotos e vídeos.' },
+  { title: 'Conteúdos e calendário', text: 'Roteiro, copy, imagens e vídeos de cada post, com status e data.' },
+  { title: 'Planejamento editorial', text: 'Uma semana ou um mês de posts, direto para o calendário.' },
+  { title: 'Marca ativa', text: 'Escolha a marca no topo e tudo sai no tom e para o público dela.' },
   { title: 'Motion Control', text: 'Transferir o movimento de um vídeo para o seu personagem.', soon: true, tool: 'motion_control' },
-  { title: 'Estúdio UGC e Copys', text: 'Roteiro, cena e vídeo de anúncio num fluxo só.', soon: true, tool: 'ugc_studio' },
 ]
 
 export function PlatformNews({ plan }: { readonly plan: Plan | null }) {

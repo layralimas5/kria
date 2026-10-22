@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom'
 import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed'
 import { UserMenu } from './account/UserMenu'
 import { MobileTabBar, MobileTopBar } from './layout/MobileNav'
+import { BrandSwitcher } from './workspace/BrandSwitcher'
 import { Sidebar } from './layout/Sidebar'
 import { Spinner } from './ui/Spinner'
 
@@ -26,7 +27,8 @@ export function AppShell() {
       <Sidebar collapsed={collapsed} onToggle={toggleCollapsed} />
       <MobileTopBar />
 
-      <header className="sticky top-0 z-30 hidden h-14 items-center justify-end bg-canvas/85 pl-[calc(var(--sidebar-w)+1.25rem)] pr-5 backdrop-blur-xl transition-[padding] duration-200 md:flex">
+      <header className="sticky top-0 z-30 hidden h-14 items-center justify-end bg-canvas/85 pl-[calc(var(--sidebar-w)+1.25rem)] pr-5 backdrop-blur-xl transition-[padding] duration-200 md:flex md:gap-3">
+        <BrandSwitcher />
         <UserMenu />
       </header>
 

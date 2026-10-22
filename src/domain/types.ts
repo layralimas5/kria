@@ -15,6 +15,8 @@ export const modelSchema = z.object({
   position: z.number().int(),
   badge: z.enum(['NOVO', 'TOP']).nullable(),
   defaults: z.record(z.unknown()),
+  /** O que a pessoa escolhe e os valores aceitos (0011); o primeiro valor é o padrão. */
+  options: z.record(z.array(z.string())).default({}),
   /** Planos que podem usar o modelo; nulo libera para todos. */
   allowed_plans: z.array(z.string()).nullable(),
 })
@@ -32,6 +34,8 @@ export const generationSchema = z.object({
   source_generation_id: z.string().uuid().nullable(),
   /** Projeto do Workspace (0009). Linhas antigas do demo não têm o campo. */
   project_id: z.string().uuid().nullable().default(null),
+  /** Opções escolhidas na geração (0011), como a proporção. */
+  options: z.record(z.string()).default({}),
   credits: z.number().int(),
   status: generationStatusSchema,
   output_path: z.string().nullable(),
@@ -47,6 +51,8 @@ export const personaSchema = z.object({
   name: z.string(),
   description: z.string(),
   image_path: z.string(),
+  /** Marca a que o personagem pertence (0011). */
+  brand_id: z.string().uuid().nullable().default(null),
   created_at: z.string(),
 })
 export type Persona = z.infer<typeof personaSchema>
@@ -144,6 +150,8 @@ export type Goal = z.infer<typeof goalSchema>
 export const preferencesSchema = z.object({
   goal: goalSchema.nullable(),
   onboarded_at: z.string().nullable(),
+  /** Marca que alimenta assistente, Studio e conteúdos (0011). */
+  active_brand_id: z.string().uuid().nullable().default(null),
 })
 export type Preferences = z.infer<typeof preferencesSchema>
 
@@ -155,7 +163,7 @@ export const purchaseSchema = z.object({
 export type Purchase = z.infer<typeof purchaseSchema>
 
 export const GENERATION_COLUMNS =
-  'id, model_slug, kind, prompt, persona_id, source_generation_id, project_id, credits, status, output_path, output_type, error, created_at, completed_at'
+  'id, model_slug, kind, prompt, persona_id, source_generation_id, project_id, options, credits, status, output_path, output_type, error, created_at, completed_at'
 
 /** Só foto e vídeo vão para a galeria e o Studio; texto é do assistente. */
 export const MEDIA_KINDS: readonly MediaKind[] = ['image', 'video']
@@ -206,25 +214,41 @@ export type ProfileUpdate = z.infer<typeof profileUpdateSchema>
 
 // ------------------------------------------------------------- workspace (0009)
 
-/** O contexto que a marca leva para as ferramentas de texto. Espelha as checks da 0009. */
+/** Plataformas que a marca usa. Espelha a check de `brands.platforms` (0011). */
+export const BRAND_PLATFORMS = ['instagram', 'tiktok', 'youtube', 'facebook', 'linkedin', 'whatsapp', 'pinterest'] as const
+export type BrandPlatform = (typeof BRAND_PLATFORMS)[number]
+
+/** O contexto que a marca leva para as ferramentas de IA. Espelha as checks da 0009 e da 0011. */
 export const brandInputSchema = z.object({
   name: z.string().trim().min(1, 'Dê um nome para a marca.').max(60),
+  description: z.string().trim().max(500),
   niche: z.string().trim().max(120),
   audience: z.string().trim().max(500),
   tone: z.string().trim().max(300),
   offer: z.string().trim().max(500),
+  goals: z.string().trim().max(500),
+  platforms: z.array(z.enum(BRAND_PLATFORMS)),
+  communication: z.string().trim().max(500),
   avoid: z.string().trim().max(300),
   visual_style: z.string().trim().max(300),
+  references_notes: z.string().trim().max(1000),
 })
 export type BrandInput = z.infer<typeof brandInputSchema>
 
+// Marcas criadas antes da 0011 no demo não têm os campos novos: o default cobre.
 export const brandSchema = brandInputSchema.extend({
   id: z.string().uuid(),
+  description: z.string().default(''),
+  goals: z.string().default(''),
+  platforms: z.array(z.enum(BRAND_PLATFORMS)).default([]),
+  communication: z.string().default(''),
+  references_notes: z.string().default(''),
   created_at: z.string(),
 })
 export type Brand = z.infer<typeof brandSchema>
 
-export const BRAND_COLUMNS = 'id, name, niche, audience, tone, offer, avoid, visual_style, created_at'
+export const BRAND_COLUMNS =
+  'id, name, description, niche, audience, tone, offer, goals, platforms, communication, avoid, visual_style, references_notes, created_at'
 
 export const projectStatusSchema = z.enum(['planning', 'producing', 'done'])
 export type ProjectStatus = z.infer<typeof projectStatusSchema>
@@ -248,7 +272,7 @@ export const PROJECT_COLUMNS = 'id, name, goal, brand_id, status, created_at'
 // ------------------------------------------------------------- assistente (0010)
 
 /** Ferramentas de texto: cada uma é uma linha de `models` com kind = 'text'. */
-export const assistantToolSchema = z.enum(['copy', 'roteiro', 'ideias', 'ugc-roteiro'])
+export const assistantToolSchema = z.enum(['copy', 'roteiro', 'ideias', 'ugc-roteiro', 'planejamento'])
 export type AssistantTool = z.infer<typeof assistantToolSchema>
 
 export const textModelSchema = z.object({

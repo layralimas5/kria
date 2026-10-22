@@ -2,9 +2,20 @@ import clsx from 'clsx'
 import { Coins, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
-import { TextArea } from '@/components/ui/Field'
+import { TextArea, TextField } from '@/components/ui/Field'
 import { Notice } from '@/components/ui/Notice'
-import { CHANNEL_LABELS, CHANNELS, type AssistantToolInfo } from '@/domain/assistant'
+import {
+  CHANNEL_LABELS,
+  CHANNELS,
+  CONTENT_GOAL_LABELS,
+  CONTENT_GOALS,
+  COPY_FORMAT_LABELS,
+  COPY_FORMATS,
+  FORMATS_ON_EXISTING_TEXT,
+  TEXT_LENGTH_LABELS,
+  TEXT_LENGTHS,
+  type AssistantToolInfo,
+} from '@/domain/assistant'
 import type { Brand, Project } from '@/domain/types'
 import { BRIEF_MAX, type Assistant } from '@/hooks/useAssistant'
 import { ContextSelect } from './ContextSelect'
@@ -20,7 +31,53 @@ interface BriefFormProps {
   readonly onSubmit: () => void
 }
 
+/** Grupo de pílulas de escolha única. `null` como valor é "deixar a IA decidir". */
+function Pills<T extends string>({
+  legend,
+  name,
+  options,
+  labels,
+  value,
+  onChange,
+  emptyLabel,
+}: {
+  readonly legend: string
+  readonly name: string
+  readonly options: readonly T[]
+  readonly labels: Record<T, string>
+  readonly value: T | null
+  readonly onChange: (value: T | null) => void
+  readonly emptyLabel?: string
+}) {
+  const choices: readonly (T | null)[] = emptyLabel ? [null, ...options] : options
+  return (
+    <fieldset>
+      <legend className="mb-2 text-[13px] font-semibold text-zinc-300">{legend}</legend>
+      <div className="flex flex-wrap gap-2">
+        {choices.map((choice) => {
+          const checked = value === choice
+          return (
+            <label key={choice ?? 'auto'} className="cursor-pointer">
+              <input type="radio" name={name} checked={checked} onChange={() => onChange(choice)} className="peer sr-only" />
+              <span
+                className={clsx(
+                  'inline-flex min-h-9 items-center rounded-full px-3.5 text-sm ring-1 transition-colors',
+                  'peer-focus-visible:ring-2 peer-focus-visible:ring-accent',
+                  checked ? 'bg-accent/15 text-accent-soft ring-accent/50' : 'bg-surface-2 text-zinc-400 ring-white/[0.08] hover:text-zinc-100',
+                )}
+              >
+                {choice === null ? emptyLabel : labels[choice]}
+              </span>
+            </label>
+          )
+        })}
+      </div>
+    </fieldset>
+  )
+}
+
 export function BriefForm({ info, assistant, credits, brands, projects, onSubmit }: BriefFormProps) {
+  const onExistingText = info.formats && FORMATS_ON_EXISTING_TEXT.includes(assistant.format)
   return (
     <form
       className="space-y-5 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06] md:p-6"
@@ -56,38 +113,67 @@ export function BriefForm({ info, assistant, credits, brands, projects, onSubmit
         </p>
       )}
 
-      <fieldset>
-        <legend className="mb-2 text-[13px] font-semibold text-zinc-300">Onde vai publicar</legend>
-        <div className="flex flex-wrap gap-2">
-          {CHANNELS.map((channel) => (
-            <label key={channel} className="cursor-pointer">
-              <input
-                type="radio"
-                name="channel"
-                value={channel}
-                checked={assistant.channel === channel}
-                onChange={() => assistant.setChannel(channel)}
-                className="peer sr-only"
-              />
-              <span
-                className={clsx(
-                  'inline-flex min-h-9 items-center rounded-full px-3.5 text-sm ring-1 transition-colors',
-                  'peer-focus-visible:ring-2 peer-focus-visible:ring-accent',
-                  assistant.channel === channel
-                    ? 'bg-accent/15 text-accent-soft ring-accent/50'
-                    : 'bg-surface-2 text-zinc-400 ring-white/[0.08] hover:text-zinc-100',
-                )}
-              >
-                {CHANNEL_LABELS[channel]}
-              </span>
-            </label>
-          ))}
+      {info.formats && (
+        <Pills
+          legend="Tipo de texto"
+          name="format"
+          options={COPY_FORMATS}
+          labels={COPY_FORMAT_LABELS}
+          value={assistant.format}
+          onChange={(value) => value && assistant.setFormat(value)}
+        />
+      )}
+
+      <Pills
+        legend="Onde vai publicar"
+        name="channel"
+        options={CHANNELS}
+        labels={CHANNEL_LABELS}
+        value={assistant.channel}
+        onChange={(value) => value && assistant.setChannel(value)}
+      />
+
+      <details className="group rounded-2xl bg-surface-2/60 ring-1 ring-white/[0.05] open:pb-4">
+        <summary className="cursor-pointer list-none rounded-2xl px-4 py-3 text-sm font-semibold text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          Ajustes finos <span className="font-normal text-zinc-500">(objetivo, tamanho e tom)</span>
+        </summary>
+        <div className="space-y-4 px-4">
+          <Pills
+            legend="Objetivo"
+            name="goal"
+            options={CONTENT_GOALS}
+            labels={CONTENT_GOAL_LABELS}
+            value={assistant.goal}
+            onChange={assistant.setGoal}
+            emptyLabel="A IA decide"
+          />
+          <Pills
+            legend="Tamanho"
+            name="length"
+            options={TEXT_LENGTHS}
+            labels={TEXT_LENGTH_LABELS}
+            value={assistant.length}
+            onChange={assistant.setLength}
+            emptyLabel="A IA decide"
+          />
+          <TextField
+            label="Tom só para este pedido"
+            hint="Vence o tom salvo na marca. Deixe vazio para usar o da marca."
+            maxLength={80}
+            placeholder="Ex.: mais sério, com humor"
+            value={assistant.tone}
+            onChange={(event) => assistant.setTone(event.target.value)}
+          />
         </div>
-      </fieldset>
+      </details>
 
       <TextArea
-        label="Briefing"
-        hint="Diga o assunto, o objetivo e qualquer detalhe que não pode faltar."
+        label={onExistingText ? 'Texto' : 'Briefing'}
+        hint={
+          onExistingText
+            ? 'Cole o texto que você quer adaptar, revisar ou analisar.'
+            : 'Diga o assunto, o objetivo e qualquer detalhe que não pode faltar.'
+        }
         value={assistant.brief}
         maxLength={BRIEF_MAX}
         rows={5}

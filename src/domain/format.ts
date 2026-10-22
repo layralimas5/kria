@@ -30,6 +30,19 @@ export function personaPortraitPrompt(description: string): string {
 }
 
 /** Chips de configuração do modelo (formato, duração, áudio) a partir dos defaults do catálogo. */
+/** Onde cada proporção encaixa, para a pessoa escolher sem saber o número de cor. */
+export const ASPECT_LABELS: Readonly<Record<string, string>> = {
+  '4:5': 'Feed',
+  '1:1': 'Quadrado',
+  '9:16': 'Stories e Reels',
+  '16:9': 'YouTube',
+}
+
+/** Os defaults que viram chip fixo: o que a pessoa pode escolher (`options`) sai daqui e ganha seletor. */
+export function fixedDefaults(defaults: Record<string, unknown>, options: Readonly<Record<string, readonly string[]>>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(defaults).filter(([key]) => !(key in options)))
+}
+
 export function modelSpecs(defaults: Record<string, unknown>): string[] {
   const specs: string[] = []
   if (typeof defaults.aspect_ratio === 'string' && defaults.aspect_ratio !== 'auto') specs.push(defaults.aspect_ratio)

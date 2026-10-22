@@ -1,3 +1,4 @@
+import type { PlanTool } from './plans'
 import type { Goal } from './types'
 
 export interface QuickAction {
@@ -22,27 +23,41 @@ export const GOALS: readonly GoalOption[] = [
   { value: 'all_tools', label: 'Utilizar várias ferramentas', description: 'Um pouco de tudo, conforme a necessidade.' },
 ]
 
-const PERSONA: QuickAction = { title: 'Criar personagem', description: 'Monte o rosto e o estilo do seu influenciador.', to: '/personas' }
-const PHOTO: QuickAction = { title: 'Gerar imagem', description: 'Descreva a cena e receba uma foto realista.', to: '/estudio?modo=imagem' }
-const VIDEO: QuickAction = { title: 'Gerar vídeo', description: 'Anime uma foto ou persona com movimento e áudio.', to: '/estudio?modo=video' }
-const MOTION: QuickAction = { title: 'Animar personagem', description: 'Escolha a persona e o movimento.', to: '/personas?aba=movimento' }
-const PRODUCT: QuickAction = {
-  title: 'Persona com produto',
-  description: 'Gere a persona segurando ou usando o seu produto.',
-  to: `/estudio?modo=imagem&prompt=${encodeURIComponent(
-    'Minha persona segurando [descreva o produto] e mostrando para a câmera, como num vídeo de criadora, luz natural, foto de celular',
-  )}`,
-}
-const IDEAS: QuickAction = { title: 'Ideias de conteúdo', description: 'Pautas pensadas para o público da sua marca.', to: '/assistente/ideias' }
-const SCRIPT: QuickAction = { title: 'Roteiro de vídeo', description: 'Gancho, cenas e CTA, com as cenas prontas para o Studio.', to: '/assistente/roteiro' }
-const GALLERY: QuickAction = { title: 'Minhas criações', description: 'Tudo o que você já gerou, pronto para baixar.', to: '/galeria' }
+/** As oito portas do dashboard ("O que vamos criar hoje?"). */
+export const HOME_ACTION_IDS = ['video', 'image', 'persona', 'ugc', 'copy', 'script', 'ideas', 'projects'] as const
+export type HomeActionId = (typeof HOME_ACTION_IDS)[number]
 
-/** Atalhos do início, na ordem que faz sentido para cada objetivo. Só ferramentas que já funcionam. */
-export const QUICK_ACTIONS: Record<Goal, readonly QuickAction[]> = {
-  influencers: [PERSONA, MOTION, PHOTO, GALLERY],
-  viral_videos: [SCRIPT, VIDEO, MOTION, PHOTO],
-  ugc_ads: [PRODUCT, SCRIPT, PERSONA, VIDEO],
-  images: [PHOTO, PERSONA, VIDEO, GALLERY],
-  social_content: [IDEAS, SCRIPT, PHOTO, VIDEO],
-  all_tools: [IDEAS, PHOTO, VIDEO, PERSONA],
+export interface HomeAction extends QuickAction {
+  readonly id: HomeActionId
+  /** Ferramenta de plano que libera a ação; sem ela, a ação aparece com cadeado e leva aos planos. */
+  readonly tool?: PlanTool
+}
+
+const ACTIONS: Record<HomeActionId, HomeAction> = {
+  video: { id: 'video', title: 'Criar vídeo', description: 'Anime uma foto ou personagem com movimento e som.', to: '/estudio?modo=video' },
+  image: { id: 'image', title: 'Criar imagem', description: 'Descreva a cena e receba uma foto realista.', to: '/estudio?modo=imagem' },
+  persona: { id: 'persona', title: 'Criar personagem', description: 'O mesmo rosto em todas as fotos e vídeos.', to: '/personas' },
+  ugc: { id: 'ugc', title: 'Criar UGC', description: 'Vídeo estilo criador apresentando o produto, com cenas para o Studio.', to: '/assistente/ugc', tool: 'ugc_studio' },
+  copy: { id: 'copy', title: 'Escrever copy', description: 'Legenda, anúncio, título, gancho ou texto de venda.', to: '/assistente/copy', tool: 'copy' },
+  script: { id: 'script', title: 'Criar roteiro', description: 'Gancho, cenas e CTA, prontos para virar vídeo.', to: '/assistente/roteiro', tool: 'copy' },
+  ideas: { id: 'ideas', title: 'Gerar ideias', description: 'Pautas pensadas para o público da sua marca.', to: '/assistente/ideias', tool: 'copy' },
+  projects: { id: 'projects', title: 'Projetos anteriores', description: 'Retome o que você já criou, organizado por projeto.', to: '/projetos', tool: 'projects' },
+}
+
+/** Sem a ferramenta de projetos, a oitava porta leva à biblioteca, que todo plano tem. */
+const LIBRARY: HomeAction = { id: 'projects', title: 'Criações anteriores', description: 'Tudo o que você já gerou, pronto para baixar.', to: '/galeria' }
+
+/** O que vem primeiro para cada objetivo do onboarding; o resto segue na ordem padrão. */
+const GOAL_PRIORITY: Record<Goal, readonly HomeActionId[]> = {
+  influencers: ['persona', 'image', 'video'],
+  viral_videos: ['script', 'video', 'ideas'],
+  ugc_ads: ['ugc', 'persona', 'copy'],
+  images: ['image', 'persona'],
+  social_content: ['ideas', 'script', 'copy'],
+  all_tools: [],
+}
+
+export function homeActions(goal: Goal, hasTool: (tool: PlanTool) => boolean): readonly HomeAction[] {
+  const order = [...new Set([...GOAL_PRIORITY[goal], ...HOME_ACTION_IDS])]
+  return order.map((id) => (id === 'projects' && !hasTool('projects') ? LIBRARY : ACTIONS[id]))
 }

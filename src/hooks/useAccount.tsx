@@ -11,7 +11,7 @@ import {
   type Preferences,
   type Subscription,
 } from '@/domain/types'
-import { fetchPreferences, saveGoal } from '@/lib/api'
+import { fetchPreferences, saveActiveBrand, saveGoal } from '@/lib/api'
 import { isDemo, supabase } from '@/lib/supabase'
 import { useUserId } from './useSession'
 
@@ -27,6 +27,7 @@ interface AccountState {
   readonly preferences: Preferences | null
   readonly refresh: () => Promise<void>
   readonly setGoal: (goal: Goal) => Promise<void>
+  readonly setActiveBrand: (brandId: string | null) => Promise<void>
 }
 
 const AccountContext = createContext<AccountState | null>(null)
@@ -97,12 +98,19 @@ export function AccountProvider({ children }: { readonly children: ReactNode }) 
     [userId],
   )
 
+  const setActiveBrand = useCallback(
+    async (brandId: string | null) => {
+      setPreferences(await saveActiveBrand(userId, brandId))
+    },
+    [userId],
+  )
+
   const value = useMemo<AccountState>(() => {
     const subscription = currentSubscription(subscriptions)
     const slug = subscription?.plan_slug ?? 'gratis'
     const plan = plans.find((item) => item.slug === slug) ?? null
-    return { loading, error, plans, subscriptions, subscription, plan, preferences, refresh, setGoal }
-  }, [loading, error, plans, subscriptions, preferences, refresh, setGoal])
+    return { loading, error, plans, subscriptions, subscription, plan, preferences, refresh, setGoal, setActiveBrand }
+  }, [loading, error, plans, subscriptions, preferences, refresh, setGoal, setActiveBrand])
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>
 }

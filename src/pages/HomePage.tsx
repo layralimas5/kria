@@ -10,7 +10,8 @@ import { QuickActions } from '@/components/home/QuickActions'
 import { MediaView } from '@/components/MediaView'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Notice } from '@/components/ui/Notice'
-import { QUICK_ACTIONS } from '@/domain/goals'
+import { homeActions } from '@/domain/goals'
+import { planIncludes, type PlanTool } from '@/domain/plans'
 import { isOpen } from '@/domain/types'
 import { useAccount } from '@/hooks/useAccount'
 import { useBalance } from '@/hooks/useBalance'
@@ -52,7 +53,8 @@ export function HomePage() {
   }, [generations])
 
   const name = displayNameOf(profile)
-  const actions = QUICK_ACTIONS[preferences?.goal ?? 'all_tools']
+  const hasTool = (tool: PlanTool) => planIncludes(plan, tool)
+  const actions = homeActions(preferences?.goal ?? 'all_tools', hasTool)
 
   return (
     <div className="mx-auto max-w-6xl space-y-10 pb-10 pt-4">
@@ -71,7 +73,7 @@ export function HomePage() {
 
       <HomeStats wallet={wallet} plan={plan} subscription={subscription} running={running} />
 
-      <QuickActions actions={actions} />
+      <QuickActions actions={actions} hasTool={hasTool} />
 
       <section aria-labelledby="recent-title" className="min-w-0">
         <SectionTitle id="recent-title" title="Criações recentes" to="/galeria" linkLabel="Ver todas" />

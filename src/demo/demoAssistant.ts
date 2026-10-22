@@ -42,14 +42,27 @@ export function demoAssistantOutput(tool: AssistantTool, brief: string, brandNam
           plain('Prova', 'Coloque aqui um depoimento real de cliente, com autorização dela.\n\nDepois: "É por mensagens assim que eu faço o que faço. Quer conhecer o sérum? O link está na bio."'),
         ],
       }
+    case 'planejamento':
+      return {
+        title: `Exemplo do demo: 7 dias de posts para ${brand}`,
+        items: [
+          plain('Dia 1, Reels', 'Tema: rotina de 3 passos. Gancho: "Sua pele não precisa de 10 produtos." Objetivo: alcance.'),
+          plain('Dia 2, Carrossel', 'Tema: vitamina C de manhã ou à noite. Gancho: "Você pode estar usando na hora errada." Objetivo: salvamentos.'),
+          plain('Dia 3, Stories', 'Tema: bastidor da produção. Enquete: "Você passa protetor todo dia?" Objetivo: conversa.'),
+          plain('Dia 4, Reels', 'Tema: mito ou verdade sobre sérum. Gancho: três frases em 5 segundos cada. Objetivo: alcance.'),
+          plain('Dia 5, Carrossel', 'Tema: como escolher o primeiro sérum. Checklist simples. Objetivo: autoridade.'),
+          plain('Dia 6, Reels', 'Tema: demonstração da textura. Gancho: "Olha como absorve." Objetivo: desejo pelo produto.'),
+          plain('Dia 7, Post', 'Tema: oferta do kit da semana com CTA para o WhatsApp. Objetivo: vendas.'),
+        ],
+      }
     case 'ugc-roteiro':
       return {
         title: `Exemplo do demo: UGC sobre ${topic}`,
         items: [
-          scene('Cena 1, 0s a 4s', 'Fala: "Gente, eu precisava contar isso no carro mesmo."', 'mulher de 30 anos gravando selfie dentro do carro estacionado, luz do dia entrando pela janela, segurando um frasco de sérum'),
-          scene('Cena 2, 4s a 15s', 'Fala: "Eu tinha desistido de skincare, achava tudo complicado. Aí uma amiga me falou desse sérum."', 'mesma mulher no banheiro de casa mostrando o frasco para a câmera, celular apoiado na pia, luz natural'),
-          scene('Cena 3, 15s a 28s', 'Fala: "É só isso: duas gotas de manhã. Faz parte da minha rotina agora."', 'close do rosto aplicando o sérum, ângulo de selfie, fundo de azulejo claro'),
-          scene('Cena 4, 28s a 35s', `Fala: "Se você também acha skincare difícil, dá uma olhada na ${brand}."`, 'mulher sorrindo para a câmera segurando o frasco perto do rosto, luz de janela'),
+          scene('Cena 1, 0s a 4s', 'Fala: "Skincare parece complicado? Te mostro o jeito mais simples em 30 segundos."', 'mulher de 30 anos gravando selfie no banheiro de casa, luz do dia entrando pela janela, segurando um frasco de sérum'),
+          scene('Cena 2, 4s a 15s', 'Fala: "Esse é o sérum de vitamina C. Olha a textura: leve, absorve rápido."', 'close das mãos pingando o sérum no dorso da mão, celular apoiado na pia, luz natural'),
+          scene('Cena 3, 15s a 28s', 'Fala: "O passo a passo é esse: duas gotas de manhã, depois hidratante e protetor."', 'close do rosto aplicando o sérum, ângulo de selfie, fundo de azulejo claro'),
+          scene('Cena 4, 28s a 35s', `Fala: "Quer saber mais? O link da ${brand} está na bio." Em anúncio, identifique como publicidade e conteúdo gerado por IA.`, 'mulher sorrindo para a câmera segurando o frasco perto do rosto, luz de janela'),
         ],
       }
   }

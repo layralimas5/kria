@@ -1,6 +1,13 @@
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import { z } from 'zod'
-import type { Channel } from '@/domain/assistant'
+import type { Channel, ContentGoal, CopyFormat, TextLength } from '@/domain/assistant'
+import {
+  CONTENT_COLUMNS,
+  contentItemSchema,
+  type ContentInput,
+  type ContentItem,
+  type NewContent,
+} from '@/domain/content'
 import {
   BRAND_COLUMNS,
   brandSchema,
@@ -52,6 +59,8 @@ async function invoke(name: string, body: Record<string, unknown>): Promise<unkn
 export interface GenerateInput {
   readonly model: string
   readonly prompt: string
+  /** Escolhas entre as opções do modelo; o servidor recusa valor fora do catálogo. */
+  readonly options?: Readonly<Record<string, string>>
   readonly personaId?: string
   readonly sourceGenerationId?: string
   readonly brandId?: string
@@ -93,8 +102,10 @@ export async function deleteAccount(): Promise<void> {
   await supabase.auth.signOut({ scope: 'local' })
 }
 
+const PREFERENCES_COLUMNS = 'goal, onboarded_at, active_brand_id'
+
 export async function fetchPreferences(userId: string): Promise<Preferences | null> {
-  const { data, error } = await supabase.from('user_preferences').select('goal, onboarded_at').eq('user_id', userId).maybeSingle()
+  const { data, error } = await supabase.from('user_preferences').select(PREFERENCES_COLUMNS).eq('user_id', userId).maybeSingle()
   if (error) throw new ApiError('preferences_unavailable', 'Não deu para carregar suas preferências.')
   return data ? preferencesSchema.parse(data) : null
 }
@@ -103,9 +114,20 @@ export async function saveGoal(userId: string, goal: Goal): Promise<Preferences>
   const { data, error } = await supabase
     .from('user_preferences')
     .upsert({ user_id: userId, goal, onboarded_at: new Date().toISOString() }, { onConflict: 'user_id' })
-    .select('goal, onboarded_at')
+    .select(PREFERENCES_COLUMNS)
     .single()
   if (error) throw new ApiError('preferences_failed', 'Não deu para salvar sua escolha. Tente de novo.')
+  return preferencesSchema.parse(data)
+}
+
+/** A marca que passa a valer no assistente, no Studio e nos conteúdos. O banco recusa marca de outra pessoa. */
+export async function saveActiveBrand(userId: string, brandId: string | null): Promise<Preferences> {
+  const { data, error } = await supabase
+    .from('user_preferences')
+    .upsert({ user_id: userId, active_brand_id: brandId }, { onConflict: 'user_id' })
+    .select(PREFERENCES_COLUMNS)
+    .single()
+  if (error) throw new ApiError(error.message, error.message === 'brand_not_found' ? 'Essa marca não existe mais.' : 'Não deu para trocar a marca.')
   return preferencesSchema.parse(data)
 }
 
@@ -136,6 +158,12 @@ export async function createPersona(generationId: string, name: string, descript
     .single()
   if (error) throw new ApiError(error.message, PERSONA_ERRORS[error.message] ?? 'Não deu para salvar a persona.')
   return personaSchema.parse(data)
+}
+
+/** Liga o personagem a uma marca (ou solta, com `null`). O banco recusa marca de outra pessoa. */
+export async function linkPersonaBrand(id: string, brandId: string | null): Promise<void> {
+  const { error } = await supabase.from('personas').update({ brand_id: brandId }).eq('id', id)
+  if (error) throw new ApiError(error.message, error.message === 'brand_not_found' ? 'Essa marca não existe mais.' : 'Não deu para ligar o personagem à marca.')
 }
 
 export async function deletePersona(id: string): Promise<void> {
@@ -255,6 +283,10 @@ export interface AssistantInput {
   readonly tool: AssistantTool
   readonly brief: string
   readonly channel: Channel
+  readonly format?: CopyFormat
+  readonly goal?: ContentGoal
+  readonly length?: TextLength
+  readonly tone?: string
   readonly brandId?: string
   readonly projectId?: string
   readonly idempotencyKey: string
@@ -264,4 +296,41 @@ export interface AssistantInput {
 export async function runAssistant(input: AssistantInput): Promise<TextGeneration> {
   const data = await invoke('assistant', { ...input })
   return z.object({ generation: textGenerationSchema }).parse(data).generation
+}
+
+// ------------------------------------------------------------------ conteúdos
+
+const CONTENT_ERRORS: Record<string, string> = {
+  too_many_contents: 'Você chegou ao limite de conteúdos. Apague os antigos que não usa mais.',
+  brand_not_found: 'Essa marca não existe mais. Escolha outra.',
+  project_not_found: 'Esse projeto não existe mais. Escolha outro.',
+  asset_not_found: 'Uma das imagens ou vídeos não está pronta ou foi removida.',
+  source_not_found: 'O texto de origem não foi encontrado.',
+}
+
+function contentError(error: { message: string }, fallback: string): ApiError {
+  return new ApiError(error.message, CONTENT_ERRORS[error.message] ?? fallback)
+}
+
+export async function fetchContentItems(): Promise<ContentItem[]> {
+  const { data, error } = await supabase.from('content_items').select(CONTENT_COLUMNS).order('updated_at', { ascending: false })
+  if (error) throw new ApiError('contents_unavailable', 'Não deu para carregar seus conteúdos.')
+  return z.array(contentItemSchema).parse(data)
+}
+
+export async function createContentItem(input: NewContent): Promise<ContentItem> {
+  const { data, error } = await supabase.from('content_items').insert(input).select(CONTENT_COLUMNS).single()
+  if (error) throw contentError(error, 'Não deu para salvar o conteúdo. Confira os campos.')
+  return contentItemSchema.parse(data)
+}
+
+export async function updateContentItem(id: string, changes: Partial<ContentInput>): Promise<ContentItem> {
+  const { data, error } = await supabase.from('content_items').update(changes).eq('id', id).select(CONTENT_COLUMNS).single()
+  if (error) throw contentError(error, 'Não deu para salvar o conteúdo. Confira os campos.')
+  return contentItemSchema.parse(data)
+}
+
+export async function deleteContentItem(id: string): Promise<void> {
+  const { error } = await supabase.from('content_items').delete().eq('id', id)
+  if (error) throw new ApiError('delete_failed', 'Não deu para remover o conteúdo.')
 }

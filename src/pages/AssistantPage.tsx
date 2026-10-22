@@ -13,7 +13,8 @@ import type { Plan, TextGeneration, TextModel } from '@/domain/types'
 import { useAccount } from '@/hooks/useAccount'
 import { useAssistant } from '@/hooks/useAssistant'
 import { useTextModels } from '@/hooks/useCatalog'
-import { useBrands, useProjects, useTextHistory } from '@/hooks/useWorkspace'
+import { useActiveBrand } from '@/hooks/useActiveBrand'
+import { useProjects, useTextHistory } from '@/hooks/useWorkspace'
 
 /** O preço da ferramenta no plano em vigor; nulo se o plano não libera. */
 function creditsFor(info: AssistantToolInfo, models: readonly TextModel[], plan: Plan | null): number | null {
@@ -38,7 +39,7 @@ function ToolTabs({ tools }: { readonly tools: readonly AssistantToolInfo[] }) {
           }
         >
           {info.label}
-          {info.tool === 'ugc-roteiro' && <Badge>NOVO</Badge>}
+          {(info.tool === 'ugc-roteiro' || info.tool === 'planejamento') && <Badge>NOVO</Badge>}
         </NavLink>
       ))}
     </nav>
@@ -53,7 +54,7 @@ interface ToolWorkspaceProps {
 
 /** Montado de novo a cada ferramenta (key), para o briefing da URL valer na troca. */
 function ToolWorkspace({ info, credits, hasProjects }: ToolWorkspaceProps) {
-  const brands = useBrands()
+  const { brands } = useActiveBrand()
   const projects = useProjects()
   const history = useTextHistory()
   const assistant = useAssistant(info, credits)
@@ -82,7 +83,7 @@ function ToolWorkspace({ info, credits, hasProjects }: ToolWorkspaceProps) {
             Escrevendo com o contexto da marca. Leva de 10 a 40 segundos.
           </div>
         )}
-        {shown && <ResultView generation={shown} />}
+        {shown && <ResultView key={shown.id} generation={shown} />}
       </div>
 
       <aside aria-labelledby="history-title" className="space-y-3">
@@ -116,7 +117,7 @@ export function AssistantPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       <PageHeader
         title={info.heading}
-        description="Ideias, roteiros e textos no tom da sua marca. O roteiro já vem com as cenas para criar no Studio."
+        description="Ideias, roteiros, copys e planejamento no tom da marca ativa. Cada resultado pode virar a próxima etapa."
       />
       <ToolTabs tools={tools} />
       {models.error && <Notice tone="error">{models.error}</Notice>}

@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { Clapperboard, History, Sparkles, Trash2, UsersRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import type { Generation, Persona } from '@/domain/types'
+import type { Brand, Generation, Persona } from '@/domain/types'
 import { GenerationCard } from '../GenerationCard'
 import { MediaView } from '../MediaView'
 import { Notice } from '../ui/Notice'
@@ -13,7 +13,14 @@ const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:rin
 // Colunas pela largura da área, não da tela: o construtor ao lado ocupa boa parte dela.
 const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-2.5'
 
-function PersonaCard({ persona, onDelete }: { readonly persona: Persona; readonly onDelete: (persona: Persona) => void }) {
+interface PersonaCardProps {
+  readonly persona: Persona
+  readonly brands: readonly Brand[]
+  readonly onDelete: (persona: Persona) => void
+  readonly onLinkBrand: (persona: Persona, brandId: string | null) => void
+}
+
+function PersonaCard({ persona, brands, onDelete, onLinkBrand }: PersonaCardProps) {
   return (
     <article className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-surface-2 ring-1 ring-white/[0.06] transition-shadow hover:ring-white/15">
       <MediaView
@@ -22,6 +29,23 @@ function PersonaCard({ persona, onDelete }: { readonly persona: Persona; readonl
         alt={`Persona ${persona.name}`}
         className="absolute inset-0 transition-transform duration-500 group-hover:scale-[1.03]"
       />
+      {brands.length > 0 && (
+        <label className="absolute left-2 top-2 max-w-[calc(100%-1rem)]">
+          <span className="sr-only">Marca de {persona.name}</span>
+          <select
+            value={persona.brand_id ?? ''}
+            onChange={(event) => onLinkBrand(persona, event.target.value || null)}
+            className={clsx('max-w-full truncate rounded-lg bg-black/60 px-2 py-1 text-[11px] font-semibold text-zinc-100 backdrop-blur', FOCUS)}
+          >
+            <option value="">Sem marca</option>
+            {brands.map((brand) => (
+              <option key={brand.id} value={brand.id}>
+                {brand.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2.5 bg-gradient-to-t from-black/90 via-black/55 to-transparent p-3 pt-16">
         <div>
           <h3 className="font-headline text-xl text-zinc-50">{persona.name}</h3>
@@ -101,6 +125,8 @@ interface PersonaCanvasProps {
   readonly history: readonly Generation[]
   readonly modelNames: ReadonlyMap<string, string>
   readonly onDelete: (persona: Persona) => void
+  readonly brands: readonly Brand[]
+  readonly onLinkBrand: (persona: Persona, brandId: string | null) => void
   readonly onMakePersona: (generation: Generation) => void
   readonly className?: string
 }
@@ -114,6 +140,8 @@ export function PersonaCanvas({
   history,
   modelNames,
   onDelete,
+  brands,
+  onLinkBrand,
   onMakePersona,
   className,
 }: PersonaCanvasProps) {
@@ -156,7 +184,7 @@ export function PersonaCanvas({
           ) : (
             <div className={GRID}>
               {personas.map((persona) => (
-                <PersonaCard key={persona.id} persona={persona} onDelete={onDelete} />
+                <PersonaCard key={persona.id} persona={persona} brands={brands} onDelete={onDelete} onLinkBrand={onLinkBrand} />
               ))}
             </div>
           ))}

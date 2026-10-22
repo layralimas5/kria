@@ -5,6 +5,7 @@ import { OnboardingGate } from '@/components/OnboardingGate'
 import { RequireAuth } from '@/components/RequireAuth'
 import { Spinner } from '@/components/ui/Spinner'
 import { AccountProvider } from '@/hooks/useAccount'
+import { ActiveBrandProvider } from '@/hooks/useActiveBrand'
 import { BalanceProvider } from '@/hooks/useBalance'
 import { GenerationsProvider } from '@/hooks/useGenerations'
 import { ProfileProvider } from '@/hooks/useProfile'
@@ -32,6 +33,7 @@ const SubscribePage = page(() => import('@/pages/SubscribePage'), 'SubscribePage
 const AssistantPage = page(() => import('@/pages/AssistantPage'), 'AssistantPage')
 const BrandsPage = page(() => import('@/pages/BrandsPage'), 'BrandsPage')
 const ProjectsPage = page(() => import('@/pages/ProjectsPage'), 'ProjectsPage')
+const ContentPage = page(() => import('@/pages/ContentPage'), 'ContentPage')
 const TermsPage = page(() => import('@/landing/TermsPage'), 'TermsPage')
 
 function PageFallback() {
@@ -42,7 +44,7 @@ function PageFallback() {
   )
 }
 
-/** Tudo o que precisa da pessoa logada: saldo, gerações, perfil e conta. */
+/** Tudo o que precisa da pessoa logada: saldo, gerações, perfil, conta e marca ativa. */
 function SignedIn() {
   return (
     <RequireAuth>
@@ -50,9 +52,11 @@ function SignedIn() {
         <GenerationsProvider>
           <ProfileProvider>
             <AccountProvider>
-              <Suspense fallback={<PageFallback />}>
-                <Outlet />
-              </Suspense>
+              <ActiveBrandProvider>
+                <Suspense fallback={<PageFallback />}>
+                  <Outlet />
+                </Suspense>
+              </ActiveBrandProvider>
             </AccountProvider>
           </ProfileProvider>
         </GenerationsProvider>
@@ -90,6 +94,7 @@ export function App() {
                 <Route path="assistente/:ferramenta" element={<AssistantPage />} />
                 <Route path="marcas" element={<BrandsPage />} />
                 <Route path="projetos" element={<ProjectsPage />} />
+                <Route path="conteudo" element={<ContentPage />} />
                 <Route path="creditos" element={<CreditsPage />} />
                 <Route path="assinatura" element={<SubscriptionPage />} />
                 <Route path="conta" element={<AccountPage />} />

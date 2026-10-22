@@ -13,7 +13,8 @@ import { contextParams, PROJECT_STATUS_LABELS } from '@/domain/workspace'
 import { useAccount } from '@/hooks/useAccount'
 import { useEntityEditor } from '@/hooks/useEntityEditor'
 import { useGenerations } from '@/hooks/useGenerations'
-import { useBrands, useProjects } from '@/hooks/useWorkspace'
+import { useActiveBrand } from '@/hooks/useActiveBrand'
+import { useProjects } from '@/hooks/useWorkspace'
 import { deleteProject, errorMessage, saveProject } from '@/lib/api'
 
 const EMPTY_PROJECT: ProjectInput = { name: '', goal: '', brand_id: null, status: 'planning' }
@@ -72,7 +73,7 @@ function ProjectCard({ project, brandName, creations, onEdit, onDelete }: Projec
 export function ProjectsPage() {
   const { plan } = useAccount()
   const projects = useProjects()
-  const brands = useBrands()
+  const { brands } = useActiveBrand()
   const { generations } = useGenerations()
   const editor = useEntityEditor(projectInputSchema, saveProject, projects.reload)
   const [deleteError, setDeleteError] = useState<string | null>(null)

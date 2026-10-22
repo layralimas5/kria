@@ -1,8 +1,8 @@
 import clsx from 'clsx'
-import { Clapperboard, ImageIcon, Plus, X } from 'lucide-react'
+import { Check, Clapperboard, ImageIcon, Plus, RectangleHorizontal, X } from 'lucide-react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { modelSpecs } from '@/domain/format'
+import { ASPECT_LABELS, fixedDefaults, modelSpecs } from '@/domain/format'
 import type { Generation, MediaKind, Persona } from '@/domain/types'
 import { PROMPT_MAX, type Studio } from '@/hooks/useStudio'
 import { MediaView } from '../MediaView'
@@ -106,6 +106,57 @@ function SourceSlot({ studio, personas, images }: ComposerProps) {
   )
 }
 
+/** Proporção da imagem ou do vídeo, quando o modelo aceita escolher. O primeiro valor é o padrão. */
+function AspectMenu({ studio }: { readonly studio: Studio }) {
+  const values = studio.model?.options.aspect_ratio
+  if (!values || values.length < 2) return null
+  const current = studio.options.aspect_ratio ?? values[0] ?? ''
+  return (
+    <Popover
+      label="Proporção"
+      trigger={({ open, toggle, controls }) => (
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={open}
+          aria-controls={controls}
+          aria-haspopup="dialog"
+          aria-label={`Proporção ${current}. Trocar`}
+          className={CHIP}
+        >
+          <RectangleHorizontal className="size-3.5 text-accent-soft" aria-hidden="true" />
+          {current}
+        </button>
+      )}
+    >
+      {(close) => (
+        <ul className="w-56" aria-label="Proporções">
+          {values.map((value) => (
+            <li key={value}>
+              <button
+                type="button"
+                aria-pressed={value === current}
+                onClick={() => {
+                  studio.setOption('aspect_ratio', value)
+                  close()
+                }}
+                className={clsx(
+                  'flex min-h-10 w-full items-center gap-2 rounded-lg px-2.5 text-left text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                  value === current ? 'bg-white/[0.07] text-zinc-50' : 'text-zinc-300 hover:bg-white/[0.04]',
+                )}
+              >
+                <span className="w-11 tabular-nums">{value}</span>
+                <span className="flex-1 font-normal text-zinc-400">{ASPECT_LABELS[value] ?? ''}</span>
+                {value === current && <Check className="size-4 text-accent-soft" aria-hidden="true" />}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Popover>
+  )
+}
+
 function GenerateButton({ studio }: { readonly studio: Studio }) {
   return (
     <button
@@ -135,7 +186,7 @@ export function Composer({ studio, personas, images }: ComposerProps) {
     void studio.submit()
   }
 
-  const specs = studio.model ? modelSpecs(studio.model.defaults) : []
+  const specs = studio.model ? modelSpecs(fixedDefaults(studio.model.defaults, studio.model.options)) : []
 
   return (
     <div className="pointer-events-none fixed right-0 left-[var(--sidebar-w)] bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 px-3 transition-[left] duration-200 md:bottom-5">
@@ -183,6 +234,7 @@ export function Composer({ studio, personas, images }: ComposerProps) {
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <KindSwitch value={studio.kind} onChange={studio.setKind} />
             <ModelMenu models={studio.modelsOfKind} value={studio.model} onChange={studio.selectModel} />
+            <AspectMenu studio={studio} />
             {specs.map((spec) => (
               <span key={spec} className={clsx(CHIP, 'pointer-events-none text-zinc-300')}>
                 {spec}

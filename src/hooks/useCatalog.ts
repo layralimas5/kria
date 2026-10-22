@@ -47,7 +47,7 @@ async function fetchPacks(): Promise<CreditPack[]> {
 async function fetchPersonas(): Promise<Persona[]> {
   const { data, error } = await supabase
     .from('personas')
-    .select('id, name, description, image_path, created_at')
+    .select('id, name, description, image_path, brand_id, created_at')
     .order('created_at', { ascending: false })
   if (error) throw error
   return z.array(personaSchema).parse(data)

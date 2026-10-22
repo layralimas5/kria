@@ -1,23 +1,35 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import type { AssistantToolInfo, Channel } from '@/domain/assistant'
+import { COPY_FORMATS, type AssistantToolInfo, type Channel, type ContentGoal, type CopyFormat, type TextLength } from '@/domain/assistant'
 import type { TextGeneration } from '@/domain/types'
 import { errorMessage, runAssistant } from '@/lib/api'
+import { useActiveBrand } from './useActiveBrand'
 import { useBalance } from './useBalance'
 import { useIdempotencyKey } from './useIdempotencyKey'
 
 export const BRIEF_MAX = 2000
 
+const isCopyFormat = (value: string | null): value is CopyFormat => COPY_FORMATS.some((format) => format === value)
+
 /**
  * Estado e envio de uma ferramenta do Vynkio AI. O briefing pode chegar pela URL
- * (`?briefing=`), que é como uma ideia vira roteiro; `?marca=` e `?projeto=` também.
+ * (`?briefing=`), que é como uma etapa vira a próxima; `?marca=`, `?projeto=` e
+ * `?tipo=` (tipo de texto da copy) também.
  */
 export function useAssistant(info: AssistantToolInfo, credits: number | null) {
   const [params] = useSearchParams()
   const { balance, refresh: refreshBalance } = useBalance()
   const [brief, setBrief] = useState(() => (params.get('briefing') ?? '').slice(0, BRIEF_MAX))
   const [channel, setChannel] = useState<Channel>('instagram')
-  const [brandId, setBrandId] = useState<string | null>(() => params.get('marca'))
+  const [format, setFormat] = useState<CopyFormat>(() => {
+    const fromUrl = params.get('tipo')
+    return isCopyFormat(fromUrl) ? fromUrl : 'legenda'
+  })
+  const [goal, setGoal] = useState<ContentGoal | null>(null)
+  const [length, setLength] = useState<TextLength | null>(null)
+  const [tone, setTone] = useState('')
+  const { activeBrandId } = useActiveBrand()
+  const [brandId, setBrandId] = useState<string | null>(() => params.get('marca') ?? activeBrandId)
   const [projectId, setProjectId] = useState<string | null>(() => params.get('projeto'))
   const [result, setResult] = useState<TextGeneration | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -28,7 +40,7 @@ export function useAssistant(info: AssistantToolInfo, credits: number | null) {
   useEffect(() => {
     setError(null)
     requestKey.rotate()
-  }, [brief, channel, brandId, projectId, info.tool, requestKey])
+  }, [brief, channel, format, goal, length, tone, brandId, projectId, info.tool, requestKey])
 
   const canAfford = credits !== null && balance !== null && balance >= credits
 
@@ -52,6 +64,10 @@ export function useAssistant(info: AssistantToolInfo, credits: number | null) {
         tool: info.tool,
         brief: brief.trim(),
         channel,
+        format: info.formats ? format : undefined,
+        goal: goal ?? undefined,
+        length: length ?? undefined,
+        tone: tone.trim() || undefined,
         brandId: brandId ?? undefined,
         projectId: projectId ?? undefined,
         idempotencyKey: requestKey.current(),
@@ -73,6 +89,14 @@ export function useAssistant(info: AssistantToolInfo, credits: number | null) {
     setBrief,
     channel,
     setChannel,
+    format,
+    setFormat,
+    goal,
+    setGoal,
+    length,
+    setLength,
+    tone,
+    setTone,
     brandId,
     setBrandId,
     projectId,

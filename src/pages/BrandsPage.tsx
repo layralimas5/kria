@@ -1,4 +1,4 @@
-import { Pencil, Plus, Sparkles, Store, Trash2 } from 'lucide-react'
+import { CheckCircle2, Pencil, Plus, Sparkles, Store, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
@@ -9,32 +9,64 @@ import { Spinner } from '@/components/ui/Spinner'
 import { BrandForm } from '@/components/workspace/BrandForm'
 import { brandInputSchema, type Brand, type BrandInput } from '@/domain/types'
 import { useAccount } from '@/hooks/useAccount'
+import { useActiveBrand } from '@/hooks/useActiveBrand'
 import { useEntityEditor } from '@/hooks/useEntityEditor'
-import { useBrands } from '@/hooks/useWorkspace'
 import { deleteBrand, errorMessage, saveBrand } from '@/lib/api'
 
-const EMPTY_BRAND: BrandInput = { name: '', niche: '', audience: '', tone: '', offer: '', avoid: '', visual_style: '' }
+const EMPTY_BRAND: BrandInput = {
+  name: '',
+  description: '',
+  niche: '',
+  audience: '',
+  tone: '',
+  offer: '',
+  goals: '',
+  platforms: [],
+  communication: '',
+  avoid: '',
+  visual_style: '',
+  references_notes: '',
+}
 
-const toInput = ({ name, niche, audience, tone, offer, avoid, visual_style }: Brand): BrandInput => ({
-  name,
-  niche,
-  audience,
-  tone,
-  offer,
-  avoid,
-  visual_style,
+const toInput = (brand: Brand): BrandInput => ({
+  name: brand.name,
+  description: brand.description,
+  niche: brand.niche,
+  audience: brand.audience,
+  tone: brand.tone,
+  offer: brand.offer,
+  goals: brand.goals,
+  platforms: brand.platforms,
+  communication: brand.communication,
+  avoid: brand.avoid,
+  visual_style: brand.visual_style,
+  references_notes: brand.references_notes,
 })
 
 interface BrandCardProps {
   readonly brand: Brand
+  readonly active: boolean
+  readonly onActivate: () => void
   readonly onEdit: () => void
   readonly onDelete: () => void
 }
 
-function BrandCard({ brand, onEdit, onDelete }: BrandCardProps) {
+function BrandCard({ brand, active, onActivate, onEdit, onDelete }: BrandCardProps) {
   return (
-    <article className="flex flex-col rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
-      <h3 className="font-headline text-xl text-zinc-50">{brand.name}</h3>
+    <article className={`flex flex-col rounded-3xl bg-surface p-5 ring-1 ${active ? 'ring-accent/50' : 'ring-white/[0.06]'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="font-headline text-xl text-zinc-50">{brand.name}</h3>
+        {active ? (
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-bold text-accent-soft">
+            <CheckCircle2 className="size-3.5" aria-hidden="true" />
+            Ativa
+          </span>
+        ) : (
+          <Button variant="ghost" className="min-h-8 shrink-0 px-2.5 text-xs" onClick={onActivate}>
+            Usar esta marca
+          </Button>
+        )}
+      </div>
       {brand.niche && <p className="mt-1 text-sm text-accent-soft">{brand.niche}</p>}
       {brand.audience && <p className="mt-3 line-clamp-3 text-sm text-zinc-400">{brand.audience}</p>}
       {brand.tone && <p className="mt-2 text-xs text-zinc-500">Tom: {brand.tone}</p>}
@@ -59,10 +91,28 @@ function BrandCard({ brand, onEdit, onDelete }: BrandCardProps) {
 }
 
 export function BrandsPage() {
-  const brands = useBrands()
+  const { brands, activeBrandId, setActiveBrand } = useActiveBrand()
   const { plan } = useAccount()
-  const editor = useEntityEditor(brandInputSchema, saveBrand, brands.reload)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  // A primeira marca já nasce ativa: quem tem uma marca só não precisa escolher.
+  const editor = useEntityEditor(
+    brandInputSchema,
+    async (input: BrandInput, id?: string) => {
+      const saved = await saveBrand(input, id)
+      if (!id && activeBrandId === null) await setActiveBrand(saved.id)
+      return saved
+    },
+    brands.reload,
+  )
+
+  async function activate(brand: Brand) {
+    try {
+      setDeleteError(null)
+      await setActiveBrand(brand.id)
+    } catch (error) {
+      setDeleteError(errorMessage(error))
+    }
+  }
 
   const list = brands.data ?? []
   const limit = plan?.max_brands ?? null
@@ -90,7 +140,7 @@ export function BrandsPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       <PageHeader
         title="Marcas"
-        description="O público, o tom e a oferta de cada marca. O Vynkio AI usa isso em todo texto e roteiro."
+        description="O perfil de cada marca. A marca ativa alimenta o Vynkio AI, o Studio e os conteúdos sem você repetir nada."
         action={newButton}
       />
       {limit !== null && (
@@ -135,7 +185,14 @@ export function BrandsPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((brand) => (
-            <BrandCard key={brand.id} brand={brand} onEdit={() => editor.open(toInput(brand), brand.id)} onDelete={() => void remove(brand)} />
+            <BrandCard
+              key={brand.id}
+              brand={brand}
+              active={brand.id === activeBrandId}
+              onActivate={() => void activate(brand)}
+              onEdit={() => editor.open(toInput(brand), brand.id)}
+              onDelete={() => void remove(brand)}
+            />
           ))}
         </div>
       )}
