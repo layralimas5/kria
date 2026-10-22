@@ -1,10 +1,10 @@
-import { AudioLines, Clapperboard, ImageIcon, Wand2, type LucideIcon } from 'lucide-react'
+import { Clapperboard, ImageIcon, PenLine, Wand2, type LucideIcon } from 'lucide-react'
 import { AI_MODELS, type AiModel, type ModelKind } from '../content'
 
 const KIND_ICONS: Record<ModelKind, LucideIcon> = {
   Imagem: ImageIcon,
   Vídeo: Clapperboard,
-  Voz: AudioLines,
+  Texto: PenLine,
   Edição: Wand2,
 }
 

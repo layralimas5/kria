@@ -80,10 +80,10 @@ export const TOOLS: readonly Tool[] = [
   { title: 'Influenciador com IA', description: 'O mesmo rosto em todo post', icon: 'persona', badge: 'novo' },
   { title: 'Foto realista', description: 'Do texto à foto em segundos', icon: 'image' },
   { title: 'Foto com persona', description: 'Sua persona em qualquer cenário', icon: 'image' },
-  { title: 'Copy com IA', description: 'Legenda, roteiro e gancho', icon: 'copy', badge: 'breve' },
+  { title: 'Copy e roteiro com IA', description: 'Ideia, legenda e roteiro no tom da sua marca', icon: 'copy', badge: 'novo' },
 ]
 
-export type ModelKind = 'Imagem' | 'Vídeo' | 'Voz' | 'Edição'
+export type ModelKind = 'Imagem' | 'Vídeo' | 'Texto' | 'Edição'
 
 export interface AiModel {
   readonly name: string
@@ -99,17 +99,7 @@ export const AI_MODELS: readonly AiModel[] = [
   { name: 'Nano Banana 2 Edit', kind: 'Edição', logo: 'nanobanana-color' },
   { name: 'Kling 3.0', kind: 'Vídeo', logo: 'kling-color' },
   { name: 'Veo 3.1', kind: 'Vídeo', logo: 'deepmind-color' },
-  { name: 'Sora 2', kind: 'Vídeo', logo: 'sora-color' },
-  { name: 'Seedance', kind: 'Vídeo', logo: 'bytedance-color' },
-  { name: 'Hailuo', kind: 'Vídeo', logo: 'hailuo-color' },
-  { name: 'Wan', kind: 'Vídeo', logo: 'alibaba-color' },
-  { name: 'GPT Image', kind: 'Imagem', logo: 'openai' },
-  { name: 'Flux', kind: 'Imagem', logo: 'flux' },
-  { name: 'Seedream', kind: 'Imagem', logo: 'bytedance-color' },
-  { name: 'Ideogram', kind: 'Imagem', logo: 'ideogram' },
-  { name: 'ElevenLabs', kind: 'Voz', logo: 'elevenlabs' },
-  { name: 'Lip Sync', kind: 'Vídeo' },
-  { name: 'Upscale 4K', kind: 'Edição' },
+  { name: 'Claude', kind: 'Texto' },
 ]
 
 export const STEPS = [
@@ -195,6 +185,6 @@ export const FAQ: readonly FaqItem[] = [
     icon: 'tools',
     question: 'Quais ferramentas de IA estão disponíveis?',
     answer:
-      'Para imagem: Nano Banana 2, GPT Image, Flux, Seedream e Ideogram. Para vídeo: Kling 3.0, Veo 3.1, Sora 2, Seedance, Hailuo e Wan. Também tem voz com ElevenLabs, sincronia labial e upscale 4K. Copys, biblioteca de prompts, Motion Control, Estúdio UGC e projetos aparecem como "Em breve" nos planos que vão ter acesso, até estarem prontos.',
+      'Para imagem: Nano Banana 2, para foto a partir do texto e foto com o seu personagem. Para vídeo: Kling 3.0 e Veo 3.1, com áudio. Para texto: Claude, que escreve ideias, legendas, copys e roteiros no tom da sua marca. Biblioteca de prompts e Motion Control aparecem como "Em breve" nos planos que vão ter acesso, até estarem prontos.',
   },
 ]
