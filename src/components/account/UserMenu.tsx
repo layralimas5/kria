@@ -3,15 +3,18 @@ import {
   ChevronRight,
   CreditCard,
   Crown,
+  FolderKanban,
   Info,
   Languages,
   LogOut,
   ReceiptText,
   Settings,
+  Store,
   UserRound,
   type LucideIcon,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { planIncludes } from '@/domain/plans'
 import { useAccount } from '@/hooks/useAccount'
 import { useBalance } from '@/hooks/useBalance'
 import { displayNameOf, useProfile } from '@/hooks/useProfile'
@@ -128,6 +131,8 @@ export function UserMenu() {
           <nav aria-label="Conta" className="mt-1.5 space-y-0.5">
             <MenuLink to="/conta" icon={UserRound} label="Ver perfil" onSelect={close} />
             <MenuLink to="/conta/configuracoes" icon={Settings} label="Gerenciar conta" onSelect={close} />
+            <MenuLink to="/marcas" icon={Store} label="Marcas" onSelect={close} />
+            {planIncludes(plan, 'projects') && <MenuLink to="/projetos" icon={FolderKanban} label="Meus projetos" onSelect={close} />}
             <MenuLink to="/creditos" icon={ReceiptText} label="Créditos e extrato" onSelect={close} />
             <MenuLink to="/assinatura" icon={CreditCard} label={plan ? `Assinatura · ${plan.name}` : 'Assinatura'} onSelect={close} />
             <div className="flex min-h-10 items-center gap-3 px-3 text-[14px] font-semibold text-zinc-200">

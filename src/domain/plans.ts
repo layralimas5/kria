@@ -71,10 +71,10 @@ export type PlanTool = (typeof PLAN_TOOLS)[number]
 /** Nome de cada ferramenta e se já existe. A que não existe aparece como "Breve", sem ação. */
 export const PLAN_TOOL_INFO: Record<PlanTool, { readonly label: string; readonly ready: boolean }> = {
   motion_control: { label: 'Motion Control', ready: false },
-  ugc_studio: { label: 'Estúdio UGC', ready: false },
-  copy: { label: 'Copys e roteiros', ready: false },
+  ugc_studio: { label: 'Estúdio UGC', ready: true },
+  copy: { label: 'Copys e roteiros', ready: true },
   prompt_library: { label: 'Biblioteca de prompts', ready: false },
-  projects: { label: 'Meus projetos', ready: false },
+  projects: { label: 'Meus projetos', ready: true },
 }
 
 /** Sem plano carregado ainda, nada que dependa dele aparece: evita mostrar e depois sumir. */

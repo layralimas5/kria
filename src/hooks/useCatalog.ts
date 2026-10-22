@@ -2,12 +2,15 @@ import { z } from 'zod'
 import {
   creditPackSchema,
   ledgerEntrySchema,
+  MEDIA_KINDS,
   modelSchema,
   personaSchema,
+  textModelSchema,
   type CreditPack,
   type LedgerEntry,
   type Model,
   type Persona,
+  type TextModel,
 } from '@/domain/types'
 import { supabase } from '@/lib/supabase'
 import { useQuery, type QueryState } from './useQuery'
@@ -16,9 +19,20 @@ async function fetchModels(): Promise<Model[]> {
   const { data, error } = await supabase
     .from('models')
     .select('slug, name, description, kind, requires_image, credits, position, badge, defaults, allowed_plans')
+    .in('kind', MEDIA_KINDS)
     .order('position')
   if (error) throw error
   return z.array(modelSchema).parse(data)
+}
+
+async function fetchTextModels(): Promise<TextModel[]> {
+  const { data, error } = await supabase
+    .from('models')
+    .select('slug, name, description, credits, badge, allowed_plans')
+    .eq('kind', 'text')
+    .order('position')
+  if (error) throw error
+  return z.array(textModelSchema).parse(data)
 }
 
 async function fetchPacks(): Promise<CreditPack[]> {
@@ -51,6 +65,11 @@ async function fetchLedger(): Promise<LedgerEntry[]> {
 
 export function useModels(): QueryState<Model[]> {
   return useQuery(fetchModels, 'Não deu para carregar os modelos.')
+}
+
+/** Ferramentas do Vynkio AI: preço em créditos e plano vêm do banco, como na foto e no vídeo. */
+export function useTextModels(): QueryState<TextModel[]> {
+  return useQuery(fetchTextModels, 'Não deu para carregar as ferramentas de texto.')
 }
 
 export function usePacks(): QueryState<CreditPack[]> {

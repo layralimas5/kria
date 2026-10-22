@@ -1,4 +1,4 @@
-// POST { model, prompt, personaId?, sourceGenerationId?, idempotencyKey? }
+// POST { model, prompt, personaId?, sourceGenerationId?, brandId?, projectId?, idempotencyKey? }
 // Reserva os créditos, manda para a fila do fal.ai e devolve a geração.
 // O resultado chega pelo fal-webhook (ou pelo polling do generation-status).
 
@@ -22,6 +22,8 @@ const bodySchema = z.object({
   prompt: z.string().trim().min(3).max(2000),
   personaId: z.string().uuid().optional(),
   sourceGenerationId: z.string().uuid().optional(),
+  brandId: z.string().uuid().optional(),
+  projectId: z.string().uuid().optional(),
   idempotencyKey: z.string().regex(/^[A-Za-z0-9-]{8,80}$/).optional(),
 })
 
@@ -61,6 +63,18 @@ Deno.serve(
       return json({ generation: existing }, 200)
     }
     if (error || !generation) return databaseErrorResponse(error ?? { message: 'no_row' })
+
+    if (body.brandId || body.projectId) {
+      // Antes de pagar o fal: o trigger `generations_context` recusa marca ou projeto de outra pessoa.
+      const { error: contextError } = await admin
+        .from('generations')
+        .update({ brand_id: body.brandId ?? null, project_id: body.projectId ?? null })
+        .eq('id', generation.id)
+      if (contextError) {
+        await admin.rpc('fail_generation', { p_id: generation.id, p_error: 'Projeto ou marca não encontrados.' })
+        return errorResponse(404, 'context_not_found', 'Projeto ou marca não encontrados. Seus créditos foram devolvidos.')
+      }
+    }
 
     try {
       const { data: model, error: modelError } = await admin

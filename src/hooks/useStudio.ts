@@ -46,6 +46,8 @@ export function useStudio(models: readonly Model[]) {
   // Atalhos do início chegam com um prompt pronto para a pessoa completar.
   const [prompt, setPrompt] = useState(() => (params.get('prompt') ?? '').slice(0, PROMPT_MAX))
   const [source, setSource] = useState<ImageSource | null>(() => sourceFromParams(params))
+  // Vindo de um roteiro ou de Meus projetos, a geração fica no projeto e na marca de origem.
+  const [context, setContext] = useState(() => ({ brandId: params.get('marca'), projectId: params.get('projeto') }))
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -102,6 +104,8 @@ export function useStudio(models: readonly Model[]) {
         prompt: prompt.trim(),
         personaId: needsSource && source?.type === 'persona' ? source.id : undefined,
         sourceGenerationId: needsSource && source?.type === 'image' ? source.id : undefined,
+        brandId: context.brandId ?? undefined,
+        projectId: context.projectId ?? undefined,
         idempotencyKey: requestKey.current(),
       })
       requestKey.rotate()
@@ -127,6 +131,8 @@ export function useStudio(models: readonly Model[]) {
     needsSource,
     canAfford,
     ready,
+    projectId: context.projectId,
+    leaveProject: () => setContext({ brandId: null, projectId: null }),
     submitting,
     error,
     submit,

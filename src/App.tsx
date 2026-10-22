@@ -29,6 +29,9 @@ const OnboardingPage = page(() => import('@/pages/OnboardingPage'), 'OnboardingP
 const ForgotPasswordPage = page(() => import('@/pages/ForgotPasswordPage'), 'ForgotPasswordPage')
 const ResetPasswordPage = page(() => import('@/pages/ResetPasswordPage'), 'ResetPasswordPage')
 const SubscribePage = page(() => import('@/pages/SubscribePage'), 'SubscribePage')
+const AssistantPage = page(() => import('@/pages/AssistantPage'), 'AssistantPage')
+const BrandsPage = page(() => import('@/pages/BrandsPage'), 'BrandsPage')
+const ProjectsPage = page(() => import('@/pages/ProjectsPage'), 'ProjectsPage')
 const TermsPage = page(() => import('@/landing/TermsPage'), 'TermsPage')
 
 function PageFallback() {
@@ -83,6 +86,10 @@ export function App() {
                 <Route path="estudio" element={<StudioPage />} />
                 <Route path="galeria" element={<GalleryPage />} />
                 <Route path="personas" element={<PersonasPage />} />
+                <Route path="assistente" element={<Navigate to="/assistente/ideias" replace />} />
+                <Route path="assistente/:ferramenta" element={<AssistantPage />} />
+                <Route path="marcas" element={<BrandsPage />} />
+                <Route path="projetos" element={<ProjectsPage />} />
                 <Route path="creditos" element={<CreditsPage />} />
                 <Route path="assinatura" element={<SubscriptionPage />} />
                 <Route path="conta" element={<AccountPage />} />

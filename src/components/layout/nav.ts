@@ -8,8 +8,10 @@ import {
   ImageIcon,
   Images,
   Megaphone,
+  Lightbulb,
   PenLine,
   Settings,
+  Store,
   UserRound,
   Waves,
   type LucideIcon,
@@ -48,25 +50,24 @@ export const VIDEO_TAB: NavItem = { label: 'Gerar vídeo', to: '/estudio?modo=vi
 export const GALLERY_TAB: NavItem = { label: 'Minhas criações', to: '/galeria', icon: Images, isActive: isPath('/galeria') }
 export const CREDITS_TAB: NavItem = { label: 'Créditos', to: '/creditos', icon: Coins, isActive: isPath('/creditos') }
 export const SUBSCRIPTION_TAB: NavItem = { label: 'Assinatura', to: '/assinatura', icon: CreditCard, isActive: isPath('/assinatura') }
+const isAssistant = (...paths: string[]) => (pathname: string) => paths.some((path) => pathname === `/assistente/${path}`)
+
+export const IDEAS_TAB: NavItem = { label: 'Ideias de conteúdo', to: '/assistente/ideias', icon: Lightbulb, tool: 'copy', isActive: isAssistant('ideias') }
+export const COPY_TAB: NavItem = { label: 'Copys e roteiros', to: '/assistente/roteiro', icon: PenLine, tool: 'copy', isActive: isAssistant('roteiro', 'copy') }
+export const UGC_TAB: NavItem = { label: 'Estúdio UGC', to: '/assistente/ugc', icon: Megaphone, badge: 'NOVO', tool: 'ugc_studio', isActive: isAssistant('ugc') }
+export const BRANDS_TAB: NavItem = { label: 'Marcas', to: '/marcas', icon: Store, isActive: isPath('/marcas') }
+export const PROJECTS_TAB: NavItem = { label: 'Meus projetos', to: '/projetos', icon: FolderKanban, tool: 'projects', isActive: isPath('/projetos') }
 export const SETTINGS_TAB: NavItem = { label: 'Configurações', to: '/conta/configuracoes', icon: Settings, isActive: isPath('/conta/configuracoes') }
 
 /** Ferramenta de fase futura, liberada por plano. Quando existir, ganha rota própria aqui. */
 const toolTab = (tool: PlanTool, icon: LucideIcon): NavItem => ({ label: PLAN_TOOL_INFO[tool].label, to: '', icon, soon: true, tool, isActive: never })
 
+// Um grupo por módulo do Vynkio. Content, Analytics e Growth entram quando existirem (docs/vynkio-ecossistema.md).
 const NAV_GROUPS: readonly NavGroup[] = [
   { title: 'Vynkio', items: [HOME_TAB] },
-  {
-    title: 'Criar',
-    items: [
-      PERSONAS_TAB,
-      IMAGE_TAB,
-      VIDEO_TAB,
-      toolTab('motion_control', Waves),
-      toolTab('ugc_studio', Megaphone),
-      toolTab('copy', PenLine),
-    ],
-  },
-  { title: 'Biblioteca', items: [toolTab('prompt_library', BookOpen), toolTab('projects', FolderKanban), GALLERY_TAB] },
+  { title: 'Studio', items: [PERSONAS_TAB, IMAGE_TAB, VIDEO_TAB, UGC_TAB, toolTab('motion_control', Waves)] },
+  { title: 'Vynkio AI', items: [IDEAS_TAB, COPY_TAB] },
+  { title: 'Workspace', items: [BRANDS_TAB, PROJECTS_TAB, GALLERY_TAB, toolTab('prompt_library', BookOpen)] },
   { title: 'Conta', items: [CREDITS_TAB, SUBSCRIPTION_TAB, SETTINGS_TAB] },
 ]
 
@@ -79,10 +80,12 @@ export function navGroupsFor(plan: Plan | null): readonly NavGroup[] {
 }
 
 /** A barra de baixo do celular: o que se usa todo dia. Créditos fica no topo. */
+// Vídeo fica no seletor da caixa de prompt do Studio; o assistente ganha a vaga.
+const isAnyAssistant = (pathname: string) => pathname.startsWith('/assistente/')
 export const MOBILE_TABS: readonly NavItem[] = [
   HOME_TAB,
-  { ...IMAGE_TAB, label: 'Imagem' },
-  { ...VIDEO_TAB, label: 'Vídeo' },
+  { ...IMAGE_TAB, label: 'Studio', isActive: isPath('/estudio') },
   { ...PERSONAS_TAB, label: 'Personas' },
+  { ...IDEAS_TAB, label: 'IA', isActive: isAnyAssistant },
   { ...GALLERY_TAB, label: 'Criações' },
 ]

@@ -1,3 +1,4 @@
+import { FolderKanban } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { GenerationCard } from '@/components/GenerationCard'
@@ -9,6 +10,7 @@ import type { Generation } from '@/domain/types'
 import { useModels, usePersonas } from '@/hooks/useCatalog'
 import { useGenerations } from '@/hooks/useGenerations'
 import { useStudio } from '@/hooks/useStudio'
+import { useProjects } from '@/hooks/useWorkspace'
 
 const RECENT_LIMIT = 24
 
@@ -27,6 +29,23 @@ function EmptyHero() {
         Escreva o que você quer ver logo abaixo. Gere uma foto, transforme em persona e anime em vídeo.
       </p>
     </section>
+  )
+}
+
+/** Avisa em qual projeto a próxima criação vai entrar, com saída para gerar solta. */
+function ProjectBanner({ projectId, onLeave }: { readonly projectId: string; readonly onLeave: () => void }) {
+  const projects = useProjects()
+  const name = projects.data?.find((project) => project.id === projectId)?.name
+  return (
+    <div className="mt-6 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-accent/30 bg-accent/10 px-4 py-2.5 text-sm text-accent-soft">
+      <span className="flex items-center gap-2">
+        <FolderKanban className="size-4" aria-hidden="true" />
+        {name ? `Criando no projeto ${name}` : 'Criando dentro de um projeto'}
+      </span>
+      <button type="button" onClick={onLeave} className="font-semibold text-zinc-300 hover:text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+        Criar fora do projeto
+      </button>
+    </div>
   )
 }
 
@@ -50,6 +69,8 @@ export function StudioPage() {
       {models.error && <Notice tone="error">{models.error}</Notice>}
       {/* Cada aba (Imagem, Vídeo) mostra só os modelos dela. */}
       {models.data && <ModelTiles models={studio.modelsOfKind} selected={studio.model?.slug ?? null} onSelect={studio.selectModel} />}
+
+      {studio.projectId && <ProjectBanner projectId={studio.projectId} onLeave={studio.leaveProject} />}
 
       {error && (
         <div className="mt-6">

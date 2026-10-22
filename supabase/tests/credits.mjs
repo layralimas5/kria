@@ -228,7 +228,7 @@ await test('RLS: cada pessoa só enxerga o que é dela', async (db) => {
   assert.deepEqual(seen.generations, [{ user_id: ana }])
   assert.deepEqual(seen.balances, [{ user_id: ana }])
   assert.deepEqual(seen.ledger, [{ user_id: ana }])
-  assert.equal(seen.models, 4)
+  assert.equal(seen.models, 8)
   await as(db, 'authenticated', ana, () =>
     expectError(db.query(`select provider_cost_usd from models`), 'permission denied'),
   )
@@ -552,6 +552,111 @@ await test('ferramentas do menu por plano', async (db) => {
     { slug: 'studio', tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio', 'projects'] },
   ])
   await expectError(db.query(`update subscription_plans set tools = array['hackear'] where slug = 'pro'`), 'check')
+})
+
+const newBrand = (db, userId, name = 'Café da Ana') =>
+  as(db, 'authenticated', userId, () => db.query(`insert into brands (name, tone) values ($1, 'leve') returning id`, [name]))
+
+const newProject = (db, userId, brandId = null, name = 'Lançamento') =>
+  as(db, 'authenticated', userId, () =>
+    db.query(`insert into projects (name, brand_id) values ($1, $2) returning id`, [name, brandId]),
+  )
+
+await test('marcas: o limite vem do plano (grátis 1, pro 3)', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await newBrand(db, ana)
+  await expectError(newBrand(db, ana, 'Outra'), 'too_many_brands')
+
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_1')
+  await newBrand(db, ana, 'Segunda')
+  await newBrand(db, ana, 'Terceira')
+  await expectError(newBrand(db, ana, 'Quarta'), 'too_many_brands')
+})
+
+await test('marcas: cada pessoa vê e edita só as próprias, sem trocar o dono', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const { rows } = await newBrand(db, ana)
+  const brandId = rows[0].id
+
+  const seen = await as(db, 'authenticated', bia, () => db.query(`select id from brands`))
+  assert.equal(seen.rows.length, 0)
+  const changed = await as(db, 'authenticated', bia, () => db.query(`update brands set name = 'roubada' where id = $1`, [brandId]))
+  assert.equal(changed.affectedRows, 0)
+  await expectError(
+    as(db, 'authenticated', ana, () => db.query(`update brands set user_id = $2 where id = $1`, [brandId, bia])),
+    'permission denied',
+  )
+  await expectError(
+    as(db, 'authenticated', bia, () => db.query(`insert into brands (user_id, name) values ($1, 'falsa')`, [ana])),
+    'permission denied',
+  )
+})
+
+await test('projetos: só no plano com a ferramenta, e só com marca própria', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  await expectError(newProject(db, ana), 'plan_required')
+
+  await activate(db, await newSubscription(db, ana, 'studio'), 'pay_1')
+  const brandOfBia = (await newBrand(db, bia)).rows[0].id
+  await expectError(newProject(db, ana, brandOfBia), 'brand_not_found')
+
+  const brandOfAna = (await newBrand(db, ana)).rows[0].id
+  const { rows } = await newProject(db, ana, brandOfAna)
+  assert.ok(rows[0].id)
+})
+
+await test('geração só aponta para marca e projeto do próprio dono', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const brandOfBia = (await newBrand(db, bia)).rows[0].id
+  const brandOfAna = (await newBrand(db, ana)).rows[0].id
+  const { rows } = await create(db, ana, 'foto')
+
+  await expectError(db.query(`update generations set brand_id = $2 where id = $1`, [rows[0].id, brandOfBia]), 'brand_not_found')
+  await db.query(`update generations set brand_id = $2 where id = $1`, [rows[0].id, brandOfAna])
+  const saved = await db.query(`select brand_id from generations where id = $1`, [rows[0].id])
+  assert.equal(saved.rows[0].brand_id, brandOfAna)
+})
+
+await test('texto: cobra 3 créditos, conclui com o resultado e captura a reserva', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const { rows } = await create(db, ana, 'copy', 'legenda para o café novo')
+  assert.equal(rows[0].kind, 'text')
+  assert.equal(await balanceOf(db, ana), 17)
+
+  const output = JSON.stringify({ title: 'Legendas', items: [] })
+  const done = await db.query(`select complete_text_generation($1, $2) as ok`, [rows[0].id, output])
+  assert.equal(done.rows[0].ok, true)
+  const again = await db.query(`select complete_text_generation($1, $2) as ok`, [rows[0].id, output])
+  assert.equal(again.rows[0].ok, false)
+
+  const saved = await db.query(`select status, output_text from generations where id = $1`, [rows[0].id])
+  assert.deepEqual(saved.rows[0], { status: 'succeeded', output_text: output })
+  const reservation = await db.query(`select status from credit_reservations where generation_id = $1`, [rows[0].id])
+  assert.equal(reservation.rows[0].status, 'captured')
+})
+
+await test('texto: falha estorna e o cliente não conclui sozinho', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const { rows } = await create(db, ana, 'roteiro', 'roteiro de reels sobre o café')
+  await db.query(`select fail_generation($1, 'recusado')`, [rows[0].id])
+  assert.equal(await balanceOf(db, ana), 20)
+
+  const other = await create(db, ana, 'ideias', 'pautas da semana')
+  await expectError(
+    as(db, 'authenticated', ana, () => db.query(`select complete_text_generation($1, '{}')`, [other.rows[0].id])),
+    'permission denied',
+  )
+})
+
+await test('roteiro UGC é do Pro e do Studio', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await expectError(create(db, ana, 'ugc-roteiro', 'review do creme'), 'plan_required')
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_1')
+  const { rows } = await create(db, ana, 'ugc-roteiro', 'review do creme')
+  assert.equal(rows[0].status, 'queued')
 })
 
 console.log(`\n${passed} testes do banco passaram`)

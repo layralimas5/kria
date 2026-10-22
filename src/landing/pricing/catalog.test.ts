@@ -14,10 +14,10 @@ const sql = fs
   .join('\n')
 
 /** Valor que o banco termina com, para o plano: o seed da 0004 e depois cada `update ... where slug`. */
-function finalValue(slug: string, column: 'price_cents' | 'monthly_credits' | 'max_personas'): number {
+function finalValue(slug: string, column: 'price_cents' | 'monthly_credits' | 'max_personas' | 'max_brands'): number {
   // Seed: (slug, nome, descrição, preço, créditos, ...). O limite de personagens só vem em `update`.
   const seed = sql.match(new RegExp(`\\('${slug}', '[^']*', '[^']*', (\\d+), (\\d+),`))
-  const seedIndex = { price_cents: 1, monthly_credits: 2, max_personas: null }[column]
+  const seedIndex = { price_cents: 1, monthly_credits: 2, max_personas: null, max_brands: null }[column]
   let value = seed && seedIndex ? Number(seed[seedIndex]) : NaN
   // O corpo não pode atravessar o `where` de outro plano.
   const updates = sql.matchAll(new RegExp(`update public\\.subscription_plans set((?:(?!where slug)[\\s\\S])*?)where slug = '${slug}'`, 'g'))
@@ -43,6 +43,10 @@ describe('vitrine de planos', () => {
 
   it.each([FREE_PLAN, ...PLAN_CATALOG])('$slug promete o limite de personagens que o app aplica', (plan) => {
     expect(plan.max_personas).toBe(finalValue(plan.slug, 'max_personas'))
+  })
+
+  it.each([FREE_PLAN, ...PLAN_CATALOG])('$slug promete o limite de marcas que o app aplica', (plan) => {
+    expect(plan.max_brands).toBe(finalValue(plan.slug, 'max_brands'))
   })
 
   it.each([FREE_PLAN, ...PLAN_CATALOG])('$slug só promete Veo 3.1 se o app libera', (plan) => {
