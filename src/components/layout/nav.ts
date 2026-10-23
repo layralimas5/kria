@@ -65,6 +65,7 @@ const isContentView = (view: 'quadro' | 'calendario') => (pathname: string, para
 
 export const CONTENT_TAB: NavItem = { label: 'Conteúdos', to: '/conteudo', icon: KanbanSquare, badge: 'NOVO', isActive: isContentView('quadro') }
 export const CALENDAR_TAB: NavItem = { label: 'Calendário', to: '/conteudo?visao=calendario', icon: CalendarDays, isActive: isContentView('calendario') }
+export const RESULTS_TAB: NavItem = { label: 'Analytics', to: '/resultados', icon: BarChart3, badge: 'NOVO', isActive: isPath('/resultados') }
 export const GALLERY_TAB: NavItem = { label: 'Biblioteca', to: '/galeria', icon: Images, isActive: isPath('/galeria') }
 export const BRANDS_TAB: NavItem = { label: 'Marcas', to: '/marcas', icon: Store, isActive: isPath('/marcas') }
 export const PROJECTS_TAB: NavItem = { label: 'Projetos', to: '/projetos', icon: FolderKanban, tool: 'projects', isActive: isPath('/projetos') }
@@ -83,7 +84,7 @@ const NAV_GROUPS: readonly NavGroup[] = [
   { title: 'Criar', items: [IMAGE_TAB, VIDEO_TAB, PERSONAS_TAB, UGC_TAB, toolSoon('motion_control', Waves)] },
   { title: 'Inteligência', items: [IDEAS_TAB, SCRIPT_TAB, COPY_TAB, PLANNING_TAB, soon('Assistente de estratégia', Compass)] },
   { title: 'Conteúdo', items: [CONTENT_TAB, CALENDAR_TAB, GALLERY_TAB, toolSoon('prompt_library', BookOpen)] },
-  { title: 'Resultados', items: [soon('Analytics', BarChart3), soon('Relatórios', FileText), soon('Recomendações', Sparkles)] },
+  { title: 'Resultados', items: [RESULTS_TAB, soon('Relatórios', FileText), soon('Recomendações', Sparkles)] },
   { title: 'Gerenciamento', items: [BRANDS_TAB, PROJECTS_TAB, CREDITS_TAB, SUBSCRIPTION_TAB, SETTINGS_TAB] },
 ]
 

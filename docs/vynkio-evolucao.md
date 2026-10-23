@@ -170,3 +170,27 @@ o que elas fazem na interface. Só integração oficial, documentada e permitida
 | Recusa do modelo ou falha do provedor | Estorno automático, já testado |
 | Importação de métricas com dado errado | Validação de colunas, tipos e datas antes de gravar; origem e arquivo registrados em cada linha |
 | Edge function com limite de tempo | Texto leva de 10 a 40 s; imagem e vídeo são assíncronos por webhook |
+
+---
+
+## 9. O que foi entregue (22/10, branch `feat/vynkio-evolution`)
+
+| Etapa | Estado | O que entrou |
+|---|---|---|
+| 1 | Pronta | Este diagnóstico |
+| 2 | Pronta | Menu em seis áreas (Início, Criar, Inteligência, Conteúdo, Resultados, Gerenciamento); dashboard com as oito ações, ordenadas pelo objetivo do onboarding e com cadeado no que o plano não inclui; botão Menu no celular com todas as áreas |
+| 3 | Pronta | `models.options` conferido na `generate` antes de reservar crédito; proporção da foto (4:5, 1:1, 9:16, 16:9) e do Veo (9:16, 16:9) no Studio; `_shared/providers.ts`; UGC deixou de pedir depoimento de cliente: apresenta e demonstra, e lembra de identificar publicidade e IA |
+| 4 | Pronta | Copy com nove tipos de texto (legenda, anúncio, descrição de produto, títulos, ganchos, texto de vendas, adaptação, reescrita, análise), objetivo, tamanho e tom por pedido; LinkedIn e Facebook; planejamento editorial; resultado editável que vira roteiro, legenda, cena no Studio ou conteúdo |
+| 5 | Pronta | Perfil completo da marca (descrição, objetivos, plataformas, comunicação, referências autorizadas); marca ativa no topo, usada pelo assistente, Studio, Conteúdos e Resultados; personagem ligado à marca |
+| 6 | Pronta | Conteúdos com status (ideia a publicado), quadro por status, calendário do mês (agenda no celular), anexos de imagem e vídeo; planejamento vai inteiro para o calendário |
+| 7 | Pronta (importação manual) | Resultados por CSV exportado da rede, com validação por linha, gravação tudo ou nada, origem, arquivo e data de cada importação; período 7/30/90 dias com comparação; "Sem dado" quando a métrica não veio. OAuth por rede continua aguardando (seção 7) |
+| 8 | Aguarda dados | Ver seção 7 |
+
+Testes: 111 unitários e 54 de banco; fluxos clicados no modo demo (planejamento para o calendário, ideia para roteiro, mover card, proporção, marca ativa, importação de CSV bom e ruim), desktop e celular sem erro de console nem rolagem lateral.
+
+### Ordem para publicar
+
+1. `npx supabase db push` (aplica 0009 a 0013).
+2. `npx supabase secrets set ANTHROPIC_API_KEY=...` (se ainda não estiver).
+3. `npx supabase functions deploy generate assistant` (opções do modelo, tipos de texto, planejamento, UGC novo).
+4. Conferir com uma conta de teste: uma foto 9:16, uma copy do tipo análise, um planejamento salvo no calendário e um CSV importado.

@@ -788,4 +788,52 @@ await test('RLS: conteúdo de uma pessoa não aparece nem muda para outra', asyn
   )
 })
 
+// --------------------------------------------------------------- resultados (0013)
+
+const importRows = (db, userId, rows, brandId = null) =>
+  as(db, 'authenticated', userId, () =>
+    db.query(`select import_analytics('instagram', $1, 'export.csv', $2::jsonb) as id`, [brandId, JSON.stringify(rows)]),
+  )
+
+await test('importação grava tudo com origem e período, e métrica ausente fica nula', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const { rows } = await importRows(db, ana, [
+    { metric_date: '2026-10-01', views: 1200, likes: 80 },
+    { metric_date: '2026-10-03', views: 900, reach: 700 },
+  ])
+  const saved = await as(db, 'authenticated', ana, () =>
+    db.query(`select source, row_count, period_start::text, period_end::text from analytics_imports where id = $1`, [rows[0].id]),
+  )
+  assert.deepEqual(saved.rows[0], { source: 'manual_csv', row_count: 2, period_start: '2026-10-01', period_end: '2026-10-03' })
+  const snapshots = await as(db, 'authenticated', ana, () => db.query(`select reach from analytics_snapshots order by metric_date`))
+  assert.equal(snapshots.rows[0].reach, null)
+})
+
+await test('linha inválida derruba a importação inteira', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await expectError(importRows(db, ana, [{ metric_date: '2026-10-01', views: 10 }, { metric_date: '2026-10-02', views: -5 }]), 'check constraint')
+  await expectError(importRows(db, ana, [{ metric_date: '31/10/2026', views: 10 }]), 'date')
+  const count = await db.query(`select count(*)::int as n from analytics_imports`)
+  assert.equal(count.rows[0].n, 0)
+})
+
+await test('métricas: só o dono lê, ninguém grava direto e apagar a importação leva as linhas', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const brandOfBia = (await newBrand(db, bia)).rows[0].id
+  await expectError(importRows(db, ana, [{ metric_date: '2026-10-01', views: 1 }], brandOfBia), 'brand_not_found')
+  const { rows } = await importRows(db, ana, [{ metric_date: '2026-10-01', views: 1 }])
+  const seen = await as(db, 'authenticated', bia, () => db.query(`select id from analytics_snapshots`))
+  assert.equal(seen.rows.length, 0)
+  await expectError(
+    as(db, 'authenticated', ana, () =>
+      db.query(`insert into analytics_snapshots (import_id, user_id, platform, metric_date) values ($1, $2, 'instagram', '2026-10-01')`, [rows[0].id, ana]),
+    ),
+    'permission denied',
+  )
+  await as(db, 'authenticated', ana, () => db.query(`delete from analytics_imports where id = $1`, [rows[0].id]))
+  const left = await db.query(`select count(*)::int as n from analytics_snapshots`)
+  assert.equal(left.rows[0].n, 0)
+})
+
 console.log(`\n${passed} testes do banco passaram`)

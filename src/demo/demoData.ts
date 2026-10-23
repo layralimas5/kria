@@ -22,6 +22,8 @@ export interface DemoState {
   personas: Row[]
   brands: Row[]
   contents: Row[]
+  analyticsImports: Row[]
+  analyticsSnapshots: Row[]
   projects: Row[]
   generations: Row[]
   ledger: Row[]
@@ -172,6 +174,9 @@ export function createDemoState(): DemoState {
       content({ title: 'Kit da semana com CTA para o WhatsApp', format: 'post', status: 'published', planned_for: dayFromNow(-2), published_at: daysFromNow(-2), brand_id: lunaBrand.id }),
     ],
     projects: [],
+    // Sem métrica de exemplo: Resultados só mostra o que a pessoa importar, também no demo.
+    analyticsImports: [],
+    analyticsSnapshots: [],
     generations: [
       generation(0, { model_slug: 'video-kling', kind: 'video', credits: 40, persona_id: luna.id, output_path: DEMO_VIDEO, output_type: 'video/webm', prompt: 'Luna olha para a câmera, sorri e acena', created_at: minutesAgo(6), completed_at: minutesAgo(3) }),
       generation(1, { model_slug: 'foto-persona', credits: 6, persona_id: luna.id, prompt: 'Luna num café em São Paulo segurando um latte, luz da manhã' }),

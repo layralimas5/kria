@@ -34,6 +34,7 @@ const AssistantPage = page(() => import('@/pages/AssistantPage'), 'AssistantPage
 const BrandsPage = page(() => import('@/pages/BrandsPage'), 'BrandsPage')
 const ProjectsPage = page(() => import('@/pages/ProjectsPage'), 'ProjectsPage')
 const ContentPage = page(() => import('@/pages/ContentPage'), 'ContentPage')
+const ResultsPage = page(() => import('@/pages/ResultsPage'), 'ResultsPage')
 const TermsPage = page(() => import('@/landing/TermsPage'), 'TermsPage')
 
 function PageFallback() {
@@ -95,6 +96,7 @@ export function App() {
                 <Route path="marcas" element={<BrandsPage />} />
                 <Route path="projetos" element={<ProjectsPage />} />
                 <Route path="conteudo" element={<ContentPage />} />
+                <Route path="resultados" element={<ResultsPage />} />
                 <Route path="creditos" element={<CreditsPage />} />
                 <Route path="assinatura" element={<SubscriptionPage />} />
                 <Route path="conta" element={<AccountPage />} />

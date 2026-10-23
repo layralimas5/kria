@@ -61,6 +61,8 @@ const TABLES: Record<string, () => Row[]> = {
   brands: () => state.brands,
   projects: () => state.projects,
   content_items: () => state.contents,
+  analytics_imports: () => state.analyticsImports,
+  analytics_snapshots: () => state.analyticsSnapshots,
   generations: () => state.generations,
   credit_ledger: () => state.ledger,
   purchases: () => state.purchases,
@@ -383,8 +385,32 @@ function workspaceWrite(table: OwnedTable, method: string, url: URL, body: Row):
   return json(row)
 }
 
+/** Mesmo contrato da função do banco (0013): tudo ou nada, com origem e período. */
+function importAnalytics(body: Row): Response {
+  const rows = Array.isArray(body.p_rows) ? (body.p_rows as Row[]) : []
+  if (rows.length === 0 || rows.length > 5000) return rpcFail('invalid_rows')
+  const dates = rows.map((row) => String(row.metric_date)).sort()
+  const record = {
+    id: uuid(),
+    user_id: DEMO_USER_ID,
+    brand_id: body.p_brand_id ?? null,
+    platform: body.p_platform,
+    source: 'manual_csv',
+    file_name: String(body.p_file_name ?? 'arquivo.csv').slice(0, 200),
+    row_count: rows.length,
+    period_start: dates[0],
+    period_end: dates.at(-1),
+    created_at: new Date().toISOString(),
+  }
+  state.analyticsImports.unshift(record)
+  state.analyticsSnapshots.push(...rows.map((row) => ({ ...row, import_id: record.id, platform: record.platform, brand_id: record.brand_id })))
+  persist()
+  return json(record.id)
+}
+
 function rpc(name: string, body: Row): Response {
   if (name === 'create_persona') return createPersona(body)
+  if (name === 'import_analytics') return importAnalytics(body)
   return rpcFail('not_found')
 }
 
@@ -425,6 +451,13 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
     const table = route.slice('rest/'.length)
     if ((table === 'brands' || table === 'projects' || table === 'content_items') && method !== 'GET' && method !== 'HEAD') {
       return workspaceWrite(table, method, url, await readBody(init))
+    }
+    if (method === 'DELETE' && table === 'analytics_imports') {
+      const id = url.searchParams.get('id')?.replace('eq.', '')
+      state.analyticsImports = state.analyticsImports.filter((item) => item.id !== id)
+      state.analyticsSnapshots = state.analyticsSnapshots.filter((item) => item.import_id !== id)
+      persist()
+      return new Response(null, { status: 204 })
     }
     if (method === 'DELETE' && table === 'personas') {
       const id = url.searchParams.get('id')?.replace('eq.', '')

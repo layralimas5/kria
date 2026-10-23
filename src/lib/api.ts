@@ -1,5 +1,15 @@
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import { z } from 'zod'
+import {
+  analyticsImportSchema,
+  IMPORT_COLUMNS,
+  SNAPSHOT_COLUMNS,
+  snapshotSchema,
+  type AnalyticsImport,
+  type AnalyticsPlatform,
+  type AnalyticsRow,
+  type Snapshot,
+} from '@/domain/analytics'
 import type { Channel, ContentGoal, CopyFormat, TextLength } from '@/domain/assistant'
 import {
   CONTENT_COLUMNS,
@@ -333,4 +343,35 @@ export async function updateContentItem(id: string, changes: Partial<ContentInpu
 export async function deleteContentItem(id: string): Promise<void> {
   const { error } = await supabase.from('content_items').delete().eq('id', id)
   if (error) throw new ApiError('delete_failed', 'Não deu para remover o conteúdo.')
+}
+
+// ----------------------------------------------------------------- resultados
+
+const ANALYTICS_ERRORS: Record<string, string> = {
+  brand_not_found: 'Essa marca não existe mais. Escolha outra.',
+  too_many_imports: 'Muitas importações seguidas. Espere um pouco e tente de novo.',
+  invalid_rows: 'O arquivo não tem linhas válidas.',
+}
+
+export async function fetchSnapshots(): Promise<Snapshot[]> {
+  const { data, error } = await supabase.from('analytics_snapshots').select(SNAPSHOT_COLUMNS).order('metric_date').limit(20000)
+  if (error) throw new ApiError('analytics_unavailable', 'Não deu para carregar suas métricas.')
+  return z.array(snapshotSchema).parse(data)
+}
+
+export async function fetchImports(): Promise<AnalyticsImport[]> {
+  const { data, error } = await supabase.from('analytics_imports').select(IMPORT_COLUMNS).order('created_at', { ascending: false })
+  if (error) throw new ApiError('imports_unavailable', 'Não deu para carregar suas importações.')
+  return z.array(analyticsImportSchema).parse(data)
+}
+
+/** Grava o arquivo inteiro ou nada; o banco valida de novo cada linha. */
+export async function importAnalytics(platform: AnalyticsPlatform, brandId: string | null, fileName: string, rows: readonly AnalyticsRow[]): Promise<void> {
+  const { error } = await supabase.rpc('import_analytics', { p_platform: platform, p_brand_id: brandId, p_file_name: fileName, p_rows: rows })
+  if (error) throw new ApiError(error.message, ANALYTICS_ERRORS[error.message] ?? 'O banco recusou o arquivo. Confira datas e números e tente de novo.')
+}
+
+export async function deleteImport(id: string): Promise<void> {
+  const { error } = await supabase.from('analytics_imports').delete().eq('id', id)
+  if (error) throw new ApiError('delete_failed', 'Não deu para remover a importação.')
 }
