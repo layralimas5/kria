@@ -19,6 +19,7 @@ const SUPABASE_STUBS = [
   `create schema auth`,
   `create table auth.users (id uuid primary key default gen_random_uuid(), email text, raw_user_meta_data jsonb default '{}'::jsonb)`,
   `create function auth.uid() returns uuid language sql stable as $$ select (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')::uuid $$`,
+  `create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb, '{}'::jsonb) $$`,
   `grant usage on schema auth to anon, authenticated, service_role`,
   `create schema storage`,
   `create table storage.buckets (id text primary key, name text, public boolean default false, file_size_limit bigint, allowed_mime_types text[])`,
@@ -37,9 +38,10 @@ async function boot() {
   return db
 }
 
-async function as(db, role, userId, fn) {
+/** Sessão com segundo fator (aal2) por padrão; `aal1` imita quem só digitou a senha. */
+async function as(db, role, userId, fn, aal = 'aal2') {
   await db.exec(`set role ${role}`)
-  await db.query(`select set_config('request.jwt.claims', $1, false)`, [JSON.stringify(userId ? { sub: userId } : {})])
+  await db.query(`select set_config('request.jwt.claims', $1, false)`, [JSON.stringify(userId ? { sub: userId, aal } : {})])
   try {
     return await fn()
   } finally {
@@ -87,12 +89,15 @@ async function newSubscription(db, userId, plan = 'pro') {
 const activate = (db, subscriptionId, paymentId, providerId = null) =>
   db.query(`select activate_subscription_period($1, $2, 7990, current_date, null, $3) as result`, [subscriptionId, paymentId, providerId])
 
-async function makeAdmin(db, userId) {
-  await db.query(`insert into admin_users (user_id) values ($1)`, [userId])
+async function makeAdmin(db, userId, role = 'super_admin') {
+  await db.query(`insert into admin_users (user_id, role) values ($1, $2)`, [userId, role])
 }
 
 let passed = 0
+// DB_TEST_ONLY="admin|dashboard" roda só os testes cujo nome casa com a expressão (cada um sobe um Postgres).
+const only = process.env.DB_TEST_ONLY
 async function test(name, fn) {
+  if (only && !new RegExp(only).test(name)) return
   const db = await boot()
   await fn(db)
   passed += 1
@@ -432,7 +437,7 @@ await test('admin: quem não é admin não chama nada do painel', async (db) => 
   const ana = await newUser(db, 'ana@x.com')
   await as(db, 'authenticated', ana, async () => {
     assert.equal((await db.query(`select is_admin() as ok`)).rows[0].ok, false)
-    await expectError(db.query(`select admin_overview()`), 'forbidden')
+    await expectError(db.query(`select admin_dashboard(now() - interval '1 day', now())`), 'forbidden')
     await expectError(db.query(`select * from admin_search_users('')`), 'forbidden')
     await expectError(db.query(`select admin_adjust_credits($1, 1000, 'quero mais')`, [ana]), 'forbidden')
     await expectError(db.query(`select admin_update_plan('pro', 100, 99999, 20, true, null)`), 'forbidden')
@@ -475,9 +480,9 @@ await test('admin: busca, suspensão, plano e modelo', async (db) => {
     await db.query(`select admin_update_model('video-veo', true, 250, 3.2, array['pro', 'studio'])`)
     await expectError(db.query(`select admin_update_model('foto', true, 5, null, array['vip'])`), 'plan_not_found')
 
-    const overview = (await db.query(`select admin_overview() as o`)).rows[0].o
-    assert.equal(overview.total_users, 2)
-    assert.equal(overview.revenue_by_plan.length, 3)
+    const dash = (await db.query(`select admin_dashboard(now() - interval '1 day', now() + interval '1 day') as d`)).rows[0].d
+    assert.equal(dash.users.total, 2)
+    assert.equal(dash.finance.by_plan.length, 3)
   })
   await expectError(create(db, ana, 'foto'), 'account_suspended')
   const veo = await db.query(`select credits, provider_cost_usd::float as cost, allowed_plans from models where slug = 'video-veo'`)
@@ -834,6 +839,169 @@ await test('métricas: só o dono lê, ninguém grava direto e apagar a importa�
   await as(db, 'authenticated', ana, () => db.query(`delete from analytics_imports where id = $1`, [rows[0].id]))
   const left = await db.query(`select count(*)::int as n from analytics_snapshots`)
   assert.equal(left.rows[0].n, 0)
+})
+
+// ------------------------------------------------------- admin, etapa 1 (0014)
+
+const PERIOD = `now() - interval '1 day', now() + interval '1 day'`
+
+await test('admin: cada papel chama só o que a matriz libera', async (db) => {
+  const ids = {}
+  for (const role of ['super_admin', 'admin', 'support', 'finance', 'analyst']) {
+    ids[role] = await newUser(db, `${role}@x.com`)
+    await makeAdmin(db, ids[role], role)
+  }
+  const ana = await newUser(db, 'ana@x.com')
+
+  await as(db, 'authenticated', ids.support, async () => {
+    assert.equal((await db.query(`select count(*)::int as n from admin_search_users('ana@')`)).rows[0].n, 1)
+    const detail = (await db.query(`select admin_user_detail($1) as d`, [ana])).rows[0].d
+    assert.equal(detail.payments, null)
+    await expectError(db.query(`select admin_adjust_credits($1, 10, 'presente do suporte')`, [ana]), 'forbidden')
+    await expectError(db.query(`select admin_set_suspended($1, true, 'teste de suporte')`, [ana]), 'forbidden')
+    await expectError(db.query(`select admin_list_admins()`), 'forbidden')
+    await expectError(db.query(`select admin_pricing()`), 'forbidden')
+    assert.equal((await db.query(`select admin_dashboard(${PERIOD}) ->> 'finance' as f`)).rows[0].f, null)
+  })
+  await as(db, 'authenticated', ids.finance, async () => {
+    const detail = (await db.query(`select admin_user_detail($1) as d`, [ana])).rows[0].d
+    assert.deepEqual(detail.payments, [])
+    assert.notEqual((await db.query(`select admin_dashboard(${PERIOD}) ->> 'finance' as f`)).rows[0].f, null)
+    assert.equal(Number((await db.query(`select (admin_pricing()).payment_fee_rate as r`)).rows[0].r), 0.035)
+    await expectError(db.query(`select admin_adjust_credits($1, 10, 'ajuste financeiro')`, [ana]), 'forbidden')
+  })
+  await as(db, 'authenticated', ids.analyst, async () => {
+    await expectError(db.query(`select * from admin_search_users('')`), 'forbidden')
+    const dash = (await db.query(`select admin_dashboard(${PERIOD}) as d`)).rows[0].d
+    assert.equal(dash.finance, null)
+    assert.equal(dash.top_consumers, null)
+  })
+  await as(db, 'authenticated', ids.admin, async () => {
+    await db.query(`select admin_adjust_credits($1, 10, 'Compensação de falha')`, [ana])
+    await expectError(db.query(`select admin_update_plan('pro', 100, 99999, 20, true, null)`), 'forbidden')
+    await expectError(db.query(`select admin_update_pricing(5, 0.1, 2, 0.15)`), 'forbidden')
+    await expectError(db.query(`select admin_list_admins()`), 'forbidden')
+  })
+  await as(db, 'authenticated', ids.super_admin, async () => {
+    const me = (await db.query(`select admin_me() as me`)).rows[0].me
+    assert.equal(me.role, 'super_admin')
+    assert.ok(me.permissions.includes('admins.manage'))
+    assert.equal((await db.query(`select jsonb_array_length(admin_list_admins()) as n`)).rows[0].n, 5)
+  })
+})
+
+await test('admin: sem segundo fator (aal1) nada abre, mas admin_me avisa', async (db) => {
+  const lay = await newUser(db, 'lay@x.com')
+  const ana = await newUser(db, 'ana@x.com')
+  await makeAdmin(db, lay)
+  await as(
+    db,
+    'authenticated',
+    lay,
+    async () => {
+      assert.equal((await db.query(`select admin_me() ->> 'aal' as aal`)).rows[0].aal, 'aal1')
+      await expectError(db.query(`select admin_dashboard(${PERIOD})`), 'mfa_required')
+      await expectError(db.query(`select admin_adjust_credits($1, 10, 'sem segundo fator')`, [ana]), 'mfa_required')
+      assert.equal((await db.query(`select count(*)::int as n from admin_audit_logs`)).rows[0].n, 0)
+    },
+    'aal1',
+  )
+  await as(db, 'authenticated', ana, async () => {
+    assert.equal((await db.query(`select admin_me() as me`)).rows[0].me, null)
+  })
+})
+
+await test('admin: papel só muda por super_admin, nunca no próprio, e fica auditado', async (db) => {
+  const lay = await newUser(db, 'lay@x.com')
+  const ana = await newUser(db, 'Ana@X.com')
+  await makeAdmin(db, lay)
+  await as(db, 'authenticated', lay, async () => {
+    await expectError(db.query(`select admin_set_role('lay@x.com', 'support', 'me rebaixar')`), 'cannot_change_self')
+    await expectError(db.query(`select admin_remove_admin($1, 'sair do painel')`, [lay]), 'cannot_change_self')
+    await expectError(db.query(`select admin_set_role('ninguem@x.com', 'support', 'conta inexistente')`), 'user_not_found')
+    await expectError(db.query(`select admin_set_role('ana@x.com', 'support', '')`), 'reason_required')
+    await db.query(`select admin_set_role('ana@x.com', 'support', 'Atendimento do lançamento')`)
+    await db.query(`select admin_set_role('ana@x.com', 'admin', 'Promovida para operação')`)
+  })
+  await as(db, 'authenticated', ana, async () => {
+    await expectError(db.query(`select admin_set_role('ana@x.com', 'super_admin', 'quero tudo')`), 'forbidden')
+    await expectError(db.query(`update admin_users set role = 'super_admin' where user_id = $1`, [ana]), 'permission denied')
+    await expectError(db.query(`insert into admin_users (user_id, role) values ($1, 'super_admin')`, [ana]), 'permission denied')
+  })
+  await as(db, 'authenticated', lay, async () => {
+    await db.query(`select admin_remove_admin($1, 'Fim do contrato')`, [ana])
+  })
+  const audit = await db.query(`select action, entity, target_user_id, details from admin_audit_logs order by id`)
+  assert.deepEqual(
+    audit.rows.map((row) => [row.action, row.entity, row.target_user_id]),
+    [['admin.grant', 'admin', ana], ['admin.role_change', 'admin', ana], ['admin.revoke', 'admin', ana]],
+  )
+  assert.deepEqual(audit.rows[1].details, { before: 'support', after: 'admin' })
+  assert.equal((await db.query(`select count(*)::int as n from admin_users`)).rows[0].n, 1)
+})
+
+await test('auditoria: não se edita nem se apaga; o autor vira nulo quando a conta sai', async (db) => {
+  const lay = await newUser(db, 'lay@x.com')
+  const ana = await newUser(db, 'ana@x.com')
+  await makeAdmin(db, lay)
+  await as(db, 'authenticated', lay, () => db.query(`select admin_adjust_credits($1, 10, 'Compensação de falha')`, [ana]))
+  await expectError(db.query(`update admin_audit_logs set reason = 'outro motivo'`), 'audit_is_immutable')
+  await expectError(db.query(`delete from admin_audit_logs`), 'audit_is_immutable')
+  await db.query(`delete from auth.users where id = $1`, [lay])
+  const left = await db.query(`select admin_id, reason, result from admin_audit_logs`)
+  assert.deepEqual(left.rows, [{ admin_id: null, reason: 'Compensação de falha', result: 'success' }])
+})
+
+await test('dashboard: números do período batem com o banco e o período é validado', async (db) => {
+  const lay = await newUser(db, 'lay@x.com')
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  await makeAdmin(db, lay)
+  await db.query(`update models set provider_cost_usd = 0.04 where slug = 'foto'`)
+
+  const ok = (await create(db, ana, 'foto')).rows[0]
+  await db.query(`select complete_generation($1, 'x/y.png', 'image/png')`, [ok.id])
+  const failed = (await create(db, ana, 'foto')).rows[0]
+  await db.query(`select fail_generation($1, 'timeout')`, [failed.id])
+
+  await activate(db, await newSubscription(db, bia, 'pro'), 'pay_1')
+  const pack = (
+    await db.query(`insert into purchases (user_id, pack_slug, credits, price_cents) values ($1, 'inicial', 100, 1990) returning id`, [ana])
+  ).rows[0].id
+  await db.query(`select grant_purchase($1)`, [pack])
+
+  const dash = await as(db, 'authenticated', lay, async () => {
+    await expectError(db.query(`select admin_dashboard(now(), now() - interval '1 day')`), 'invalid_period')
+    await expectError(db.query(`select admin_dashboard(now() - interval '2 years', now())`), 'invalid_period')
+    return (await db.query(`select admin_dashboard(${PERIOD}) as d`)).rows[0].d
+  })
+
+  assert.equal(dash.users.total, 3)
+  assert.equal(dash.users.new_in_period, 3)
+  assert.equal(dash.users.paying, 1)
+  assert.equal(dash.users.active_in_period, 1)
+  assert.equal(dash.users.first_generation_in_period, 1)
+  assert.equal(dash.users.converted_in_period, 2)
+  assert.deepEqual(
+    { total: dash.generations.total, succeeded: dash.generations.succeeded, failed: dash.generations.failed, credits: dash.generations.credits_consumed },
+    { total: 2, succeeded: 1, failed: 1, credits: 5 },
+  )
+  assert.equal(dash.finance.mrr_cents, 7990)
+  assert.equal(dash.finance.received_cents, 7990 + 1990)
+  assert.equal(dash.finance.subscription_received_cents, 7990)
+  assert.equal(dash.finance.pack_received_cents, 1990)
+  assert.equal(dash.finance.payments_count, 2)
+  assert.equal(Number(dash.finance.api_cost_usd), 0.04)
+  assert.equal(dash.finance.churn_base, 0)
+  assert.equal(dash.finance.by_plan.find((row) => row.slug === 'pro').received_cents, 7990)
+  assert.deepEqual(
+    Object.fromEntries(dash.plan_distribution.map((row) => [row.slug, row.users])),
+    { gratis: 2, starter: 0, pro: 1, studio: 0 },
+  )
+  assert.equal(dash.top_consumers[0].user_id, ana)
+  assert.ok(dash.series.length >= 2)
+  assert.equal(dash.series.reduce((sum, day) => sum + day.failed, 0), 1)
+  assert.equal(dash.series.reduce((sum, day) => sum + day.revenue_cents, 0), 7990 + 1990)
 })
 
 console.log(`\n${passed} testes do banco passaram`)
