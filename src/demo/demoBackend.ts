@@ -9,7 +9,7 @@ import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_IMAGES, DEMO_USER_ID, DEMO_VIDEO, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
-const SESSION_KEY = 'kria-demo-state-v5'
+const SESSION_KEY = 'kria-demo-state-v6'
 
 function loadState(): DemoState {
   try {
@@ -63,6 +63,7 @@ const TABLES: Record<string, () => Row[]> = {
   content_items: () => state.contents,
   analytics_imports: () => state.analyticsImports,
   analytics_snapshots: () => state.analyticsSnapshots,
+  admin_audit_logs: () => state.audit,
   generations: () => state.generations,
   credit_ledger: () => state.ledger,
   purchases: () => state.purchases,
@@ -385,6 +386,163 @@ function workspaceWrite(table: OwnedTable, method: string, url: URL, body: Row):
   return json(row)
 }
 
+// ---------------------------------------------------- painel de operação (admin)
+
+function audit(action: string, target: string | null, reason: string | null, targetUserId: string | null = null) {
+  state.audit.unshift({ id: state.audit.length + 1, action, target, reason, target_user_id: targetUserId, details: {}, created_at: new Date().toISOString() })
+}
+
+function demoUserRow(): Row {
+  const live = state.subscriptions.find((item) => item.status !== 'expired' && item.status !== 'pending')
+  return {
+    id: DEMO_USER_ID,
+    email: 'demo@kria.ia',
+    display_name: state.profile.display_name,
+    username: state.profile.username,
+    ...wallet(),
+    plan_slug: live?.plan_slug ?? null,
+    subscription_status: live?.status ?? null,
+    suspended_at: null,
+    created_at: state.profile.created_at,
+    generations: state.generations.length,
+  }
+}
+
+function adminOverview(): Row {
+  const users = [demoUserRow(), ...state.otherUsers]
+  const live = users.filter((user) => user.subscription_status === 'active' || user.subscription_status === 'past_due')
+  const priceOf = (slug: unknown) => Number(state.plans.find((plan) => plan.slug === slug)?.price_cents ?? 0)
+  const succeeded = state.generations.filter((item) => item.status === 'succeeded')
+  const byModel = state.models.map((model) => {
+    const rows = state.generations.filter((item) => item.model_slug === model.slug)
+    return {
+      model_slug: model.slug,
+      provider: model.provider,
+      total: rows.length,
+      failed: rows.filter((item) => item.status === 'failed').length,
+      credits: rows.filter((item) => item.status === 'succeeded').reduce((sum, item) => sum + Number(item.credits), 0),
+      cost_usd: 0,
+    }
+  })
+  return {
+    total_users: users.length,
+    new_users_30d: users.length,
+    active_subscribers: live.length,
+    past_due: live.filter((user) => user.subscription_status === 'past_due').length,
+    mrr_cents: live.reduce((sum, user) => sum + priceOf(user.plan_slug), 0),
+    new_subscriptions_30d: live.length,
+    cancellations_30d: state.subscriptions.filter((item) => item.canceled_at).length,
+    subscription_revenue_30d_cents: state.subscriptionPayments.reduce((sum, item) => sum + Number(item.amount_cents), 0),
+    pack_revenue_30d_cents: state.purchases.reduce((sum, item) => sum + Number(item.price_cents ?? 0), 0),
+    generations_30d: state.generations.length,
+    generations_failed_30d: state.generations.filter((item) => item.status === 'failed').length,
+    credits_consumed_30d: succeeded.reduce((sum, item) => sum + Number(item.credits), 0),
+    api_cost_usd_30d: 0,
+    api_cost_unknown_30d: succeeded.length,
+    pricing: state.pricing,
+    revenue_by_plan: state.plans
+      .filter((plan) => plan.public)
+      .map((plan) => {
+        const subscribers = live.filter((user) => user.plan_slug === plan.slug).length
+        return { slug: plan.slug, name: plan.name, position: plan.position, subscribers, mrr_cents: subscribers * Number(plan.price_cents) }
+      }),
+    by_model: byModel.filter((row) => row.total > 0),
+  }
+}
+
+/** As funções `admin_*` do banco (0004), com as mesmas recusas. No demo a conta é admin. */
+function adminRpc(name: string, body: Row): Response | null {
+  switch (name) {
+    case 'is_admin':
+      return json(true)
+    case 'admin_overview':
+      return json(adminOverview())
+    case 'admin_search_users': {
+      const term = String(body.p_query ?? '').toLowerCase()
+      const users = [demoUserRow(), ...state.otherUsers]
+      return json(users.filter((user) => [user.email, user.username, user.display_name].some((field) => String(field ?? '').toLowerCase().includes(term))))
+    }
+    case 'admin_user_detail': {
+      const self = body.p_user_id === DEMO_USER_ID
+      return json({
+        ledger: self ? state.ledger.slice(0, 40) : [],
+        generations: self ? state.generations.slice(0, 30).map((item) => ({ ...item, provider_cost_usd: null })) : [],
+        subscriptions: self ? state.subscriptions : [],
+        payments: self ? state.subscriptionPayments.map((item) => ({ type: 'subscription', amount_cents: item.amount_cents, status: item.status, at: item.paid_at })) : [],
+      })
+    }
+    case 'admin_adjust_credits': {
+      const amount = Number(body.p_amount)
+      const reason = String(body.p_reason ?? '').trim()
+      if (reason.length < 5) return rpcFail('reason_required')
+      if (body.p_user_id === DEMO_USER_ID) {
+        if (state.purchasedBalance + amount < 0) return rpcFail('insufficient_credits')
+        addLedger(0, amount, 'adjustment', reason)
+      } else {
+        const user = state.otherUsers.find((item) => item.id === body.p_user_id)
+        if (!user) return rpcFail('account_not_found')
+        if (Number(user.purchased_balance) + amount < 0) return rpcFail('insufficient_credits')
+        user.purchased_balance = Number(user.purchased_balance) + amount
+        user.balance = Number(user.balance) + amount
+      }
+      audit('credits.adjust', null, reason, String(body.p_user_id))
+      persist()
+      return json(body.p_user_id === DEMO_USER_ID ? balanceOf() : state.otherUsers.find((item) => item.id === body.p_user_id)?.balance)
+    }
+    case 'admin_set_suspended': {
+      const reason = String(body.p_reason ?? '').trim()
+      if (reason.length < 5) return rpcFail('reason_required')
+      if (body.p_user_id === DEMO_USER_ID) return rpcFail('cannot_suspend_self')
+      const user = state.otherUsers.find((item) => item.id === body.p_user_id)
+      if (!user) return rpcFail('account_not_found')
+      user.suspended_at = body.p_suspended ? new Date().toISOString() : null
+      audit(body.p_suspended ? 'user.suspend' : 'user.unsuspend', null, reason, String(user.id))
+      persist()
+      return json(true)
+    }
+    case 'admin_plans':
+      return json(state.plans)
+    case 'admin_update_plan': {
+      const plan = state.plans.find((item) => item.slug === body.p_slug)
+      if (!plan) return rpcFail('plan_not_found')
+      const changedPrice = plan.price_cents !== body.p_price_cents || plan.monthly_credits !== body.p_monthly_credits
+      Object.assign(plan, {
+        price_cents: body.p_price_cents,
+        monthly_credits: body.p_monthly_credits,
+        max_concurrent: body.p_max_concurrent,
+        active: body.p_active,
+        version: Number(plan.version) + (changedPrice ? 1 : 0),
+      })
+      audit('plan.update', String(plan.slug), null)
+      persist()
+      return json(plan)
+    }
+    case 'admin_models':
+      return json(state.models)
+    case 'admin_update_model': {
+      const model = state.models.find((item) => item.slug === body.p_slug)
+      if (!model) return rpcFail('model_not_found')
+      const plans = body.p_allowed_plans as string[] | null
+      Object.assign(model, {
+        active: body.p_active,
+        credits: body.p_credits,
+        provider_cost_usd: body.p_provider_cost_usd,
+        allowed_plans: plans && plans.length > 0 ? plans : null,
+      })
+      audit('model.update', String(model.slug), null)
+      persist()
+      return json(model)
+    }
+    case 'admin_update_pricing':
+      state.pricing = { usd_brl: body.p_usd_brl, fx_buffer: body.p_fx_buffer, markup: body.p_markup, credit_value_brl: body.p_credit_value_brl }
+      audit('pricing.update', null, null)
+      persist()
+      return json(state.pricing)
+    default:
+      return null
+  }
+}
+
 /** Mesmo contrato da função do banco (0013): tudo ou nada, com origem e período. */
 function importAnalytics(body: Row): Response {
   const rows = Array.isArray(body.p_rows) ? (body.p_rows as Row[]) : []
@@ -411,6 +569,8 @@ function importAnalytics(body: Row): Response {
 function rpc(name: string, body: Row): Response {
   if (name === 'create_persona') return createPersona(body)
   if (name === 'import_analytics') return importAnalytics(body)
+  const admin = adminRpc(name, body)
+  if (admin) return admin
   return rpcFail('not_found')
 }
 

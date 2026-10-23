@@ -22,6 +22,10 @@ export interface DemoState {
   personas: Row[]
   brands: Row[]
   contents: Row[]
+  pricing: Row
+  audit: Row[]
+  /** Contas de exemplo do painel de operação (só existem no demo). */
+  otherUsers: Row[]
   analyticsImports: Row[]
   analyticsSnapshots: Row[]
   projects: Row[]
@@ -174,6 +178,13 @@ export function createDemoState(): DemoState {
       content({ title: 'Kit da semana com CTA para o WhatsApp', format: 'post', status: 'published', planned_for: dayFromNow(-2), published_at: daysFromNow(-2), brand_id: lunaBrand.id }),
     ],
     projects: [],
+    pricing: { usd_brl: 5.5, fx_buffer: 0.1, markup: 2.5, credit_value_brl: 0.1 },
+    audit: [],
+    otherUsers: [
+      { id: uuid(), email: 'conta.exemplo1@demo.vynkio', display_name: 'Conta de exemplo 1', username: 'exemplo1', balance: 940, subscription_balance: 900, purchased_balance: 40, plan_slug: 'studio', subscription_status: 'active', suspended_at: null, created_at: minutesAgo(60 * 24 * 20), generations: 58 },
+      { id: uuid(), email: 'conta.exemplo2@demo.vynkio', display_name: 'Conta de exemplo 2', username: 'exemplo2', balance: 12, subscription_balance: 0, purchased_balance: 12, plan_slug: null, subscription_status: null, suspended_at: null, created_at: minutesAgo(60 * 24 * 6), generations: 4 },
+      { id: uuid(), email: 'conta.exemplo3@demo.vynkio', display_name: 'Conta de exemplo 3', username: 'exemplo3', balance: 210, subscription_balance: 210, purchased_balance: 0, plan_slug: 'starter', subscription_status: 'past_due', suspended_at: null, created_at: minutesAgo(60 * 24 * 33), generations: 21 },
+    ],
     // Sem métrica de exemplo: Resultados só mostra o que a pessoa importar, também no demo.
     analyticsImports: [],
     analyticsSnapshots: [],

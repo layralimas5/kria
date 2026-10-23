@@ -194,3 +194,9 @@ Testes: 111 unitários e 54 de banco; fluxos clicados no modo demo (planejamento
 2. `npx supabase secrets set ANTHROPIC_API_KEY=...` (se ainda não estiver).
 3. `npx supabase functions deploy generate assistant` (opções do modelo, tipos de texto, planejamento, UGC novo).
 4. Conferir com uma conta de teste: uma foto 9:16, uma copy do tipo análise, um planejamento salvo no calendário e um CSV importado.
+
+## 10. Operação (23/10)
+
+O admin voltou como área separada em `/admin`: moldura própria, sem o menu do usuário e sem link em lugar nenhum do app. Abre só para quem está em `admin_users`; o banco confere `is_admin()` em cada função e grava a auditoria. Abas: visão geral (usuários, MRR, receita, taxas, custo de API, margem), usuários (busca, ajuste de crédito com motivo, suspensão), planos, modelos e custos (inclui os modelos de texto) e auditoria.
+
+Para entrar no ar como admin: `insert into admin_users (user_id) values ('<seu id>')` no SQL do Supabase, depois de criar sua conta.

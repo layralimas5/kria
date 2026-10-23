@@ -35,8 +35,9 @@ baterem). Mudou um plano no banco, muda o catálogo junto. Guia em `docs/landing
   dois baldes: plano (renova, não acumula) e comprado (não expira). A geração reserva ao nascer
   (gasta o plano primeiro), captura no sucesso e devolve aos mesmos baldes na falha. Extrato imutável.
 - Plano e crédito de assinatura só mudam pelo `asaas-webhook` (`activate_subscription_period`).
-- Este app é só o painel do usuário: nada de tela de admin aqui. O banco mantém as funções `admin_*`
-  (conferem `is_admin()` e gravam `admin_audit_logs`) para um painel de operação separado no futuro.
+- O painel do usuário não tem nada de admin (nem link no menu). A operação fica em `/admin`, com moldura
+  própria, fora do `AppShell`; só abre para quem está em `admin_users`, e cada função `admin_*` confere
+  `is_admin()` no banco e grava `admin_audit_logs`.
 - Ferramenta que ainda não existe aparece como "Breve", sem link nem botão.
 - Persona nasce só de imagem gerada aqui (`create_persona`). Sem upload de foto:
   é o que impede deepfake de pessoa real. Não abrir upload sem moderação de rosto.

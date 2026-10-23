@@ -35,6 +35,7 @@ const BrandsPage = page(() => import('@/pages/BrandsPage'), 'BrandsPage')
 const ProjectsPage = page(() => import('@/pages/ProjectsPage'), 'ProjectsPage')
 const ContentPage = page(() => import('@/pages/ContentPage'), 'ContentPage')
 const ResultsPage = page(() => import('@/pages/ResultsPage'), 'ResultsPage')
+const AdminPage = page(() => import('@/pages/AdminPage'), 'AdminPage')
 const TermsPage = page(() => import('@/landing/TermsPage'), 'TermsPage')
 
 function PageFallback() {
@@ -80,6 +81,8 @@ export function App() {
             <Route element={<SignedIn />}>
               <Route path="boas-vindas" element={<OnboardingPage />} />
               <Route path="assinar/:plan" element={<SubscribePage />} />
+              {/* Operação: fora do painel do usuário e sem link em menu (docs/vynkio-evolucao.md). */}
+              <Route path="admin" element={<AdminPage />} />
               <Route
                 element={
                   <OnboardingGate>
