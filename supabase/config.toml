@@ -20,6 +20,14 @@ max_frequency = "60s"
 subject = "Seu código do Vynkio"
 content_path = "./supabase/templates/recovery.html"
 
+# Segundo fator por app autenticador. O painel /admin só responde com a sessão em aal2 (0014).
+[auth.mfa]
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
 # Quem chama estas duas é o fal.ai e o Asaas, não uma pessoa logada.
 [functions.fal-webhook]
 verify_jwt = false

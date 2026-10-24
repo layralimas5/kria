@@ -3,87 +3,136 @@ import { Search } from 'lucide-react'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { formatBRL, formatDateTime } from '@/domain/format'
 import { STATUS_LABELS } from '@/domain/plans'
+import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { useQuery } from '@/hooks/useQuery'
+import { useToast } from '@/hooks/useToast'
 import { adjustCredits, fetchUserDetail, searchUsers, setSuspended, type AdminUser } from '@/lib/adminApi'
 import { errorMessage } from '@/lib/api'
 import { Button } from '../ui/Button'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { TextField } from '../ui/Field'
 import { Notice } from '../ui/Notice'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
 function AdjustForm({ user, onDone }: { readonly user: AdminUser; readonly onDone: () => void }) {
+  const notify = useToast()
   const [amount, setAmount] = useState('')
   const [reason, setReason] = useState('')
+  const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState<{ tone: 'error' | 'success'; text: string } | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const value = Number.parseInt(amount, 10)
 
-  async function handleSubmit(event: FormEvent) {
+  function review(event: FormEvent) {
     event.preventDefault()
-    const value = Number.parseInt(amount, 10)
-    if (!Number.isInteger(value) || value === 0) return setMessage({ tone: 'error', text: 'Informe um número inteiro diferente de zero.' })
+    if (!Number.isInteger(value) || value === 0) return setError('Informe um número inteiro diferente de zero.')
+    setError(null)
+    setConfirming(true)
+  }
+
+  async function apply() {
     setBusy(true)
-    setMessage(null)
     try {
       const balance = await adjustCredits(user.id, value, reason)
-      setMessage({ tone: 'success', text: `Ajuste feito. Saldo agora: ${balance}.` })
+      notify(`Ajuste feito. Saldo agora: ${balance}.`)
       setAmount('')
       setReason('')
       onDone()
     } catch (adjustError) {
-      setMessage({ tone: 'error', text: errorMessage(adjustError) })
+      setError(errorMessage(adjustError))
     } finally {
       setBusy(false)
+      setConfirming(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={review} className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-[8rem_1fr]">
         <TextField label="Créditos (+/-)" inputMode="numeric" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="50" />
         <TextField label="Motivo (fica na auditoria)" value={reason} onChange={(event) => setReason(event.target.value)} maxLength={300} />
       </div>
-      {message && <Notice tone={message.tone}>{message.text}</Notice>}
-      <Button type="submit" variant="secondary" loading={busy} disabled={!amount || reason.trim().length < 5}>
-        Aplicar ajuste
+      {error && <Notice tone="error">{error}</Notice>}
+      <Button type="submit" variant="secondary" disabled={!amount || reason.trim().length < 5}>
+        Revisar ajuste
       </Button>
+      <ConfirmDialog
+        open={confirming}
+        title={value > 0 ? 'Conceder créditos' : 'Remover créditos'}
+        confirmLabel={value > 0 ? `Conceder ${value}` : `Remover ${Math.abs(value)}`}
+        busy={busy}
+        onConfirm={() => void apply()}
+        onCancel={() => setConfirming(false)}
+      >
+        <p>
+          {value > 0 ? 'Entram' : 'Saem'} <strong className="text-zinc-100">{Math.abs(value)} créditos</strong> do saldo comprado de {user.email}. O
+          movimento vai para o extrato da pessoa e não se desfaz: para corrigir, faça um ajuste contrário.
+        </p>
+        <p className="text-zinc-400">Motivo: {reason.trim()}</p>
+      </ConfirmDialog>
     </form>
   )
 }
 
 function SuspendForm({ user, onDone }: { readonly user: AdminUser; readonly onDone: () => void }) {
+  const notify = useToast()
   const suspended = user.suspended_at !== null
   const [reason, setReason] = useState('')
+  const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault()
+  async function apply() {
     setBusy(true)
     setError(null)
     try {
       await setSuspended(user.id, !suspended, reason)
+      notify(suspended ? 'Conta reativada.' : 'Conta suspensa.')
       setReason('')
       onDone()
     } catch (suspendError) {
       setError(errorMessage(suspendError))
     } finally {
       setBusy(false)
+      setConfirming(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        setConfirming(true)
+      }}
+      className="space-y-3"
+    >
       <TextField label={suspended ? 'Motivo da reativação' : 'Motivo da suspensão'} value={reason} onChange={(event) => setReason(event.target.value)} maxLength={300} />
       {error && <Notice tone="error">{error}</Notice>}
-      <Button type="submit" variant="secondary" loading={busy} disabled={reason.trim().length < 5}>
+      <Button type="submit" variant="secondary" disabled={reason.trim().length < 5}>
         {suspended ? 'Reativar conta' : 'Suspender conta'}
       </Button>
+      <ConfirmDialog
+        open={confirming}
+        title={suspended ? 'Reativar conta' : 'Suspender conta'}
+        confirmLabel={suspended ? 'Reativar' : 'Suspender'}
+        busy={busy}
+        onConfirm={() => void apply()}
+        onCancel={() => setConfirming(false)}
+      >
+        <p>
+          {suspended
+            ? `${user.email} volta a gerar normalmente.`
+            : `${user.email} não consegue mais gerar nada enquanto estiver suspensa. O saldo e as criações ficam como estão.`}
+        </p>
+        <p className="text-zinc-400">Motivo: {reason.trim()}</p>
+      </ConfirmDialog>
     </form>
   )
 }
 
 function UserDetailPanel({ user, onChanged }: { readonly user: AdminUser; readonly onChanged: () => void }) {
+  const { can } = useAdminAccess()
   const load = useCallback(() => fetchUserDetail(user.id), [user.id])
   const detail = useQuery(load, 'Não deu para carregar o histórico.')
   const refreshAll = () => {
@@ -105,16 +154,22 @@ function UserDetailPanel({ user, onChanged }: { readonly user: AdminUser; readon
         {user.suspended_at && <p className="mt-1 text-sm font-semibold text-red-300">Suspensa desde {formatDateTime(user.suspended_at)}</p>}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section aria-label="Ajustar créditos">
-          <h3 className="mb-2 text-sm font-bold text-zinc-200">Ajustar créditos</h3>
-          <AdjustForm user={user} onDone={refreshAll} />
-        </section>
-        <section aria-label="Suspensão">
-          <h3 className="mb-2 text-sm font-bold text-zinc-200">Suspensão</h3>
-          <SuspendForm user={user} onDone={refreshAll} />
-        </section>
-      </div>
+      {(can('credits.adjust') || can('users.manage')) && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          {can('credits.adjust') && (
+            <section aria-label="Ajustar créditos">
+              <h3 className="mb-2 text-sm font-bold text-zinc-200">Ajustar créditos</h3>
+              <AdjustForm user={user} onDone={refreshAll} />
+            </section>
+          )}
+          {can('users.manage') && (
+            <section aria-label="Suspensão">
+              <h3 className="mb-2 text-sm font-bold text-zinc-200">Suspensão</h3>
+              <SuspendForm user={user} onDone={refreshAll} />
+            </section>
+          )}
+        </div>
+      )}
 
       {detail.error && <Notice tone="error">{detail.error}</Notice>}
       {detail.data && (
@@ -135,9 +190,10 @@ function UserDetailPanel({ user, onChanged }: { readonly user: AdminUser; readon
             </ul>
           </section>
           <section aria-label="Financeiro">
-            <h3 className="mb-2 text-sm font-bold text-zinc-200">Pagamentos e extrato</h3>
+            <h3 className="mb-2 text-sm font-bold text-zinc-200">{detail.data.payments === null ? 'Extrato de créditos' : 'Pagamentos e extrato'}</h3>
             <ul className="max-h-72 divide-y divide-white/[0.05] overflow-y-auto rounded-2xl bg-surface-2 text-sm">
-              {detail.data.payments.map((payment, index) => (
+              {detail.data.payments === null && <li className="px-3 py-2 text-xs text-zinc-500">Pagamentos ficam com o financeiro.</li>}
+              {detail.data.payments?.map((payment, index) => (
                 <li key={`p-${index}`} className="flex justify-between gap-3 px-3 py-2">
                   <span className="text-zinc-300">
                     {payment.type === 'subscription' ? 'Mensalidade' : 'Pacote'} · {payment.status}

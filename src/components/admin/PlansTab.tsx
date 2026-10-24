@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { formatBRL } from '@/domain/format'
+import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { useQuery } from '@/hooks/useQuery'
+import { useToast } from '@/hooks/useToast'
 import { fetchAdminPlans, updatePlan, type AdminPlan } from '@/lib/adminApi'
 import { errorMessage } from '@/lib/api'
 import { Button } from '../ui/Button'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { TextField } from '../ui/Field'
 import { Notice } from '../ui/Notice'
 
@@ -11,34 +14,42 @@ function toCents(value: string): number {
   return Math.round(Number.parseFloat(value.replace(',', '.')) * 100)
 }
 
-function PlanRow({ plan, onSaved }: { readonly plan: AdminPlan; readonly onSaved: () => void }) {
+function PlanRow({ plan, canEdit, onSaved }: { readonly plan: AdminPlan; readonly canEdit: boolean; readonly onSaved: () => void }) {
+  const notify = useToast()
   const [price, setPrice] = useState((plan.price_cents / 100).toFixed(2).replace('.', ','))
   const [credits, setCredits] = useState(String(plan.monthly_credits))
   const [concurrent, setConcurrent] = useState(String(plan.max_concurrent))
   const [active, setActive] = useState(plan.active)
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState<{ tone: 'error' | 'success'; text: string } | null>(null)
+  const [confirming, setConfirming] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const update = {
+    priceCents: plan.slug === 'gratis' ? 0 : toCents(price),
+    monthlyCredits: Number.parseInt(credits, 10),
+    maxConcurrent: Number.parseInt(concurrent, 10),
+    active,
+  }
+  const newVersion = update.priceCents !== plan.price_cents || update.monthlyCredits !== plan.monthly_credits
+
+  function review() {
+    if (!Number.isFinite(update.priceCents) || !Number.isInteger(update.monthlyCredits) || !Number.isInteger(update.maxConcurrent)) {
+      return setError('Confira os números.')
+    }
+    setError(null)
+    setConfirming(true)
+  }
 
   async function save() {
-    const update = {
-      priceCents: plan.slug === 'gratis' ? 0 : toCents(price),
-      monthlyCredits: Number.parseInt(credits, 10),
-      maxConcurrent: Number.parseInt(concurrent, 10),
-      active,
-    }
-    if (!Number.isFinite(update.priceCents) || !Number.isInteger(update.monthlyCredits) || !Number.isInteger(update.maxConcurrent)) {
-      return setMessage({ tone: 'error', text: 'Confira os números.' })
-    }
     setBusy(true)
-    setMessage(null)
     try {
       await updatePlan(plan.slug, update)
-      setMessage({ tone: 'success', text: 'Plano salvo. Quem já assina segue no valor contratado até trocar de plano.' })
+      notify(`${plan.name} salvo. Quem já assina segue no valor contratado até trocar de plano.`)
       onSaved()
     } catch (saveError) {
-      setMessage({ tone: 'error', text: errorMessage(saveError) })
+      setError(errorMessage(saveError))
     } finally {
       setBusy(false)
+      setConfirming(false)
     }
   }
 
@@ -51,32 +62,43 @@ function PlanRow({ plan, onSaved }: { readonly plan: AdminPlan; readonly onSaved
         </span>
       </header>
       <div className="grid gap-3 sm:grid-cols-3">
-        <TextField label="Preço (R$/mês)" inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} disabled={plan.slug === 'gratis'} />
-        <TextField label="Créditos por mês" inputMode="numeric" value={credits} onChange={(event) => setCredits(event.target.value)} />
-        <TextField label="Gerações simultâneas" inputMode="numeric" value={concurrent} onChange={(event) => setConcurrent(event.target.value)} />
+        <TextField label="Preço (R$/mês)" inputMode="decimal" value={price} onChange={(event) => setPrice(event.target.value)} disabled={!canEdit || plan.slug === 'gratis'} />
+        <TextField label="Créditos por mês" inputMode="numeric" value={credits} onChange={(event) => setCredits(event.target.value)} disabled={!canEdit} />
+        <TextField label="Gerações simultâneas" inputMode="numeric" value={concurrent} onChange={(event) => setConcurrent(event.target.value)} disabled={!canEdit} />
       </div>
       <label className="flex items-center gap-2 text-sm text-zinc-300">
-        <input type="checkbox" checked={active} onChange={(event) => setActive(event.target.checked)} className="size-4 accent-[var(--color-accent)]" />
+        <input type="checkbox" checked={active} onChange={(event) => setActive(event.target.checked)} disabled={!canEdit} className="size-4 accent-[var(--color-accent)]" />
         Plano ativo (aparece para assinar)
       </label>
-      {message && <Notice tone={message.tone}>{message.text}</Notice>}
-      <Button variant="secondary" loading={busy} onClick={() => void save()}>
-        Salvar {plan.name}
-      </Button>
+      {error && <Notice tone="error">{error}</Notice>}
+      {canEdit && (
+        <Button variant="secondary" onClick={review}>
+          Revisar {plan.name}
+        </Button>
+      )}
+      <ConfirmDialog open={confirming} title={`Salvar ${plan.name}`} confirmLabel="Salvar plano" busy={busy} onConfirm={() => void save()} onCancel={() => setConfirming(false)}>
+        <p>
+          {formatBRL(update.priceCents)} por mês, {update.monthlyCredits.toLocaleString('pt-BR')} créditos, {update.maxConcurrent} gerações ao mesmo tempo
+          {update.active ? '' : ', fora da venda'}.
+        </p>
+        <p className="text-zinc-400">
+          {newVersion
+            ? `Vira a versão ${plan.version + 1}. Quem já assina mantém o valor e os créditos contratados; a vitrine da landing (catalog.ts) precisa mudar junto.`
+            : 'Preço e créditos não mudam, então a versão continua a mesma.'}
+        </p>
+      </ConfirmDialog>
     </article>
   )
 }
 
 export function PlansTab() {
+  const { can } = useAdminAccess()
   const plans = useQuery(fetchAdminPlans, 'Não deu para carregar os planos.')
   return (
     <div className="space-y-4">
-      <p className="text-sm text-zinc-400">
-        Mudar preço ou créditos cria uma versão nova do plano. Assinaturas existentes guardam o valor contratado.
-      </p>
       {plans.error && <Notice tone="error">{plans.error}</Notice>}
       <div className="grid gap-4 lg:grid-cols-2">
-        {plans.data?.map((plan) => <PlanRow key={`${plan.slug}:${plan.version}`} plan={plan} onSaved={() => void plans.reload()} />)}
+        {plans.data?.map((plan) => <PlanRow key={`${plan.slug}:${plan.version}:${plan.active}`} plan={plan} canEdit={can('plans.manage')} onSaved={() => void plans.reload()} />)}
       </div>
     </div>
   )

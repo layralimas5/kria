@@ -1,10 +1,13 @@
 import clsx from 'clsx'
 import { useState, type FormEvent } from 'react'
 import { grossMargin, suggestedCredits, type PricingSettings } from '@/domain/pricing'
+import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { useQuery } from '@/hooks/useQuery'
-import { fetchAdminModels, fetchAdminPlans, fetchOverview, updateModel, updatePricing, type AdminModel } from '@/lib/adminApi'
+import { useToast } from '@/hooks/useToast'
+import { fetchAdminModels, fetchAdminPlans, fetchPricing, updateModel, updatePricing, type AdminModel } from '@/lib/adminApi'
 import { errorMessage } from '@/lib/api'
 import { Button } from '../ui/Button'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { TextField } from '../ui/Field'
 import { Notice } from '../ui/Notice'
 
@@ -15,13 +18,19 @@ function PricingForm({ settings, onSaved }: { readonly settings: PricingSettings
   const [fxBuffer, setFxBuffer] = useState(String(settings.fx_buffer * 100))
   const [markup, setMarkup] = useState(String(settings.markup))
   const [creditValue, setCreditValue] = useState(String(settings.credit_value_brl))
+  const notify = useToast()
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState<{ tone: 'error' | 'success'; text: string } | null>(null)
+  const [confirming, setConfirming] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(event: FormEvent) {
+  function review(event: FormEvent) {
     event.preventDefault()
+    setError(null)
+    setConfirming(true)
+  }
+
+  async function save() {
     setBusy(true)
-    setMessage(null)
     try {
       await updatePricing({
         usdBrl: parseDecimal(usdBrl),
@@ -29,17 +38,18 @@ function PricingForm({ settings, onSaved }: { readonly settings: PricingSettings
         markup: parseDecimal(markup),
         creditValueBrl: parseDecimal(creditValue),
       })
-      setMessage({ tone: 'success', text: 'Parâmetros salvos. O preço sugerido abaixo já usa os novos valores.' })
+      notify('Parâmetros salvos. O preço sugerido abaixo já usa os novos valores.')
       onSaved()
     } catch (saveError) {
-      setMessage({ tone: 'error', text: errorMessage(saveError) })
+      setError(errorMessage(saveError))
     } finally {
       setBusy(false)
+      setConfirming(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+    <form onSubmit={review} className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
       <h3 className="text-sm font-bold text-zinc-200">Como o custo vira crédito</h3>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <TextField label="Dólar (R$)" inputMode="decimal" value={usdBrl} onChange={(event) => setUsdBrl(event.target.value)} />
@@ -53,10 +63,13 @@ function PricingForm({ settings, onSaved }: { readonly settings: PricingSettings
           hint="Use o crédito mais barato vendido (plano Studio)."
         />
       </div>
-      {message && <Notice tone={message.tone}>{message.text}</Notice>}
-      <Button type="submit" variant="secondary" loading={busy}>
-        Salvar parâmetros
+      {error && <Notice tone="error">{error}</Notice>}
+      <Button type="submit" variant="secondary">
+        Revisar parâmetros
       </Button>
+      <ConfirmDialog open={confirming} title="Salvar parâmetros de preço" confirmLabel="Salvar" busy={busy} onConfirm={() => void save()} onCancel={() => setConfirming(false)}>
+        <p>Muda o preço sugerido e a margem calculada de todos os modelos. O preço cobrado em créditos só muda quando você salvar cada modelo.</p>
+      </ConfirmDialog>
     </form>
   )
 }
@@ -65,16 +78,19 @@ interface ModelRowProps {
   readonly model: AdminModel
   readonly plans: readonly string[]
   readonly settings: PricingSettings
+  readonly canEdit: boolean
   readonly onSaved: () => void
 }
 
-function ModelRow({ model, plans, settings, onSaved }: ModelRowProps) {
+function ModelRow({ model, plans, settings, canEdit, onSaved }: ModelRowProps) {
+  const notify = useToast()
   const [active, setActive] = useState(model.active)
   const [credits, setCredits] = useState(String(model.credits))
   const [cost, setCost] = useState(model.provider_cost_usd === null ? '' : String(model.provider_cost_usd))
   const [allowed, setAllowed] = useState<readonly string[]>(model.allowed_plans ?? [])
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState<{ tone: 'error' | 'success'; text: string } | null>(null)
+  const [confirming, setConfirming] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const costValue = cost.trim() === '' ? null : parseDecimal(cost)
   const creditsValue = Number.parseInt(credits, 10)
@@ -84,19 +100,24 @@ function ModelRow({ model, plans, settings, onSaved }: ModelRowProps) {
     setAllowed((current) => (current.includes(slug) ? current.filter((item) => item !== slug) : [...current, slug]))
   }
 
+  function review() {
+    if (!Number.isInteger(creditsValue) || creditsValue <= 0) return setError('Créditos precisam ser um inteiro positivo.')
+    if (costValue !== null && !Number.isFinite(costValue)) return setError('Custo inválido.')
+    setError(null)
+    setConfirming(true)
+  }
+
   async function save() {
-    if (!Number.isInteger(creditsValue) || creditsValue <= 0) return setMessage({ tone: 'error', text: 'Créditos precisam ser um inteiro positivo.' })
-    if (costValue !== null && !Number.isFinite(costValue)) return setMessage({ tone: 'error', text: 'Custo inválido.' })
     setBusy(true)
-    setMessage(null)
     try {
       await updateModel(model.slug, { active, credits: creditsValue, providerCostUsd: costValue, allowedPlans: allowed.length > 0 ? allowed : null })
-      setMessage({ tone: 'success', text: 'Modelo salvo. Vale para as próximas gerações.' })
+      notify(`${model.name} salvo. Vale para as próximas gerações.`)
       onSaved()
     } catch (saveError) {
-      setMessage({ tone: 'error', text: errorMessage(saveError) })
+      setError(errorMessage(saveError))
     } finally {
       setBusy(false)
+      setConfirming(false)
     }
   }
 
@@ -109,13 +130,14 @@ function ModelRow({ model, plans, settings, onSaved }: ModelRowProps) {
         </code>
       </header>
       <div className="grid gap-3 sm:grid-cols-2">
-        <TextField label="Preço (créditos)" inputMode="numeric" value={credits} onChange={(event) => setCredits(event.target.value)} />
+        <TextField label="Preço (créditos)" inputMode="numeric" value={credits} onChange={(event) => setCredits(event.target.value)} disabled={!canEdit} />
         <TextField
           label="Custo real no fornecedor (US$)"
           inputMode="decimal"
           value={cost}
           onChange={(event) => setCost(event.target.value)}
           placeholder="Conferir no site do fornecedor"
+          disabled={!canEdit}
         />
       </div>
       <p className="text-sm text-zinc-400">
@@ -135,35 +157,45 @@ function ModelRow({ model, plans, settings, onSaved }: ModelRowProps) {
         <div className="flex flex-wrap gap-3">
           {plans.map((slug) => (
             <label key={slug} className="flex items-center gap-1.5 text-sm text-zinc-300">
-              <input type="checkbox" checked={allowed.includes(slug)} onChange={() => togglePlan(slug)} className="size-4 accent-[var(--color-accent)]" />
+              <input type="checkbox" checked={allowed.includes(slug)} onChange={() => togglePlan(slug)} disabled={!canEdit} className="size-4 accent-[var(--color-accent)]" />
               {slug}
             </label>
           ))}
         </div>
       </fieldset>
       <label className="flex items-center gap-2 text-sm text-zinc-300">
-        <input type="checkbox" checked={active} onChange={(event) => setActive(event.target.checked)} className="size-4 accent-[var(--color-accent)]" />
+        <input type="checkbox" checked={active} onChange={(event) => setActive(event.target.checked)} disabled={!canEdit} className="size-4 accent-[var(--color-accent)]" />
         Modelo ativo
       </label>
-      {message && <Notice tone={message.tone}>{message.text}</Notice>}
-      <Button variant="secondary" loading={busy} onClick={() => void save()}>
-        Salvar {model.name}
-      </Button>
+      {error && <Notice tone="error">{error}</Notice>}
+      {canEdit && (
+        <Button variant="secondary" onClick={review}>
+          Revisar {model.name}
+        </Button>
+      )}
+      <ConfirmDialog open={confirming} title={`Salvar ${model.name}`} confirmLabel="Salvar modelo" busy={busy} onConfirm={() => void save()} onCancel={() => setConfirming(false)}>
+        <p>
+          {active ? 'Ativo' : 'Desligado (ninguém gera com ele)'}, {creditsValue} créditos por geração
+          {costValue === null ? ', sem custo cadastrado' : `, custo de US$ ${costValue.toFixed(4)}`}, {allowed.length > 0 ? `só ${allowed.join(', ')}` : 'todos os planos'}.
+        </p>
+        <p className="text-zinc-400">Vale para as próximas gerações; as que já nasceram guardam o preço e o custo da hora.</p>
+      </ConfirmDialog>
     </article>
   )
 }
 
 export function ModelsTab() {
+  const { can } = useAdminAccess()
   const models = useQuery(fetchAdminModels, 'Não deu para carregar os modelos.')
   const plans = useQuery(fetchAdminPlans, 'Não deu para carregar os planos.')
-  const overview = useQuery(fetchOverview, 'Não deu para carregar os parâmetros de preço.')
-  const settings = overview.data?.pricing
-  const error = models.error ?? plans.error ?? overview.error
+  const pricing = useQuery(fetchPricing, 'Não deu para carregar os parâmetros de preço.')
+  const settings = pricing.data
+  const error = models.error ?? plans.error ?? pricing.error
 
   return (
     <div className="space-y-5">
       {error && <Notice tone="error">{error}</Notice>}
-      {settings && <PricingForm key={JSON.stringify(settings)} settings={settings} onSaved={() => void overview.reload()} />}
+      {settings && can('pricing.manage') && <PricingForm key={JSON.stringify(settings)} settings={settings} onSaved={() => void pricing.reload()} />}
       <div className="grid gap-4 lg:grid-cols-2">
         {settings &&
           models.data?.map((model) => (
@@ -172,6 +204,7 @@ export function ModelsTab() {
               model={model}
               plans={(plans.data ?? []).map((plan) => plan.slug)}
               settings={settings}
+              canEdit={can('models.manage')}
               onSaved={() => void models.reload()}
             />
           ))}

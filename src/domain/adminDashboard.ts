@@ -24,6 +24,22 @@ export const ADMIN_ROLE_DESCRIPTIONS: Readonly<Record<AdminRole, string>> = {
   analyst: 'Indicadores de uso e produto. Sem dados financeiros nem de usuários.',
 }
 
+/** O que cada permissão do banco (0014 `admin_role_permissions`) libera, em português. */
+export const ADMIN_PERMISSION_LABELS: Readonly<Record<string, string>> = {
+  'dashboard.view': 'Ver o dashboard',
+  'finance.view': 'Ver receita, pagamentos e custos',
+  'users.view': 'Consultar usuários, créditos e gerações',
+  'users.manage': 'Suspender e reativar contas',
+  'credits.adjust': 'Conceder e remover créditos',
+  'plans.view': 'Ver planos',
+  'plans.manage': 'Alterar planos',
+  'models.view': 'Ver modelos e custos',
+  'models.manage': 'Alterar modelos, preço em créditos e planos liberados',
+  'pricing.manage': 'Alterar câmbio, markup e valor do crédito',
+  'audit.view': 'Ver a auditoria',
+  'admins.manage': 'Dar e remover acesso à operação',
+}
+
 export const adminMeSchema = z.object({
   role: adminRoleSchema,
   permissions: z.array(z.string()),

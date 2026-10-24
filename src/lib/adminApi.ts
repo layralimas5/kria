@@ -2,6 +2,7 @@
 // O front só esconde a rota; quem barra quem não é admin é o servidor.
 
 import { z } from 'zod'
+import { adminMeSchema, adminRoleSchema, dashboardSchema, type AdminMe, type AdminRole, type Period } from '@/domain/adminDashboard'
 import { ledgerReasonSchema, subscriptionStatusSchema } from '@/domain/types'
 import { ApiError } from './api'
 import { supabase } from './supabase'
@@ -16,9 +17,14 @@ const ADMIN_ERRORS: Record<string, string> = {
   model_not_found: 'Modelo não encontrado.',
   free_plan_is_free: 'O plano grátis não pode ter preço.',
   account_not_found: 'Conta não encontrada.',
+  mfa_required: 'Confirme o segundo fator para continuar.',
+  invalid_period: 'Período inválido. Escolha até um ano.',
+  user_not_found: 'Nenhuma conta com esse e-mail.',
+  cannot_change_self: 'Você não pode mudar o próprio acesso.',
+  last_super_admin: 'Precisa sobrar pelo menos um super admin.',
 }
 
-async function rpc<T>(name: string, args: Record<string, unknown>, schema: z.ZodType<T>): Promise<T> {
+async function rpc<T>(name: string, args: Record<string, unknown>, schema: z.ZodType<T, z.ZodTypeDef, unknown>): Promise<T> {
   const { data, error } = await supabase.rpc(name, args)
   if (error) {
     const known = ADMIN_ERRORS[error.message]
@@ -29,36 +35,25 @@ async function rpc<T>(name: string, args: Record<string, unknown>, schema: z.Zod
   return schema.parse(data)
 }
 
-export async function checkIsAdmin(): Promise<boolean> {
-  const { data, error } = await supabase.rpc('is_admin')
-  if (error) return false
-  return data === true
+/** Papel, permissões e nível da sessão; nulo para quem não administra. */
+export async function fetchAdminMe(): Promise<AdminMe | null> {
+  const { data, error } = await supabase.rpc('admin_me')
+  if (error) throw new ApiError('admin_me_failed', 'Não deu para conferir seu acesso.')
+  return data === null ? null : adminMeSchema.parse(data)
 }
+
+export const fetchDashboard = (period: Period) =>
+  rpc('admin_dashboard', { p_from: period.from.toISOString(), p_to: period.to.toISOString() }, dashboardSchema)
 
 const numeric = z.coerce.number()
 
-export const overviewSchema = z.object({
-  total_users: numeric,
-  new_users_30d: numeric,
-  active_subscribers: numeric,
-  past_due: numeric,
-  mrr_cents: numeric,
-  new_subscriptions_30d: numeric,
-  cancellations_30d: numeric,
-  subscription_revenue_30d_cents: numeric,
-  pack_revenue_30d_cents: numeric,
-  generations_30d: numeric,
-  generations_failed_30d: numeric,
-  credits_consumed_30d: numeric,
-  api_cost_usd_30d: numeric,
-  api_cost_unknown_30d: numeric,
-  pricing: z.object({ usd_brl: numeric, fx_buffer: numeric, markup: numeric, credit_value_brl: numeric }),
-  revenue_by_plan: z.array(z.object({ slug: z.string(), name: z.string(), subscribers: numeric, mrr_cents: numeric })),
-  by_model: z.array(
-    z.object({ model_slug: z.string(), provider: z.string(), total: numeric, failed: numeric, credits: numeric, cost_usd: numeric }),
-  ),
+export const pricingSettingsSchema = z.object({
+  usd_brl: numeric,
+  fx_buffer: numeric,
+  markup: numeric,
+  credit_value_brl: numeric,
+  payment_fee_rate: numeric,
 })
-export type Overview = z.infer<typeof overviewSchema>
 
 export const adminUserSchema = z.object({
   id: z.string().uuid(),
@@ -95,7 +90,8 @@ export const userDetailSchema = z.object({
   subscriptions: z.array(
     z.object({ id: z.string(), plan_slug: z.string(), status: subscriptionStatusSchema, price_cents: numeric, current_period_end: z.string().nullable(), created_at: z.string() }),
   ),
-  payments: z.array(z.object({ type: z.string(), amount_cents: numeric, status: z.string(), at: z.string() })),
+  /** Nulo para quem não tem `finance.view`. */
+  payments: z.array(z.object({ type: z.string(), amount_cents: numeric, status: z.string(), at: z.string() })).nullable(),
 })
 export type UserDetail = z.infer<typeof userDetailSchema>
 
@@ -128,6 +124,9 @@ export type AdminModel = z.infer<typeof adminModelSchema>
 export const auditEntrySchema = z.object({
   id: numeric,
   action: z.string(),
+  entity: z.string(),
+  result: z.enum(['success', 'failed']),
+  admin_id: z.string().nullable(),
   target_user_id: z.string().nullable(),
   target: z.string().nullable(),
   reason: z.string().nullable(),
@@ -136,7 +135,7 @@ export const auditEntrySchema = z.object({
 })
 export type AuditEntry = z.infer<typeof auditEntrySchema>
 
-export const fetchOverview = () => rpc('admin_overview', {}, overviewSchema)
+export const fetchPricing = () => rpc('admin_pricing', {}, pricingSettingsSchema)
 
 export const searchUsers = (query: string) => rpc('admin_search_users', { p_query: query, p_limit: 30 }, z.array(adminUserSchema))
 
@@ -210,9 +209,28 @@ export const updatePricing = (update: PricingUpdate) =>
 export async function fetchAuditLog(): Promise<AuditEntry[]> {
   const { data, error } = await supabase
     .from('admin_audit_logs')
-    .select('id, action, target_user_id, target, reason, details, created_at')
+    .select('id, action, entity, result, admin_id, target_user_id, target, reason, details, created_at')
     .order('created_at', { ascending: false })
     .limit(100)
   if (error) throw new ApiError('audit_unavailable', 'Não deu para carregar a auditoria.')
   return z.array(auditEntrySchema).parse(data)
 }
+
+export const adminMemberSchema = z.object({
+  user_id: z.string().uuid(),
+  email: z.string().nullable(),
+  display_name: z.string().nullable(),
+  role: adminRoleSchema,
+  created_at: z.string(),
+  updated_at: z.string(),
+  granted_by_email: z.string().nullable(),
+})
+export type AdminMember = z.infer<typeof adminMemberSchema>
+
+export const fetchAdmins = () => rpc('admin_list_admins', {}, z.array(adminMemberSchema))
+
+export const setAdminRole = (email: string, role: AdminRole, reason: string) =>
+  rpc('admin_set_role', { p_email: email, p_role: role, p_reason: reason }, z.object({ user_id: z.string(), role: adminRoleSchema }))
+
+export const removeAdmin = (userId: string, reason: string) =>
+  rpc('admin_remove_admin', { p_user_id: userId, p_reason: reason }, z.boolean())

@@ -5,6 +5,8 @@
 // suficiente para as telas se comportarem como no ar.
 
 import { assistantToolSchema } from '@/domain/types'
+import { ADMIN_ROLE_LABELS, adminRoleSchema } from '@/domain/adminDashboard'
+import { buildDemoDashboard } from './demoAdmin'
 import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_IMAGES, DEMO_USER_ID, DEMO_VIDEO, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 
@@ -389,7 +391,18 @@ function workspaceWrite(table: OwnedTable, method: string, url: URL, body: Row):
 // ---------------------------------------------------- painel de operação (admin)
 
 function audit(action: string, target: string | null, reason: string | null, targetUserId: string | null = null) {
-  state.audit.unshift({ id: state.audit.length + 1, action, target, reason, target_user_id: targetUserId, details: {}, created_at: new Date().toISOString() })
+  state.audit.unshift({
+    id: state.audit.length + 1,
+    action,
+    entity: action.split('.')[0],
+    result: 'success',
+    admin_id: DEMO_USER_ID,
+    target,
+    reason,
+    target_user_id: targetUserId,
+    details: {},
+    created_at: new Date().toISOString(),
+  })
 }
 
 function demoUserRow(): Row {
@@ -408,55 +421,58 @@ function demoUserRow(): Row {
   }
 }
 
-function adminOverview(): Row {
-  const users = [demoUserRow(), ...state.otherUsers]
-  const live = users.filter((user) => user.subscription_status === 'active' || user.subscription_status === 'past_due')
-  const priceOf = (slug: unknown) => Number(state.plans.find((plan) => plan.slug === slug)?.price_cents ?? 0)
-  const succeeded = state.generations.filter((item) => item.status === 'succeeded')
-  const byModel = state.models.map((model) => {
-    const rows = state.generations.filter((item) => item.model_slug === model.slug)
-    return {
-      model_slug: model.slug,
-      provider: model.provider,
-      total: rows.length,
-      failed: rows.filter((item) => item.status === 'failed').length,
-      credits: rows.filter((item) => item.status === 'succeeded').reduce((sum, item) => sum + Number(item.credits), 0),
-      cost_usd: 0,
-    }
-  })
-  return {
-    total_users: users.length,
-    new_users_30d: users.length,
-    active_subscribers: live.length,
-    past_due: live.filter((user) => user.subscription_status === 'past_due').length,
-    mrr_cents: live.reduce((sum, user) => sum + priceOf(user.plan_slug), 0),
-    new_subscriptions_30d: live.length,
-    cancellations_30d: state.subscriptions.filter((item) => item.canceled_at).length,
-    subscription_revenue_30d_cents: state.subscriptionPayments.reduce((sum, item) => sum + Number(item.amount_cents), 0),
-    pack_revenue_30d_cents: state.purchases.reduce((sum, item) => sum + Number(item.price_cents ?? 0), 0),
-    generations_30d: state.generations.length,
-    generations_failed_30d: state.generations.filter((item) => item.status === 'failed').length,
-    credits_consumed_30d: succeeded.reduce((sum, item) => sum + Number(item.credits), 0),
-    api_cost_usd_30d: 0,
-    api_cost_unknown_30d: succeeded.length,
-    pricing: state.pricing,
-    revenue_by_plan: state.plans
-      .filter((plan) => plan.public)
-      .map((plan) => {
-        const subscribers = live.filter((user) => user.plan_slug === plan.slug).length
-        return { slug: plan.slug, name: plan.name, position: plan.position, subscribers, mrr_cents: subscribers * Number(plan.price_cents) }
-      }),
-    by_model: byModel.filter((row) => row.total > 0),
-  }
+const SUPER_ADMIN_PERMISSIONS = [
+  'dashboard.view', 'finance.view', 'users.view', 'users.manage', 'credits.adjust', 'plans.view', 'plans.manage',
+  'models.view', 'models.manage', 'pricing.manage', 'audit.view', 'admins.manage',
+]
+
+function setRole(body: Row): Response {
+  const role = adminRoleSchema.safeParse(body.p_role)
+  const reason = String(body.p_reason ?? '').trim()
+  if (!role.success) return rpcFail('invalid_role')
+  if (reason.length < 5) return rpcFail('reason_required')
+  const email = String(body.p_email ?? '').trim().toLowerCase()
+  const user = [demoUserRow(), ...state.otherUsers].find((item) => String(item.email).toLowerCase() === email)
+  if (!user) return rpcFail('user_not_found')
+  if (user.id === DEMO_USER_ID) return rpcFail('cannot_change_self')
+  const existing = state.admins.find((item) => item.user_id === user.id)
+  const now = new Date().toISOString()
+  if (existing) Object.assign(existing, { role: role.data, updated_at: now })
+  else state.admins.push({ user_id: user.id, email: user.email, display_name: user.display_name, role: role.data, created_at: now, updated_at: now, granted_by_email: 'demo@kria.ia' })
+  audit(existing ? 'admin.role_change' : 'admin.grant', ADMIN_ROLE_LABELS[role.data], reason, String(user.id))
+  persist()
+  return json({ user_id: user.id, role: role.data })
 }
 
-/** As funções `admin_*` do banco (0004), com as mesmas recusas. No demo a conta é admin. */
+/** As funções `admin_*` do banco (0004 e 0014), com as mesmas recusas. No demo a conta é super admin com segundo fator. */
 function adminRpc(name: string, body: Row): Response | null {
   switch (name) {
     case 'is_admin':
       return json(true)
-    case 'admin_overview':
-      return json(adminOverview())
+    case 'admin_me':
+      return json({ role: 'super_admin', permissions: SUPER_ADMIN_PERMISSIONS, aal: 'aal2' })
+    case 'admin_dashboard': {
+      const from = new Date(String(body.p_from))
+      const to = new Date(String(body.p_to))
+      if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) return rpcFail('invalid_period')
+      return json(buildDemoDashboard(state, [demoUserRow(), ...state.otherUsers], from, to))
+    }
+    case 'admin_pricing':
+      return json({ ...state.pricing, payment_fee_rate: 0.035 })
+    case 'admin_list_admins':
+      return json(state.admins)
+    case 'admin_set_role':
+      return setRole(body)
+    case 'admin_remove_admin': {
+      if (String(body.p_reason ?? '').trim().length < 5) return rpcFail('reason_required')
+      if (body.p_user_id === DEMO_USER_ID) return rpcFail('cannot_change_self')
+      const index = state.admins.findIndex((item) => item.user_id === body.p_user_id)
+      if (index < 0) return rpcFail('user_not_found')
+      state.admins.splice(index, 1)
+      audit('admin.revoke', null, String(body.p_reason).trim(), String(body.p_user_id))
+      persist()
+      return json(true)
+    }
     case 'admin_search_users': {
       const term = String(body.p_query ?? '').toLowerCase()
       const users = [demoUserRow(), ...state.otherUsers]

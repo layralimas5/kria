@@ -1,0 +1,87 @@
+import {
+  BarChart3,
+  Bell,
+  Boxes,
+  Coins,
+  CreditCard,
+  Cpu,
+  LayoutDashboard,
+  LifeBuoy,
+  Megaphone,
+  ScrollText,
+  Settings,
+  ShieldCheck,
+  Sparkles,
+  Tags,
+  UserCog,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react'
+
+export interface AdminNavItem {
+  readonly label: string
+  readonly icon: LucideIcon
+  /** Rota pronta. Sem rota, o item aparece como "Breve", sem link (etapas 2 a 5). */
+  readonly to?: string
+  /** Permissão do banco que a tela usa; quem não tem não vê o item. */
+  readonly permission?: string
+}
+
+export interface AdminNavGroup {
+  readonly label: string
+  readonly items: readonly AdminNavItem[]
+}
+
+export const ADMIN_NAV: readonly AdminNavGroup[] = [
+  {
+    label: 'Visão geral',
+    items: [
+      { label: 'Dashboard', icon: LayoutDashboard, to: '/admin', permission: 'dashboard.view' },
+      { label: 'Analytics', icon: BarChart3 },
+    ],
+  },
+  {
+    label: 'Operação',
+    items: [
+      { label: 'Usuários', icon: Users, to: '/admin/usuarios', permission: 'users.view' },
+      { label: 'Gerações', icon: Sparkles },
+      { label: 'Ferramentas', icon: Boxes },
+      { label: 'Modelos e custos', icon: Cpu, to: '/admin/modelos', permission: 'models.view' },
+      { label: 'Créditos', icon: Coins },
+    ],
+  },
+  {
+    label: 'Comercial',
+    items: [
+      { label: 'Assinaturas', icon: CreditCard },
+      { label: 'Planos', icon: Tags, to: '/admin/planos', permission: 'plans.view' },
+      { label: 'Financeiro', icon: Wallet },
+      { label: 'Marketing', icon: Megaphone },
+    ],
+  },
+  {
+    label: 'Relacionamento',
+    items: [
+      { label: 'Suporte', icon: LifeBuoy },
+      { label: 'Comunicados', icon: Bell },
+    ],
+  },
+  {
+    label: 'Sistema',
+    items: [
+      { label: 'Auditoria', icon: ScrollText, to: '/admin/auditoria', permission: 'audit.view' },
+      { label: 'Administradores', icon: UserCog, to: '/admin/administradores', permission: 'admins.manage' },
+      { label: 'Segurança', icon: ShieldCheck, to: '/admin/seguranca' },
+      { label: 'Configurações', icon: Settings },
+    ],
+  },
+]
+
+/** Menu de quem está logado: some o que a permissão não libera; o "Breve" fica para todos. */
+export function adminNavFor(can: (permission: string) => boolean): AdminNavGroup[] {
+  return ADMIN_NAV.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => item.permission === undefined || can(item.permission)),
+  })).filter((group) => group.items.length > 0)
+}

@@ -36,8 +36,9 @@ baterem). Mudou um plano no banco, muda o catálogo junto. Guia em `docs/landing
   (gasta o plano primeiro), captura no sucesso e devolve aos mesmos baldes na falha. Extrato imutável.
 - Plano e crédito de assinatura só mudam pelo `asaas-webhook` (`activate_subscription_period`).
 - O painel do usuário não tem nada de admin (nem link no menu). A operação fica em `/admin`, com moldura
-  própria, fora do `AppShell`; só abre para quem está em `admin_users`, e cada função `admin_*` confere
-  `is_admin()` no banco e grava `admin_audit_logs`.
+  própria, fora do `AppShell`; só abre para quem está em `admin_users`. Cada função `admin_*` chama
+  `assert_admin_permission('x')` (papel + sessão aal2, 0014) e grava `admin_audit_logs`, que é imutável.
+  Permissão nova entra em `admin_role_permissions`, nunca só no front. Diagnóstico e etapas em `docs/admin.md`.
 - Ferramenta que ainda não existe aparece como "Breve", sem link nem botão.
 - Persona nasce só de imagem gerada aqui (`create_persona`). Sem upload de foto:
   é o que impede deepfake de pessoa real. Não abrir upload sem moderação de rosto.

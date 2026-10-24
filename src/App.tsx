@@ -35,7 +35,14 @@ const BrandsPage = page(() => import('@/pages/BrandsPage'), 'BrandsPage')
 const ProjectsPage = page(() => import('@/pages/ProjectsPage'), 'ProjectsPage')
 const ContentPage = page(() => import('@/pages/ContentPage'), 'ContentPage')
 const ResultsPage = page(() => import('@/pages/ResultsPage'), 'ResultsPage')
-const AdminPage = page(() => import('@/pages/AdminPage'), 'AdminPage')
+const AdminRoot = page(() => import('@/pages/admin/AdminRoot'), 'AdminRoot')
+const AdminDashboardPage = page(() => import('@/pages/admin/AdminDashboardPage'), 'AdminDashboardPage')
+const AdminUsersPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminUsersPage')
+const AdminPlansPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminPlansPage')
+const AdminModelsPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminModelsPage')
+const AdminAuditPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminAuditPage')
+const AdminAdminsPage = page(() => import('@/pages/admin/AdminAdminsPage'), 'AdminAdminsPage')
+const AdminSecurityPage = page(() => import('@/pages/admin/AdminSecurityPage'), 'AdminSecurityPage')
 const TermsPage = page(() => import('@/landing/TermsPage'), 'TermsPage')
 
 function PageFallback() {
@@ -81,8 +88,17 @@ export function App() {
             <Route element={<SignedIn />}>
               <Route path="boas-vindas" element={<OnboardingPage />} />
               <Route path="assinar/:plan" element={<SubscribePage />} />
-              {/* Operação: fora do painel do usuário e sem link em menu (docs/vynkio-evolucao.md). */}
-              <Route path="admin" element={<AdminPage />} />
+              {/* Operação: moldura própria, fora do painel do usuário e sem link em menu (docs/admin.md). */}
+              <Route path="admin" element={<AdminRoot />}>
+                <Route index element={<AdminDashboardPage />} />
+                <Route path="usuarios" element={<AdminUsersPage />} />
+                <Route path="modelos" element={<AdminModelsPage />} />
+                <Route path="planos" element={<AdminPlansPage />} />
+                <Route path="auditoria" element={<AdminAuditPage />} />
+                <Route path="administradores" element={<AdminAdminsPage />} />
+                <Route path="seguranca" element={<AdminSecurityPage />} />
+                <Route path="*" element={<Navigate to="/admin" replace />} />
+              </Route>
               <Route
                 element={
                   <OnboardingGate>

@@ -26,6 +26,8 @@ export interface DemoState {
   audit: Row[]
   /** Contas de exemplo do painel de operação (só existem no demo). */
   otherUsers: Row[]
+  /** Quem acessa a operação no demo (0014 `admin_users`). */
+  admins: Row[]
   analyticsImports: Row[]
   analyticsSnapshots: Row[]
   projects: Row[]
@@ -184,6 +186,9 @@ export function createDemoState(): DemoState {
       { id: uuid(), email: 'conta.exemplo1@demo.vynkio', display_name: 'Conta de exemplo 1', username: 'exemplo1', balance: 940, subscription_balance: 900, purchased_balance: 40, plan_slug: 'studio', subscription_status: 'active', suspended_at: null, created_at: minutesAgo(60 * 24 * 20), generations: 58 },
       { id: uuid(), email: 'conta.exemplo2@demo.vynkio', display_name: 'Conta de exemplo 2', username: 'exemplo2', balance: 12, subscription_balance: 0, purchased_balance: 12, plan_slug: null, subscription_status: null, suspended_at: null, created_at: minutesAgo(60 * 24 * 6), generations: 4 },
       { id: uuid(), email: 'conta.exemplo3@demo.vynkio', display_name: 'Conta de exemplo 3', username: 'exemplo3', balance: 210, subscription_balance: 210, purchased_balance: 0, plan_slug: 'starter', subscription_status: 'past_due', suspended_at: null, created_at: minutesAgo(60 * 24 * 33), generations: 21 },
+    ],
+    admins: [
+      { user_id: DEMO_USER_ID, email: 'demo@kria.ia', display_name: 'Conta demo', role: 'super_admin', created_at: minutesAgo(60 * 24 * 40), updated_at: minutesAgo(60 * 24 * 40), granted_by_email: null },
     ],
     // Sem métrica de exemplo: Resultados só mostra o que a pessoa importar, também no demo.
     analyticsImports: [],
