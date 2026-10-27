@@ -19,6 +19,8 @@ fundo noite `#0b0a1a`, roxo `#7c3aed` (botão e selo, texto branco), roxo claro 
 `src/landing/pricing/catalog.ts`: textos e selos ficam lá, mas preço, créditos, limite de
 personagens e acesso ao Veo precisam bater com as migrations (`catalog.test.ts` falha se não
 baterem). Mudou um plano no banco, muda o catálogo junto. Guia em `docs/landing.md`.
+Custo por geração na vitrine: `src/landing/pricing/costs.ts` (testado contra `models`). Prints de produto
+são telas reais do modo demo (`npm run landing:screens`).
 
 ## Stack
 

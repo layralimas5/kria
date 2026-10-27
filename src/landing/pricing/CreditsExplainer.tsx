@@ -1,57 +1,67 @@
-import { Clapperboard, ImageIcon, Move3d, PenLine, PlusCircle, type LucideIcon } from 'lucide-react'
+import { formatBRL } from '@/domain/format'
+import { CREDIT_PACKS, GENERATION_COSTS } from './costs'
 
-interface CreditUse {
-  readonly icon: LucideIcon
-  readonly title: string
-  readonly text: string
-  readonly soon?: boolean
-}
-
-// Sem custo fixo aqui: o preço de cada geração vem da tabela `models` e o app mostra antes de gerar.
-const USES: readonly CreditUse[] = [
-  { icon: ImageIcon, title: 'Imagens', text: 'Custo varia por modelo e qualidade.' },
-  { icon: Clapperboard, title: 'Vídeos', text: 'Custo varia por modelo, duração e resolução.' },
-  { icon: Move3d, title: 'Motion Control', text: 'Custo varia conforme o processamento.', soon: true },
-  { icon: PenLine, title: 'Copys', text: 'Custo reduzido, pela quantidade de texto.', soon: true },
-  { icon: PlusCircle, title: 'Créditos adicionais', text: 'Pacotes avulsos por Pix ou cartão, quando precisar.' },
-]
+const RULES = [
+  { title: 'Renovação', text: 'Os créditos do plano entram a cada cobrança paga e não acumulam para o mês seguinte.' },
+  { title: 'Avulsos', text: 'Pacotes por Pix ou cartão, com ou sem plano. Esses créditos e os de boas-vindas nunca vencem.' },
+  { title: 'Falhou, voltou', text: 'Se a geração falhar ou o filtro de segurança do provedor bloquear o pedido, os créditos voltam sozinhos.' },
+  { title: 'Provedores', text: 'Vídeo parte sempre de uma imagem gerada no Vynkio. Os modelos recusam conteúdo sensível, e não há upload de foto de pessoa real.' },
+] as const
 
 export function CreditsExplainer() {
   return (
     <section aria-labelledby="creditos-title" className="mt-16 rounded-3xl border border-white/[0.06] bg-panel/60 p-6 md:p-10">
-      <div className="grid gap-8 lg:grid-cols-[1fr_1.6fr] lg:gap-12">
+      <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-12">
         <div>
           <h3 id="creditos-title" className="font-landing text-2xl font-bold uppercase tracking-[-0.03em] text-zinc-50 md:text-3xl">
-            Como funcionam os créditos?
+            Como os créditos são gastos
           </h3>
           <p className="mt-3 text-pretty text-[15px] leading-relaxed text-zinc-400">
-            Cada criação utiliza uma quantidade de créditos que varia conforme a ferramenta, o modelo escolhido e as configurações do
-            conteúdo. Você sempre saberá o custo antes de gerar.
+            Cada criação tem um custo fixo, mostrado no botão antes de gerar. Nada é cobrado por tempo de uso.
           </p>
-          <p className="mt-3 text-pretty text-[15px] leading-relaxed text-zinc-400">
-            Os créditos do plano renovam todo mês e não acumulam. Os de pacote avulso nunca vencem. Se uma geração falhar, o crédito volta sozinho.
+          <dl className="mt-6 space-y-4">
+            {RULES.map(({ title, text }) => (
+              <div key={title}>
+                <dt className="text-sm font-semibold text-zinc-100">{title}</dt>
+                <dd className="mt-0.5 text-pretty text-sm text-zinc-400">{text}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        {/* min-w-0: a tabela rola sozinha em vez de alargar a coluna do grid. */}
+        <div className="min-w-0">
+          <div className="overflow-x-auto rounded-2xl border border-white/[0.06]" tabIndex={0} role="region" aria-labelledby="custos-caption">
+            <table className="w-full min-w-[460px] border-collapse text-sm">
+              <caption id="custos-caption" className="px-4 pb-1 pt-4 text-left text-[13px] font-semibold uppercase tracking-[0.12em] text-accent-soft">
+                Consumo por tipo de geração
+              </caption>
+              <thead>
+                <tr className="text-left text-[13px] text-zinc-400">
+                  <th scope="col" className="px-4 py-3 font-medium">Geração</th>
+                  <th scope="col" className="px-4 py-3 text-right font-medium">Créditos</th>
+                  <th scope="col" className="px-4 py-3 font-medium">O que entrega</th>
+                </tr>
+              </thead>
+              <tbody>
+                {GENERATION_COSTS.map((cost) => (
+                  <tr key={cost.slug} className="border-t border-white/[0.05]">
+                    <th scope="row" className="px-4 py-3 text-left font-medium text-zinc-100">
+                      {cost.label}
+                      {cost.restriction && <span className="mt-0.5 block text-[12px] font-normal text-zinc-400">{cost.restriction}</span>}
+                    </th>
+                    <td className="px-4 py-3 text-right font-landing text-base font-bold tabular-nums text-zinc-50">{cost.credits}</td>
+                    <td className="px-4 py-3 text-zinc-400">{cost.output}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-4 text-[13px] text-zinc-400">
+            Pacotes avulsos:{' '}
+            {CREDIT_PACKS.map((pack) => `${pack.name} ${pack.credits.toLocaleString('pt-BR')} créditos por ${formatBRL(pack.price_cents)}`).join(' · ')}.
           </p>
         </div>
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {USES.map(({ icon: Icon, title, text, soon }) => (
-            <li key={title} className="flex gap-3 rounded-2xl border border-white/[0.06] bg-stage/60 p-4">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent-soft">
-                <Icon className="size-5" aria-hidden="true" />
-              </span>
-              <span>
-                <span className="flex flex-wrap items-center gap-2 text-sm font-semibold text-zinc-100">
-                  {title}
-                  {soon && (
-                    <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
-                      Em breve
-                    </span>
-                  )}
-                </span>
-                <span className="mt-0.5 block text-[13px] text-zinc-400">{text}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
   )

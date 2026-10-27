@@ -1,12 +1,33 @@
 # Landing
 
-Rota `/` (`src/landing`). O app saiu de `/` e foi pra `/estudio`. Todo CTA leva pra `/entrar`.
-Visual inspirado na home da Higgsfield: fundo grafite, títulos em Space Grotesk caixa alta,
-botão "com degrau", grade de mídia de ponta a ponta. Desde 20/10 a marca é Vynkio, na
-paleta da Nivora (fundo noite, roxo, azul e dourado; tokens em `src/index.css`).
+Rota `/` (`src/landing`). Desde 22/10 (branch `feat/landing-v2`) a página vende o Vynkio como
+plataforma de criação, não só gerador de imagem e vídeo. Ordem: Hero, Problema, Recursos (6 cards
+com print real e CTA que abre a ferramenta no app), Como funciona (4 passos), Para quem,
+Produtividade (uma ideia, cinco entregas), Planos, Perguntas e CTA final.
 
-- Textos, vídeos, ferramentas, pacotes e FAQ: `src/landing/content.ts`. Preços e custos espelham
-  `credit_packs` e `models`; se mudar no banco, mudar lá também.
+- Textos, recursos, passos, casos de uso e FAQ: `src/landing/content.ts`.
+- Planos: `src/landing/pricing/catalog.ts` (`catalog.test.ts`). Custo por geração e pacotes avulsos:
+  `src/landing/pricing/costs.ts` (`costs.test.ts` confere com a tabela `models` e `credit_packs`).
+- O selo "Recomendado" do Pro tem o motivo escrito (`highlight_reason`). Nada de "mais popular"
+  enquanto não houver assinante para provar.
+- CTAs de recurso apontam para a rota da ferramenta (`/estudio?modo=video`, `/personas`...). Quem não
+  está logado passa pelo cadastro (`RequireAuth`) e volta para lá.
+
+## Prints do app
+
+As imagens de produto são telas reais do app em modo demo, em `public/landing/app`. Para refazer
+depois de mudar o app: `npx vite --port 5233 --mode demo` e, em outro terminal, `npm run landing:screens`.
+
+## Analytics
+
+`src/lib/analytics.ts`, formato GA4. Eventos: `landing_view`, `cta_click` (`cta_id`, `destination`),
+`sign_up`, `login`, `begin_checkout` (plano) e `purchase` (assinatura confirmada na volta do checkout).
+Sem `VITE_GA_MEASUREMENT_ID` nada sai do navegador. Antes de ligar, decidir o aviso de cookies (LGPD).
+
+## Galeria "Feito no Vynkio"
+
+Só aparece quando todos os avatares de `avatars.json` tiverem vídeo real gerado (`REAL_GALLERY`).
+Enquanto houver shader provisório, a seção fica fora da página.
 
 ## Vídeos de avatar (IA de verdade)
 

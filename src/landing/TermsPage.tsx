@@ -2,12 +2,13 @@ import { ArrowLeft } from 'lucide-react'
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
-import { WELCOME_CREDITS } from './content'
+import { PRIVACY_ANCHOR, WELCOME_CREDITS } from './content'
 import { Footer } from './sections/Footer'
 
 const UPDATED_AT = '18 de outubro de 2026'
 
-const SECTIONS: readonly { title: string; paragraphs: readonly string[] }[] = [
+/** `anchor` deixa a seção acessível por link, como o "Privacidade" do rodapé. */
+const SECTIONS: readonly { title: string; anchor?: string; paragraphs: readonly string[] }[] = [
   {
     title: 'O que é o Vynkio',
     paragraphs: [
@@ -49,6 +50,7 @@ const SECTIONS: readonly { title: string; paragraphs: readonly string[] }[] = [
   },
   {
     title: 'Seus dados',
+    anchor: PRIVACY_ANCHOR,
     paragraphs: [
       'Guardamos só o necessário pra sua conta funcionar: e-mail, histórico de gerações, arquivos gerados e compras. Os dados são tratados conforme a Lei Geral de Proteção de Dados (LGPD) e não são vendidos.',
       'Os textos que você escreve são enviados aos provedores de IA apenas pra gerar o resultado pedido.',
@@ -65,7 +67,9 @@ const SECTIONS: readonly { title: string; paragraphs: readonly string[] }[] = [
 export function TermsPage() {
   useEffect(() => {
     document.title = 'Termos de uso · Vynkio'
-    window.scrollTo(0, 0)
+    const target = window.location.hash ? document.getElementById(window.location.hash.slice(1)) : null
+    if (target) target.scrollIntoView()
+    else window.scrollTo(0, 0)
   }, [])
 
   return (
@@ -87,8 +91,8 @@ export function TermsPage() {
         <h1 className="font-landing text-4xl font-bold uppercase tracking-[-0.035em] text-zinc-50 md:text-5xl">Termos de uso</h1>
         <p className="mt-3 text-sm text-zinc-500">Atualizado em {UPDATED_AT}</p>
         <div className="mt-10 space-y-10">
-          {SECTIONS.map(({ title, paragraphs }, index) => (
-            <section key={title} aria-labelledby={`termo-${index}`}>
+          {SECTIONS.map(({ title, anchor, paragraphs }, index) => (
+            <section key={title} id={anchor} aria-labelledby={`termo-${index}`} className="scroll-mt-6">
               <h2 id={`termo-${index}`} className="text-lg font-semibold text-zinc-50">
                 <span className="mr-2 font-mono text-sm text-accent-soft">{String(index + 1).padStart(2, '0')}</span>
                 {title}

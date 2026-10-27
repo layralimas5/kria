@@ -5,6 +5,7 @@ import { Logo } from '@/components/Logo'
 import { Button } from '@/components/ui/Button'
 import { Notice } from '@/components/ui/Notice'
 import { Spinner } from '@/components/ui/Spinner'
+import { track } from '@/lib/analytics'
 import { errorMessage, startSubscription } from '@/lib/api'
 
 const PLAN_SLUG = /^[a-z0-9-]{2,40}$/
@@ -20,6 +21,7 @@ export function SubscribePage() {
 
   const start = useCallback(async () => {
     setError(null)
+    track({ name: 'begin_checkout', params: { plan } })
     try {
       window.location.assign(await startSubscription(plan))
     } catch (subscribeError) {

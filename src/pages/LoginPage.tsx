@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/Field'
 import { Notice } from '@/components/ui/Notice'
 import { useSession } from '@/hooks/useSession'
+import { track } from '@/lib/analytics'
 import { isConfigured, supabase } from '@/lib/supabase'
 import type { ResetCodeState } from './ForgotPasswordPage'
 
@@ -70,6 +71,7 @@ export function LoginPage() {
       setError(AUTH_ERRORS[result.error.message] ?? 'Não deu para continuar. Confira os dados e tente de novo.')
       return
     }
+    track(mode === 'signin' ? { name: 'login', params: { method: 'email' } } : { name: 'sign_up', params: { method: 'email' } })
     if (mode === 'signup' && !result.data.session) {
       setNotice('Enviamos um link de confirmação para o seu e-mail. Abra e volte aqui.')
     }
