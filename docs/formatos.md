@@ -37,7 +37,7 @@ Branch `feat/vynkio-formatos` (saiu de `feat/vynkio-admin`), migration `0015_for
 
 ## Para ir ao ar
 
-1. Aplicar as migrations até a 0015 (a 0011 a 0014 também ainda não estão no Supabase).
+1. ~~Aplicar as migrations até a 0015.~~ Feito em 27/10 (0009 a 0015 pelo SQL Editor).
 2. Deploy da function `generate`.
 3. Testar com o fal de verdade um de cada formato e ajustar os prompts na tabela.
    O Kling 3.0 não tem proporção: o vídeo sai no formato da foto.
