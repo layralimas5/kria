@@ -50,3 +50,21 @@ Branch `feat/vynkio-formatos` (saiu de `feat/vynkio-admin`), migration `0015_for
   orienta a avisar no anúncio. Gravar o selo exige montar o vídeo no servidor.
 - Tamanho máximo de 10 MB conferido só no navegador; o bucket aceita até 100 MB.
 - O "Tour completo" (várias fotos num vídeo com endereço e preço) ficou para depois.
+
+## Retomar em 28/10
+
+Estado em 27/10: banco na 0015, mas nenhuma edge function publicada e nenhum secret no projeto
+`dhjnicbfrvmjzfbadcba`. A CLI está logada.
+
+1. Criar conta no fal.ai, pôr saldo (US$ 10 testa tudo) e gerar a chave em Keys.
+2. Criar a chave da Anthropic (console.anthropic.com) com limite de gasto mensal.
+3. Preencher `FAL_KEY` e acrescentar `ANTHROPIC_API_KEY` em `../kria-integrate/supabase/.env`
+   (se `ASAAS_API_KEY` vazia der erro, apagar a linha por enquanto).
+4. Na pasta `kria-pricing`:
+   ```
+   npx supabase secrets set --env-file ..\kria-integrate\supabase\.env --project-ref dhjnicbfrvmjzfbadcba
+   npx supabase functions deploy --project-ref dhjnicbfrvmjzfbadcba --use-api
+   ```
+5. Domínio: publicar o front, trocar `APP_URL` nos secrets e o `site_url` do Auth para o domínio final
+   (passo 5 de `docs/deploy.md`).
+6. Testar um formato de cada tipo no fal real e ajustar os prompts na tabela `formats`.
