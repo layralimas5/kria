@@ -55,7 +55,8 @@ function Actions({ generation, onMakePersona }: Pick<GenerationCardProps, 'gener
           <Film className="size-4" aria-hidden="true" />
         </Link>
       )}
-      {isImage && onMakePersona && (
+      {/* Imagem que nasceu de foto enviada não vira persona (o banco também recusa). */}
+      {isImage && onMakePersona && !generation.from_upload && (
         <button type="button" onClick={() => onMakePersona(generation)} className={ACTION} aria-label="Virar persona" title="Virar persona">
           <UserRoundPlus className="size-4" aria-hidden="true" />
         </button>

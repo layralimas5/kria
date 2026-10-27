@@ -1,5 +1,7 @@
 // Dados de exemplo do modo demo. Tudo vive em memória e some ao recarregar.
 
+import { DEMO_FORMATS } from './demoFormats'
+
 export const DEMO_USER_ID = '00000000-0000-4000-8000-00000000d3e0'
 
 const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString()
@@ -34,6 +36,9 @@ export interface DemoState {
   generations: Row[]
   ledger: Row[]
   purchases: Row[]
+  /** Formatos e fotos enviadas (0015). */
+  formats: Row[]
+  uploads: Row[]
 }
 
 const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60_000).toISOString()
@@ -157,6 +162,7 @@ export function createDemoState(): DemoState {
     models: [
       { slug: 'foto', name: 'Nano Banana 2', description: 'Foto realista a partir do texto.', kind: 'image', requires_image: false, credits: 5, position: 10, badge: null, defaults: { aspect_ratio: '4:5' }, options: { aspect_ratio: ['4:5', '1:1', '9:16', '16:9'] }, allowed_plans: null, provider: 'fal', endpoint: 'fal-ai/nano-banana-2', provider_cost_usd: null, active: true },
       { slug: 'foto-persona', name: 'Nano Banana 2 Persona', description: 'A mesma pessoa em qualquer cenário.', kind: 'image', requires_image: true, credits: 6, position: 20, badge: 'TOP', defaults: { aspect_ratio: '4:5' }, options: { aspect_ratio: ['4:5', '1:1', '9:16', '16:9'] }, allowed_plans: null, provider: 'fal', endpoint: 'fal-ai/nano-banana-2/edit', provider_cost_usd: null, active: true },
+      { slug: 'foto-edicao', name: 'Nano Banana 2 Edição', description: 'Edita uma foto mantendo o enquadramento.', kind: 'image', requires_image: true, credits: 6, position: 25, badge: null, defaults: { aspect_ratio: 'auto' }, allowed_plans: null, provider: 'fal', endpoint: 'fal-ai/nano-banana-2/edit', provider_cost_usd: null, active: true, studio: false },
       { slug: 'video-kling', name: 'Kling 3.0', description: 'Anima uma imagem com movimento natural e áudio.', kind: 'video', requires_image: true, credits: 40, position: 30, badge: 'NOVO', defaults: { duration: '5', generate_audio: true }, allowed_plans: null, provider: 'fal', endpoint: 'fal-ai/kling-video/v3/standard/image-to-video', provider_cost_usd: null, active: true },
       { slug: 'video-veo', name: 'Veo 3.1', description: 'Vídeo com fala sincronizada e som ambiente.', kind: 'video', requires_image: true, credits: 200, position: 40, badge: 'TOP', defaults: { duration: '8s', aspect_ratio: '9:16', generate_audio: true }, options: { aspect_ratio: ['9:16', '16:9'] }, allowed_plans: ['starter', 'pro', 'studio'], provider: 'fal', endpoint: 'fal-ai/veo3.1/image-to-video', provider_cost_usd: null, active: true },
       { slug: 'copy', name: 'Copy e legenda', description: 'Legendas, anúncios, títulos e textos de venda.', kind: 'text', requires_image: false, credits: 3, position: 100, badge: null, defaults: { effort: 'low' }, allowed_plans: null, provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
@@ -193,6 +199,8 @@ export function createDemoState(): DemoState {
     // Sem métrica de exemplo: Resultados só mostra o que a pessoa importar, também no demo.
     analyticsImports: [],
     analyticsSnapshots: [],
+    formats: DEMO_FORMATS,
+    uploads: [],
     generations: [
       generation(0, { model_slug: 'video-kling', kind: 'video', credits: 40, persona_id: luna.id, output_path: DEMO_VIDEO, output_type: 'video/webm', prompt: 'Luna olha para a câmera, sorri e acena', created_at: minutesAgo(6), completed_at: minutesAgo(3) }),
       generation(1, { model_slug: 'foto-persona', credits: 6, persona_id: luna.id, prompt: 'Luna num café em São Paulo segurando um latte, luz da manhã' }),

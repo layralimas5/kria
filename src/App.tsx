@@ -20,6 +20,8 @@ function page<K extends string>(load: () => Promise<Record<K, ComponentType>>, n
 
 const HomePage = page(() => import('@/pages/HomePage'), 'HomePage')
 const StudioPage = page(() => import('@/pages/StudioPage'), 'StudioPage')
+const FormatsPage = page(() => import('@/pages/FormatsPage'), 'FormatsPage')
+const FormatPage = page(() => import('@/pages/FormatPage'), 'FormatPage')
 const GalleryPage = page(() => import('@/pages/GalleryPage'), 'GalleryPage')
 const PersonasPage = page(() => import('@/pages/PersonasPage'), 'PersonasPage')
 const CreditsPage = page(() => import('@/pages/CreditsPage'), 'CreditsPage')
@@ -108,6 +110,8 @@ export function App() {
               >
                 <Route path="inicio" element={<HomePage />} />
                 <Route path="estudio" element={<StudioPage />} />
+                <Route path="formatos" element={<FormatsPage />} />
+                <Route path="formatos/:slug" element={<FormatPage />} />
                 <Route path="galeria" element={<GalleryPage />} />
                 <Route path="personas" element={<PersonasPage />} />
                 <Route path="assistente" element={<Navigate to="/assistente/ideias" replace />} />

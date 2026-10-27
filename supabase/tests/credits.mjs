@@ -233,7 +233,7 @@ await test('RLS: cada pessoa só enxerga o que é dela', async (db) => {
   assert.deepEqual(seen.generations, [{ user_id: ana }])
   assert.deepEqual(seen.balances, [{ user_id: ana }])
   assert.deepEqual(seen.ledger, [{ user_id: ana }])
-  assert.equal(seen.models, 9)
+  assert.equal(seen.models, 10)
   await as(db, 'authenticated', ana, () =>
     expectError(db.query(`select provider_cost_usd from models`), 'permission denied'),
   )
@@ -1002,6 +1002,111 @@ await test('dashboard: números do período batem com o banco e o período é va
   assert.ok(dash.series.length >= 2)
   assert.equal(dash.series.reduce((sum, day) => sum + day.failed, 0), 1)
   assert.equal(dash.series.reduce((sum, day) => sum + day.revenue_cents, 0), 7990 + 1990)
+})
+
+
+// ------------------------------------------------------------------ formatos (0015)
+
+/** Põe a foto no Storage e registra pela RPC, como o app faz. */
+async function newUpload(db, userId, confirmed = true) {
+  const path = `${userId}/uploads/${crypto.randomUUID()}.jpg`
+  await db.query(`insert into storage.objects (bucket_id, name, owner) values ('media', $1, $2)`, [path, userId])
+  return as(db, 'authenticated', userId, async () =>
+    (await db.query(`select * from register_upload($1, 'image/jpeg', $2)`, [path, confirmed])).rows[0],
+  )
+}
+
+const createFull = (db, userId, model, { upload = null, end = null, format = null, source = null } = {}) =>
+  db.query(`select * from create_generation($1, $2, 'prompt do formato', null, $3, null, $4, $5, $6)`, [
+    userId, model, source, upload, end, format,
+  ])
+
+async function succeed(db, generationId) {
+  await db.query(`update generations set status = 'succeeded', output_path = user_id::text || '/' || id::text || '.png' where id = $1`, [generationId])
+}
+
+await test('foto enviada: só com confirmação, só na própria pasta e só se o arquivo existe', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  await expectError(newUpload(db, ana, false), 'rights_not_confirmed')
+  const upload = await newUpload(db, ana)
+  assert.equal(upload.user_id, ana)
+
+  const foreign = `${bia}/uploads/${crypto.randomUUID()}.jpg`
+  await db.query(`insert into storage.objects (bucket_id, name) values ('media', $1)`, [foreign])
+  await as(db, 'authenticated', ana, () =>
+    expectError(db.query(`select register_upload($1, 'image/jpeg', true)`, [foreign]), 'upload_not_found'),
+  )
+  const missing = `${ana}/uploads/${crypto.randomUUID()}.jpg`
+  await as(db, 'authenticated', ana, () =>
+    expectError(db.query(`select register_upload($1, 'image/jpeg', true)`, [missing]), 'upload_not_found'),
+  )
+  const seen = await as(db, 'authenticated', bia, async () => (await db.query(`select id from uploads`)).rows)
+  assert.deepEqual(seen, [])
+})
+
+await test('formato: foto enviada como partida, só de quem enviou', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  await setWallet(db, ana, 200)
+  await setWallet(db, bia, 200)
+  const upload = await newUpload(db, ana)
+
+  const { rows } = await createFull(db, ana, 'video-kling', { upload: upload.id, format: 'tour-comodo' })
+  assert.equal(rows[0].upload_id, upload.id)
+  assert.equal(rows[0].format_slug, 'tour-comodo')
+  assert.equal(await balanceOf(db, ana), 160)
+
+  await expectError(createFull(db, bia, 'video-kling', { upload: upload.id }), 'upload_not_found')
+  await expectError(createFull(db, ana, 'foto', { upload: upload.id }), 'model_takes_no_image')
+  await expectError(createFull(db, ana, 'foto-edicao', { upload: upload.id, format: 'tour-comodo' }), 'format_mismatch')
+  await expectError(createFull(db, ana, 'video-kling', { upload: upload.id, format: 'nao-existe' }), 'format_unavailable')
+})
+
+await test('antes e depois: o quadro final é uma imagem pronta da própria pessoa', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  await setWallet(db, ana, 200)
+  await setWallet(db, bia, 200)
+  const upload = await newUpload(db, ana)
+
+  const edit = (await createFull(db, ana, 'foto-edicao', { upload: upload.id, format: 'antes-depois' })).rows[0]
+  await expectError(createFull(db, ana, 'video-kling', { upload: upload.id, end: edit.id }), 'source_not_found')
+  await succeed(db, edit.id)
+
+  const video = (await createFull(db, ana, 'video-kling', { upload: upload.id, end: edit.id, format: 'antes-depois' })).rows[0]
+  assert.equal(video.end_generation_id, edit.id)
+
+  const biaUpload = await newUpload(db, bia)
+  await expectError(createFull(db, bia, 'video-kling', { upload: biaUpload.id, end: edit.id }), 'source_not_found')
+  await expectError(createFull(db, ana, 'foto-edicao', { upload: upload.id, end: edit.id }), 'model_takes_no_end_image')
+})
+
+await test('o que nasce de foto enviada nunca vira persona, nem depois de editado de novo', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await setWallet(db, ana, 200)
+  const upload = await newUpload(db, ana)
+  const edit = (await createFull(db, ana, 'foto-edicao', { upload: upload.id })).rows[0]
+  await succeed(db, edit.id)
+  const again = (await createFull(db, ana, 'foto-persona', { source: edit.id })).rows[0]
+  await succeed(db, again.id)
+  assert.equal(again.from_upload, true)
+
+  for (const id of [edit.id, again.id]) {
+    await as(db, 'authenticated', ana, () =>
+      expectError(db.query(`select create_persona($1, 'Teste')`, [id]), 'upload_derived'),
+    )
+  }
+  const generated = (await create(db, ana, 'foto')).rows[0]
+  await succeed(db, generated.id)
+  assert.equal(generated.from_upload, false)
+  await as(db, 'authenticated', ana, () => db.query(`select create_persona($1, 'Luna')`, [generated.id]))
+})
+
+await test('formatos: catálogo público sem o texto dos prompts', async (db) => {
+  const seen = await as(db, 'anon', null, async () => (await db.query(`select slug from formats order by position`)).rows.map((row) => row.slug))
+  assert.deepEqual(seen, ['tour-comodo', 'antes-depois', 'vista-drone', 'produto-girando', 'produto-em-cena', 'prato-vivo'])
+  await as(db, 'anon', null, () => expectError(db.query(`select prompt_template from formats`), 'permission denied'))
 })
 
 console.log(`\n${passed} testes do banco passaram`)

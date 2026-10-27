@@ -10,6 +10,8 @@ export interface ModelRow {
   readonly kind: 'image' | 'video'
   readonly endpoint: string
   readonly image_input: ImageInput | null
+  /** Campo do quadro final (antes e depois, 0015). Nulo: o modelo não aceita. */
+  readonly end_image_input: 'end_image_url' | null
   readonly requires_image: boolean
   readonly credits: number
   readonly defaults: Record<string, unknown>
@@ -51,16 +53,21 @@ export interface GeneratedFile {
   readonly contentType: string
 }
 
-/** O corpo enviado ao fal.ai: defaults do catálogo, as opções já conferidas, o prompt e a imagem no campo que o modelo espera. */
+/**
+ * O corpo enviado ao fal.ai: defaults do catálogo, as opções já conferidas, o prompt
+ * e as imagens nos campos que o modelo espera (a de partida e, se houver, a final).
+ */
 export function buildProviderInput(
   model: ModelRow,
   prompt: string,
   imageUrl: string | null,
   options: ChosenOptions = {},
+  endImageUrl: string | null = null,
 ): Record<string, unknown> {
   const input: Record<string, unknown> = { ...model.defaults, ...options, prompt }
   if (!model.image_input || !imageUrl) return input
   input[model.image_input] = model.image_input === 'image_urls' ? [imageUrl] : imageUrl
+  if (model.end_image_input && endImageUrl) input[model.end_image_input] = endImageUrl
   return input
 }
 
@@ -115,7 +122,7 @@ export function storagePathFor(userId: string, generationId: string, contentType
 // Barreira mínima antes de gastar com o provedor. Os modelos ainda passam
 // pelo filtro de segurança do próprio fal (`safety_tolerance`).
 const BLOCKED_PATTERNS: readonly RegExp[] = [
-  /\b(nud[ea]s?|pelad[ao]s?|naked|nsfw|porn\w*|sexo|sexual|topless|lingerie er[oó]tica)\b/i,
+  /\b(nud[ea]s?|nuas?|pelad[ao]s?|naked|nsfw|porn\w*|sexo|sexual|topless|lingerie er[oó]tica)\b/i,
   /\b(crian[cç]as?|menin[ao]s? de \d|menor de idade|child|kid|teen|adolescente)\b/i,
   /\b(deepfake|rosto d[eao] (famos[ao]|celebridade)|igual a? (atriz|ator|cantor[a]?|presidente))\b/i,
 ]

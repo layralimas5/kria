@@ -11,6 +11,7 @@ import {
   type Snapshot,
 } from '@/domain/analytics'
 import type { Channel, ContentGoal, CopyFormat, TextLength } from '@/domain/assistant'
+import { UPLOAD_TYPES, uploadSchema, type Upload, type UploadType } from '@/domain/formats'
 import {
   CONTENT_COLUMNS,
   contentItemSchema,
@@ -82,6 +83,43 @@ export interface GenerateInput {
 export async function generate(input: GenerateInput): Promise<Generation> {
   const data = await invoke('generate', { ...input })
   return z.object({ generation: generationSchema }).parse(data).generation
+}
+
+export interface FormatGenerateInput {
+  readonly slug: string
+  /** `edit`: a foto do depois no antes e depois. `final`: o resultado do formato. */
+  readonly step: 'edit' | 'final'
+  readonly fields: Readonly<Record<string, string>>
+  readonly note: string
+  readonly uploadId: string
+  /** Só no vídeo do antes e depois: a foto editada que fecha a transição. */
+  readonly endGenerationId?: string
+  readonly brandId?: string
+  readonly idempotencyKey: string
+}
+
+/** Com formato, modelo e prompt saem do servidor; daqui vão só as escolhas. */
+export async function generateFormat({ slug, step, fields, note, ...rest }: FormatGenerateInput): Promise<Generation> {
+  const data = await invoke('generate', { format: { slug, step, fields, note }, ...rest })
+  return z.object({ generation: generationSchema }).parse(data).generation
+}
+
+const UPLOAD_ERRORS: Record<string, string> = {
+  rights_not_confirmed: 'Confirme que a foto não mostra pessoas e que você pode usá-la.',
+  too_many_uploads: 'Você chegou ao limite de fotos enviadas por hoje. Volte amanhã.',
+  upload_not_found: 'A foto não chegou ao servidor. Envie de novo.',
+}
+
+/** Sobe a foto para a pasta da pessoa e registra com a confirmação de direito de uso. */
+export async function uploadPhoto(userId: string, file: Blob, type: UploadType, rightsConfirmed: boolean): Promise<Upload> {
+  const path = `${userId}/uploads/${crypto.randomUUID()}.${UPLOAD_TYPES[type]}`
+  const { error: storageError } = await supabase.storage.from('media').upload(path, file, { contentType: type, upsert: false })
+  if (storageError) throw new ApiError('upload_failed', 'Não deu para enviar a foto. Confira a conexão e tente de novo.')
+  const { data, error } = await supabase
+    .rpc('register_upload', { p_path: path, p_content_type: type, p_rights_confirmed: rightsConfirmed })
+    .single()
+  if (error) throw new ApiError(error.message, UPLOAD_ERRORS[error.message] ?? 'Não deu para registrar a foto.')
+  return uploadSchema.parse(data)
 }
 
 export async function refreshGenerations(ids: readonly string[]): Promise<void> {
@@ -160,6 +198,7 @@ export async function verifyResetCode(email: string, code: string): Promise<void
 const PERSONA_ERRORS: Record<string, string> = {
   source_not_found: 'Essa imagem não pode virar persona.',
   too_many_personas: 'Você chegou ao limite de personagens do seu plano. Remova um ou veja os planos em Assinatura.',
+  upload_derived: 'Imagem que nasceu de foto enviada não vira persona.',
 }
 
 export async function createPersona(generationId: string, name: string, description: string): Promise<Persona> {

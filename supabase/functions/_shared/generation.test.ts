@@ -9,6 +9,7 @@ const model = (overrides: Partial<ModelRow> = {}): ModelRow => ({
   kind: 'image',
   endpoint: 'fal-ai/nano-banana-2',
   image_input: null,
+  end_image_input: null,
   requires_image: false,
   credits: 5,
   defaults: { num_images: 1 },
@@ -29,6 +30,14 @@ describe('buildProviderInput', () => {
   it('manda a imagem no campo do modelo de vídeo', () => {
     const input = buildProviderInput(model({ kind: 'video', image_input: 'start_image_url' }), 'sorri', 'https://x/a.png')
     expect(input.start_image_url).toBe('https://x/a.png')
+  })
+
+  it('manda o quadro final só quando o modelo aceita', () => {
+    const video = model({ kind: 'video', image_input: 'start_image_url', end_image_input: 'end_image_url' })
+    const input = buildProviderInput(video, 'transforma', 'https://x/antes.png', {}, 'https://x/depois.png')
+    expect(input).toMatchObject({ start_image_url: 'https://x/antes.png', end_image_url: 'https://x/depois.png' })
+    const withoutEnd = buildProviderInput(model({ kind: 'video', image_input: 'start_image_url' }), 'x', 'https://x/a.png', {}, 'https://x/b.png')
+    expect(withoutEnd).not.toHaveProperty('end_image_url')
   })
 
   it('o prompt do usuário vence um prompt nos defaults', () => {

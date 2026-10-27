@@ -63,7 +63,7 @@ export function useStudio(models: readonly Model[]) {
     requestKey.rotate()
   }, [prompt, source, modelSlug, kind, chosenOptions, requestKey])
 
-  const modelsOfKind = useMemo(() => models.filter((model) => model.kind === kind), [models, kind])
+  const modelsOfKind = useMemo(() => models.filter((model) => model.kind === kind && model.studio), [models, kind])
 
   // Ao trocar de tipo, cai no primeiro modelo dele; com persona escolhida, no que usa persona.
   useEffect(() => {

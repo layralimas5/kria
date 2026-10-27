@@ -11,7 +11,7 @@ import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_IMAGES, DEMO_USER_ID, DEMO_VIDEO, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
-const SESSION_KEY = 'kria-demo-state-v6'
+const SESSION_KEY = 'kria-demo-state-v7'
 
 function loadState(): DemoState {
   try {
@@ -67,6 +67,8 @@ const TABLES: Record<string, () => Row[]> = {
   analytics_snapshots: () => state.analyticsSnapshots,
   admin_audit_logs: () => state.audit,
   generations: () => state.generations,
+  formats: () => state.formats,
+  uploads: () => state.uploads,
   credit_ledger: () => state.ledger,
   purchases: () => state.purchases,
   credit_balances: () => [wallet()],
@@ -133,12 +135,31 @@ function currentPlan(): Row {
   return state.plans.find((plan) => plan.slug === (live?.plan_slug ?? 'gratis')) ?? state.plans[0]!
 }
 
+/** Com formato, o modelo vem da etapa e o "prompt" do demo é o nome do formato com as escolhas. */
+function resolveFormat(body: Row): { model: string; prompt: string } | Response {
+  const request = body.format as { slug?: string; step?: string; fields?: Record<string, string>; note?: string }
+  const format = state.formats.find((item) => item.slug === request.slug)
+  if (!format) return fail(400, 'format_unavailable', 'Esse formato não está disponível.')
+  if (!state.uploads.some((item) => item.id === body.uploadId)) return fail(400, 'upload_not_found', 'A foto não chegou ao servidor. Envie de novo.')
+  const wantsEnd = format.flow === 'before_after' && request.step === 'final'
+  if (wantsEnd !== Boolean(body.endGenerationId)) return fail(400, 'invalid_body', 'Gere a foto do depois primeiro.')
+  const fields = format.fields as { key: string; choices: { value: string; label: string }[] }[]
+  const labels = fields.map((field) => field.choices.find((choice) => choice.value === request.fields?.[field.key])?.label ?? field.choices[0]?.label)
+  const step = request.step === 'edit' ? 'foto do depois' : String(format.name)
+  return {
+    model: String(request.step === 'edit' ? format.edit_model_slug : format.model_slug),
+    prompt: [step, ...labels, request.note].filter(Boolean).join(' · '),
+  }
+}
+
 function generate(body: Row): Response {
   const key = typeof body.idempotencyKey === 'string' ? body.idempotencyKey : null
   const repeated = key ? state.generations.find((item) => item.idempotency_key === key) : undefined
   if (repeated) return json({ generation: repeated })
 
-  const model = state.models.find((item) => item.slug === body.model && item.active !== false)
+  const resolved = body.format ? resolveFormat(body) : { model: String(body.model), prompt: String(body.prompt ?? '') }
+  if (resolved instanceof Response) return resolved
+  const model = state.models.find((item) => item.slug === resolved.model && item.active !== false)
   if (!model) return fail(400, 'model_unavailable', 'Esse modelo não está disponível.')
   const plan = currentPlan()
   const allowed = model.allowed_plans as string[] | null
@@ -162,9 +183,13 @@ function generate(body: Row): Response {
     user_id: DEMO_USER_ID,
     model_slug: model.slug,
     kind: model.kind,
-    prompt: String(body.prompt ?? ''),
+    prompt: resolved.prompt,
     persona_id: body.personaId ?? null,
     source_generation_id: body.sourceGenerationId ?? null,
+    upload_id: body.uploadId ?? null,
+    end_generation_id: body.endGenerationId ?? null,
+    format_slug: (body.format as Row | undefined)?.slug ?? null,
+    from_upload: Boolean(body.uploadId),
     brand_id: body.brandId ?? null,
     project_id: body.projectId ?? null,
     options: requested,
@@ -265,6 +290,7 @@ function account(body: Row): Response {
 function createPersona(body: Row): Response {
   const source = state.generations.find((item) => item.id === body.p_generation_id && item.status === 'succeeded')
   if (!source || source.kind !== 'image') return rpcFail('source_not_found')
+  if (source.from_upload) return rpcFail('upload_derived')
   if (state.personas.length >= Number(currentPlan().max_personas)) return rpcFail('too_many_personas')
   const persona = {
     id: uuid(),
@@ -582,8 +608,18 @@ function importAnalytics(body: Row): Response {
   return json(record.id)
 }
 
+/** A foto "subiu" no demo (o Storage falso não guarda nada); a tela mostra a prévia local. */
+function registerUpload(body: Row): Response {
+  if (!body.p_rights_confirmed) return rpcFail('rights_not_confirmed')
+  const upload = { id: uuid(), user_id: DEMO_USER_ID, path: String(body.p_path), content_type: String(body.p_content_type), created_at: new Date().toISOString() }
+  state.uploads.unshift(upload)
+  persist()
+  return json(upload)
+}
+
 function rpc(name: string, body: Row): Response {
   if (name === 'create_persona') return createPersona(body)
+  if (name === 'register_upload') return registerUpload(body)
   if (name === 'import_analytics') return importAnalytics(body)
   const admin = adminRpc(name, body)
   if (admin) return admin
@@ -666,6 +702,11 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
     }
     const accept = headers.get('accept') ?? ''
     return json(accept.includes('vnd.pgrst.object') ? (result[0] ?? null) : result)
+  }
+
+  if (method === 'POST' && route.startsWith('storage/object/media/')) {
+    const path = route.slice('storage/object/'.length)
+    return json({ Key: path, Id: uuid() })
   }
 
   if (route.startsWith('storage/object/sign/media/')) {

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { FORMAT_COLUMNS, formatSchema, type Format } from '@/domain/formats'
 import {
   creditPackSchema,
   ledgerEntrySchema,
@@ -18,7 +19,7 @@ import { useQuery, type QueryState } from './useQuery'
 async function fetchModels(): Promise<Model[]> {
   const { data, error } = await supabase
     .from('models')
-    .select('slug, name, description, kind, requires_image, credits, position, badge, defaults, allowed_plans')
+    .select('slug, name, description, kind, requires_image, credits, position, badge, defaults, options, allowed_plans, studio')
     .in('kind', MEDIA_KINDS)
     .order('position')
   if (error) throw error
@@ -33,6 +34,12 @@ async function fetchTextModels(): Promise<TextModel[]> {
     .order('position')
   if (error) throw error
   return z.array(textModelSchema).parse(data)
+}
+
+async function fetchFormats(): Promise<Format[]> {
+  const { data, error } = await supabase.from('formats').select(FORMAT_COLUMNS).order('position')
+  if (error) throw error
+  return z.array(formatSchema).parse(data)
 }
 
 async function fetchPacks(): Promise<CreditPack[]> {
@@ -70,6 +77,10 @@ export function useModels(): QueryState<Model[]> {
 /** Ferramentas do Vynkio AI: preço em créditos e plano vêm do banco, como na foto e no vídeo. */
 export function useTextModels(): QueryState<TextModel[]> {
   return useQuery(fetchTextModels, 'Não deu para carregar as ferramentas de texto.')
+}
+
+export function useFormats(): QueryState<Format[]> {
+  return useQuery(fetchFormats, 'Não deu para carregar os formatos.')
 }
 
 export function usePacks(): QueryState<CreditPack[]> {

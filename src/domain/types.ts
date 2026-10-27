@@ -19,6 +19,8 @@ export const modelSchema = z.object({
   options: z.record(z.array(z.string())).default({}),
   /** Planos que podem usar o modelo; nulo libera para todos. */
   allowed_plans: z.array(z.string()).nullable(),
+  /** Falso no modelo que só serve aos formatos (0015): fica fora do Studio. */
+  studio: z.boolean().default(true),
 })
 export type Model = z.infer<typeof modelSchema>
 
@@ -36,6 +38,11 @@ export const generationSchema = z.object({
   project_id: z.string().uuid().nullable().default(null),
   /** Opções escolhidas na geração (0011), como a proporção. */
   options: z.record(z.string()).default({}),
+  /** Formato que originou a geração e a foto enviada de partida (0015). */
+  format_slug: z.string().nullable().default(null),
+  upload_id: z.string().uuid().nullable().default(null),
+  /** Nasceu de foto enviada: não vira persona (0015). */
+  from_upload: z.boolean().default(false),
   credits: z.number().int(),
   status: generationStatusSchema,
   output_path: z.string().nullable(),
@@ -163,7 +170,7 @@ export const purchaseSchema = z.object({
 export type Purchase = z.infer<typeof purchaseSchema>
 
 export const GENERATION_COLUMNS =
-  'id, model_slug, kind, prompt, persona_id, source_generation_id, project_id, options, credits, status, output_path, output_type, error, created_at, completed_at'
+  'id, model_slug, kind, prompt, persona_id, source_generation_id, project_id, options, format_slug, upload_id, from_upload, credits, status, output_path, output_type, error, created_at, completed_at'
 
 /** Só foto e vídeo vão para a galeria e o Studio; texto é do assistente. */
 export const MEDIA_KINDS: readonly MediaKind[] = ['image', 'video']
