@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { track } from '@/lib/analytics'
+import { captureUtmFromLocation } from '@/lib/utm'
 import { REAL_GALLERY } from './content'
 import { Advanced } from './sections/Advanced'
 import { Exclusive } from './sections/Exclusive'
@@ -20,7 +21,10 @@ import { UseCases } from './sections/UseCases'
 // objeções e chamada final com rodapé. "Para quem" e "Uma ideia, cinco entregas"
 // complementam o problema e a plataforma.
 export function LandingPage() {
-  useEffect(() => track({ name: 'landing_view' }), [])
+  useEffect(() => {
+    captureUtmFromLocation()
+    track({ name: 'landing_view' })
+  }, [])
 
   return (
     <div className="min-h-dvh bg-stage">
