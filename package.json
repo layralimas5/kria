@@ -19,7 +19,8 @@
     "demo:photos": "node scripts/demo-photos.mjs",
     "landing:assets": "node scripts/landing-assets.mjs",
     "landing:avatars": "node scripts/landing-avatars.mjs",
-    "landing:showcase": "node scripts/landing-showcase.mjs"
+    "landing:showcase": "node scripts/landing-showcase.mjs",
+    "landing:showcase:import": "node scripts/landing-showcase-import.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

@@ -9,3 +9,6 @@ supabase/.branches
 supabase/.env*
 !supabase/.env.example
 .DS_Store
+
+# Fotos da landing geradas por fora, antes de importar
+/fotos-lp/

@@ -10,23 +10,16 @@
 //   npm run landing:showcase -- --force marina refaz mesmo se já existir
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
+import { MANIFEST, OUT, ROOT, SPECS_FILE, saveJpeg, sizeFor } from './lib/showcase-image.mjs'
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const SPECS = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/landing/showcase.json'), 'utf8'))
-const MANIFEST = path.join(ROOT, 'src/landing/showcase.generated.json')
-const OUT = path.join(ROOT, 'public/landing/showcase')
+const SPECS = JSON.parse(fs.readFileSync(SPECS_FILE, 'utf8'))
 
 const QUEUE = 'https://queue.fal.run'
 const IMAGE_ENDPOINT = 'fal-ai/nano-banana-2'
 const EDIT_ENDPOINT = 'fal-ai/nano-banana-2/edit'
 const POLL_MS = 3000
 const TIMEOUT_MS = 10 * 60 * 1000
-/** Paisagem larga ocupa a tela inteira; o resto aparece em coluna ou card. */
-const WIDE_WIDTH = 1600
-const DEFAULT_WIDTH = 900
-
 function readFalKey() {
   if (process.env.FAL_KEY) return process.env.FAL_KEY
   const envFile = path.join(ROOT, '.env.local')
@@ -61,21 +54,6 @@ async function run(endpoint, input, label) {
     if (status === 'COMPLETED') return fal('GET', responseUrl)
     if (Date.now() - started > TIMEOUT_MS) throw new Error(`${label}: passou de 10 minutos na fila`)
   }
-}
-
-function sizeFor(aspect) {
-  const [w, h] = aspect.split(':').map(Number)
-  const width = w / h >= 1.5 ? WIDE_WIDTH : DEFAULT_WIDTH
-  return { width, height: Math.round((width * h) / w) }
-}
-
-/** Reduz o PNG grande do fal para um jpg leve no tamanho em que a landing mostra. */
-async function saveJpeg(browser, imageUrl, target, { width, height }) {
-  const page = await browser.newPage({ viewport: { width, height } })
-  await page.setContent(`<body style="margin:0;background:#000"><img src="${imageUrl}" style="width:${width}px;height:${height}px;object-fit:cover;display:block"></body>`)
-  await page.waitForFunction(() => document.images[0]?.complete && document.images[0].naturalWidth > 0, null, { timeout: 60000 })
-  await page.screenshot({ path: target, type: 'jpeg', quality: 82 })
-  await page.close()
 }
 
 function asDataUri(file) {
