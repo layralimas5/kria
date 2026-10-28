@@ -1,0 +1,16 @@
+{
+  "style": "Photorealistic photo of a fictional person (not a celebrity), natural skin texture with visible pores, real camera look, soft natural light, shallow depth of field, subtle film grain, no text, no watermark, no logo.",
+  "photos": [
+    { "id": "luna", "prompt": "Portrait of Luna, a 27-year-old Brazilian woman with wavy brown shoulder-length hair, light makeup, beige knit sweater, smiling softly at the camera, plain warm studio background, 85mm lens." },
+    { "id": "rafa", "prompt": "Portrait of Rafa, a 32-year-old Brazilian man with short trimmed beard and short dark hair, black athletic t-shirt, confident relaxed expression looking at the camera, plain cool grey background, 85mm lens." },
+    { "id": "luna-cafe", "ref": "luna", "prompt": "The same woman from the reference photo sitting in a cozy specialty coffee shop in São Paulo, holding a latte with latte art near her face, morning sunlight through the window, candid smartphone photo." },
+    { "id": "luna-serum", "ref": "luna", "prompt": "The same woman from the reference photo in a bright white bathroom, holding a small amber glass skincare serum bottle with a dropper up to the camera, showing it like a creator video frame, soft window light." },
+    { "id": "rafa-parque", "ref": "rafa", "prompt": "The same man from the reference photo running in a city park at sunrise, workout clothes, golden backlight, motion in the trees, sports photography, 70-200mm lens." },
+    { "id": "coworking", "prompt": "A 30-year-old Brazilian woman with curly black hair working on a laptop in a modern coworking space, plants and wooden tables, focused expression, natural daylight, candid photo." },
+    { "id": "cozinha", "prompt": "A 40-year-old man with salt-and-pepper beard cooking in a rustic kitchen, stirring a pan with steam rising, warm tungsten light, shot on a smartphone, slightly imperfect framing." },
+    { "id": "varanda", "prompt": "A 28-year-old woman drinking coffee on a balcony in Lisbon with terracotta rooftops behind her, late afternoon golden light, linen shirt, candid moment, 35mm lens." },
+    { "id": "produto", "prompt": "Product photo of an unbranded amber glass serum bottle on white marble next to eucalyptus leaves and a small towel, soft morning window light, editorial skincare ad style." },
+    { "id": "loja", "prompt": "A young woman owner of a small clothing boutique arranging clothes on a rack, warm shop lighting, smiling at the camera, lifestyle photo, 35mm lens." }
+  ],
+  "video": { "id": "luna-video", "ref": "luna", "prompt": "She looks at the camera, smiles warmly and waves with one hand, subtle natural head movement, steady handheld camera." }
+}

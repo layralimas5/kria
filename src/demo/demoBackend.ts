@@ -8,10 +8,11 @@ import { assistantToolSchema } from '@/domain/types'
 import { ADMIN_ROLE_LABELS, adminRoleSchema } from '@/domain/adminDashboard'
 import { buildDemoDashboard } from './demoAdmin'
 import { demoAssistantOutput } from './demoAssistant'
-import { createDemoState, DEMO_IMAGES, DEMO_USER_ID, DEMO_VIDEO, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
+import { createDemoState, DEMO_USER_ID, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
+import { DEMO_VIDEO, demoImageAt, demoMediaType } from './demoMedia'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
-const SESSION_KEY = 'kria-demo-state-v7'
+const SESSION_KEY = 'kria-demo-state-v8'
 
 function loadState(): DemoState {
   try {
@@ -121,8 +122,9 @@ function settleOpenGenerations() {
     const isVideo = generation.kind === 'video'
     if (seconds < (isVideo ? VIDEO_SECONDS : IMAGE_SECONDS)) return
     generation.status = 'succeeded'
-    generation.output_path = isVideo ? DEMO_VIDEO : DEMO_IMAGES[(index + 3) % DEMO_IMAGES.length]
-    generation.output_type = isVideo ? 'video/webm' : 'image/svg+xml'
+    const outputPath = isVideo ? DEMO_VIDEO : demoImageAt(index)
+    generation.output_path = outputPath
+    generation.output_type = demoMediaType(outputPath)
     generation.completed_at = new Date().toISOString()
   })
   persist()

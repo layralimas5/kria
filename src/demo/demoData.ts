@@ -1,13 +1,11 @@
 // Dados de exemplo do modo demo. Tudo vive em memória e some ao recarregar.
 
 import { DEMO_FORMATS } from './demoFormats'
+import { DEMO_VIDEO, demoImageAt, demoMediaType, demoPhoto } from './demoMedia'
 
 export const DEMO_USER_ID = '00000000-0000-4000-8000-00000000d3e0'
 
 const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString()
-
-export const DEMO_IMAGES = Array.from({ length: 8 }, (_, index) => `demo/img-${index + 1}.svg`)
-export const DEMO_VIDEO = 'demo/video-1.webm'
 
 export type Row = Record<string, unknown>
 
@@ -79,7 +77,7 @@ export function uuid(): string {
 }
 
 function generation(index: number, overrides: Row): Row {
-  return {
+  const row: Row = {
     id: uuid(),
     user_id: DEMO_USER_ID,
     model_slug: 'foto',
@@ -89,18 +87,18 @@ function generation(index: number, overrides: Row): Row {
     source_generation_id: null,
     credits: 5,
     status: 'succeeded',
-    output_path: DEMO_IMAGES[index % DEMO_IMAGES.length],
-    output_type: 'image/svg+xml',
+    output_path: demoImageAt(index),
     error: null,
     created_at: minutesAgo(10 + index * 9),
     completed_at: minutesAgo(10 + index * 9),
     ...overrides,
   }
+  return { ...row, output_type: typeof row.output_path === 'string' ? demoMediaType(row.output_path) : null }
 }
 
 export function createDemoState(): DemoState {
-  const luna = { id: uuid(), user_id: DEMO_USER_ID, name: 'Luna', description: 'Mulher de 27 anos, cabelo castanho ondulado, estilo casual', image_path: DEMO_IMAGES[0], created_at: minutesAgo(200) }
-  const rafa = { id: uuid(), user_id: DEMO_USER_ID, name: 'Rafa', description: 'Homem de 32 anos, barba curta, estilo esportivo', image_path: DEMO_IMAGES[5], created_at: minutesAgo(260) }
+  const luna = { id: uuid(), user_id: DEMO_USER_ID, name: 'Luna', description: 'Mulher de 27 anos, cabelo castanho ondulado, estilo casual', image_path: demoPhoto('luna', 1), created_at: minutesAgo(200) }
+  const rafa = { id: uuid(), user_id: DEMO_USER_ID, name: 'Rafa', description: 'Homem de 32 anos, barba curta, estilo esportivo', image_path: demoPhoto('rafa', 6), created_at: minutesAgo(260) }
 
   const lunaBrand = {
     id: uuid(),
@@ -202,13 +200,13 @@ export function createDemoState(): DemoState {
     formats: DEMO_FORMATS,
     uploads: [],
     generations: [
-      generation(0, { model_slug: 'video-kling', kind: 'video', credits: 40, persona_id: luna.id, output_path: DEMO_VIDEO, output_type: 'video/webm', prompt: 'Luna olha para a câmera, sorri e acena', created_at: minutesAgo(6), completed_at: minutesAgo(3) }),
-      generation(1, { model_slug: 'foto-persona', credits: 6, persona_id: luna.id, prompt: 'Luna num café em São Paulo segurando um latte, luz da manhã' }),
-      generation(2, { output_path: DEMO_IMAGES[5], prompt: 'Rafa correndo no parque ao amanhecer, roupa de treino' }),
-      generation(3, { status: 'failed', output_path: null, output_type: null, error: 'Conteúdo bloqueado pelo filtro de segurança do modelo.', prompt: 'Retrato em estúdio com luz dura' }),
-      generation(4, { model_slug: 'foto-persona', credits: 6, persona_id: luna.id, prompt: 'Luna mostrando um sérum de skincare para a câmera, banheiro claro' }),
-      generation(5, { prompt: 'Mulher de 30 anos trabalhando no notebook num coworking' }),
-      generation(6, { prompt: 'Homem de 40 anos cozinhando, cozinha rústica, foto de celular' }),
+      generation(0, { model_slug: 'video-kling', kind: 'video', credits: 40, persona_id: luna.id, output_path: DEMO_VIDEO, prompt: 'Luna olha para a câmera, sorri e acena', created_at: minutesAgo(6), completed_at: minutesAgo(3) }),
+      generation(1, { model_slug: 'foto-persona', credits: 6, persona_id: luna.id, output_path: demoPhoto('luna-cafe', 3), prompt: 'Luna num café em São Paulo segurando um latte, luz da manhã' }),
+      generation(2, { output_path: demoPhoto('rafa-parque', 6), prompt: 'Rafa correndo no parque ao amanhecer, roupa de treino' }),
+      generation(3, { status: 'failed', output_path: null, error: 'Conteúdo bloqueado pelo filtro de segurança do modelo.', prompt: 'Retrato em estúdio com luz dura' }),
+      generation(4, { model_slug: 'foto-persona', credits: 6, persona_id: luna.id, output_path: demoPhoto('luna-serum', 5), prompt: 'Luna mostrando um sérum de skincare para a câmera, banheiro claro' }),
+      generation(5, { output_path: demoPhoto('coworking', 7), prompt: 'Mulher de 30 anos trabalhando no notebook num coworking' }),
+      generation(6, { output_path: demoPhoto('cozinha', 8), prompt: 'Homem de 40 anos cozinhando, cozinha rústica, foto de celular' }),
     ],
     ledger: [
       { id: 7, user_id: DEMO_USER_ID, delta: 450, reason: 'subscription_grant', note: 'Créditos do plano', balance_after: null, created_at: minutesAgo(60 * 24 * 12) },
