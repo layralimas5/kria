@@ -1,0 +1,184 @@
+[
+  {
+    "id": "marina",
+    "title": "Marina, a personagem",
+    "category": "Personagem",
+    "aspect": "4:5",
+    "prompt": "Retrato ultrarrealista: mulher brasileira de 27 anos, cabelo cacheado castanho na altura do ombro, sardas leves, sorriso natural sem mostrar muito os dentes, blusa de linho bege, luz suave de janela, parede clara ao fundo, lente 85mm, pele com textura real e poros visíveis, sem retoque, sem maquiagem pesada"
+  },
+  {
+    "id": "marina-praia",
+    "title": "Na orla",
+    "category": "Personagem",
+    "aspect": "3:4",
+    "ref": "marina",
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, caminhando na orla de Copacabana ao entardecer, vestido branco leve, vento no cabelo, luz dourada, calçadão de pedras portuguesas, foto de celular ultrarrealista"
+  },
+  {
+    "id": "marina-cafe",
+    "title": "No café",
+    "category": "Personagem",
+    "aspect": "3:4",
+    "ref": "marina",
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, sentada num café de esquina em São Paulo segurando uma xícara, notebook aberto na mesa de madeira, luz natural da rua, foto ultrarrealista de fotógrafo"
+  },
+  {
+    "id": "marina-academia",
+    "title": "Na academia",
+    "category": "Personagem",
+    "aspect": "3:4",
+    "ref": "marina",
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado preso num rabo, de roupa de treino preta na academia, segurando uma garrafa de água, levemente suada, equipamentos desfocados ao fundo, selfie de celular ultrarrealista"
+  },
+  {
+    "id": "marina-cozinha",
+    "title": "Em casa",
+    "category": "Personagem",
+    "aspect": "3:4",
+    "ref": "marina",
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, na cozinha de casa cortando frutas sobre a tábua, camiseta branca, luz da manhã pela janela, estilo vídeo UGC de celular, ultrarrealista"
+  },
+  {
+    "id": "marina-noite",
+    "title": "Na noite",
+    "category": "Personagem",
+    "aspect": "3:4",
+    "ref": "marina",
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, na rua Augusta à noite, jaqueta de couro preta, letreiros de neon roxo e azul desfocados ao fundo, flash de celular, foto ultrarrealista"
+  },
+  {
+    "id": "marina-escritorio",
+    "title": "No trabalho",
+    "category": "Personagem",
+    "aspect": "3:4",
+    "ref": "marina",
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, de blazer azul-marinho apresentando numa sala de reunião moderna, segurando um tablet, parede de vidro e plantas ao fundo, foto corporativa ultrarrealista"
+  },
+  {
+    "id": "hero-criadora",
+    "title": "Personagens",
+    "category": "Hero",
+    "aspect": "16:9",
+    "prompt": "Foto cinematográfica ultrarrealista: criadora de conteúdo brasileira de 25 anos gravando um vídeo com o celular preso num tripé, ring light acesa, apartamento pequeno com plantas e luz do fim de tarde, ela fala animada para a câmera, profundidade de campo rasa"
+  },
+  {
+    "id": "hero-imovel",
+    "title": "Formatos",
+    "category": "Hero",
+    "aspect": "16:9",
+    "prompt": "Fotografia imobiliária ultrarrealista em grande angular: sala de estar de apartamento moderno decorada em tons de areia, sofá de linho, tapete, plantas, luz do fim de tarde entrando por janelões com vista para a cidade"
+  },
+  {
+    "id": "hero-produto",
+    "title": "Vídeo",
+    "category": "Hero",
+    "aspect": "16:9",
+    "prompt": "Fotografia publicitária ultrarrealista: frasco de sérum de vidro âmbar sobre pedra escura molhada, respingos de água congelados no ar, luz lateral dramática, fundo roxo profundo desfocado"
+  },
+  {
+    "id": "bento-cidade",
+    "title": "Rio ao anoitecer",
+    "category": "Bento",
+    "aspect": "16:9",
+    "prompt": "Fotografia cinematográfica ultrarrealista do Rio de Janeiro visto do alto ao anoitecer, Pão de Açúcar e baía de Guanabara, céu em degradê roxo e azul, primeiras luzes da cidade acendendo, sem pessoas"
+  },
+  {
+    "id": "g-ugc-hidratante",
+    "title": "UGC de skincare",
+    "category": "UGC",
+    "aspect": "9:16",
+    "prompt": "Selfie vertical de celular, ultrarrealista: mulher brasileira de 31 anos no banheiro de casa mostrando um pote de hidratante para a câmera, sorrindo, cabelo preso de qualquer jeito, luz do espelho, estilo vídeo UGC"
+  },
+  {
+    "id": "g-moqueca",
+    "title": "Moqueca",
+    "category": "Prato",
+    "aspect": "4:5",
+    "prompt": "Fotografia gastronômica ultrarrealista: moqueca baiana fumegando em panela de barro sobre mesa de madeira rústica, coentro fresco, arroz e farofa ao lado, vapor visível, luz natural lateral"
+  },
+  {
+    "id": "g-casa-praia",
+    "title": "Casa de praia",
+    "category": "Imóvel",
+    "aspect": "4:5",
+    "prompt": "Foto de drone ultrarrealista: casa de praia moderna com piscina no litoral do Nordeste, coqueiros, faixa de areia branca e mar turquesa, luz do meio da manhã, fotografia imobiliária"
+  },
+  {
+    "id": "g-tenis",
+    "title": "Tênis em cena",
+    "category": "Produto",
+    "aspect": "1:1",
+    "prompt": "Fotografia de produto ultrarrealista para anúncio: tênis de corrida branco com detalhes roxos flutuando sobre chão de concreto, sombra dura, fundo azul-noite, luz de estúdio recortada"
+  },
+  {
+    "id": "g-podcast",
+    "title": "Podcast",
+    "category": "Personagem",
+    "aspect": "3:4",
+    "prompt": "Foto ultrarrealista: homem brasileiro de 36 anos com barba gravando podcast, microfone de braço e fones, estúdio com painel acústico e luz roxa ao fundo, rindo de algo fora de quadro"
+  },
+  {
+    "id": "g-perfume",
+    "title": "Perfume",
+    "category": "Produto",
+    "aspect": "3:4",
+    "prompt": "Fotografia publicitária ultrarrealista: frasco de perfume de vidro dourado sobre rocha clara cercado de flores de laranjeira, luz quente do pôr do sol, gotas de água no vidro, fundo creme desfocado"
+  },
+  {
+    "id": "g-cafe",
+    "title": "Cafeteria",
+    "category": "Prato",
+    "aspect": "4:5",
+    "prompt": "Foto ultrarrealista vista de cima: mãos de barista desenhando latte art num cappuccino, balcão de madeira, grãos de café espalhados, pão de queijo num pires, luz da manhã"
+  },
+  {
+    "id": "g-personal",
+    "title": "Personal trainer",
+    "category": "Personagem",
+    "aspect": "9:16",
+    "prompt": "Foto vertical ultrarrealista: personal trainer brasileira de 29 anos alongando no Parque Ibirapuera ao amanhecer, roupa de corrida, neblina leve e árvores ao fundo, luz dourada lateral"
+  },
+  {
+    "id": "g-quarto",
+    "title": "Suíte",
+    "category": "Imóvel",
+    "aspect": "4:5",
+    "prompt": "Fotografia imobiliária ultrarrealista: suíte de pousada boutique com cama de casal arrumada em linho branco, cabeceira de palha, janela aberta para o mar, luz suave da manhã"
+  },
+  {
+    "id": "g-hamburguer",
+    "title": "Hambúrguer",
+    "category": "Prato",
+    "aspect": "1:1",
+    "prompt": "Fotografia publicitária ultrarrealista: hambúrguer artesanal com queijo derretendo, bacon e pão brioche brilhante, batata rústica ao lado, fundo escuro, luz recortada, fumaça leve"
+  },
+  {
+    "id": "g-boutique",
+    "title": "Dona da loja",
+    "category": "UGC",
+    "aspect": "3:4",
+    "prompt": "Foto ultrarrealista: dona de boutique brasileira de 42 anos arrumando roupas numa arara da própria loja, sorrindo para a câmera, provador e espelho ao fundo, luz quente da vitrine"
+  },
+  {
+    "id": "g-brigadeiro",
+    "title": "Brigadeiros",
+    "category": "Prato",
+    "aspect": "4:5",
+    "prompt": "Fotografia gastronômica ultrarrealista: brigadeiros gourmet em forminhas douradas sobre bandeja de mármore, granulado belga, um brigadeiro mordido em primeiro plano, luz natural suave"
+  },
+  {
+    "id": "formato-antes",
+    "title": "Foto enviada",
+    "category": "Formato",
+    "aspect": "4:3",
+    "prompt": "Foto de celular comum, sem tratamento: sala de apartamento vazia, paredes brancas, piso de madeira clara, janela grande com cortina simples, sem móveis, luz do dia, tirada por corretor em pé na porta"
+  },
+  {
+    "id": "formato-depois",
+    "title": "Formato pronto",
+    "category": "Formato",
+    "aspect": "4:3",
+    "ref": "formato-antes",
+    "prompt": "Decore esta mesma sala mantendo exatamente a janela, o piso, as paredes e o enquadramento: sofá de linho bege, tapete claro, mesa de centro de madeira, plantas, luminária de piso e um quadro, estilo contemporâneo brasileiro, luz do fim de tarde, fotografia imobiliária ultrarrealista"
+  }
+]

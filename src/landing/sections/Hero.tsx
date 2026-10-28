@@ -1,17 +1,37 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { Gift } from 'lucide-react'
 import { CtaLink } from '../components/CtaLink'
-import { BrowserFrame, PhoneFrame, ScreenImage } from '../components/ScreenFrame'
+import { ShowcasePhoto } from '../components/ShowcasePhoto'
 import { WELCOME_CREDITS } from '../content'
-import { useMediaQuery } from '../hooks/useMediaQuery'
+import { SHOWCASE_VISIBLE, showcase } from '../showcase'
+import { CARD_HOVER } from '../styles'
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const
 const TRUST = ['Comece grátis', 'Tudo em português', 'Custo visível antes de gerar', 'Cancele quando quiser'] as const
 
+const HERO_TILES = [
+  {
+    image: showcase('hero-criadora'),
+    href: '#mesmo-rosto',
+    subtitle: 'O mesmo rosto em qualquer cena, foto após foto.',
+    alt: 'Criadora de conteúdo gravando vídeo com o celular no tripé, foto gerada no Vynkio',
+  },
+  {
+    image: showcase('hero-imovel'),
+    href: '#formatos',
+    subtitle: 'Imóvel, produto e prato: mande a foto, receba o post.',
+    alt: 'Sala de estar decorada com luz do fim de tarde, foto gerada no Vynkio',
+  },
+  {
+    image: showcase('hero-produto'),
+    href: '#recursos',
+    subtitle: 'Da foto ao vídeo em um clique, com Kling e Veo.',
+    alt: 'Frasco de sérum sobre pedra molhada com respingos de água, foto gerada no Vynkio',
+  },
+] as const
+
 export function Hero() {
   const reduceMotion = useReducedMotion()
-  // Só um dos prints é baixado: o do painel no desktop, o do celular no resto.
-  const desktop = useMediaQuery('(min-width: 768px)')
   const enter = (delay: number) => ({
     initial: reduceMotion ? false : { opacity: 0, y: 24 },
     animate: { opacity: 1, y: 0 },
@@ -59,31 +79,33 @@ export function Hero() {
         </motion.ul>
       </div>
 
-      <motion.div {...enter(0.32)} className="relative mx-auto mt-14 max-w-6xl px-4 md:mt-16">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-[10%] -top-10 h-40 rounded-full bg-accent/25 blur-3xl" />
-        {desktop ? (
-          <BrowserFrame label="Início" className="relative">
-            <ScreenImage
-              screen="dashboard"
-              eager
-              width={2160}
-              height={1350}
-              alt="Painel inicial do Vynkio: saldo de créditos, plano atual, atalhos de criação rápida e criações recentes, com o menu de Studio, Vynkio AI e Workspace"
-            />
-          </BrowserFrame>
-        ) : (
-          <PhoneFrame className="relative mx-auto w-[78%] max-w-[320px]">
-            <ScreenImage
-              screen="dashboard-mobile"
-              eager
-              width={780}
-              height={1688}
-              alt="Painel inicial do Vynkio no celular: saldo de créditos, plano atual e atalhos de criação"
-            />
-          </PhoneFrame>
-        )}
-        <p className="mt-4 text-center text-xs text-zinc-400">Tela real do Vynkio no modo demonstração, com dados de exemplo.</p>
-      </motion.div>
+      {SHOWCASE_VISIBLE && (
+        <motion.ul
+          {...enter(0.32)}
+          aria-label="O que dá pra criar"
+          className="relative mx-auto mt-14 flex max-w-[1440px] snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:mt-16 md:grid md:grid-cols-3 md:overflow-visible"
+        >
+          {HERO_TILES.map(({ image, href, subtitle, alt }, index) => (
+            <li key={image.id} className="w-[82%] shrink-0 snap-start md:w-auto">
+              <a
+                href={href}
+                className="group block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-stage"
+              >
+                <div className={`overflow-hidden rounded-2xl ring-1 ring-white/[0.08] ${CARD_HOVER}`}>
+                  <ShowcasePhoto
+                    image={image}
+                    alt={alt}
+                    eager={index === 0}
+                    className="w-full transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                  />
+                </div>
+                <p className="mt-4 font-landing text-[15px] font-bold uppercase tracking-[-0.01em] text-zinc-50">{image.title}</p>
+                <p className="mt-1 text-sm text-zinc-400">{subtitle}</p>
+              </a>
+            </li>
+          ))}
+        </motion.ul>
+      )}
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-stage to-transparent" />
     </section>
   )
