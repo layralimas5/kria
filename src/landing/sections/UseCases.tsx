@@ -24,7 +24,7 @@ export function UseCases() {
               </Reveal>
             )
           })}
-          <Reveal as="li" className="flex flex-col justify-between gap-4 rounded-2xl border border-accent/30 bg-[linear-gradient(160deg,rgba(124,58,237,0.16),transparent_70%)] p-5">
+          <Reveal as="li" className={`flex flex-col justify-between gap-4 rounded-2xl border border-accent/30 bg-[linear-gradient(160deg,rgba(124,58,237,0.16),transparent_70%)] p-5 ${CARD_HOVER}`}>
             <p className="text-[15px] font-semibold text-zinc-50">Seu caso não está aqui? Teste com os créditos grátis e veja se encaixa.</p>
             <CtaLink cta="use_cases" size="sm" className="self-start" />
           </Reveal>

@@ -1,6 +1,7 @@
 import { Clock, CreditCard, UserRoundX, type LucideIcon } from 'lucide-react'
 import { Reveal } from '../components/Reveal'
 import { SectionHeading } from '../components/SectionHeading'
+import { CARD_HOVER } from '../styles'
 
 interface Situation {
   readonly icon: LucideIcon
@@ -48,7 +49,7 @@ export function Problem() {
 
         <ul className="mt-12 grid gap-4 md:grid-cols-3">
           {SITUATIONS.map(({ icon: Icon, scene, detail, cost }, index) => (
-            <Reveal key={scene} as="li" delay={index * 0.06} className="flex flex-col rounded-2xl border border-white/[0.06] bg-panel p-6">
+            <Reveal key={scene} as="li" delay={index * 0.06} className={`flex flex-col rounded-2xl border border-white/[0.06] bg-panel p-6 ${CARD_HOVER}`}>
               <span className="grid size-10 place-items-center rounded-xl bg-accent/10 text-accent-soft ring-1 ring-accent/20">
                 <Icon className="size-5" aria-hidden="true" />
               </span>
