@@ -3,7 +3,7 @@ project_id = "kria"
 
 [auth]
 site_url = "http://localhost:5231"
-additional_redirect_urls = ["http://localhost:5231/**"]
+additional_redirect_urls = ["http://localhost:5231/**", "https://vynkio-ia.com.br/**", "https://www.vynkio-ia.com.br/**"]
 enable_signup = true
 minimum_password_length = 8
 

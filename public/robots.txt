@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /inicio
+Disallow: /conta
+
+Sitemap: https://vynkio-ia.com.br/sitemap.xml
