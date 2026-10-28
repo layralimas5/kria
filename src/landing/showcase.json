@@ -4,7 +4,7 @@
     "title": "Marina, a personagem",
     "category": "Personagem",
     "aspect": "4:5",
-    "prompt": "Retrato ultrarrealista: mulher brasileira de 27 anos, cabelo cacheado castanho na altura do ombro, sardas leves, sorriso natural sem mostrar muito os dentes, blusa de linho bege, luz suave de janela, parede clara ao fundo, lente 85mm, pele com textura real e poros visíveis, sem retoque, sem maquiagem pesada"
+    "prompt": "Retrato editorial de moda, close de rosto e ombros: mulher brasileira de 27 anos, cabelo cacheado castanho volumoso na altura do ombro, sardas marcadas, olhar firme para a câmera, argolas douradas, blazer preto sem nada por baixo, flash direto de estúdio, fundo roxo profundo liso, pele com textura real e poros visíveis, granulação de filme 35mm, estética de capa de revista"
   },
   {
     "id": "marina-praia",
@@ -12,23 +12,23 @@
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, caminhando na orla de Copacabana ao entardecer, vestido branco leve, vento no cabelo, luz dourada, calçadão de pedras portuguesas, foto de celular ultrarrealista"
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, em editorial de moda na orla de Copacabana no pôr do sol, vestido de cetim cor de vinho esvoaçando com o vento, ângulo baixo com lente 24mm, céu laranja e roxo, flash direto misturado com a luz do sol, granulação de filme, fotografia de campanha"
   },
   {
     "id": "marina-cafe",
-    "title": "No café",
+    "title": "Flagra no café",
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, sentada num café de esquina em São Paulo segurando uma xícara, notebook aberto na mesa de madeira, luz natural da rua, foto ultrarrealista de fotógrafo"
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, fotografada através do vidro de um café em São Paulo à noite, estilo paparazzi, reflexos de luzes da rua no vidro, óculos escuros na cabeça, xícara na mão, rindo, cores quentes e verdes de cinema, granulação de filme 35mm"
   },
   {
     "id": "marina-academia",
-    "title": "Na academia",
+    "title": "Campanha esportiva",
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado preso num rabo, de roupa de treino preta na academia, segurando uma garrafa de água, levemente suada, equipamentos desfocados ao fundo, selfie de celular ultrarrealista"
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado preso num rabo alto, em campanha de roupa esportiva, conjunto preto, pele suada brilhando, luz dura de cima com sombras fortes, fundo de concreto escuro, ângulo baixo heroico, alto contraste, fotografia publicitária de marca de esporte"
   },
   {
     "id": "marina-cozinha",
@@ -36,7 +36,7 @@
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, na cozinha de casa cortando frutas sobre a tábua, camiseta branca, luz da manhã pela janela, estilo vídeo UGC de celular, ultrarrealista"
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, numa cozinha retrô dos anos 70 de azulejo verde, mordendo uma laranja, camisa branca larga, sol forte da tarde entrando pela persiana e desenhando listras de sombra no rosto, cores saturadas, estética de filme Kodak Portra"
   },
   {
     "id": "marina-noite",
@@ -44,127 +44,127 @@
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, na rua Augusta à noite, jaqueta de couro preta, letreiros de neon roxo e azul desfocados ao fundo, flash de celular, foto ultrarrealista"
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, no banco de trás de um táxi à noite, jaqueta de couro preta, luzes de neon roxo e azul da cidade passando borradas pela janela, flash direto de celular, olhar por cima do ombro, estética de foto de festa dos anos 2000"
   },
   {
     "id": "marina-escritorio",
-    "title": "No trabalho",
+    "title": "Power suit",
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, de blazer azul-marinho apresentando numa sala de reunião moderna, segurando um tablet, parede de vidro e plantas ao fundo, foto corporativa ultrarrealista"
+    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, de terno oversized azul-marinho no terraço de um prédio em São Paulo, braços cruzados, ângulo baixo com lente grande angular, skyline e céu azul de fim de tarde atrás, vento no cabelo, editorial de moda corporativa, cores de cinema"
   },
   {
     "id": "hero-criadora",
     "title": "Personagens",
     "category": "Hero",
     "aspect": "16:9",
-    "prompt": "Foto cinematográfica ultrarrealista: criadora de conteúdo brasileira de 25 anos gravando um vídeo com o celular preso num tripé, ring light acesa, apartamento pequeno com plantas e luz do fim de tarde, ela fala animada para a câmera, profundidade de campo rasa"
+    "prompt": "Frame de cinema ultrarrealista: mulher brasileira de 25 anos com trança longa e jaqueta prateada em cima de um carro antigo no meio de uma estrada de terra vermelha no sertão, pôr do sol atrás, poeira no ar iluminada pelo sol, ângulo baixo, lente anamórfica com reflexo de luz, cores laranja e azul-petróleo, granulação de filme"
   },
   {
     "id": "hero-imovel",
     "title": "Formatos",
     "category": "Hero",
     "aspect": "16:9",
-    "prompt": "Fotografia imobiliária ultrarrealista em grande angular: sala de estar de apartamento moderno decorada em tons de areia, sofá de linho, tapete, plantas, luz do fim de tarde entrando por janelões com vista para a cidade"
+    "prompt": "Fotografia de arquitetura cinematográfica: casa moderna de concreto e vidro na serra, piscina de borda infinita refletindo o céu, hora azul logo depois do pôr do sol, todas as luzes internas acesas em tom quente, neblina nas montanhas ao fundo, composição simétrica, ultrarrealista"
   },
   {
     "id": "hero-produto",
     "title": "Vídeo",
     "category": "Hero",
     "aspect": "16:9",
-    "prompt": "Fotografia publicitária ultrarrealista: frasco de sérum de vidro âmbar sobre pedra escura molhada, respingos de água congelados no ar, luz lateral dramática, fundo roxo profundo desfocado"
+    "prompt": "Fotografia publicitária de alta velocidade: frasco de perfume de vidro roxo explodindo em uma onda de líquido violeta congelada no ar, gotas e pétalas suspensas, luz de contorno azul e rosa, fundo preto, reflexos nítidos no vidro, ultrarrealista, estética de comercial de luxo"
   },
   {
     "id": "bento-cidade",
-    "title": "Rio ao anoitecer",
+    "title": "São Paulo à noite",
     "category": "Bento",
     "aspect": "16:9",
-    "prompt": "Fotografia cinematográfica ultrarrealista do Rio de Janeiro visto do alto ao anoitecer, Pão de Açúcar e baía de Guanabara, céu em degradê roxo e azul, primeiras luzes da cidade acendendo, sem pessoas"
+    "prompt": "Foto aérea de helicóptero sobre São Paulo na hora azul, avenidas com rastros de luz vermelha e branca em longa exposição, prédios iluminados até o horizonte, nuvens baixas roxas refletindo a cidade, cores de cinema, ultrarrealista, sem pessoas"
   },
   {
     "id": "g-ugc-hidratante",
-    "title": "UGC de skincare",
+    "title": "Selfie com flash",
     "category": "UGC",
     "aspect": "9:16",
-    "prompt": "Selfie vertical de celular, ultrarrealista: mulher brasileira de 31 anos no banheiro de casa mostrando um pote de hidratante para a câmera, sorrindo, cabelo preso de qualquer jeito, luz do espelho, estilo vídeo UGC"
+    "prompt": "Selfie no espelho com flash direto, estética anos 2000: mulher brasileira de 24 anos de cabelo platinado preso com piranha, top branco, segurando um pote de hidratante cor-de-rosa perto do rosto, banheiro de azulejo azul, brilho estourado do flash no espelho, unhas cromadas, foto de celular ultrarrealista"
   },
   {
     "id": "g-moqueca",
     "title": "Moqueca",
     "category": "Prato",
     "aspect": "4:5",
-    "prompt": "Fotografia gastronômica ultrarrealista: moqueca baiana fumegando em panela de barro sobre mesa de madeira rústica, coentro fresco, arroz e farofa ao lado, vapor visível, luz natural lateral"
+    "prompt": "Fotografia gastronômica escura e dramática: moqueca baiana borbulhando em panela de barro, vapor subindo iluminado por um feixe de luz lateral, fundo preto, dendê brilhando, pimenta e coentro frescos, contraste de pintura barroca, ultrarrealista"
   },
   {
     "id": "g-casa-praia",
     "title": "Casa de praia",
     "category": "Imóvel",
     "aspect": "4:5",
-    "prompt": "Foto de drone ultrarrealista: casa de praia moderna com piscina no litoral do Nordeste, coqueiros, faixa de areia branca e mar turquesa, luz do meio da manhã, fotografia imobiliária"
+    "prompt": "Foto de drone totalmente de cima: casa de praia branca com piscina retangular turquesa, coqueiros projetando sombras longas no fim de tarde, faixa de areia e ondas de espuma branca entrando no quadro, composição gráfica e simétrica, cores saturadas, ultrarrealista"
   },
   {
     "id": "g-tenis",
     "title": "Tênis em cena",
     "category": "Produto",
     "aspect": "1:1",
-    "prompt": "Fotografia de produto ultrarrealista para anúncio: tênis de corrida branco com detalhes roxos flutuando sobre chão de concreto, sombra dura, fundo azul-noite, luz de estúdio recortada"
+    "prompt": "Fotografia publicitária: tênis de corrida branco e roxo flutuando no ar sobre asfalto rachado, pedaços de asfalto e poeira congelados subindo junto, luz de contorno roxa e azul, fundo escuro com fumaça, ângulo baixo, ultrarrealista, estética de campanha esportiva"
   },
   {
     "id": "g-podcast",
-    "title": "Podcast",
+    "title": "Retrato de cinema",
     "category": "Personagem",
     "aspect": "3:4",
-    "prompt": "Foto ultrarrealista: homem brasileiro de 36 anos com barba gravando podcast, microfone de braço e fones, estúdio com painel acústico e luz roxa ao fundo, rindo de algo fora de quadro"
+    "prompt": "Retrato de cinema: homem brasileiro de 34 anos de barba e cabelo raspado, camisa de seda preta, metade do rosto em luz vermelha e metade em luz azul, fumaça leve no ar, olhar sério para a câmera, fundo escuro, granulação de filme, ultrarrealista"
   },
   {
     "id": "g-perfume",
     "title": "Perfume",
     "category": "Produto",
     "aspect": "3:4",
-    "prompt": "Fotografia publicitária ultrarrealista: frasco de perfume de vidro dourado sobre rocha clara cercado de flores de laranjeira, luz quente do pôr do sol, gotas de água no vidro, fundo creme desfocado"
+    "prompt": "Fotografia publicitária: frasco de perfume dourado mergulhando em água cristalina com flores de laranjeira, bolhas subindo, cáusticas de luz dançando no vidro, raios de sol atravessando a água, tons dourados e azul-turquesa, ultrarrealista, estética de comercial de luxo"
   },
   {
     "id": "g-cafe",
-    "title": "Cafeteria",
+    "title": "Espresso",
     "category": "Prato",
     "aspect": "4:5",
-    "prompt": "Foto ultrarrealista vista de cima: mãos de barista desenhando latte art num cappuccino, balcão de madeira, grãos de café espalhados, pão de queijo num pires, luz da manhã"
+    "prompt": "Macro em alta velocidade: espresso caindo da cafeteira numa xícara de vidro, fio de café e crema congelados no ar, gotas espirrando, grãos de café voando em volta, luz de contorno quente, fundo marrom-escuro, ultrarrealista"
   },
   {
     "id": "g-personal",
-    "title": "Personal trainer",
+    "title": "Treino na chuva",
     "category": "Personagem",
     "aspect": "9:16",
-    "prompt": "Foto vertical ultrarrealista: personal trainer brasileira de 29 anos alongando no Parque Ibirapuera ao amanhecer, roupa de corrida, neblina leve e árvores ao fundo, luz dourada lateral"
+    "prompt": "Foto de campanha esportiva: atleta brasileira de 28 anos correndo na chuva à noite numa rua vazia, gotas congeladas pelo flash, rastro de luz da cidade em movimento atrás, roupa preta refletiva, expressão de esforço, ângulo baixo, ultrarrealista"
   },
   {
     "id": "g-quarto",
     "title": "Suíte",
     "category": "Imóvel",
     "aspect": "4:5",
-    "prompt": "Fotografia imobiliária ultrarrealista: suíte de pousada boutique com cama de casal arrumada em linho branco, cabeceira de palha, janela aberta para o mar, luz suave da manhã"
+    "prompt": "Fotografia de interiores cinematográfica: suíte de hotel boutique de frente para o mar, cortina de linho branca voando com o vento, cama desarrumada com lençóis claros, luz dourada do pôr do sol cortando o quarto em diagonal, poeira no ar, ultrarrealista"
   },
   {
     "id": "g-hamburguer",
     "title": "Hambúrguer",
     "category": "Prato",
     "aspect": "1:1",
-    "prompt": "Fotografia publicitária ultrarrealista: hambúrguer artesanal com queijo derretendo, bacon e pão brioche brilhante, batata rústica ao lado, fundo escuro, luz recortada, fumaça leve"
+    "prompt": "Fotografia publicitária: hambúrguer artesanal desmontado no ar, pão brioche, carne, queijo derretendo em fios, bacon, alface e tomate flutuando em camadas, gotas de molho suspensas, fundo preto, luz de estúdio recortada, ultrarrealista"
   },
   {
     "id": "g-boutique",
-    "title": "Dona da loja",
-    "category": "UGC",
+    "title": "Street style",
+    "category": "Moda",
     "aspect": "3:4",
-    "prompt": "Foto ultrarrealista: dona de boutique brasileira de 42 anos arrumando roupas numa arara da própria loja, sorrindo para a câmera, provador e espelho ao fundo, luz quente da vitrine"
+    "prompt": "Editorial de street style no centro de São Paulo: mulher brasileira de 40 anos de cabelo curto grisalho, blazer vermelho oversized, óculos escuros, atravessando a rua em movimento, ângulo baixo com lente 24mm, prédios antigos e céu azul forte, sol duro, cores saturadas, granulação de filme"
   },
   {
     "id": "g-brigadeiro",
-    "title": "Brigadeiros",
+    "title": "Brigadeiro",
     "category": "Prato",
     "aspect": "4:5",
-    "prompt": "Fotografia gastronômica ultrarrealista: brigadeiros gourmet em forminhas douradas sobre bandeja de mármore, granulado belga, um brigadeiro mordido em primeiro plano, luz natural suave"
+    "prompt": "Macro publicitário: brigadeiro gourmet sendo coberto por uma calda de chocolate escorrendo devagar, granulado belga caindo no ar, folha de ouro por cima, fundo marrom-escuro, luz lateral marcando o brilho do chocolate, ultrarrealista"
   },
   {
     "id": "formato-antes",
@@ -179,6 +179,6 @@
     "category": "Formato",
     "aspect": "4:3",
     "ref": "formato-antes",
-    "prompt": "Decore esta mesma sala mantendo exatamente a janela, o piso, as paredes e o enquadramento: sofá de linho bege, tapete claro, mesa de centro de madeira, plantas, luminária de piso e um quadro, estilo contemporâneo brasileiro, luz do fim de tarde, fotografia imobiliária ultrarrealista"
+    "prompt": "Decore esta mesma sala mantendo exatamente a janela, o piso, as paredes e o enquadramento: sofá curvo de bouclê off-white, tapete de lã, mesa de centro de mármore, oliveira num vaso de barro, luminária escultural e arte abstrata grande na parede, luz dourada do pôr do sol entrando pela janela e desenhando sombras longas, fotografia de interiores de revista, ultrarrealista"
   }
 ]
