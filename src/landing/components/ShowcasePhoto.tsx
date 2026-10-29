@@ -29,7 +29,7 @@ export function ShowcasePhoto({ image, alt, className, keepAspect = true, eager 
       <div
         role="img"
         aria-label={`${alt} (imagem ainda não gerada)`}
-        className={clsx('grid place-items-center bg-[radial-gradient(120%_90%_at_30%_20%,#2a2052,#13112a_70%)] text-zinc-500', box)}
+        className={clsx('grid place-items-center bg-[radial-gradient(120%_90%_at_30%_20%,#22183d,#0e0e10_70%)] text-zinc-500', box)}
       >
         <ImageIcon className="size-6" aria-hidden="true" />
       </div>

@@ -23,7 +23,7 @@ function Handles() {
 export function FormatsBanner() {
   return (
     <section id="formatos" aria-labelledby="formatos-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
-      <Reveal className="relative mx-auto max-w-[1440px] overflow-hidden rounded-3xl border border-white/[0.08] bg-[radial-gradient(90%_120%_at_50%_120%,#1d4ed8_0%,#3b1d8f_35%,#13112a_75%)] px-5 py-12 md:px-10 md:py-16">
+      <Reveal className="relative mx-auto max-w-[1440px] overflow-hidden rounded-3xl border border-white/[0.08] bg-[radial-gradient(90%_120%_at_50%_120%,#1d4ed8_0%,#3b1d8f_35%,#0a0a0b_75%)] px-5 py-12 md:px-10 md:py-16">
         <div className="grid grid-cols-2 items-center gap-x-3 gap-y-10 lg:grid-cols-[1fr_1.2fr_1fr] lg:gap-10">
           <figure className="order-2 mx-auto w-full max-w-[300px] -rotate-3 rounded-2xl bg-black/40 p-2 sm:p-3 ring-1 ring-white/10 backdrop-blur-md lg:order-1">
             <ShowcasePhoto image={BEFORE} alt="Foto de celular de uma sala vazia, enviada pelo corretor" className="w-full rounded-xl" />

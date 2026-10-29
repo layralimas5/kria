@@ -39,7 +39,7 @@ export function BrowserFrame({ children, label, className }: BrowserFrameProps) 
   return (
     <figure
       className={clsx(
-        'overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0d0c1f] shadow-[0_40px_120px_-30px_rgba(124,58,237,0.45)]',
+        'overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0a0b] shadow-[0_40px_120px_-30px_rgba(124,58,237,0.45)]',
         className,
       )}
     >
@@ -58,7 +58,7 @@ export function PhoneFrame({ children, className }: { readonly children: ReactNo
   return (
     <figure
       className={clsx(
-        'overflow-hidden rounded-[2.2rem] bg-[#08071a] p-[6px] shadow-[0_30px_80px_-20px_rgba(124,58,237,0.5)] ring-1 ring-white/[0.12]',
+        'overflow-hidden rounded-[2.2rem] bg-[#050505] p-[6px] shadow-[0_30px_80px_-20px_rgba(124,58,237,0.5)] ring-1 ring-white/[0.12]',
         className,
       )}
     >
