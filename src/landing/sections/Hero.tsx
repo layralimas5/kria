@@ -18,7 +18,7 @@ const HERO_TILES = [
   },
   {
     image: showcase('hero-imovel'),
-    href: '#formatos',
+    href: '#para-quem',
     subtitle: 'Imóvel, produto e prato: mande a foto, receba o post.',
     alt: 'Sala de estar decorada com luz do fim de tarde, foto gerada no Vynkio',
   },
