@@ -58,7 +58,7 @@ export class ApiError extends Error {
 
 const errorBodySchema = z.object({ error: z.object({ code: z.string(), message: z.string() }) })
 
-async function invoke(name: string, body: Record<string, unknown>): Promise<unknown> {
+export async function invoke(name: string, body: Record<string, unknown>): Promise<unknown> {
   const { data, error } = await supabase.functions.invoke(name, { body })
   if (!error) return data
   if (error instanceof FunctionsHttpError) {

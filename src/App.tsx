@@ -37,6 +37,8 @@ const BrandsPage = page(() => import('@/pages/BrandsPage'), 'BrandsPage')
 const ProjectsPage = page(() => import('@/pages/ProjectsPage'), 'ProjectsPage')
 const ContentPage = page(() => import('@/pages/ContentPage'), 'ContentPage')
 const ResultsPage = page(() => import('@/pages/ResultsPage'), 'ResultsPage')
+const MultiplierPage = page(() => import('@/pages/MultiplierPage'), 'MultiplierPage')
+const MultiplierProjectPage = page(() => import('@/pages/MultiplierProjectPage'), 'MultiplierProjectPage')
 const AdminRoot = page(() => import('@/pages/admin/AdminRoot'), 'AdminRoot')
 const AdminDashboardPage = page(() => import('@/pages/admin/AdminDashboardPage'), 'AdminDashboardPage')
 const AdminUsersPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminUsersPage')
@@ -110,6 +112,8 @@ export function App() {
               >
                 <Route path="inicio" element={<HomePage />} />
                 <Route path="estudio" element={<StudioPage />} />
+                <Route path="multiplicador" element={<MultiplierPage />} />
+                <Route path="multiplicador/:id" element={<MultiplierProjectPage />} />
                 <Route path="formatos" element={<FormatsPage />} />
                 <Route path="formatos/:slug" element={<FormatPage />} />
                 <Route path="galeria" element={<GalleryPage />} />

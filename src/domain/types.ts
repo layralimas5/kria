@@ -111,6 +111,8 @@ export const planSchema = z.object({
   max_concurrent: z.number().int(),
   max_personas: z.number().int(),
   max_brands: z.number().int(),
+  /** Variações por lote no Multiplicador (0017). */
+  max_variations: z.number().int(),
   /** Ferramentas do menu que o plano inclui (`PLAN_TOOLS`). Valor desconhecido é ignorado. */
   tools: z.array(z.string()),
   features: z.array(z.string()),
@@ -121,7 +123,7 @@ export const planSchema = z.object({
 export type Plan = z.infer<typeof planSchema>
 
 export const PLAN_COLUMNS =
-  'slug, name, description, price_cents, monthly_credits, max_concurrent, max_personas, max_brands, tools, features, public, highlight, position'
+  'slug, name, description, price_cents, monthly_credits, max_concurrent, max_personas, max_brands, max_variations, tools, features, public, highlight, position'
 
 export const subscriptionStatusSchema = z.enum(['pending', 'active', 'past_due', 'canceled', 'expired'])
 export type SubscriptionStatus = z.infer<typeof subscriptionStatusSchema>

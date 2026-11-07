@@ -86,7 +86,7 @@ tabela `generations`. **Qualquer módulo novo pago deve entrar por esse caminho.
 | Fase | Ausente | Depende de |
 |---|---|---|
 | 1. Ecossistema | Separar Creator, Business e Tools no menu e no plano | Decisão da seção 0 |
-| 2. Multiplicador | Upload de vídeo, transcrição, detecção de cena, roteiros por variação, motor de montagem, fila de render, ZIP | Worker de render (Remotion já é usado pela Lay em outros projetos) + serviço de transcrição |
+| 2. Multiplicador | Feito em 07/11 (ver Sprint 2). Faltam transcrição, detecção de cena, locução e legenda palavra por palavra | Provedor de transcrição e de voz com preço conferido |
 | 3. IA avançada | Texto para vídeo, duração e resolução com custo por parâmetro, voz, imagem para imagem com referência enviada | Conferir preço e endpoint no fal; custo por parâmetro em `create_generation`; moderação de rosto antes de aceitar referência |
 | 3. Camada de provedores | `listAvailableModels` (já é a tabela `models`), `estimateGenerationCost` (créditos já aparecem antes de gerar), `cancelGeneration` (falta), `getGenerationStatus` (existe em `generation-status`) | Interface única em `_shared/providers.ts` |
 | 4. Financeiro | Custo real por operação (hoje é estimativa), receita por usuário, custo de render, armazenamento e transferência | Fatura do fal e da Anthropic; render próprio |
@@ -111,18 +111,12 @@ Guarda de gasto (`0016_spend_guard`), detalhe na seção 6. Faltam deste sprint,
 3. Custo real do texto: a function `assistant` já recebe os tokens; gravar o custo real na geração.
 4. Alerta fora do painel (e-mail para a Lay quando passar da fração de alerta).
 
-### Sprint 2: Multiplicador MVP
+### Sprint 2: Multiplicador MVP (**pronto em 07/11, branch `feat/vynkio-multiplicador`**)
 
-Só depois da decisão da seção 0. Arquitetura proposta:
-
-- Upload de vídeo direto para o Storage com URL assinada, limite de tamanho e duração, confirmação de
-  direitos (mesmo padrão de `uploads`).
-- `multiplier_projects` e `multiplier_variations` (status por variação), cada variação cobrada por
-  `create_generation` com um modelo de catálogo `kind = 'render'`: ganha reserva, estorno e limite de graça.
-- Roteiros por variação pela function `assistant` (já tem saída estruturada e regra de não inventar).
-- Render num worker Node com Remotion (fila no Postgres, um job por variação, tentativas controladas,
-  cancelamento). Hospedagem a decidir: Remotion Lambda ou um container pequeno.
-- Não fazer variação "anti-duplicado" (velocidade, filtro, metadado): só variação real de roteiro e montagem.
+Upload local (nada sobe), projetos, leitura do material, lotes de roteiro pelo motor de crédito com
+limite por plano, edição de cada roteiro, montagem quadro a quadro no navegador (WebCodecs) em quatro
+formatos e três estilos, fila com progresso, cancelamento e nova tentativa, MP4 e ZIP com legendas.
+Detalhes, decisões e custo em `docs/multiplicador.md`. Sem servidor de render: custo de montagem zero.
 
 ### Sprint 3: Vynkio AI
 

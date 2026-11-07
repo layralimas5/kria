@@ -10,10 +10,11 @@ import { buildDemoDashboard } from './demoAdmin'
 import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_USER_ID, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 import { DEMO_VIDEO, demoImageAt, demoMediaType } from './demoMedia'
+import { demoMultiplierOutput } from './demoMultiplier'
 import { demoRefusal, demoSpendGuard, demoUsage } from './demoSpend'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
-const SESSION_KEY = 'kria-demo-state-v9'
+const SESSION_KEY = 'kria-demo-state-v10'
 
 function loadState(): DemoState {
   try {
@@ -71,6 +72,8 @@ const TABLES: Record<string, () => Row[]> = {
   generations: () => state.generations,
   formats: () => state.formats,
   uploads: () => state.uploads,
+  multiplier_projects: () => state.multiplierProjects,
+  multiplier_variations: () => state.multiplierVariations,
   credit_ledger: () => state.ledger,
   purchases: () => state.purchases,
   credit_balances: () => [wallet()],
@@ -421,6 +424,108 @@ function workspaceWrite(table: OwnedTable, method: string, url: URL, body: Row):
   return json(row)
 }
 
+// ------------------------------------------------------------- multiplicador
+
+const MULTIPLIER_PROJECT_FIELDS = ['brand_id', 'name', 'product_name', 'product_description', 'audience', 'platform', 'objective', 'aspect', 'transcript', 'takes', 'rights_confirmed']
+
+/** Projetos e variações com as travas da 0017: variação nasce só pela function; editar marca como editada. */
+function multiplierWrite(table: 'multiplier_projects' | 'multiplier_variations', method: string, url: URL, body: Row): Response {
+  const id = url.searchParams.get('id')?.replace('eq.', '')
+  const now = new Date().toISOString()
+  if (table === 'multiplier_projects') {
+    if (method === 'DELETE') {
+      state.multiplierProjects = state.multiplierProjects.filter((row) => row.id !== id)
+      state.multiplierVariations = state.multiplierVariations.filter((row) => row.project_id !== id)
+      persist()
+      return new Response(null, { status: 204 })
+    }
+    if (Array.isArray(body.takes) && body.takes.length > 12) return rpcFail('invalid_takes')
+    if (method === 'POST') {
+      const row: Row = { id: uuid(), user_id: DEMO_USER_ID, analysis: null, ...pick(body, MULTIPLIER_PROJECT_FIELDS), created_at: now, updated_at: now }
+      state.multiplierProjects.unshift(row)
+      persist()
+      return json(row, 201)
+    }
+    const row = state.multiplierProjects.find((item) => item.id === id)
+    if (!row) return json({ message: 'not_found', code: 'PGRST116' }, 406)
+    Object.assign(row, pick(body, MULTIPLIER_PROJECT_FIELDS), { updated_at: now })
+    persist()
+    return json(row)
+  }
+  if (method === 'POST') return json({ message: 'permission denied for table multiplier_variations', code: '42501' }, 403)
+  if (method === 'DELETE') {
+    state.multiplierVariations = state.multiplierVariations.filter((row) => row.id !== id)
+    persist()
+    return new Response(null, { status: 204 })
+  }
+  const row = state.multiplierVariations.find((item) => item.id === id)
+  if (!row) return json({ message: 'not_found', code: 'PGRST116' }, 406)
+  if ('script' in body) Object.assign(row, { script: body.script, edited: true })
+  if ('render_status' in body) Object.assign(row, { render_status: body.render_status, rendered_at: body.render_status === 'rendered' ? now : null })
+  row.updated_at = now
+  persist()
+  return json(row)
+}
+
+/** Mesmo contrato da function `multiplier`: plano, saldo, guarda de gasto e lote gravado de uma vez. */
+async function multiplier(body: Row): Promise<Response> {
+  const project = state.multiplierProjects.find((item) => item.id === body.projectId)
+  if (!project) return fail(404, 'project_not_found', 'Projeto não encontrado.')
+  const count = Number(body.count)
+  const plan = currentPlan()
+  if (!project.rights_confirmed) return fail(400, 'rights_not_confirmed', 'Confirme que você tem direito de uso sobre os arquivos antes de gerar.')
+  if (!Array.isArray(project.takes) || project.takes.length === 0) return fail(400, 'takes_required', 'Adicione pelo menos um vídeo ou foto ao projeto.')
+  if (!Number.isInteger(count) || count < 1) return fail(400, 'invalid_count', 'Escolha quantas variações quer gerar.')
+  if (count > Number(plan.max_variations)) return fail(403, 'too_many_variations', 'Seu plano gera menos variações por lote. Veja os planos em Assinatura.')
+  const model = state.models.find((item) => item.slug === 'multiplicador')
+  if (!model) return fail(400, 'model_unavailable', 'Esse modelo não está disponível.')
+  const credits = Number(model.credits)
+  if (balanceOf() < credits) return fail(402, 'insufficient_credits', 'Créditos insuficientes.')
+  const refusal = demoRefusal(state, plan, credits)
+  if (refusal) return fail(refusal.status, refusal.code, refusal.message)
+
+  await new Promise((resolve) => setTimeout(resolve, 1800))
+  const output = demoMultiplierOutput(project, count)
+  const now = new Date().toISOString()
+  const generationId = uuid()
+  state.generations.unshift({
+    id: generationId,
+    user_id: DEMO_USER_ID,
+    model_slug: 'multiplicador',
+    kind: 'text',
+    prompt: `Multiplicador: ${count} variações`,
+    credits,
+    status: 'succeeded',
+    output_type: 'application/json',
+    output_text: JSON.stringify({ project_id: project.id, variations: output.variations.length }),
+    output_path: null,
+    error: null,
+    created_at: now,
+    completed_at: now,
+  })
+  output.variations.forEach((script, index) => {
+    state.multiplierVariations.unshift({
+      id: uuid(),
+      project_id: project.id,
+      user_id: DEMO_USER_ID,
+      generation_id: generationId,
+      position: index + 1,
+      script,
+      edited: false,
+      render_status: 'pending',
+      rendered_at: null,
+      created_at: now,
+      updated_at: now,
+    })
+  })
+  project.analysis = output.analysis
+  project.updated_at = now
+  const fromSubscription = Math.min(state.subscriptionBalance, credits)
+  addLedger(-fromSubscription, -(credits - fromSubscription), 'generation', 'Multiplicador')
+  persist()
+  return json({ generation: { id: generationId, status: 'succeeded' }, variations: output.variations.length }, 201)
+}
+
 // ---------------------------------------------------- painel de operação (admin)
 
 function audit(action: string, target: string | null, reason: string | null, targetUserId: string | null = null) {
@@ -693,6 +798,7 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
     if (name === 'cancel-subscription') return cancelSubscription()
     if (name === 'account') return account(body)
     if (name === 'assistant') return assistant(body)
+    if (name === 'multiplier') return multiplier(body)
     return fail(404, 'not_found', 'Função desconhecida.')
   }
 
@@ -700,6 +806,9 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
 
   if (route.startsWith('rest/')) {
     const table = route.slice('rest/'.length)
+    if ((table === 'multiplier_projects' || table === 'multiplier_variations') && method !== 'GET' && method !== 'HEAD') {
+      return multiplierWrite(table, method, url, await readBody(init))
+    }
     if ((table === 'brands' || table === 'projects' || table === 'content_items') && method !== 'GET' && method !== 'HEAD') {
       return workspaceWrite(table, method, url, await readBody(init))
     }

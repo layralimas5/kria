@@ -37,6 +37,8 @@ export interface DemoState {
   /** Formatos e fotos enviadas (0015). */
   formats: Row[]
   uploads: Row[]
+  multiplierProjects: Row[]
+  multiplierVariations: Row[]
 }
 
 const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60_000).toISOString()
@@ -136,10 +138,10 @@ export function createDemoState(): DemoState {
     subscriptionBalance: 230,
     preferences: { user_id: DEMO_USER_ID, goal: null, onboarded_at: null, active_brand_id: lunaBrand.id },
     plans: [
-      { slug: 'gratis', name: 'Grátis', description: 'Teste com seus personagens antes de assinar.', price_cents: 0, monthly_credits: 0, daily_credit_limit: 100, monthly_credit_limit: 500, max_concurrent: 2, max_personas: 1, max_brands: 1, tools: ['copy', 'prompt_library'], features: ['20 créditos de boas-vindas', '1 personagem salvo', 'Fotos com IA e com seu personagem', 'Vídeo com Kling 3.0 comprando um pacote', 'Pacotes avulsos com Pix'], public: false, highlight: false, active: true, position: 0, version: 1 },
-      { slug: 'starter', name: 'Starter', description: 'Para começar a publicar toda semana.', price_cents: 5990, monthly_credits: 300, daily_credit_limit: 300, monthly_credit_limit: 1500, max_concurrent: 3, max_personas: 2, max_brands: 1, tools: ['copy', 'prompt_library'], features: ['300 créditos por mês', 'Até 2 personagens salvos', 'Fotos com IA e com seus personagens', 'Vídeo com Kling 3.0', 'Vídeo com fala e som (Veo 3.1)', '3 gerações ao mesmo tempo', 'Histórico e download das criações', 'Suporte por e-mail'], public: true, highlight: false, active: true, position: 10, version: 1 },
-      { slug: 'pro', name: 'Pro', description: 'Para quem publica todo dia.', price_cents: 7990, monthly_credits: 450, daily_credit_limit: 450, monthly_credit_limit: 2250, max_concurrent: 4, max_personas: 5, max_brands: 3, tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio'], features: ['450 créditos por mês', 'Até 5 personagens salvos', 'Tudo do Starter', '4 gerações ao mesmo tempo', 'Suporte pelo WhatsApp', 'Acesso à comunidade'], public: true, highlight: true, active: true, position: 20, version: 1 },
-      { slug: 'studio', name: 'Studio', description: 'Para operação de conteúdo e anúncios.', price_cents: 14990, monthly_credits: 1000, daily_credit_limit: 1000, monthly_credit_limit: 5000, max_concurrent: 6, max_personas: 15, max_brands: 10, tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio', 'projects'], features: ['1.000 créditos por mês', 'Até 15 personagens salvos', 'Tudo do Pro', '6 gerações ao mesmo tempo', 'Suporte pelo WhatsApp', 'Acesso à comunidade'], public: true, highlight: false, active: true, position: 30, version: 1 },
+      { slug: 'gratis', name: 'Grátis', description: 'Teste com seus personagens antes de assinar.', price_cents: 0, monthly_credits: 0, daily_credit_limit: 100, monthly_credit_limit: 500, max_concurrent: 2, max_personas: 1, max_variations: 3, max_brands: 1, tools: ['copy', 'prompt_library'], features: ['20 créditos de boas-vindas', '1 personagem salvo', 'Fotos com IA e com seu personagem', 'Vídeo com Kling 3.0 comprando um pacote', 'Pacotes avulsos com Pix'], public: false, highlight: false, active: true, position: 0, version: 1 },
+      { slug: 'starter', name: 'Starter', description: 'Para começar a publicar toda semana.', price_cents: 5990, monthly_credits: 300, daily_credit_limit: 300, monthly_credit_limit: 1500, max_concurrent: 3, max_personas: 2, max_variations: 5, max_brands: 1, tools: ['copy', 'prompt_library'], features: ['300 créditos por mês', 'Até 2 personagens salvos', 'Fotos com IA e com seus personagens', 'Vídeo com Kling 3.0', 'Vídeo com fala e som (Veo 3.1)', '3 gerações ao mesmo tempo', 'Histórico e download das criações', 'Suporte por e-mail'], public: true, highlight: false, active: true, position: 10, version: 1 },
+      { slug: 'pro', name: 'Pro', description: 'Para quem publica todo dia.', price_cents: 7990, monthly_credits: 450, daily_credit_limit: 450, monthly_credit_limit: 2250, max_concurrent: 4, max_personas: 5, max_variations: 10, max_brands: 3, tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio'], features: ['450 créditos por mês', 'Até 5 personagens salvos', 'Tudo do Starter', '4 gerações ao mesmo tempo', 'Suporte pelo WhatsApp', 'Acesso à comunidade'], public: true, highlight: true, active: true, position: 20, version: 1 },
+      { slug: 'studio', name: 'Studio', description: 'Para operação de conteúdo e anúncios.', price_cents: 14990, monthly_credits: 1000, daily_credit_limit: 1000, monthly_credit_limit: 5000, max_concurrent: 6, max_personas: 15, max_variations: 10, max_brands: 10, tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio', 'projects'], features: ['1.000 créditos por mês', 'Até 15 personagens salvos', 'Tudo do Pro', '6 gerações ao mesmo tempo', 'Suporte pelo WhatsApp', 'Acesso à comunidade'], public: true, highlight: false, active: true, position: 30, version: 1 },
     ],
     subscriptions: [proSubscription],
     subscriptionPayments: [
@@ -167,6 +169,7 @@ export function createDemoState(): DemoState {
       { slug: 'roteiro', name: 'Roteiro de vídeo', description: 'Gancho, cenas e CTA para Reels, TikTok e Shorts.', kind: 'text', requires_image: false, credits: 3, position: 110, badge: null, defaults: { effort: 'low' }, allowed_plans: null, provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
       { slug: 'ideias', name: 'Ideias de conteúdo', description: 'Pautas pensadas para o público da marca.', kind: 'text', requires_image: false, credits: 3, position: 120, badge: null, defaults: { effort: 'low' }, allowed_plans: null, provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
       { slug: 'planejamento', name: 'Planejamento editorial', description: 'Uma semana ou um mês de posts com formato, gancho e objetivo.', kind: 'text', requires_image: false, credits: 3, position: 140, badge: 'NOVO', defaults: { effort: 'low' }, allowed_plans: null, provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
+      { slug: 'multiplicador', name: 'Multiplicador', description: 'Variações de roteiro a partir dos seus takes, prontas para montar.', kind: 'text', requires_image: false, credits: 8, position: 140, badge: 'NOVO', defaults: { effort: 'low' }, allowed_plans: null, provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
       { slug: 'ugc-roteiro', name: 'Roteiro UGC', description: 'Vídeo estilo criador apresentando o produto, com cenas para o Studio.', kind: 'text', requires_image: false, credits: 3, position: 130, badge: 'NOVO', defaults: { effort: 'low' }, allowed_plans: ['pro', 'studio'], provider: 'anthropic', endpoint: 'claude-opus-5-5', provider_cost_usd: null, active: true },
     ],
     packs: [
@@ -199,6 +202,8 @@ export function createDemoState(): DemoState {
     analyticsSnapshots: [],
     formats: DEMO_FORMATS,
     uploads: [],
+    multiplierProjects: [],
+    multiplierVariations: [],
     generations: [
       generation(0, { model_slug: 'video-kling', kind: 'video', credits: 40, persona_id: luna.id, output_path: DEMO_VIDEO, prompt: 'Luna olha para a câmera, sorri e acena', created_at: minutesAgo(6), completed_at: minutesAgo(3) }),
       generation(1, { model_slug: 'foto-persona', credits: 6, persona_id: luna.id, output_path: demoPhoto('luna-cafe', 3), prompt: 'Luna num café em São Paulo segurando um latte, luz da manhã' }),

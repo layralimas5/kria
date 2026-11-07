@@ -233,7 +233,8 @@ await test('RLS: cada pessoa só enxerga o que é dela', async (db) => {
   assert.deepEqual(seen.generations, [{ user_id: ana }])
   assert.deepEqual(seen.balances, [{ user_id: ana }])
   assert.deepEqual(seen.ledger, [{ user_id: ana }])
-  assert.equal(seen.models, 10)
+  // 10 até a 0016 + o Multiplicador (0017).
+  assert.equal(seen.models, 11)
   await as(db, 'authenticated', ana, () =>
     expectError(db.query(`select provider_cost_usd from models`), 'permission denied'),
   )
@@ -1239,6 +1240,115 @@ await test('guarda: só financeiro vê o custo, só quem gerencia muda teto e li
   })
   await expectError(as(db, 'authenticated', ana, () => db.query(`select user_credits_used($1, now())`, [ana])), 'permission denied')
   await expectError(as(db, 'authenticated', ana, () => db.query(`select platform_spend_usd(now())`)), 'permission denied')
+})
+
+// ------------------------------------------------------------ multiplicador (0017)
+
+const TAKES = JSON.stringify([
+  { id: 't1', name: 'abrindo-a-caixa.mp4', kind: 'video', duration: 12.5, note: 'mão abrindo a caixa' },
+  { id: 't2', name: 'produto.jpg', kind: 'image', duration: 3, note: '' },
+])
+
+const newMultiplierProject = (db, userId, fields = {}) =>
+  as(db, 'authenticated', userId, async () => {
+    const { rows } = await db.query(
+      `insert into multiplier_projects (name, product_name, takes, rights_confirmed) values ($1, $2, $3::jsonb, $4) returning *`,
+      [fields.name ?? 'Sérum', fields.product ?? 'Sérum vitamina C', fields.takes ?? TAKES, fields.rights ?? true],
+    )
+    return rows[0]
+  })
+
+const SCRIPTS = JSON.stringify([
+  { angle: 'Dor', hook: 'Pele sem viço?', beats: [{ take: 1, start: 0, duration: 4, text: 'Abre a caixa' }], cta: 'Link na bio', caption: 'Teste' },
+  { angle: 'Demonstração', hook: 'Olha a textura', beats: [{ take: 2, start: 0, duration: 3, text: 'Produto' }], cta: 'Comenta EU', caption: 'Teste 2' },
+])
+
+await test('multiplicador: lote cobra 8 créditos, grava as variações e captura a reserva', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const project = await newMultiplierProject(db, ana)
+  const batch = (await db.query(`select * from start_multiplier_batch($1, $2, 2)`, [ana, project.id])).rows[0]
+  assert.equal(batch.credits, 8)
+  assert.equal(batch.kind, 'text')
+  assert.equal(await balanceOf(db, ana), 12)
+
+  const analysis = JSON.stringify({ benefits: ['textura leve'], limitations: ['nenhum take mostra o rosto'], opportunities: [] })
+  const done = await db.query(`select complete_multiplier_batch($1, $2, $3::jsonb, $4::jsonb) as n`, [batch.id, project.id, analysis, SCRIPTS])
+  assert.equal(done.rows[0].n, 2)
+  const again = await db.query(`select complete_multiplier_batch($1, $2, $3::jsonb, $4::jsonb) as n`, [batch.id, project.id, analysis, SCRIPTS])
+  assert.equal(again.rows[0].n, 0)
+
+  const variations = await as(db, 'authenticated', ana, async () =>
+    (await db.query(`select position, script ->> 'angle' as angle, render_status from multiplier_variations order by position`)).rows,
+  )
+  assert.deepEqual(variations, [
+    { position: 1, angle: 'Dor', render_status: 'pending' },
+    { position: 2, angle: 'Demonstração', render_status: 'pending' },
+  ])
+  const saved = (await db.query(`select analysis, (select status from credit_reservations where generation_id = $2) as r from multiplier_projects where id = $1`, [project.id, batch.id])).rows[0]
+  assert.deepEqual(saved.analysis.limitations, ['nenhum take mostra o rosto'])
+  assert.equal(saved.r, 'captured')
+})
+
+await test('multiplicador: tamanho do lote vem do plano (grátis 3, pro 10) e falha estorna', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await setWallet(db, ana, 100)
+  const project = await newMultiplierProject(db, ana)
+  await expectError(db.query(`select * from start_multiplier_batch($1, $2, 4)`, [ana, project.id]), 'too_many_variations')
+  await expectError(db.query(`select * from start_multiplier_batch($1, $2, 0)`, [ana, project.id]), 'invalid_count')
+  const batch = (await db.query(`select * from start_multiplier_batch($1, $2, 3)`, [ana, project.id])).rows[0]
+  await db.query(`select fail_generation($1, 'recusado')`, [batch.id])
+  assert.equal(await balanceOf(db, ana), 100)
+
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_1')
+  await db.query(`select * from start_multiplier_batch($1, $2, 10)`, [ana, project.id])
+})
+
+await test('multiplicador: sem direitos confirmados, sem takes ou projeto alheio, não abre lote', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const unconfirmed = await newMultiplierProject(db, ana, { rights: false })
+  await expectError(db.query(`select * from start_multiplier_batch($1, $2, 1)`, [ana, unconfirmed.id]), 'rights_not_confirmed')
+  const empty = await newMultiplierProject(db, ana, { takes: '[]' })
+  await expectError(db.query(`select * from start_multiplier_batch($1, $2, 1)`, [ana, empty.id]), 'takes_required')
+  const own = await newMultiplierProject(db, ana)
+  await expectError(db.query(`select * from start_multiplier_batch($1, $2, 1)`, [bia, own.id]), 'project_not_found')
+  assert.equal(await balanceOf(db, ana), 20)
+})
+
+await test('multiplicador: takes fora do formato são recusados', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await expectError(newMultiplierProject(db, ana, { takes: JSON.stringify([{ name: 'x.mp4', kind: 'audio', duration: 3 }]) }), 'invalid_takes')
+  await expectError(newMultiplierProject(db, ana, { takes: JSON.stringify([{ name: 'x.mp4', kind: 'video', duration: 9000 }]) }), 'invalid_takes')
+  const many = JSON.stringify(Array.from({ length: 13 }, (_, i) => ({ name: `t${i}.mp4`, kind: 'video', duration: 3 })))
+  await expectError(newMultiplierProject(db, ana, { takes: many }), 'check')
+})
+
+await test('multiplicador: cada pessoa só vê e edita o que é dela; variação não nasce pelo cliente', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const project = await newMultiplierProject(db, ana)
+  const batch = (await db.query(`select * from start_multiplier_batch($1, $2, 2)`, [ana, project.id])).rows[0]
+  await db.query(`select complete_multiplier_batch($1, $2, '{}'::jsonb, $3::jsonb)`, [batch.id, project.id, SCRIPTS])
+
+  await as(db, 'authenticated', bia, async () => {
+    assert.equal((await db.query(`select count(*)::int as n from multiplier_projects`)).rows[0].n, 0)
+    assert.equal((await db.query(`select count(*)::int as n from multiplier_variations`)).rows[0].n, 0)
+    const changed = await db.query(`update multiplier_variations set render_status = 'rendered' returning id`)
+    assert.equal(changed.rows.length, 0)
+  })
+  await as(db, 'authenticated', ana, async () => {
+    await expectError(
+      db.query(`insert into multiplier_variations (project_id, user_id, generation_id, position, script) values ($1, $2, $3, 9, '{}')`, [project.id, ana, batch.id]),
+      'permission denied',
+    )
+    await expectError(db.query(`update multiplier_variations set position = 5`), 'permission denied')
+    await expectError(db.query(`select * from start_multiplier_batch($1, $2, 1)`, [ana, project.id]), 'permission denied')
+    const edited = await db.query(
+      `update multiplier_variations set script = jsonb_set(script, '{hook}', '"Novo gancho"'), render_status = 'rendered' where position = 1 returning edited, rendered_at`,
+    )
+    assert.equal(edited.rows[0].edited, true)
+    assert.notEqual(edited.rows[0].rendered_at, null)
+  })
 })
 
 console.log(`\n${passed} testes do banco passaram`)

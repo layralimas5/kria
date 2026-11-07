@@ -21,6 +21,8 @@ export interface ClaudeRequest {
   readonly effort: Effort
   readonly system: string
   readonly userMessage: string
+  /** Formato da resposta; sem ele, o das ferramentas de texto (título + itens). */
+  readonly schema?: Record<string, unknown>
 }
 
 export interface ClaudeUsage {
@@ -44,7 +46,7 @@ export async function generateText(apiKey: string, request: ClaudeRequest): Prom
       max_tokens: MAX_OUTPUT_TOKENS,
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
-      output_config: { effort: request.effort, format: { type: 'json_schema', schema: ASSISTANT_OUTPUT_JSON_SCHEMA } },
+      output_config: { effort: request.effort, format: { type: 'json_schema', schema: request.schema ?? ASSISTANT_OUTPUT_JSON_SCHEMA } },
       system: [{ type: 'text', text: request.system, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: request.userMessage }],
     })

@@ -70,6 +70,11 @@ const DATABASE_ERRORS: Record<string, { status: number; message: string }> = {
   daily_limit_reached: { status: 429, message: 'Você chegou ao limite de consumo de hoje do seu plano. Ele volta à meia-noite.' },
   monthly_limit_reached: { status: 429, message: 'Você chegou ao limite de consumo do mês do seu plano. Ele volta no dia 1º.' },
   generation_paused: { status: 503, message: 'As gerações estão pausadas por alguns instantes. Tente de novo mais tarde; nenhum crédito foi usado.' },
+  project_not_found: { status: 404, message: 'Projeto não encontrado.' },
+  rights_not_confirmed: { status: 400, message: 'Confirme que você tem direito de uso sobre os arquivos antes de gerar.' },
+  takes_required: { status: 400, message: 'Adicione pelo menos um vídeo ou foto ao projeto.' },
+  invalid_count: { status: 400, message: 'Escolha quantas variações quer gerar.' },
+  too_many_variations: { status: 403, message: 'Seu plano gera menos variações por lote. Veja os planos em Assinatura.' },
   platform_spend_cap: { status: 503, message: 'As gerações estão pausadas por alguns instantes. Tente de novo mais tarde; nenhum crédito foi usado.' },
 }
 

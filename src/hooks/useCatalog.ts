@@ -7,6 +7,7 @@ import {
   modelSchema,
   personaSchema,
   textModelSchema,
+  assistantToolSchema,
   type CreditPack,
   type LedgerEntry,
   type Model,
@@ -31,6 +32,8 @@ async function fetchTextModels(): Promise<TextModel[]> {
     .from('models')
     .select('slug, name, description, credits, badge, allowed_plans')
     .eq('kind', 'text')
+    // Só as ferramentas do assistente; o Multiplicador também é texto, mas tem tela própria.
+    .in('slug', assistantToolSchema.options)
     .order('position')
   if (error) throw error
   return z.array(textModelSchema).parse(data)

@@ -5,6 +5,7 @@ import {
   Clapperboard,
   Coins,
   Compass,
+  CopyPlus,
   CreditCard,
   FileText,
   FolderKanban,
@@ -60,6 +61,13 @@ export const FORMATS_TAB: NavItem = {
   badge: 'NOVO',
   isActive: (pathname) => pathname === '/formatos' || pathname.startsWith('/formatos/'),
 }
+export const MULTIPLIER_TAB: NavItem = {
+  label: 'Multiplicador',
+  to: '/multiplicador',
+  icon: CopyPlus,
+  badge: 'NOVO',
+  isActive: (pathname) => pathname === '/multiplicador' || pathname.startsWith('/multiplicador/'),
+}
 export const IMAGE_TAB: NavItem = { label: 'Imagens', to: '/estudio?modo=imagem', icon: ImageIcon, isActive: isStudioMode('image') }
 export const VIDEO_TAB: NavItem = { label: 'Vídeos', to: '/estudio?modo=video', icon: Clapperboard, badge: 'NOVO', isActive: isStudioMode('video') }
 export const PERSONAS_TAB: NavItem = { label: 'Personagens', to: '/personas', icon: UserRound, badge: 'TOP', isActive: isPath('/personas') }
@@ -89,7 +97,7 @@ const soon = (label: string, icon: LucideIcon): NavItem => ({ label, to: '', ico
 // As seis áreas do Vynkio. Só entra com link o que funciona; o resto é "Breve".
 const NAV_GROUPS: readonly NavGroup[] = [
   { title: 'Início', items: [HOME_TAB] },
-  { title: 'Criar', items: [FORMATS_TAB, IMAGE_TAB, VIDEO_TAB, PERSONAS_TAB, UGC_TAB, toolSoon('motion_control', Waves)] },
+  { title: 'Criar', items: [MULTIPLIER_TAB, FORMATS_TAB, IMAGE_TAB, VIDEO_TAB, PERSONAS_TAB, UGC_TAB, toolSoon('motion_control', Waves)] },
   { title: 'Inteligência', items: [IDEAS_TAB, SCRIPT_TAB, COPY_TAB, PLANNING_TAB, soon('Assistente de estratégia', Compass)] },
   { title: 'Conteúdo', items: [CONTENT_TAB, CALENDAR_TAB, GALLERY_TAB, toolSoon('prompt_library', BookOpen)] },
   { title: 'Resultados', items: [RESULTS_TAB, soon('Relatórios', FileText), soon('Recomendações', Sparkles)] },

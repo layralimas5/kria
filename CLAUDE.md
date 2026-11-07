@@ -41,6 +41,10 @@ são telas reais do modo demo (`npm run landing:screens`).
   teto de custo da plataforma (US$, dia e mês) e pausa de emergência. Custo sem `provider_cost_usd` conta no
   pior caso (todo o crédito vira custo); falha de modelo com `charges_on_failure` continua no custo. A pessoa
   vê só créditos (`my_usage`); custo fica no admin. Plano e estado em `VYNKIO_IMPLEMENTATION_PLAN.md`.
+- Multiplicador (0017, `docs/multiplicador.md`): arquivos dos takes nunca sobem (ficam na aba); o lote de roteiros
+  passa por `start_multiplier_batch` (plano: `max_variations`) e `complete_multiplier_batch`; variação nasce só pela
+  function `multiplier`. A montagem é no navegador, quadro a quadro com WebCodecs (`src/lib/render`, `mediabunny`
+  fixo em 1.61.6). Não voltar para MediaRecorder: ele perde quadro e embaralha o tempo.
 - O painel do usuário não tem nada de admin (nem link no menu). A operação fica em `/admin`, com moldura
   própria, fora do `AppShell`; só abre para quem está em `admin_users`. Cada função `admin_*` chama
   `assert_admin_permission('x')` (papel + sessão aal2, 0014) e grava `admin_audit_logs`, que é imutável.
