@@ -6,13 +6,14 @@ import { useBalance } from '@/hooks/useBalance'
 import { UserMenu } from '../account/UserMenu'
 import { BrandSwitcher } from '../workspace/BrandSwitcher'
 import { Logo } from '../Logo'
+import { NotificationsMenu } from './NotificationsMenu'
 import { Popover } from '../ui/Popover'
 import { MOBILE_TABS, navGroupsFor } from './nav'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 const TAB = 'flex min-h-16 w-full flex-col items-center justify-center gap-1 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent'
 
-/** Topo do celular: marca, marca ativa, saldo (leva a Créditos) e o menu da conta. */
+/** Topo do celular: marca, marca ativa, notificações, saldo (leva a Créditos) e o menu da conta. */
 export function MobileTopBar() {
   const { balance } = useBalance()
   return (
@@ -23,6 +24,7 @@ export function MobileTopBar() {
       <div className="ml-auto min-w-0">
         <BrandSwitcher compact />
       </div>
+      <NotificationsMenu />
       <Link
         to="/creditos"
         className={clsx('flex min-h-8 shrink-0 items-center gap-1.5 rounded-lg bg-surface-2 px-2.5 text-[13px] font-bold tabular-nums', FOCUS)}

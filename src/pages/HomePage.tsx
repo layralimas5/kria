@@ -63,8 +63,12 @@ export function HomePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
-        {name && <p className="text-sm font-semibold text-zinc-400">Oi, {name}</p>}
-        <h1 className="font-headline mt-2 text-4xl text-balance text-zinc-50 md:text-6xl">
+        {name && (
+          <p className="font-headline text-3xl text-zinc-300 md:text-4xl">
+            Oi, <span className="text-zinc-50">{name}</span>
+          </p>
+        )}
+        <h1 className="font-headline mt-3 text-4xl text-balance text-zinc-50 md:text-6xl">
           O que vamos <span className="text-accent-soft">criar hoje?</span>
         </h1>
       </motion.header>
