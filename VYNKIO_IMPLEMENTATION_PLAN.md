@@ -118,6 +118,13 @@ limite por plano, edição de cada roteiro, montagem quadro a quadro no navegado
 formatos e três estilos, fila com progresso, cancelamento e nova tentativa, MP4 e ZIP com legendas.
 Detalhes, decisões e custo em `docs/multiplicador.md`. Sem servidor de render: custo de montagem zero.
 
+### Preços v2 e financeiro (**pronto em 07/11, branch `feat/vynkio-pricing-v2`, sem publicar**)
+
+Planos Creator e Business em rascunho, cotação de crédito por custo (R$ 0,01 de orçamento por crédito, fator 1,15),
+cota de exportação do Multiplicador, Financeiro e rentabilidade no admin (resultado, por assinante, por modelo,
+alertas, simulador) e a virada travada atrás de pausa, motivo e confirmação. Landing com hero, Creator, Business
+e FAQ novos; preços v2 atrás de `VITE_PRICING_V2`. Decisões, riscos financeiros e roteiro em `docs/precos-v2.md`.
+
 ### Sprint 3: Vynkio AI
 
 Custo por parâmetro (duração, resolução) em `create_generation`; texto para vídeo; cancelamento;

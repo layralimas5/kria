@@ -14,7 +14,7 @@ const percent = (value: number | null) => (value === null ? '–' : `${(value * 
 const usd = (value: number) => `US$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const brlCompact = (cents: number) => `R$ ${compact(cents / 100)}`
 
-function Section({ title, description, children }: { readonly title: string; readonly description?: string; readonly children: ReactNode }) {
+export function Section({ title, description, children }: { readonly title: string; readonly description?: string; readonly children: ReactNode }) {
   return (
     <section aria-label={title} className="space-y-3">
       <div>
@@ -26,7 +26,7 @@ function Section({ title, description, children }: { readonly title: string; rea
   )
 }
 
-const GRID = 'grid grid-cols-2 gap-3 xl:grid-cols-4'
+export const GRID = 'grid grid-cols-2 gap-3 xl:grid-cols-4'
 const generationsLabel = (count: number) => `${number(count)} ${count === 1 ? 'geração' : 'gerações'}`
 
 export function AlertsList({ alerts }: { readonly alerts: readonly DashboardAlert[] }) {

@@ -13,12 +13,16 @@ import {
   type RenderStyle,
   type Variation,
 } from '@/domain/multiplier'
+import { formatDateTime } from '@/domain/format'
+import { useQuery } from '@/hooks/useQuery'
 import { MAX_ATTEMPTS, useRenderQueue, type RenderJob } from '@/hooks/useRenderQueue'
+import { fetchMyUsage } from '@/lib/api'
 import { renderUnsupportedReason } from '@/lib/render/compositor'
 import { downloadBlob, zipFiles } from '@/lib/render/download'
 import { markVariationRendered } from '@/lib/multiplierApi'
 import { Button } from '../ui/Button'
 import { Notice } from '../ui/Notice'
+import { UsageMeter } from '../ui/UsageMeter'
 
 const STATUS_LABELS: Record<RenderJob['status'], string> = {
   queued: 'Na fila',
@@ -166,7 +170,11 @@ export function RenderStep({ project, variations, files, onRendered, onGoToMater
     [byId, onRendered],
   )
 
-  const queue = useRenderQueue({ prepare, onFinished })
+  const usage = useQuery(fetchMyUsage, 'Não deu para carregar suas exportações do mês.')
+  const reloadUsage = usage.reload
+  const onQuotaChange = useCallback(() => void reloadUsage(), [reloadUsage])
+  const queue = useRenderQueue({ prepare, onFinished, onQuotaChange })
+  const exportsLeft = usage.data && usage.data.exports_limit !== null ? Math.max(0, usage.data.exports_limit - usage.data.exports_used) : null
   const fileNameOf = (variation: Variation, extension = 'mp4') => exportFileName(project.name, variation, extension)
   const done = variations.filter((item) => queue.jobs[item.id]?.status === 'done' && queue.jobs[item.id]?.output)
 
@@ -285,8 +293,30 @@ export function RenderStep({ project, variations, files, onRendered, onGoToMater
         <p className="text-sm text-zinc-400">
           A montagem acontece aqui no navegador, quadro a quadro, um vídeo por vez. Pode usar outra aba enquanto isso; só não feche esta página até terminar.
         </p>
+        {usage.data && usage.data.exports_limit !== null && (
+          <div className="max-w-md">
+            <UsageMeter
+              label="Exportações do mês"
+              used={usage.data.exports_used}
+              limit={usage.data.exports_limit}
+              alertRatio={0.8}
+              format={(value) => value.toLocaleString('pt-BR')}
+              footnote={`Renova em ${formatDateTime(usage.data.month_resets_at)}. Montagem que falha ou é cancelada não conta.`}
+            />
+          </div>
+        )}
+        {exportsLeft !== null && chosen.length > exportsLeft && (
+          <Notice tone="error">
+            {exportsLeft === 0
+              ? 'Você usou todas as exportações do mês no seu plano. Elas renovam no dia 1º, ou troque de plano para ter mais.'
+              : `Restam ${exportsLeft} ${exportsLeft === 1 ? 'exportação' : 'exportações'} este mês. Selecione até ${exportsLeft} ${exportsLeft === 1 ? 'vídeo' : 'vídeos'}.`}
+          </Notice>
+        )}
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => queue.enqueue(chosen)} disabled={chosen.length === 0 || Boolean(unsupported) || missingFiles.length > 0}>
+          <Button
+            onClick={() => queue.enqueue(chosen)}
+            disabled={chosen.length === 0 || Boolean(unsupported) || missingFiles.length > 0 || (exportsLeft !== null && chosen.length > exportsLeft)}
+          >
             <Play className="size-4" aria-hidden="true" /> Montar {chosen.length} {chosen.length === 1 ? 'vídeo' : 'vídeos'}
           </Button>
           {queue.busy && (

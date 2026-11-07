@@ -1,12 +1,13 @@
 // Conteúdo fixo da landing. Planos, preços e custos por geração ficam em `pricing/`
 // e são conferidos contra as migrations nos testes de lá.
-import { formatBRL } from '../domain/format'
 import avatarSpecs from './avatars.json'
 import generatedMedia from './avatars.generated.json'
-import { PLAN_CATALOG } from './pricing/catalog'
+import { WELCOME_CREDITS_V2 } from './pricing/catalogV2'
+import { PRICING_V2 } from './pricing/flags'
 
 export const SIGNUP_PATH = '/entrar'
-export const WELCOME_CREDITS = 20
+/** Boas-vindas da conta nova: 20 na escala atual; na v2, o valor escolhido na virada. */
+export const WELCOME_CREDITS = PRICING_V2 ? WELCOME_CREDITS_V2 : 20
 
 /** Seção "Seus dados" dos termos, linkada como Privacidade no rodapé. */
 export const PRIVACY_ANCHOR = 'seus-dados'
@@ -216,7 +217,7 @@ export const ADVANCED: readonly { readonly icon: AdvancedIcon; readonly title: s
   { icon: 'models', title: 'Modelos de ponta num lugar só', text: 'Nano Banana 2, Kling 3.0, Veo 3.1 e Claude com uma conta e um saldo, sem assinar cada um em dólar.' },
 ]
 
-export type FaqIcon = 'beginner' | 'price' | 'time' | 'commercial' | 'cancel' | 'security' | 'notfor'
+export type FaqIcon = 'beginner' | 'price' | 'time' | 'commercial' | 'cancel' | 'security' | 'notfor' | 'renew' | 'video' | 'extra' | 'empty' | 'switch' | 'tools' | 'business'
 
 export interface FaqItem {
   readonly icon: FaqIcon
@@ -224,56 +225,68 @@ export interface FaqItem {
   readonly answer: string
 }
 
-function starterPlan() {
-  const plan = PLAN_CATALOG.find((item) => item.slug === 'starter')
-  if (!plan) throw new Error('O plano starter sumiu de pricing/catalog.ts')
-  return plan
-}
-const STARTER = starterPlan()
 
 // Objeções de compra, escritas como alguém perguntaria em voz alta. As respostas
-// seguem as regras implementadas (migrations 0004 a 0010, functions de assinatura,
+// seguem as regras implementadas (migrations 0004 a 0018, functions de assinatura,
 // webhook do Asaas e bucket privado). Mudou a regra, muda a resposta.
 export const FAQ: readonly FaqItem[] = [
   {
-    icon: 'beginner',
-    question: 'Nunca usei IA. Vou conseguir?',
-    answer:
-      'Vai. Você descreve o que quer em português, do jeito que falaria com alguém. Não precisa escrever prompt em inglês nem escolher configuração técnica: cada ferramenta já vem com o modelo e o formato certos.',
-  },
-  {
     icon: 'price',
-    question: 'Quanto vou gastar de verdade?',
-    answer: `O ${STARTER.name} custa ${formatBRL(STARTER.price_cents)} por mês com ${STARTER.monthly_credits} créditos, o bastante para até 60 fotos ou 7 vídeos com Kling. O custo de cada geração aparece no botão antes de gerar, e não há cobrança por tempo de uso. Para testar, a conta nova ganha ${WELCOME_CREDITS} créditos, sem cartão.`,
+    question: 'Como funcionam os créditos?',
+    answer:
+      'Cada ferramenta de IA usa créditos conforme o modelo e as configurações escolhidas: uma foto custa menos que um vídeo, e um vídeo com fala custa mais que um sem. O custo aparece no botão antes de gerar. Se a geração falhar, os créditos voltam sozinhos.',
   },
   {
-    icon: 'time',
-    question: 'Quanto tempo leva para sair um vídeo?',
+    icon: 'renew',
+    question: 'Os créditos renovam mensalmente?',
     answer:
-      'A foto sai em menos de um minuto e o vídeo leva alguns minutos. Você não fica esperando: dá para seguir criando enquanto isso, com 3 a 6 gerações ao mesmo tempo conforme o plano. Se a geração falhar, os créditos voltam sozinhos.',
+      'Os créditos do plano renovam a cada cobrança paga e não acumulam de um mês para o outro. Os de pacote avulso e os de boas-vindas nunca vencem, e o plano usa primeiro os créditos do mês.',
   },
   {
-    icon: 'commercial',
-    question: 'Posso usar no meu perfil e com clientes?',
+    icon: 'video',
+    question: 'Qual a diferença entre geração e edição de vídeos?',
     answer:
-      'Pode, em perfis, anúncios e projetos de clientes, respeitando os termos de uso do Vynkio e dos provedores dos modelos de IA. Você responde pelo uso e deve marcar o conteúdo como gerado por IA quando a rede social pedir.',
+      'Geração é quando um modelo de IA cria o vídeo, como Kling ou Veo: usa créditos. Edição é o Multiplicador montando os seus próprios vídeos, com cortes, textos e trilha: roda no seu navegador, não usa créditos e conta nas exportações do mês do seu plano. Só os roteiros do Multiplicador, escritos pela IA, usam créditos.',
+  },
+  {
+    icon: 'extra',
+    question: 'Posso comprar créditos extras?',
+    answer: 'Pode. Na página Créditos há pacotes avulsos no Pix ou no cartão, que entram assim que o pagamento confirma e não vencem.',
+  },
+  {
+    icon: 'empty',
+    question: 'O que acontece se meus créditos acabarem?',
+    answer:
+      'As ferramentas de IA param até os créditos do plano renovarem ou até você comprar um pacote. Nada é cobrado sozinho. Para proteger a conta de gasto fora do normal, cada plano também tem um limite de consumo por dia e por mês.',
+  },
+  {
+    icon: 'switch',
+    question: 'Posso trocar de plano?',
+    answer:
+      'Pode, na página Assinatura. O plano novo começa quando o pagamento dele confirma, com os créditos dele, e o anterior encerra nesse momento. Os créditos de pacote avulso continuam com você.',
+  },
+  {
+    icon: 'tools',
+    question: 'Quais ferramentas estão disponíveis?',
+    answer:
+      'Hoje: Multiplicador de vídeos, imagens e vídeos com IA, personagens com o mesmo rosto, UGC, roteiros, ideias, copys, planejamento editorial, formatos prontos por nicho, marcas e projetos. O que aparece como em breve ainda não existe e não tem data prometida.',
+  },
+  {
+    icon: 'business',
+    question: 'Qual a diferença entre Creator e Business?',
+    answer:
+      'O Creator é para quem cria conteúdo sozinho: uma conta, créditos e exportações. O Business é para empresas e equipes, com mais usuários e recursos comerciais como CRM e propostas. O Business está em preparação e a contratação é por conversa.',
   },
   {
     icon: 'cancel',
-    question: 'E se eu quiser cancelar?',
+    question: 'Posso cancelar minha assinatura?',
     answer:
-      'Cancela quando quiser, na página Assinatura, sem multa. Não há nova cobrança e o plano continua até o fim do período pago. Os créditos do plano renovam a cada mês e não acumulam; os de pacote avulso e os de boas-vindas nunca vencem.',
+      'Cancela quando quiser, na página Assinatura, sem multa. Não há nova cobrança e o plano continua até o fim do período pago. Depois disso a conta volta ao plano grátis, com os créditos de pacote que sobraram.',
   },
   {
     icon: 'security',
     question: 'Minhas criações e meus dados ficam seguros?',
     answer:
-      'Suas criações ficam num armazenamento privado que só a sua conta acessa. O pagamento é feito na página do Asaas, então o Vynkio não recebe os dados do seu cartão. Em Configurações você exporta seus dados ou exclui a conta.',
-  },
-  {
-    icon: 'notfor',
-    question: 'Para quem o Vynkio não serve?',
-    answer:
-      'Para quem precisa editar vídeo longo numa linha do tempo: os vídeos têm 5 a 8 segundos, pensados para Reels, TikTok e anúncios. E para quem quer recriar uma pessoa real: personagem só nasce de imagem gerada no Vynkio, sem upload de foto de rosto.',
+      'Suas criações ficam num armazenamento privado que só a sua conta acessa, e os vídeos do Multiplicador nem saem do seu computador. O pagamento é feito na página do Asaas, então o Vynkio não recebe os dados do seu cartão. Em Configurações você exporta seus dados ou exclui a conta.',
   },
 ]

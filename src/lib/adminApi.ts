@@ -3,6 +3,8 @@
 
 import { z } from 'zod'
 import { adminMeSchema, adminRoleSchema, dashboardSchema, type AdminMe, type AdminRole, type Period } from '@/domain/adminDashboard'
+import { financeSchema, financeSettingsSchema, type FinanceSettings } from '@/domain/finance'
+import { modelQuotesSchema } from '@/domain/creditPolicy'
 import { spendGuardSchema } from '@/domain/spendGuard'
 import { ledgerReasonSchema, subscriptionStatusSchema } from '@/domain/types'
 import { ApiError } from './api'
@@ -24,6 +26,14 @@ const ADMIN_ERRORS: Record<string, string> = {
   cannot_change_self: 'Você não pode mudar o próprio acesso.',
   last_super_admin: 'Precisa sobrar pelo menos um super admin.',
   invalid_cap_order: 'O limite do dia não pode passar o do mês.',
+  activation_reason_required: 'Escreva o motivo da virada (pelo menos 10 caracteres).',
+  pause_required: 'Pause as gerações na Guarda de gasto antes da virada.',
+  open_generations: 'Ainda há geração em andamento. Espere terminar e tente de novo.',
+  already_activated: 'Os preços v2 já estão ligados.',
+  invalid_welcome_credits: 'Boas-vindas vai de 0 a 1.000 créditos.',
+  source_required: 'Cole o link da página de preço do fornecedor.',
+  cost_required: 'Cadastre o custo do fornecedor antes de confirmar.',
+  budget_locked_after_activation: 'Depois da virada, o orçamento por crédito não muda pelo painel.',
 }
 
 async function rpc<T>(name: string, args: Record<string, unknown>, schema: z.ZodType<T, z.ZodTypeDef, unknown>): Promise<T> {
@@ -264,3 +274,52 @@ export const setAdminRole = (email: string, role: AdminRole, reason: string) =>
 
 export const removeAdmin = (userId: string, reason: string) =>
   rpc('admin_remove_admin', { p_user_id: userId, p_reason: reason }, z.boolean())
+
+// ------------------------------------------------- financeiro e preços v2 (0018)
+
+export const fetchFinance = (period: Period) =>
+  rpc('admin_finance', { p_from: period.from.toISOString(), p_to: period.to.toISOString() }, financeSchema)
+
+export const fetchFinanceSettings = () => rpc('admin_finance_settings', {}, financeSettingsSchema)
+
+export const updateFinanceSettings = (settings: FinanceSettings) =>
+  rpc(
+    'admin_update_finance_settings',
+    {
+      p_tax_rate: settings.tax_rate,
+      p_fixed_costs_cents: settings.fixed_costs_cents,
+      p_infra_costs_cents: settings.infra_costs_cents,
+      p_storage_costs_cents: settings.storage_costs_cents,
+      p_render_cost_cents_per_export: settings.render_cost_cents_per_export,
+      p_pro_labore_cents: settings.pro_labore_cents,
+      p_reserve_rate: settings.reserve_rate,
+      p_min_margin_rate: settings.min_margin_rate,
+    },
+    financeSettingsSchema,
+  )
+
+export const fetchModelQuotes = () => rpc('admin_model_quotes', {}, modelQuotesSchema)
+
+export interface CreditPolicyUpdate {
+  readonly safetyFactor: number
+  readonly creditBudgetBrl: number
+  readonly legacyCostPerCreditBrl: number
+  readonly costStaleDays: number
+}
+
+export const updateCreditPolicy = (update: CreditPolicyUpdate) =>
+  rpc(
+    'admin_update_credit_policy',
+    {
+      p_safety_factor: update.safetyFactor,
+      p_credit_budget_brl: update.creditBudgetBrl,
+      p_legacy_cost_per_credit_brl: update.legacyCostPerCreditBrl,
+      p_cost_stale_days: update.costStaleDays,
+    },
+    z.unknown(),
+  )
+
+export const confirmModelCost = (slug: string, source: string) => rpc('admin_confirm_model_cost', { p_slug: slug, p_source: source }, z.unknown())
+
+export const activatePricingV2 = (welcomeCredits: number, reason: string) =>
+  rpc('admin_activate_pricing_v2', { p_welcome_credits: welcomeCredits, p_reason: reason }, z.object({ factor: numeric, wallets: numeric }))

@@ -56,7 +56,7 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
     items: [
       { label: 'Assinaturas', icon: CreditCard },
       { label: 'Planos', icon: Tags, to: '/admin/planos', permission: 'plans.view' },
-      { label: 'Financeiro', icon: Wallet },
+      { label: 'Financeiro', icon: Wallet, to: '/admin/financeiro', permission: 'finance.view' },
       { label: 'Marketing', icon: Megaphone },
     ],
   },

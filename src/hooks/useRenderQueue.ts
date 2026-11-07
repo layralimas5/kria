@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ApiError } from '@/lib/api'
+import { failExport, finishExport, startExport } from '@/lib/multiplierApi'
 import { renderVariation, RenderError, type RenderInput, type RenderOutput } from '@/lib/render/compositor'
 
 export type JobStatus = 'queued' | 'rendering' | 'done' | 'failed' | 'canceled'
@@ -21,10 +23,12 @@ interface QueueOptions {
   /** Monta a entrada da variação na hora de começar (arquivos e estilo do momento). */
   readonly prepare: (variationId: string) => Prepared
   readonly onFinished: (variationId: string, ok: boolean) => void
+  /** Cota do mês mudou (exportação reservada ou devolvida). */
+  readonly onQuotaChange?: () => void
 }
 
 function failureMessage(error: unknown): string {
-  if (error instanceof RenderError) return error.message
+  if (error instanceof RenderError || error instanceof ApiError) return error.message
   console.error('render', error)
   return 'A montagem falhou. Tente de novo; se repetir, troque o arquivo do take.'
 }
@@ -33,13 +37,13 @@ function failureMessage(error: unknown): string {
  * Fila de montagem: um vídeo por vez (a gravação é em tempo real e disputa a mesma tela),
  * com progresso, cancelamento e nova tentativa por variação. Uma falha não para o lote.
  */
-export function useRenderQueue({ prepare, onFinished }: QueueOptions) {
+export function useRenderQueue({ prepare, onFinished, onQuotaChange }: QueueOptions) {
   const [jobs, setJobs] = useState<Readonly<Record<string, RenderJob>>>({})
   const jobsRef = useRef(jobs)
   jobsRef.current = jobs
   const active = useRef<{ id: string; controller: AbortController } | null>(null)
-  const options = useRef({ prepare, onFinished })
-  options.current = { prepare, onFinished }
+  const options = useRef({ prepare, onFinished, onQuotaChange })
+  options.current = { prepare, onFinished, onQuotaChange }
 
   const patch = useCallback((id: string, changes: Partial<RenderJob>) => {
     setJobs((current) => {
@@ -55,9 +59,15 @@ export function useRenderQueue({ prepare, onFinished }: QueueOptions) {
       const attempts = (jobsRef.current[id]?.attempts ?? 0) + 1
       patch(id, { status: 'rendering', progress: 0, attempts, error: null })
       let lastProgress = 0
+      // Cada exportação conta na cota do mês: reserva antes, fecha no fim, devolve se falhar.
+      let exportId: string | null = null
       try {
+        const prepared = options.current.prepare(id)
+        exportId = (await startExport(id, crypto.randomUUID())).id
+        options.current.onQuotaChange?.()
+        const startedAt = performance.now()
         const output = await renderVariation({
-          ...options.current.prepare(id),
+          ...prepared,
           signal: controller.signal,
           onProgress: (fraction) => {
             // Atualiza a tela a cada 2%, não a cada quadro.
@@ -67,9 +77,19 @@ export function useRenderQueue({ prepare, onFinished }: QueueOptions) {
             }
           },
         })
+        void finishExport(exportId, {
+          durationSeconds: prepared.timeline.duration,
+          width: prepared.timeline.width,
+          height: prepared.timeline.height,
+          renderMs: performance.now() - startedAt,
+          bytes: output.blob.size,
+        })
         patch(id, { status: 'done', progress: 1, output, url: URL.createObjectURL(output.blob) })
         options.current.onFinished(id, true)
       } catch (error) {
+        if (exportId) {
+          void failExport(exportId).then(() => options.current.onQuotaChange?.())
+        }
         if (controller.signal.aborted) {
           patch(id, { status: 'canceled', progress: 0 })
         } else {

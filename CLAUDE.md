@@ -45,6 +45,12 @@ são telas reais do modo demo (`npm run landing:screens`).
   passa por `start_multiplier_batch` (plano: `max_variations`) e `complete_multiplier_batch`; variação nasce só pela
   function `multiplier`. A montagem é no navegador, quadro a quadro com WebCodecs (`src/lib/render`, `mediabunny`
   fixo em 1.61.6). Não voltar para MediaRecorder: ele perde quadro e embaralha o tempo.
+- Preços v2 (0018, `docs/precos-v2.md`): Creator e Business nascem em rascunho (`status = 'draft'`, nunca `public`);
+  só entram no ar por `admin_activate_pricing_v2`, que converte saldos, pacotes, assinaturas e modelos pelo mesmo fator.
+  Créditos v2 = custo × câmbio × `safety_factor` ÷ `credit_budget_brl` (`quote_credits`). Orçamento de IA por plano fica em
+  `plan_cost_budgets` (admin), nunca na tabela pública de planos. Exportação do Multiplicador conta por `start_`/`finish_`/
+  `fail_multiplier_export` (`max_exports_month`). A vitrine v2 só aparece com `VITE_PRICING_V2=true`, junto com a virada.
+  Financeiro e simulador em `/admin/financeiro`; as contas ficam em `src/domain/finance.ts`.
 - O painel do usuário não tem nada de admin (nem link no menu). A operação fica em `/admin`, com moldura
   própria, fora do `AppShell`; só abre para quem está em `admin_users`. Cada função `admin_*` chama
   `assert_admin_permission('x')` (papel + sessão aal2, 0014) e grava `admin_audit_logs`, que é imutável.

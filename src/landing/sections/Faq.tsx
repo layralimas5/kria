@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { Briefcase, Clock, Coins, Gift, GraduationCap, Lock, Plus, RefreshCw, ShieldCheck, UserX, XCircle, type LucideIcon } from 'lucide-react'
+import { ArrowLeftRight, Battery, Building2, Clapperboard, Briefcase, Clock, Coins, Gift, GraduationCap, LayoutGrid, Lock, Plus, PlusCircle, RefreshCw, ShieldCheck, UserX, XCircle, type LucideIcon } from 'lucide-react'
 import { useId, useState } from 'react'
 import { CtaLink } from '../components/CtaLink'
 import { SectionHeading } from '../components/SectionHeading'
@@ -14,6 +14,13 @@ const ICONS: Record<FaqIcon, LucideIcon> = {
   cancel: XCircle,
   security: Lock,
   notfor: UserX,
+  renew: RefreshCw,
+  video: Clapperboard,
+  extra: PlusCircle,
+  empty: Battery,
+  switch: ArrowLeftRight,
+  tools: LayoutGrid,
+  business: Building2,
 }
 
 /** Dados estruturados das perguntas, com o mesmo texto que aparece na página. */

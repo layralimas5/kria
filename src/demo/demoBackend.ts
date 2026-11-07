@@ -11,10 +11,11 @@ import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_USER_ID, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 import { DEMO_VIDEO, demoImageAt, demoMediaType } from './demoMedia'
 import { demoMultiplierOutput } from './demoMultiplier'
+import { demoFinance, exportUsage, financeSettings, isRefusal, modelQuotes, settleExport, startExport } from './demoFinance'
 import { demoRefusal, demoSpendGuard, demoUsage } from './demoSpend'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
-const SESSION_KEY = 'kria-demo-state-v10'
+const SESSION_KEY = 'kria-demo-state-v11'
 
 function loadState(): DemoState {
   try {
@@ -708,16 +709,66 @@ function adminRpc(name: string, body: Row): Response | null {
       const model = state.models.find((item) => item.slug === body.p_slug)
       if (!model) return rpcFail('model_not_found')
       const plans = body.p_allowed_plans as string[] | null
+      const costChanged = body.p_provider_cost_usd !== null && body.p_provider_cost_usd !== model.provider_cost_usd
       Object.assign(model, {
         active: body.p_active,
         credits: body.p_credits,
         provider_cost_usd: body.p_provider_cost_usd,
+        cost_checked_at: costChanged ? new Date().toISOString() : (model.cost_checked_at ?? null),
         allowed_plans: plans && plans.length > 0 ? plans : null,
       })
       audit('model.update', String(model.slug), null)
       persist()
       return json(model)
     }
+    case 'admin_finance': {
+      const from = new Date(String(body.p_from))
+      const to = new Date(String(body.p_to))
+      if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) return rpcFail('invalid_period')
+      return json(demoFinance(state, [demoUserRow(), ...state.otherUsers], from, to))
+    }
+    case 'admin_finance_settings':
+      return json(financeSettings(state))
+    case 'admin_update_finance_settings':
+      state.finance = {
+        tax_rate: body.p_tax_rate,
+        fixed_costs_cents: body.p_fixed_costs_cents,
+        infra_costs_cents: body.p_infra_costs_cents,
+        storage_costs_cents: body.p_storage_costs_cents,
+        render_cost_cents_per_export: body.p_render_cost_cents_per_export,
+        pro_labore_cents: body.p_pro_labore_cents,
+        reserve_rate: body.p_reserve_rate,
+        min_margin_rate: body.p_min_margin_rate,
+      }
+      audit('finance.settings', null, null)
+      persist()
+      return json(financeSettings(state))
+    case 'admin_model_quotes':
+      return json(modelQuotes(state))
+    case 'admin_update_credit_policy':
+      state.pricing = {
+        ...state.pricing,
+        safety_factor: body.p_safety_factor,
+        credit_budget_brl: body.p_credit_budget_brl,
+        legacy_cost_per_credit_brl: body.p_legacy_cost_per_credit_brl,
+        cost_stale_days: body.p_cost_stale_days,
+      }
+      audit('pricing.credit_policy', null, null)
+      persist()
+      return json(state.pricing)
+    case 'admin_confirm_model_cost': {
+      const model = state.models.find((item) => item.slug === body.p_slug)
+      if (!model) return rpcFail('model_not_found')
+      if (String(body.p_source ?? '').trim().length < 5) return rpcFail('source_required')
+      if (model.provider_cost_usd === null || model.provider_cost_usd === undefined) return rpcFail('cost_required')
+      Object.assign(model, { cost_checked_at: new Date().toISOString(), cost_source: String(body.p_source).trim() })
+      audit('model.cost_confirm', String(model.slug), null)
+      persist()
+      return json(model)
+    }
+    case 'admin_activate_pricing_v2':
+      // A virada mexe em saldos e assinaturas reais: no demo ela só mostra a recusa de segurança.
+      return rpcFail(state.pricing.generation_paused ? 'open_generations' : 'pause_required')
     case 'admin_update_pricing':
       state.pricing = { ...state.pricing, usd_brl: body.p_usd_brl, fx_buffer: body.p_fx_buffer, markup: body.p_markup, credit_value_brl: body.p_credit_value_brl }
       audit('pricing.update', null, null)
@@ -764,7 +815,18 @@ function rpc(name: string, body: Row): Response {
   if (name === 'create_persona') return createPersona(body)
   if (name === 'register_upload') return registerUpload(body)
   if (name === 'import_analytics') return importAnalytics(body)
-  if (name === 'my_usage') return json(demoUsage(state, currentPlan()))
+  if (name === 'my_usage') return json({ ...demoUsage(state, currentPlan()), ...exportUsage(state, currentPlan()) })
+  if (name === 'start_multiplier_export') {
+    const result = startExport(state, currentPlan(), body)
+    if (isRefusal(result)) return rpcFail(result.code)
+    persist()
+    return json(result)
+  }
+  if (name === 'finish_multiplier_export' || name === 'fail_multiplier_export') {
+    const ok = settleExport(state, body, name === 'finish_multiplier_export' ? 'done' : 'failed')
+    persist()
+    return json(ok)
+  }
   const admin = adminRpc(name, body)
   if (admin) return admin
   return rpcFail('not_found')

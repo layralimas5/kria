@@ -5,6 +5,7 @@ import { Notice } from '../ui/Notice'
 import { UsageMeter } from '../ui/UsageMeter'
 
 const ALERT_RATIO = 0.8
+const exportsText = (value: number) => `${value.toLocaleString('pt-BR')} ${value === 1 ? 'exportação' : 'exportações'}`
 
 /** Consumo do dia e do mês contra o limite do plano. Estorno não conta. */
 export function UsageLimits() {
@@ -12,7 +13,7 @@ export function UsageLimits() {
   if (usage.error) return <Notice tone="error">{usage.error}</Notice>
   if (!usage.data) return null
   const { data } = usage
-  if (data.daily_limit === null && data.monthly_limit === null) return null
+  if (data.daily_limit === null && data.monthly_limit === null && data.exports_limit === null) return null
 
   return (
     <section aria-labelledby="usage-title" className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
@@ -39,6 +40,14 @@ export function UsageLimits() {
           alertRatio={ALERT_RATIO}
           format={formatCredits}
           footnote={`Renova em ${formatDateTime(data.month_resets_at)}`}
+        />
+        <UsageMeter
+          label="Exportações do Multiplicador no mês"
+          used={data.exports_used}
+          limit={data.exports_limit}
+          alertRatio={ALERT_RATIO}
+          format={exportsText}
+          footnote="Cada vídeo montado conta uma. Montagem que falha não conta."
         />
       </div>
     </section>

@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { Gift } from 'lucide-react'
-import { CtaLink } from '../components/CtaLink'
+import { AnchorButton } from '../components/CtaLink'
 import { ShowcasePhoto } from '../components/ShowcasePhoto'
 import { WELCOME_CREDITS } from '../content'
 import { SHOWCASE_VISIBLE, showcase } from '../showcase'
@@ -62,13 +62,18 @@ export function Hero() {
           id="hero-title"
           className="mt-6 text-balance font-landing text-[2.35rem] font-bold uppercase leading-[0.92] tracking-[-0.045em] text-zinc-50 sm:text-[3.4rem] lg:text-[4.6rem]"
         >
-          Para quem cria: ideia, roteiro e vídeo com IA <span className="text-accent-soft">num lugar só.</span>
+          Crie mais. Automatize melhor. <span className="text-accent-soft">Cresça com inteligência artificial.</span>
         </motion.h1>
         <motion.p {...enter(0.14)} className="mt-6 max-w-2xl text-pretty text-[17px] font-medium text-zinc-400 md:text-lg">
-          Você descreve em português, o Vynkio escreve o roteiro, gera as fotos com o mesmo personagem e transforma em vídeo.
+          O Vynkio reúne criação de imagens, vídeos, ferramentas de IA, produção de conteúdos, marketing e soluções empresariais em uma plataforma integrada.
         </motion.p>
-        <motion.div {...enter(0.2)} className="mt-9 flex w-full justify-center sm:w-auto">
-          <CtaLink cta="hero_primary" size="lg" className="w-full sm:w-auto" />
+        <motion.div {...enter(0.2)} className="mt-9 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
+          <AnchorButton href="#creator" size="lg" tone="accent" className="w-full sm:w-auto">
+            Explorar Vynkio Creator
+          </AnchorButton>
+          <AnchorButton href="#business" size="lg" tone="ghost" className="w-full sm:w-auto">
+            Conhecer Vynkio Business
+          </AnchorButton>
         </motion.div>
         <motion.ul {...enter(0.26)} className="mt-7 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[13px] text-zinc-400">
           {TRUST.map((item) => (

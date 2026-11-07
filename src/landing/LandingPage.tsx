@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { track } from '@/lib/analytics'
 import { REAL_GALLERY } from './content'
+import { PRICING_V2 } from './pricing/flags'
 import { Advanced } from './sections/Advanced'
+import { BusinessSection, CreatorSection } from './sections/Ecosystem'
 import { Exclusive } from './sections/Exclusive'
 import { Faq } from './sections/Faq'
 import { Features } from './sections/Features'
@@ -13,6 +15,7 @@ import { Hero } from './sections/Hero'
 import { PhotoGallery } from './sections/PhotoGallery'
 import { Pipeline } from './sections/Pipeline'
 import { Pricing } from './sections/Pricing'
+import { PricingV2 } from './sections/PricingV2'
 import { Problem } from './sections/Problem'
 import { SameFace } from './sections/SameFace'
 import { StartBento } from './sections/StartBento'
@@ -22,7 +25,8 @@ import { SHOWCASE_VISIBLE } from './showcase'
 // Ordem do modelo de LP (estruturasmdm.lovable.app): topo, primeira dobra, problema,
 // plataforma por dentro, recursos avançados, prova social, diferencial, planos,
 // objeções e chamada final com rodapé. "Para quem" e "Uma ideia, cinco entregas"
-// complementam o problema e a plataforma. As seções de foto (bento, mesmo rosto e galeria)
+// complementam o problema e a plataforma. Creator (logo depois do topo) e Business (antes dos
+// planos) apresentam as duas linhas; os preços v2 só entram com VITE_PRICING_V2. As seções de foto (bento, mesmo rosto e galeria)
 // seguem a vitrine da higgsfield.ai e só entram com as fotos geradas.
 export function LandingPage() {
   useEffect(() => track({ name: 'landing_view' }), [])
@@ -38,6 +42,7 @@ export function LandingPage() {
       <Header />
       <main id="conteudo">
         <Hero />
+        <CreatorSection />
         {SHOWCASE_VISIBLE && <StartBento />}
         {SHOWCASE_VISIBLE && <SameFace />}
         <Problem />
@@ -48,7 +53,8 @@ export function LandingPage() {
         <Advanced />
         {REAL_GALLERY && <Gallery />}
         <Exclusive />
-        <Pricing />
+        <BusinessSection />
+        {PRICING_V2 ? <PricingV2 /> : <Pricing />}
         <Faq />
         <FinalCta />
       </main>

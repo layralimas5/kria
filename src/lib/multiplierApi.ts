@@ -21,6 +21,9 @@ const MULTIPLIER_ERRORS: Record<string, string> = {
   invalid_takes: 'Algum arquivo ficou fora do formato aceito. Remova e envie de novo.',
   too_many_projects: 'Você chegou ao limite de projetos. Apague os que não usa mais.',
   brand_not_found: 'Marca não encontrada.',
+  export_limit_reached: 'Você usou todas as exportações do mês no seu plano. Elas renovam no dia 1º, ou troque de plano para ter mais.',
+  too_many_exports: 'Já tem vídeos montando ao mesmo tempo. Espere um terminar.',
+  variation_not_found: 'Variação não encontrada. Recarregue a página.',
 }
 
 function multiplierError(error: { message: string }, fallback: string): ApiError {
@@ -78,6 +81,43 @@ export async function saveVariationScript(id: string, script: VariationScript): 
 export async function markVariationRendered(id: string, rendered: boolean): Promise<void> {
   const { error } = await supabase.from('multiplier_variations').update({ render_status: rendered ? 'rendered' : 'failed' }).eq('id', id)
   if (error) console.error('render status', error)
+}
+
+const exportTicketSchema = z.object({ id: z.string().uuid(), used: z.number().int(), limit: z.number().int().nullable() })
+export type ExportTicket = z.infer<typeof exportTicketSchema>
+
+/** Reserva uma exportação na cota do mês antes de montar. A mesma chave não conta duas vezes. */
+export async function startExport(variationId: string, idempotencyKey: string): Promise<ExportTicket> {
+  const { data, error } = await supabase.rpc('start_multiplier_export', { p_variation_id: variationId, p_idempotency_key: idempotencyKey })
+  if (error) throw multiplierError(error, 'Não deu para reservar a exportação. Tente de novo.')
+  return exportTicketSchema.parse(data)
+}
+
+export interface ExportMetrics {
+  readonly durationSeconds: number
+  readonly width: number
+  readonly height: number
+  readonly renderMs: number
+  readonly bytes: number
+}
+
+/** Fecha a exportação com as medidas (base do custo de infraestrutura). Falha aqui não perde o vídeo. */
+export async function finishExport(exportId: string, metrics: ExportMetrics): Promise<void> {
+  const { error } = await supabase.rpc('finish_multiplier_export', {
+    p_export_id: exportId,
+    p_duration_seconds: Math.round(metrics.durationSeconds * 100) / 100,
+    p_width: metrics.width,
+    p_height: metrics.height,
+    p_render_ms: Math.round(metrics.renderMs),
+    p_bytes: metrics.bytes,
+  })
+  if (error) console.error('finish export', error)
+}
+
+/** Montagem falhou ou foi cancelada: a exportação volta para a cota. */
+export async function failExport(exportId: string): Promise<void> {
+  const { error } = await supabase.rpc('fail_multiplier_export', { p_export_id: exportId })
+  if (error) console.error('fail export', error)
 }
 
 export async function deleteVariation(id: string): Promise<void> {

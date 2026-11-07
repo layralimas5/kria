@@ -13,6 +13,9 @@ export const usageSchema = z.object({
   monthly_limit: optionalNumber,
   used_today: numeric,
   used_month: numeric,
+  /** Exportações editadas do Multiplicador no mês (0018). Nulo = sem limite. */
+  exports_limit: optionalNumber.default(null),
+  exports_used: numeric.default(0),
   day_resets_at: z.string(),
   month_resets_at: z.string(),
   paused: z.boolean(),

@@ -45,6 +45,7 @@ const AdminUsersPage = page(() => import('@/pages/admin/AdminSectionPages'), 'Ad
 const AdminPlansPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminPlansPage')
 const AdminModelsPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminModelsPage')
 const AdminAuditPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminAuditPage')
+const AdminFinancePage = page(() => import('@/pages/admin/AdminFinancePage'), 'AdminFinancePage')
 const AdminAdminsPage = page(() => import('@/pages/admin/AdminAdminsPage'), 'AdminAdminsPage')
 const AdminSecurityPage = page(() => import('@/pages/admin/AdminSecurityPage'), 'AdminSecurityPage')
 const TermsPage = page(() => import('@/landing/TermsPage'), 'TermsPage')
@@ -98,6 +99,7 @@ export function App() {
                 <Route path="usuarios" element={<AdminUsersPage />} />
                 <Route path="modelos" element={<AdminModelsPage />} />
                 <Route path="planos" element={<AdminPlansPage />} />
+                <Route path="financeiro" element={<AdminFinancePage />} />
                 <Route path="auditoria" element={<AdminAuditPage />} />
                 <Route path="administradores" element={<AdminAdminsPage />} />
                 <Route path="seguranca" element={<AdminSecurityPage />} />
