@@ -3,7 +3,7 @@ import { formatBRL } from '@/domain/format'
 import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { useQuery } from '@/hooks/useQuery'
 import { useToast } from '@/hooks/useToast'
-import { fetchAdminPlans, updatePlan, type AdminPlan } from '@/lib/adminApi'
+import { fetchAdminPlans, updatePlan, updatePlanLimits, type AdminPlan } from '@/lib/adminApi'
 import { errorMessage } from '@/lib/api'
 import { Button } from '../ui/Button'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
@@ -14,12 +14,20 @@ function toCents(value: string): number {
   return Math.round(Number.parseFloat(value.replace(',', '.')) * 100)
 }
 
+/** Vazio = sem limite. */
+const parseLimit = (value: string): number | null => (value.trim() === '' ? null : Number.parseInt(value, 10))
+const limitInput = (value: number | null) => (value === null ? '' : String(value))
+const limitText = (value: number | null) => (value === null ? 'sem limite' : `${value.toLocaleString('pt-BR')} créditos`)
+const validLimit = (value: number | null) => value === null || (Number.isInteger(value) && value > 0)
+
 function PlanRow({ plan, canEdit, onSaved }: { readonly plan: AdminPlan; readonly canEdit: boolean; readonly onSaved: () => void }) {
   const notify = useToast()
   const [price, setPrice] = useState((plan.price_cents / 100).toFixed(2).replace('.', ','))
   const [credits, setCredits] = useState(String(plan.monthly_credits))
   const [concurrent, setConcurrent] = useState(String(plan.max_concurrent))
   const [active, setActive] = useState(plan.active)
+  const [daily, setDaily] = useState(limitInput(plan.daily_credit_limit))
+  const [monthly, setMonthly] = useState(limitInput(plan.monthly_credit_limit))
   const [busy, setBusy] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -30,11 +38,15 @@ function PlanRow({ plan, canEdit, onSaved }: { readonly plan: AdminPlan; readonl
     active,
   }
   const newVersion = update.priceCents !== plan.price_cents || update.monthlyCredits !== plan.monthly_credits
+  const limits = { daily: parseLimit(daily), monthly: parseLimit(monthly) }
+  const limitsChanged = limits.daily !== plan.daily_credit_limit || limits.monthly !== plan.monthly_credit_limit
 
   function review() {
     if (!Number.isFinite(update.priceCents) || !Number.isInteger(update.monthlyCredits) || !Number.isInteger(update.maxConcurrent)) {
       return setError('Confira os números.')
     }
+    if (!validLimit(limits.daily) || !validLimit(limits.monthly)) return setError('Limite precisa ser um inteiro positivo ou ficar vazio.')
+    if (limits.daily !== null && limits.monthly !== null && limits.daily > limits.monthly) return setError('O limite do dia não pode passar o do mês.')
     setError(null)
     setConfirming(true)
   }
@@ -43,6 +55,7 @@ function PlanRow({ plan, canEdit, onSaved }: { readonly plan: AdminPlan; readonl
     setBusy(true)
     try {
       await updatePlan(plan.slug, update)
+      if (limitsChanged) await updatePlanLimits(plan.slug, limits.daily, limits.monthly)
       notify(`${plan.name} salvo. Quem já assina segue no valor contratado até trocar de plano.`)
       onSaved()
     } catch (saveError) {
@@ -66,6 +79,10 @@ function PlanRow({ plan, canEdit, onSaved }: { readonly plan: AdminPlan; readonl
         <TextField label="Créditos por mês" inputMode="numeric" value={credits} onChange={(event) => setCredits(event.target.value)} disabled={!canEdit} />
         <TextField label="Gerações simultâneas" inputMode="numeric" value={concurrent} onChange={(event) => setConcurrent(event.target.value)} disabled={!canEdit} />
       </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <TextField label="Limite de consumo por dia" inputMode="numeric" value={daily} onChange={(event) => setDaily(event.target.value)} disabled={!canEdit} hint="Em créditos. Vazio = sem limite." />
+        <TextField label="Limite de consumo por mês" inputMode="numeric" value={monthly} onChange={(event) => setMonthly(event.target.value)} disabled={!canEdit} hint="Conta crédito do plano e comprado." />
+      </div>
       <label className="flex items-center gap-2 text-sm text-zinc-300">
         <input type="checkbox" checked={active} onChange={(event) => setActive(event.target.checked)} disabled={!canEdit} className="size-4 accent-[var(--color-accent)]" />
         Plano ativo (aparece para assinar)
@@ -79,8 +96,9 @@ function PlanRow({ plan, canEdit, onSaved }: { readonly plan: AdminPlan; readonl
       <ConfirmDialog open={confirming} title={`Salvar ${plan.name}`} confirmLabel="Salvar plano" busy={busy} onConfirm={() => void save()} onCancel={() => setConfirming(false)}>
         <p>
           {formatBRL(update.priceCents)} por mês, {update.monthlyCredits.toLocaleString('pt-BR')} créditos, {update.maxConcurrent} gerações ao mesmo tempo
-          {update.active ? '' : ', fora da venda'}.
+          {update.active ? '' : ', fora da venda'}. Consumo: {limitText(limits.daily)} por dia, {limitText(limits.monthly)} por mês.
         </p>
+        {limitsChanged && <p className="text-zinc-400">O limite de consumo vale na hora para todas as contas do plano, sem versão nova.</p>}
         <p className="text-zinc-400">
           {newVersion
             ? `Vira a versão ${plan.version + 1}. Quem já assina mantém o valor e os créditos contratados; a vitrine da landing (catalog.ts) precisa mudar junto.`
@@ -98,7 +116,7 @@ export function PlansTab() {
     <div className="space-y-4">
       {plans.error && <Notice tone="error">{plans.error}</Notice>}
       <div className="grid gap-4 lg:grid-cols-2">
-        {plans.data?.map((plan) => <PlanRow key={`${plan.slug}:${plan.version}:${plan.active}`} plan={plan} canEdit={can('plans.manage')} onSaved={() => void plans.reload()} />)}
+        {plans.data?.map((plan) => <PlanRow key={`${plan.slug}:${plan.version}:${plan.active}:${plan.daily_credit_limit}:${plan.monthly_credit_limit}`} plan={plan} canEdit={can('plans.manage')} onSaved={() => void plans.reload()} />)}
       </div>
     </div>
   )

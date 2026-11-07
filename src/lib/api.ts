@@ -12,6 +12,7 @@ import {
 } from '@/domain/analytics'
 import type { Channel, ContentGoal, CopyFormat, TextLength } from '@/domain/assistant'
 import { UPLOAD_TYPES, uploadSchema, type Upload, type UploadType } from '@/domain/formats'
+import { usageSchema, type Usage } from '@/domain/spendGuard'
 import {
   CONTENT_COLUMNS,
   contentItemSchema,
@@ -413,4 +414,11 @@ export async function importAnalytics(platform: AnalyticsPlatform, brandId: stri
 export async function deleteImport(id: string): Promise<void> {
   const { error } = await supabase.from('analytics_imports').delete().eq('id', id)
   if (error) throw new ApiError('delete_failed', 'Não deu para remover a importação.')
+}
+
+/** Consumo do dia e do mês contra o limite do plano (0016). */
+export async function fetchMyUsage(): Promise<Usage> {
+  const { data, error } = await supabase.rpc('my_usage')
+  if (error) throw new ApiError('usage_unavailable', 'Não deu para carregar seu consumo.')
+  return usageSchema.parse(data)
 }

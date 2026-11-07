@@ -67,6 +67,10 @@ const DATABASE_ERRORS: Record<string, { status: number; message: string }> = {
   insufficient_credits: { status: 402, message: 'Créditos insuficientes.' },
   account_suspended: { status: 403, message: 'Sua conta está suspensa. Fale com o suporte.' },
   plan_required: { status: 403, message: 'Esse modelo faz parte de um plano pago. Veja os planos em Assinatura.' },
+  daily_limit_reached: { status: 429, message: 'Você chegou ao limite de consumo de hoje do seu plano. Ele volta à meia-noite.' },
+  monthly_limit_reached: { status: 429, message: 'Você chegou ao limite de consumo do mês do seu plano. Ele volta no dia 1º.' },
+  generation_paused: { status: 503, message: 'As gerações estão pausadas por alguns instantes. Tente de novo mais tarde; nenhum crédito foi usado.' },
+  platform_spend_cap: { status: 503, message: 'As gerações estão pausadas por alguns instantes. Tente de novo mais tarde; nenhum crédito foi usado.' },
 }
 
 export function databaseErrorResponse(error: { message: string }): Response {

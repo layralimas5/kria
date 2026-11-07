@@ -10,9 +10,10 @@ import { buildDemoDashboard } from './demoAdmin'
 import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_USER_ID, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 import { DEMO_VIDEO, demoImageAt, demoMediaType } from './demoMedia'
+import { demoRefusal, demoSpendGuard, demoUsage } from './demoSpend'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
-const SESSION_KEY = 'kria-demo-state-v8'
+const SESSION_KEY = 'kria-demo-state-v9'
 
 function loadState(): DemoState {
   try {
@@ -179,6 +180,8 @@ function generate(body: Row): Response {
   if (state.generations.filter((item) => item.status === 'running').length >= Number(plan.max_concurrent)) {
     return fail(429, 'too_many_running', 'Você chegou ao limite de gerações ao mesmo tempo do seu plano. Espere uma terminar.')
   }
+  const refusal = demoRefusal(state, plan, credits)
+  if (refusal) return fail(refusal.status, refusal.code, refusal.message)
 
   const generation: Row = {
     id: uuid(),
@@ -324,6 +327,8 @@ async function assistant(body: Row): Promise<Response> {
   }
   const credits = Number(model.credits)
   if (balanceOf() < credits) return fail(402, 'insufficient_credits', 'Créditos insuficientes.')
+  const refusal = demoRefusal(state, currentPlan(), credits)
+  if (refusal) return fail(refusal.status, refusal.code, refusal.message)
 
   // Um respiro para a tela mostrar o "escrevendo".
   await new Promise((resolve) => setTimeout(resolve, 1500))
@@ -561,6 +566,37 @@ function adminRpc(name: string, body: Row): Response | null {
       persist()
       return json(plan)
     }
+    case 'admin_update_plan_limits': {
+      const plan = state.plans.find((item) => item.slug === body.p_slug)
+      if (!plan) return rpcFail('plan_not_found')
+      const daily = body.p_daily as number | null
+      const monthly = body.p_monthly as number | null
+      if ((daily !== null && daily <= 0) || (monthly !== null && monthly <= 0)) return rpcFail('invalid_amount')
+      if (daily !== null && monthly !== null && daily > monthly) return rpcFail('invalid_cap_order')
+      Object.assign(plan, { daily_credit_limit: daily, monthly_credit_limit: monthly })
+      audit('plan.limits', String(plan.slug), null)
+      persist()
+      return json(plan)
+    }
+    case 'admin_spend_guard':
+      return json(demoSpendGuard(state))
+    case 'admin_update_spend_guard': {
+      const reason = String(body.p_reason ?? '').trim()
+      const daily = body.p_daily_cap_usd as number | null
+      const monthly = body.p_monthly_cap_usd as number | null
+      if (body.p_paused && reason.length < 5) return rpcFail('reason_required')
+      if (daily !== null && monthly !== null && daily > monthly) return rpcFail('invalid_cap_order')
+      Object.assign(state.pricing, {
+        daily_cost_cap_usd: daily,
+        monthly_cost_cap_usd: monthly,
+        cost_alert_ratio: body.p_alert_ratio,
+        generation_paused: body.p_paused,
+        paused_reason: body.p_paused ? reason : null,
+      })
+      audit('spend_guard.update', null, reason || null)
+      persist()
+      return json(demoSpendGuard(state))
+    }
     case 'admin_models':
       return json(state.models)
     case 'admin_update_model': {
@@ -578,7 +614,7 @@ function adminRpc(name: string, body: Row): Response | null {
       return json(model)
     }
     case 'admin_update_pricing':
-      state.pricing = { usd_brl: body.p_usd_brl, fx_buffer: body.p_fx_buffer, markup: body.p_markup, credit_value_brl: body.p_credit_value_brl }
+      state.pricing = { ...state.pricing, usd_brl: body.p_usd_brl, fx_buffer: body.p_fx_buffer, markup: body.p_markup, credit_value_brl: body.p_credit_value_brl }
       audit('pricing.update', null, null)
       persist()
       return json(state.pricing)
@@ -623,6 +659,7 @@ function rpc(name: string, body: Row): Response {
   if (name === 'create_persona') return createPersona(body)
   if (name === 'register_upload') return registerUpload(body)
   if (name === 'import_analytics') return importAnalytics(body)
+  if (name === 'my_usage') return json(demoUsage(state, currentPlan()))
   const admin = adminRpc(name, body)
   if (admin) return admin
   return rpcFail('not_found')

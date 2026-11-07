@@ -10,6 +10,7 @@ import { Button } from '../ui/Button'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { TextField } from '../ui/Field'
 import { Notice } from '../ui/Notice'
+import { SpendGuardPanel } from './SpendGuardPanel'
 
 const parseDecimal = (value: string) => Number.parseFloat(value.replace(',', '.'))
 
@@ -195,6 +196,7 @@ export function ModelsTab() {
   return (
     <div className="space-y-5">
       {error && <Notice tone="error">{error}</Notice>}
+      {can('finance.view') && <SpendGuardPanel />}
       {settings && can('pricing.manage') && <PricingForm key={JSON.stringify(settings)} settings={settings} onSaved={() => void pricing.reload()} />}
       <div className="grid gap-4 lg:grid-cols-2">
         {settings &&

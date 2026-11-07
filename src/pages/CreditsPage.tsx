@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { Check, Coins } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { UsageLimits } from '@/components/billing/UsageLimits'
 import { Button } from '@/components/ui/Button'
 import { Notice } from '@/components/ui/Notice'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -153,6 +154,8 @@ export function CreditsPage() {
       )}
       {purchase?.status === 'expired' && <Notice tone="error">O pagamento expirou. Você pode comprar de novo abaixo.</Notice>}
       {error && <Notice tone="error">{error}</Notice>}
+
+      <UsageLimits />
 
       <section aria-label="Pacotes de créditos" className="space-y-5">
         <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-400">

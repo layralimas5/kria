@@ -3,6 +3,7 @@
 
 import { z } from 'zod'
 import { adminMeSchema, adminRoleSchema, dashboardSchema, type AdminMe, type AdminRole, type Period } from '@/domain/adminDashboard'
+import { spendGuardSchema } from '@/domain/spendGuard'
 import { ledgerReasonSchema, subscriptionStatusSchema } from '@/domain/types'
 import { ApiError } from './api'
 import { supabase } from './supabase'
@@ -22,6 +23,7 @@ const ADMIN_ERRORS: Record<string, string> = {
   user_not_found: 'Nenhuma conta com esse e-mail.',
   cannot_change_self: 'Você não pode mudar o próprio acesso.',
   last_super_admin: 'Precisa sobrar pelo menos um super admin.',
+  invalid_cap_order: 'O limite do dia não pode passar o do mês.',
 }
 
 async function rpc<T>(name: string, args: Record<string, unknown>, schema: z.ZodType<T, z.ZodTypeDef, unknown>): Promise<T> {
@@ -101,6 +103,8 @@ export const adminPlanSchema = z.object({
   price_cents: numeric,
   monthly_credits: numeric,
   max_concurrent: numeric,
+  daily_credit_limit: numeric.nullable(),
+  monthly_credit_limit: numeric.nullable(),
   features: z.array(z.string()),
   public: z.boolean(),
   active: z.boolean(),
@@ -168,6 +172,32 @@ export const updatePlan = (slug: string, update: PlanUpdate) =>
       p_features: null,
     },
     adminPlanSchema,
+  )
+
+export const updatePlanLimits = (slug: string, daily: number | null, monthly: number | null) =>
+  rpc('admin_update_plan_limits', { p_slug: slug, p_daily: daily, p_monthly: monthly }, adminPlanSchema)
+
+export const fetchSpendGuard = () => rpc('admin_spend_guard', {}, spendGuardSchema)
+
+export interface SpendGuardUpdate {
+  readonly dailyCapUsd: number | null
+  readonly monthlyCapUsd: number | null
+  readonly alertRatio: number
+  readonly paused: boolean
+  readonly reason: string | null
+}
+
+export const updateSpendGuard = (update: SpendGuardUpdate) =>
+  rpc(
+    'admin_update_spend_guard',
+    {
+      p_daily_cap_usd: update.dailyCapUsd,
+      p_monthly_cap_usd: update.monthlyCapUsd,
+      p_alert_ratio: update.alertRatio,
+      p_paused: update.paused,
+      p_reason: update.reason,
+    },
+    spendGuardSchema,
   )
 
 export const fetchAdminModels = () => rpc('admin_models', {}, z.array(adminModelSchema))

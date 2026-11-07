@@ -37,6 +37,10 @@ são telas reais do modo demo (`npm run landing:screens`).
   dois baldes: plano (renova, não acumula) e comprado (não expira). A geração reserva ao nascer
   (gasta o plano primeiro), captura no sucesso e devolve aos mesmos baldes na falha. Extrato imutável.
 - Plano e crédito de assinatura só mudam pelo `asaas-webhook` (`activate_subscription_period`).
+- Guarda de gasto (0016) dentro de `create_generation`: limite de consumo por plano (dia e mês, em créditos),
+  teto de custo da plataforma (US$, dia e mês) e pausa de emergência. Custo sem `provider_cost_usd` conta no
+  pior caso (todo o crédito vira custo); falha de modelo com `charges_on_failure` continua no custo. A pessoa
+  vê só créditos (`my_usage`); custo fica no admin. Plano e estado em `VYNKIO_IMPLEMENTATION_PLAN.md`.
 - O painel do usuário não tem nada de admin (nem link no menu). A operação fica em `/admin`, com moldura
   própria, fora do `AppShell`; só abre para quem está em `admin_users`. Cada função `admin_*` chama
   `assert_admin_permission('x')` (papel + sessão aal2, 0014) e grava `admin_audit_logs`, que é imutável.

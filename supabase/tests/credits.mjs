@@ -1109,4 +1109,136 @@ await test('formatos: catálogo público sem o texto dos prompts', async (db) =>
   await as(db, 'anon', null, () => expectError(db.query(`select prompt_template from formats`), 'permission denied'))
 })
 
+// ------------------------------------------------------------ guarda de gasto (0016)
+
+const usageOf = (db, userId) => as(db, 'authenticated', userId, async () => (await db.query(`select my_usage() as u`)).rows[0].u)
+
+await test('guarda: limite diário do plano barra antes de reservar, e estorno libera o espaço', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await setWallet(db, ana, 500)
+  await db.query(`update subscription_plans set daily_credit_limit = 10, max_concurrent = 5 where slug = 'gratis'`)
+  const first = (await create(db, ana, 'foto')).rows[0]
+  await create(db, ana, 'foto')
+  await expectError(create(db, ana, 'foto'), 'daily_limit_reached')
+  assert.equal(await balanceOf(db, ana), 490)
+
+  await db.query(`select fail_generation($1, 'falhou')`, [first.id])
+  await create(db, ana, 'foto')
+  const usage = await usageOf(db, ana)
+  assert.equal(usage.used_today, 10)
+  assert.equal(usage.daily_limit, 10)
+})
+
+await test('guarda: limite mensal conta o mês em Brasília, não só o dia', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await setWallet(db, ana, 500)
+  await db.query(`update subscription_plans set daily_credit_limit = null, monthly_credit_limit = 12, max_concurrent = 5 where slug = 'gratis'`)
+  const old = (await create(db, ana, 'foto')).rows[0]
+  await db.query(`update credit_reservations set created_at = spend_month_start() + interval '1 second' where generation_id = $1`, [old.id])
+  await create(db, ana, 'foto')
+  await expectError(create(db, ana, 'foto'), 'monthly_limit_reached')
+  assert.equal((await usageOf(db, ana)).used_month, 10)
+})
+
+await test('guarda: limite e uso valem por plano (Grátis 100/dia, Pro 450/dia)', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  assert.deepEqual(
+    (await db.query(`select slug, daily_credit_limit as d, monthly_credit_limit as m from subscription_plans order by position`)).rows,
+    [
+      { slug: 'gratis', d: 100, m: 500 },
+      { slug: 'starter', d: 300, m: 1500 },
+      { slug: 'pro', d: 450, m: 2250 },
+      { slug: 'studio', d: 1000, m: 5000 },
+    ],
+  )
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_1')
+  const usage = await usageOf(db, ana)
+  assert.equal(usage.plan_slug, 'pro')
+  assert.equal(usage.daily_limit, 450)
+  assert.equal(usage.paused, false)
+  assert.equal(usage.provider_cost_usd, undefined)
+})
+
+await test('guarda: teto de custo da plataforma vale para todas as contas', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  // Foto sem custo cadastrado usa o pior caso: 5 créditos × R$ 0,15 ÷ 5,60 = US$ 0,1339.
+  const first = (await create(db, ana, 'foto')).rows[0]
+  assert.equal(Number(first.spend_usd), 0.1339)
+  await db.query(`update pricing_settings set daily_cost_cap_usd = 0.2`)
+  await expectError(create(db, bia, 'foto'), 'platform_spend_cap')
+
+  await db.query(`update models set provider_cost_usd = 0.04 where slug = 'foto'`)
+  const cheap = (await create(db, bia, 'foto')).rows[0]
+  assert.equal(Number(cheap.spend_usd), 0.04)
+  assert.equal(await balanceOf(db, bia), 15)
+})
+
+await test('guarda: falha que o fornecedor cobra continua no custo, mesmo com estorno', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const text = (await create(db, ana, 'copy', 'legenda para o café')).rows[0]
+  const photo = (await create(db, ana, 'foto')).rows[0]
+  assert.equal(text.billed_on_failure, true)
+  assert.equal(photo.billed_on_failure, false)
+  await db.query(`select fail_generation($1, 'recusado')`, [text.id])
+  await db.query(`select fail_generation($1, 'falhou')`, [photo.id])
+  assert.equal(await balanceOf(db, ana), 20)
+  const spent = Number((await db.query(`select platform_spend_usd(spend_day_start()) as s`)).rows[0].s)
+  assert.equal(spent, Number(text.spend_usd))
+})
+
+await test('guarda: pausa de emergência barra toda geração e pede motivo', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const boss = await newUser(db, 'boss@x.com')
+  await makeAdmin(db, boss)
+  await as(db, 'authenticated', boss, async () => {
+    await expectError(db.query(`select admin_update_spend_guard(25, 300, 0.8, true, '')`), 'reason_required')
+    await expectError(db.query(`select admin_update_spend_guard(400, 300, 0.8, false, null)`), 'invalid_cap_order')
+    const guard = (await db.query(`select admin_update_spend_guard(25, 300, 0.8, true, 'fatura do fal acima do previsto') as g`)).rows[0].g
+    assert.equal(guard.generation_paused, true)
+  })
+  await expectError(create(db, ana, 'foto'), 'generation_paused')
+  assert.equal(await balanceOf(db, ana), 20)
+  assert.equal((await usageOf(db, ana)).paused, true)
+
+  await as(db, 'authenticated', boss, () => db.query(`select admin_update_spend_guard(25, 300, 0.8, false, null)`))
+  await create(db, ana, 'foto')
+  const log = await db.query(`select action, reason from admin_audit_logs where action = 'spend_guard.update' order by id`)
+  assert.deepEqual(log.rows.map((row) => row.reason), ['fatura do fal acima do previsto', null])
+})
+
+await test('guarda: só financeiro vê o custo, só quem gerencia muda teto e limite', async (db) => {
+  const ids = {}
+  for (const role of ['super_admin', 'admin', 'finance', 'support']) {
+    ids[role] = await newUser(db, `${role}@x.com`)
+    await makeAdmin(db, ids[role], role)
+  }
+  const ana = await newUser(db, 'ana@x.com')
+  await create(db, ana, 'foto')
+
+  await as(db, 'authenticated', ana, () => expectError(db.query(`select admin_spend_guard()`), 'forbidden'))
+  await as(db, 'authenticated', ids.support, () => expectError(db.query(`select admin_spend_guard()`), 'forbidden'))
+  await as(db, 'authenticated', ids.admin, async () => {
+    await expectError(db.query(`select admin_spend_guard()`), 'forbidden')
+    await expectError(db.query(`select admin_update_plan_limits('pro', 10, 20)`), 'forbidden')
+  })
+  await as(db, 'authenticated', ids.finance, async () => {
+    const guard = (await db.query(`select admin_spend_guard() as g`)).rows[0].g
+    assert.equal(Number(guard.spent_today_usd), 0.1339)
+    assert.equal(guard.estimated_month_count, 1)
+    assert.equal(guard.top_today[0].email, 'ana@x.com')
+    await expectError(db.query(`select admin_update_spend_guard(25, 300, 0.8, false, null)`), 'forbidden')
+  })
+  const versionBefore = (await db.query(`select version from subscription_plans where slug = 'pro'`)).rows[0].version
+  await as(db, 'authenticated', ids.super_admin, async () => {
+    await expectError(db.query(`select admin_update_plan_limits('pro', 30, 20)`), 'invalid_cap_order')
+    const plan = (await db.query(`select * from admin_update_plan_limits('pro', null, 900)`)).rows[0]
+    assert.equal(plan.daily_credit_limit, null)
+    assert.equal(plan.monthly_credit_limit, 900)
+    assert.equal(plan.version, versionBefore)
+  })
+  await expectError(as(db, 'authenticated', ana, () => db.query(`select user_credits_used($1, now())`, [ana])), 'permission denied')
+  await expectError(as(db, 'authenticated', ana, () => db.query(`select platform_spend_usd(now())`)), 'permission denied')
+})
+
 console.log(`\n${passed} testes do banco passaram`)
