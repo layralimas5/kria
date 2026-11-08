@@ -657,7 +657,7 @@ function adminRpc(name: string, body: Row): Response | null {
       return json(true)
     }
     case 'admin_plans':
-      return json(state.plans)
+      return json(state.plans.map((plan) => ({ daily_credit_limit: null, monthly_credit_limit: null, ...plan })))
     case 'admin_update_plan': {
       const plan = state.plans.find((item) => item.slug === body.p_slug)
       if (!plan) return rpcFail('plan_not_found')
