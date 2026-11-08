@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Check, Clock } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { formatBRL } from '@/domain/format'
 import { track } from '@/lib/analytics'
@@ -12,8 +12,6 @@ export function subscribePath(slug: string): string {
 }
 
 export function PlanCard({ plan }: { readonly plan: MarketingPlan }) {
-  const available = plan.features.filter((feature) => !feature.soon)
-  const upcoming = plan.features.filter((feature) => feature.soon)
   const titleId = `plano-${plan.slug}`
   const destination = subscribePath(plan.slug)
 
@@ -64,24 +62,13 @@ export function PlanCard({ plan }: { readonly plan: MarketingPlan }) {
       </Link>
 
       <ul className="mt-6 space-y-2.5 border-t border-white/[0.06] pt-5 text-sm" aria-label={`O que vem no ${plan.name}`}>
-        {available.map((feature) => (
-          <li key={feature.label} className="flex gap-2.5 text-zinc-200">
+        {plan.features.map((feature) => (
+          <li key={feature} className="flex gap-2.5 text-zinc-200">
             <Check className="mt-0.5 size-4 shrink-0 text-accent-soft" aria-hidden="true" />
-            {feature.label}
+            {feature}
           </li>
         ))}
       </ul>
-      {upcoming.length > 0 && (
-        <ul className="mt-4 space-y-2 text-sm" aria-label="Chegando em breve">
-          {upcoming.map((feature) => (
-            <li key={feature.label} className="flex items-center gap-2.5 text-zinc-500">
-              <Clock className="size-4 shrink-0" aria-hidden="true" />
-              <span className="flex-1">{feature.label}</span>
-              <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Em breve</span>
-            </li>
-          ))}
-        </ul>
-      )}
     </article>
   )
 }

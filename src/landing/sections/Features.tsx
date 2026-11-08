@@ -1,9 +1,11 @@
 import clsx from 'clsx'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Clapperboard, ImageIcon, Lightbulb, Megaphone, PenLine, UserRound, type LucideIcon } from 'lucide-react'
-import { Reveal } from '../components/Reveal'
-import { BrowserFrame, ScreenImage } from '../components/ScreenFrame'
+import { useId, useRef, type KeyboardEvent } from 'react'
+import { BrowserFrame } from '../components/ScreenFrame'
 import { SectionHeading } from '../components/SectionHeading'
-import { FEATURES, type Feature, type FeatureIcon } from '../content'
+import { FEATURES, screenSrc, type Feature, type FeatureIcon } from '../content'
+import { useAutoTour } from '../hooks/useAutoTour'
 
 const ICONS: Record<FeatureIcon, LucideIcon> = {
   image: ImageIcon,
@@ -14,96 +16,137 @@ const ICONS: Record<FeatureIcon, LucideIcon> = {
   ideas: Lightbulb,
 }
 
-/** Tamanho dos recortes gerados por `npm run landing:screens`. */
-const SIZES: Partial<Record<Feature['screen'], { width: number; height: number }>> = {
-  imagem: { width: 1200, height: 750 },
-  video: { width: 1464, height: 915 },
-  personagem: { width: 1764, height: 1230 },
+/** Tempo de cada aba no avanço automático. */
+const STEP_MS = 6500
+
+interface TabProps {
+  readonly feature: Feature
+  readonly selected: boolean
+  readonly progress: number
+  readonly running: boolean
+  readonly tabId: string
+  readonly panelId: string
+  readonly onSelect: () => void
+  readonly onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void
 }
-const TEXT_RESULT = { width: 1302, height: 840 }
 
-/** Quantos recursos ganham bloco grande; o resto vira card compacto. */
-const MAIN_COUNT = 3
-
-function FeatureLabel({ feature }: { readonly feature: Feature }) {
+function Tab({ feature, selected, progress, running, tabId, panelId, onSelect, onKeyDown }: TabProps) {
   const Icon = ICONS[feature.icon]
   return (
-    <p className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-accent-soft">
-      <Icon className="size-4" aria-hidden="true" />
-      {feature.name}
-    </p>
+    <button
+      type="button"
+      role="tab"
+      id={tabId}
+      aria-selected={selected}
+      aria-controls={panelId}
+      tabIndex={selected ? 0 : -1}
+      onClick={onSelect}
+      onKeyDown={onKeyDown}
+      className={clsx(
+        'relative flex w-auto shrink-0 items-start gap-3 lg:w-full overflow-hidden rounded-2xl px-4 py-3.5 text-left transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:py-4',
+        selected ? 'bg-white/[0.05] ring-1 ring-white/[0.1]' : 'hover:bg-white/[0.03]',
+      )}
+    >
+      <Icon className={clsx('mt-0.5 size-5 shrink-0 transition-colors', selected ? 'text-accent-soft' : 'text-zinc-500')} aria-hidden="true" />
+      <span className="min-w-0">
+        <span className={clsx('block whitespace-nowrap text-[15px] font-semibold lg:whitespace-normal', selected ? 'text-zinc-50' : 'text-zinc-400')}>{feature.name}</span>
+        <span className={clsx('mt-1 hidden text-pretty text-sm text-zinc-400 lg:block', !selected && 'lg:hidden')}>{feature.description}</span>
+        {selected && feature.plans && <span className="mt-2 hidden text-[13px] text-zinc-500 lg:block">{feature.plans}</span>}
+      </span>
+      {selected && running && (
+        <span aria-hidden="true" className="absolute inset-x-4 bottom-0 h-px bg-white/[0.08]">
+          <span className="block h-full origin-left bg-accent-soft" style={{ transform: `scaleX(${progress})` }} />
+        </span>
+      )}
+    </button>
   )
 }
 
-function MainFeature({ feature, index }: { readonly feature: Feature; readonly index: number }) {
-  const size = SIZES[feature.screen] ?? TEXT_RESULT
-  const reversed = index % 2 === 1
-
-  return (
-    <Reveal as="li" className="grid gap-8 lg:grid-cols-[1fr_1.35fr] lg:items-center lg:gap-14">
-      <div className={clsx(reversed && 'lg:order-2')}>
-        <span aria-hidden="true" className="font-landing text-5xl font-bold leading-none tracking-[-0.05em] text-white/10">0{index + 1}</span>
-        <div className="mt-4">
-          <FeatureLabel feature={feature} />
-        </div>
-        <h3 className="mt-3 text-balance font-landing text-2xl font-bold uppercase tracking-[-0.02em] text-zinc-50 md:text-3xl">{feature.benefit}</h3>
-        <p className="mt-3 max-w-lg text-pretty text-base text-zinc-400">{feature.description}</p>
-        {feature.plans && <p className="mt-3 text-[13px] text-zinc-400">{feature.plans}</p>}
-      </div>
-      <BrowserFrame label={feature.name} className={clsx(reversed && 'lg:order-1')}>
-        <ScreenImage screen={feature.screen} alt={feature.screenAlt} width={size.width} height={size.height} />
-      </BrowserFrame>
-    </Reveal>
-  )
-}
-
-function CompactFeature({ feature, index }: { readonly feature: Feature; readonly index: number }) {
-  const size = SIZES[feature.screen] ?? TEXT_RESULT
-  return (
-    <Reveal as="li" delay={index * 0.06} className="group flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-panel transition-colors hover:border-accent/30">
-      <div className="relative aspect-[16/10] overflow-hidden border-b border-white/[0.06] bg-stage">
-        <ScreenImage
-          screen={feature.screen}
-          alt={feature.screenAlt}
-          width={size.width}
-          height={size.height}
-          className="size-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-        />
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-panel to-transparent" />
-      </div>
-      <div className="flex flex-1 flex-col p-5 md:p-6">
-        <FeatureLabel feature={feature} />
-        <h3 className="mt-3 text-lg font-semibold text-zinc-50">{feature.benefit}</h3>
-        <p className="mt-1.5 text-pretty text-[15px] text-zinc-400">{feature.description}</p>
-        {feature.plans && <p className="mt-3 text-[13px] text-zinc-400">{feature.plans}</p>}
-      </div>
-    </Reveal>
-  )
-}
-
+/** Showcase das ferramentas: abas com as telas reais, avançando sozinhas até a pessoa escolher uma. */
 export function Features() {
-  const main = FEATURES.slice(0, MAIN_COUNT)
-  const compact = FEATURES.slice(MAIN_COUNT)
+  const reduceMotion = useReducedMotion()
+  const section = useRef<HTMLElement>(null)
+  const tour = useAutoTour(FEATURES.length, STEP_MS, !reduceMotion, section)
+  const baseId = useId()
+  const current = FEATURES[tour.active] ?? FEATURES[0]
+  if (!current) return null
+
+  const tabId = (index: number) => `${baseId}-tab-${index}`
+  const panelId = `${baseId}-panel`
+
+  function onKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+    const step = event.key === 'ArrowDown' || event.key === 'ArrowRight' ? 1 : event.key === 'ArrowUp' || event.key === 'ArrowLeft' ? -1 : 0
+    if (step === 0) return
+    event.preventDefault()
+    const next = (tour.active + step + FEATURES.length) % FEATURES.length
+    tour.select(next)
+    document.getElementById(tabId(next))?.focus()
+  }
 
   return (
-    <section id="recursos" aria-labelledby="recursos-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
-      <div className="mx-auto max-w-[1440px]">
+    <section ref={section} id="ferramentas" aria-labelledby="ferramentas-title" className="scroll-mt-20 px-4 pt-24 md:pt-32">
+      <div className="mx-auto max-w-[1280px]">
         <SectionHeading
-          id="recursos-title"
+          id="ferramentas-title"
           align="center"
-          title="O Vynkio por dentro"
-          lead="Cada ferramenta resolve uma etapa da produção, e todas conversam entre si. Os prints são telas reais do app, no modo demonstração."
+          title="Veja cada ferramenta funcionando"
+          lead="Escolha uma ferramenta para ver a tela. São telas reais do app, no modo demonstração."
         />
-        <ul className="mt-14 space-y-20 md:mt-20 md:space-y-28">
-          {main.map((feature, index) => (
-            <MainFeature key={feature.id} feature={feature} index={index} />
-          ))}
-        </ul>
-        <ul className="mt-20 grid gap-4 md:mt-28 md:grid-cols-3">
-          {compact.map((feature, index) => (
-            <CompactFeature key={feature.id} feature={feature} index={index} />
-          ))}
-        </ul>
+
+        <div
+          className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start lg:gap-10"
+          onMouseEnter={() => tour.pause(true)}
+          onMouseLeave={() => tour.pause(false)}
+          onFocus={() => tour.pause(true)}
+          onBlur={() => tour.pause(false)}
+        >
+          <div
+            role="tablist"
+            aria-label="Ferramentas do Vynkio"
+            aria-orientation="vertical"
+            className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0"
+          >
+            {FEATURES.map((feature, index) => (
+              <Tab
+                key={feature.id}
+                feature={feature}
+                selected={index === tour.active}
+                progress={tour.progress}
+                running={tour.running}
+                tabId={tabId(index)}
+                panelId={panelId}
+                onSelect={() => tour.select(index)}
+                onKeyDown={onKeyDown}
+              />
+            ))}
+          </div>
+
+          <div role="tabpanel" id={panelId} aria-labelledby={tabId(tour.active)} className="lg:sticky lg:top-24">
+            <BrowserFrame label={current.name}>
+              <div className="relative aspect-[16/10] overflow-hidden bg-stage">
+                <AnimatePresence initial={false} mode="popLayout">
+                  <motion.img
+                    key={current.id}
+                    src={screenSrc(current.screen)}
+                    alt={current.screenAlt}
+                    loading="lazy"
+                    decoding="async"
+                    initial={reduceMotion ? false : { opacity: 0, scale: 1.03 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.99 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute inset-0 size-full object-cover object-top"
+                  />
+                </AnimatePresence>
+              </div>
+            </BrowserFrame>
+            <div className="mt-5 lg:hidden">
+              <p className="text-lg font-semibold text-zinc-50">{current.benefit}</p>
+              <p className="mt-1.5 text-pretty text-[15px] text-zinc-400">{current.description}</p>
+              {current.plans && <p className="mt-2 text-[13px] text-zinc-500">{current.plans}</p>}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   )

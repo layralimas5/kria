@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Check, Clock, Minus } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { formatBRL } from '@/domain/format'
 import { track } from '@/lib/analytics'
@@ -44,11 +44,12 @@ function PlanAction({ plan }: { readonly plan: StorefrontPlan }) {
   )
 }
 
-/** Card de plano da vitrine: tudo vem de `storefront_plans`, nada de número fixo aqui. */
+/**
+ * Card de plano da vitrine: tudo vem de `storefront_plans`, nada de número fixo aqui. Só o que o plano inclui:
+ * `soon_features` e `limits` (itens não incluídos) ficam fora do card.
+ */
 export function PlanCardV2({ plan }: { readonly plan: StorefrontPlan }) {
   const titleId = `plano-${plan.slug}`
-  const available = plan.features
-  const upcoming = plan.soon_features
   const free = plan.price_cents === 0
 
   return (
@@ -95,34 +96,13 @@ export function PlanCardV2({ plan }: { readonly plan: StorefrontPlan }) {
       <PlanAction plan={plan} />
 
       <ul className="mt-6 space-y-2.5 border-t border-white/[0.06] pt-5 text-sm" aria-label={`O que vem no ${plan.name}`}>
-        {available.map((feature) => (
+        {plan.features.map((feature) => (
           <li key={feature} className="flex gap-2.5 text-zinc-200">
             <Check className="mt-0.5 size-4 shrink-0 text-accent-soft" aria-hidden="true" />
             {feature}
           </li>
         ))}
       </ul>
-      {upcoming.length > 0 && (
-        <ul className="mt-3 space-y-2 text-sm" aria-label="Chegando em breve">
-          {upcoming.map((feature) => (
-            <li key={feature} className="flex items-center gap-2.5 text-zinc-500">
-              <Clock className="size-4 shrink-0" aria-hidden="true" />
-              <span className="flex-1">{feature}</span>
-              <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Em breve</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {plan.limits.length > 0 && (
-        <ul className="mt-4 space-y-2 text-[13px]" aria-label="Limites do plano">
-          {plan.limits.map((limit) => (
-            <li key={limit} className="flex gap-2.5 text-zinc-400">
-              <Minus className="mt-0.5 size-4 shrink-0 text-zinc-600" aria-hidden="true" />
-              {limit}
-            </li>
-          ))}
-        </ul>
-      )}
     </article>
   )
 }

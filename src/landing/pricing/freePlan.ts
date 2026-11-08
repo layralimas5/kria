@@ -16,13 +16,13 @@ export const FREE_PLAN: MarketingPlan = {
   highlight_reason: null,
   position: 0,
   features: [
-    { label: `${WELCOME_CREDITS} créditos de boas-vindas`, soon: false },
-    { label: 'Até 4 fotos para testar', soon: false },
-    { label: '1 personagem salvo', soon: false },
-    { label: 'Fotos com IA e com seu personagem', soon: false },
-    { label: 'Vídeo com Kling 3.0 comprando um pacote', soon: false },
-    { label: 'Pacotes avulsos com Pix', soon: false },
-    { label: 'Ideias, copys e roteiros com IA', soon: false },
+    `${WELCOME_CREDITS} créditos de boas-vindas`,
+    'Até 4 fotos para testar',
+    '1 personagem salvo',
+    'Fotos com IA e com seu personagem',
+    'Vídeo com Kling 3.0 comprando um pacote',
+    'Pacotes avulsos com Pix',
+    'Ideias, copys e roteiros com IA',
   ],
   comparison: {
     credits: `${WELCOME_CREDITS} de boas-vindas`,
@@ -34,12 +34,9 @@ export const FREE_PLAN: MarketingPlan = {
     veo: 'no',
     history: 'yes',
     copy: 'yes',
-    prompts: 'soon',
-    motion_control: 'no',
     ugc: 'no',
     projects: 'no',
     support: 'no',
-    community: 'no',
   },
 }
 

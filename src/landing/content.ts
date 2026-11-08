@@ -86,6 +86,17 @@ export function screenSrc(screen: Screen): string {
   return `/landing/app/${screen}.jpg`
 }
 
+/**
+ * Vídeo "Veja o Vynkio em ação". Enquanto for null, a seção mostra a tela real com o aviso de que o vídeo
+ * está em produção. Arquivo próprio: `public/landing/tour.mp4` (e `.webm`, se tiver) com pôster tirado do
+ * próprio vídeo. Hospedado fora (YouTube, Vimeo): `kind: 'embed'` com a URL de incorporação.
+ */
+export type TourVideo =
+  | { readonly kind: 'file'; readonly mp4: string; readonly webm?: string; readonly poster: string; readonly duration: string }
+  | { readonly kind: 'embed'; readonly url: string; readonly poster: string; readonly duration: string }
+
+export const TOUR_VIDEO: TourVideo | null = null
+
 export type FeatureIcon = 'image' | 'video' | 'persona' | 'ugc' | 'copy' | 'ideas'
 
 export interface Feature {
@@ -164,13 +175,15 @@ export const FEATURES: readonly Feature[] = [
   },
 ]
 
-export type ModelKind = 'Imagem' | 'Vídeo' | 'Texto' | 'Edição'
+export type ModelKind = 'Imagem' | 'Vídeo' | 'Texto' | 'Edição' | 'Voz'
 
 export interface AiModel {
   readonly name: string
   readonly kind: ModelKind
   /** Logo em `public/ai-logos`. Sem logo, a faixa usa o ícone do tipo. */
   readonly logo?: string
+  /** Ainda não integrado: aparece com o selo "Breve" (regra do projeto, nada de prometer o que não existe). */
+  readonly soon?: true
 }
 
 // Catálogo de IAs liberadas no Vynkio. Antes de publicar, cada uma precisa estar
@@ -180,22 +193,16 @@ export const AI_MODELS: readonly AiModel[] = [
   { name: 'Nano Banana 2 Edit', kind: 'Edição', logo: 'nanobanana-color' },
   { name: 'Kling 3.0', kind: 'Vídeo', logo: 'kling-color' },
   { name: 'Veo 3.1', kind: 'Vídeo', logo: 'deepmind-color' },
-  { name: 'Claude', kind: 'Texto' },
-]
-
-export interface UseCase {
-  readonly audience: string
-  readonly example: string
-}
-
-export const USE_CASES: readonly UseCase[] = [
-  { audience: 'Criadores de TikTok e Reels', example: 'Roteiro com gancho nos 3 primeiros segundos e as cenas geradas em vídeo vertical.' },
-  { audience: 'Canais de YouTube', example: 'Pautas para a semana, roteiro de Shorts e imagens para ilustrar o vídeo.' },
-  { audience: 'Influenciadores digitais', example: 'Um personagem com rosto fixo para aparecer em cenários diferentes sem sessão de fotos.' },
-  { audience: 'Afiliados', example: 'Vídeo estilo UGC apresentando o produto, com a legenda escrita junto.' },
-  { audience: 'Infoprodutores', example: 'Copys de anúncio, legenda de lançamento e criativos para testar.' },
-  { audience: 'Pequenos negócios', example: 'Post da semana com foto do cenário, legenda no tom da loja e ideia de story.' },
-  { audience: 'Agências', example: 'Uma marca por cliente, com público e tom salvos. No Studio, até 10 marcas e as criações separadas por projeto.' },
+  { name: 'Claude', kind: 'Texto', logo: 'claude-color' },
+  { name: 'ChatGPT', kind: 'Texto', logo: 'openai', soon: true },
+  { name: 'Gemini', kind: 'Texto', logo: 'gemini-color', soon: true },
+  { name: 'Sora 2', kind: 'Vídeo', logo: 'sora-color', soon: true },
+  { name: 'Seedance', kind: 'Vídeo', logo: 'bytedance-color', soon: true },
+  { name: 'Hailuo', kind: 'Vídeo', logo: 'hailuo-color', soon: true },
+  { name: 'Wan', kind: 'Vídeo', logo: 'alibaba-color', soon: true },
+  { name: 'FLUX', kind: 'Imagem', logo: 'flux', soon: true },
+  { name: 'Ideogram', kind: 'Imagem', logo: 'ideogram', soon: true },
+  { name: 'ElevenLabs', kind: 'Voz', logo: 'elevenlabs', soon: true },
 ]
 
 /** Uma ideia, os entregáveis que saem dela no Vynkio. Cada etapa é uma ferramenta que existe hoje. */
@@ -206,16 +213,6 @@ export const PIPELINE = [
   { step: 'Imagem', tool: 'Studio · Nano Banana 2', text: 'Cada cena do roteiro vira foto com um clique' },
   { step: 'Vídeo', tool: 'Studio · Kling ou Veo', text: 'A foto ganha movimento, áudio ou fala' },
 ] as const
-
-export type AdvancedIcon = 'brands' | 'concurrent' | 'projects' | 'models'
-
-/** Recursos avançados: nome e uma frase, sem print, sem repetir os blocos de cima. */
-export const ADVANCED: readonly { readonly icon: AdvancedIcon; readonly title: string; readonly text: string }[] = [
-  { icon: 'brands', title: 'Marcas com público e tom', text: 'Cadastre a marca uma vez e todo texto sai na voz dela. De 1 marca no Starter a 10 no Studio.' },
-  { icon: 'concurrent', title: 'Várias gerações ao mesmo tempo', text: 'Enquanto um vídeo fica pronto, as próximas fotos já estão saindo. De 3 a 6 ao mesmo tempo, conforme o plano.' },
-  { icon: 'projects', title: 'Meus projetos', text: 'Criações separadas por cliente ou campanha, para quem produz para mais de uma conta. No Studio.' },
-  { icon: 'models', title: 'Modelos de ponta num lugar só', text: 'Nano Banana 2, Kling 3.0, Veo 3.1 e Claude com uma conta e um saldo, sem assinar cada um em dólar.' },
-]
 
 export type FaqIcon = 'beginner' | 'price' | 'time' | 'commercial' | 'cancel' | 'security' | 'notfor' | 'renew' | 'video' | 'extra' | 'empty' | 'switch' | 'tools' | 'business'
 
@@ -230,6 +227,12 @@ export interface FaqItem {
 // seguem as regras implementadas (migrations 0004 a 0018, functions de assinatura,
 // webhook do Asaas e bucket privado). Mudou a regra, muda a resposta.
 export const FAQ: readonly FaqItem[] = [
+  {
+    icon: 'beginner',
+    question: 'Preciso entender de IA ou saber escrever prompt?',
+    answer:
+      'Não. Você descreve o que quer em português, do jeito que falaria com alguém, e escolhe o modelo numa lista. O custo em créditos aparece no botão antes de gerar, então dá para testar sem susto.',
+  },
   {
     icon: 'price',
     question: 'Como funcionam os créditos?',

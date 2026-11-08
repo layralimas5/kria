@@ -21,9 +21,6 @@ function Cell({ value }: { readonly value: string | undefined }) {
       </>
     )
   }
-  if (value === 'soon') {
-    return <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Em breve</span>
-  }
   return <span className="text-zinc-200">{value}</span>
 }
 
