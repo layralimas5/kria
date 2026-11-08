@@ -1,5 +1,8 @@
 # Preços v2: Creator, Business, créditos com proteção de custo
 
+> Continuação em `docs/precos-v3.md` (0019): tarifas oficiais, trava de custo, calculadora, vitrine no banco,
+> virada com aceite de margem e volta. A virada descrita aqui ganhou novas travas lá; o roteiro que vale é o da v3.
+
 **Data:** 07/11/2026 · **Branch:** `feat/vynkio-pricing-v2` (saiu de `feat/vynkio-notificacoes`, que leva o
 Multiplicador e a guarda de gasto) · **Migration:** `0018_pricing_v2.sql`, só aditiva.
 

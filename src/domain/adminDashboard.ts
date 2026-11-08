@@ -38,6 +38,7 @@ export const ADMIN_PERMISSION_LABELS: Readonly<Record<string, string>> = {
   'pricing.manage': 'Alterar câmbio, markup e valor do crédito',
   'audit.view': 'Ver a auditoria',
   'admins.manage': 'Dar e remover acesso à operação',
+  'finance.override': 'Ligar preço abaixo da meta de margem (exceção)',
 }
 
 export const adminMeSchema = z.object({

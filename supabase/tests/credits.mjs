@@ -17,7 +17,7 @@ const SUPABASE_STUBS = [
   `alter default privileges in schema public grant all on tables to anon, authenticated, service_role`,
   `alter default privileges in schema public grant all on functions to anon, authenticated, service_role`,
   `create schema auth`,
-  `create table auth.users (id uuid primary key default gen_random_uuid(), email text, raw_user_meta_data jsonb default '{}'::jsonb)`,
+  `create table auth.users (id uuid primary key default gen_random_uuid(), email text, email_confirmed_at timestamptz default now(), raw_user_meta_data jsonb default '{}'::jsonb)`,
   `create function auth.uid() returns uuid language sql stable as $$ select (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')::uuid $$`,
   `create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb, '{}'::jsonb) $$`,
   `grant usage on schema auth to anon, authenticated, service_role`,
@@ -1167,6 +1167,7 @@ await test('guarda: teto de custo da plataforma vale para todas as contas', asyn
   const ana = await newUser(db, 'ana@x.com')
   const bia = await newUser(db, 'bia@x.com')
   // Foto sem custo cadastrado usa o pior caso: 5 créditos × R$ 0,15 ÷ 5,60 = US$ 0,1339.
+  await db.query(`update models set provider_cost_usd = null where slug = 'foto'`)
   const first = (await create(db, ana, 'foto')).rows[0]
   assert.equal(Number(first.spend_usd), 0.1339)
   await db.query(`update pricing_settings set daily_cost_cap_usd = 0.2`)
@@ -1218,6 +1219,8 @@ await test('guarda: só financeiro vê o custo, só quem gerencia muda teto e li
     await makeAdmin(db, ids[role], role)
   }
   const ana = await newUser(db, 'ana@x.com')
+  // Sem custo cadastrado: entra no pior caso e conta como estimado.
+  await db.query(`update models set provider_cost_usd = null where slug = 'foto'`)
   await create(db, ana, 'foto')
 
   await as(db, 'authenticated', ana, () => expectError(db.query(`select admin_spend_guard()`), 'forbidden'))
@@ -1444,10 +1447,14 @@ await test('preços v2: cotação usa custo × câmbio × segurança ÷ orçamen
     return (await db.query(`select admin_model_quotes() as q`)).rows[0].q
   })
   const bySlug = Object.fromEntries(quotes.models.map((model) => [model.slug, model]))
-  // Sem custo: 5 créditos × R$ 0,09 × 1,15 ÷ R$ 0,01 = 51,75 → 52.
-  assert.equal(bySlug.foto.basis, 'legacy_estimate')
+  // Sem custo (texto ainda sem volume medido): 3 créditos × R$ 0,09 × 1,15 ÷ R$ 0,01 = 31,05 → 32.
+  assert.equal(bySlug.copy.basis, 'legacy_estimate')
+  assert.equal(bySlug.copy.quoted_credits, 32)
+  // Tarifa oficial cadastrada pela 0019 (US$ 0,08 × 5,60 × 1,15 ÷ 0,01 = 51,52 → 52), à espera da conferência.
+  assert.equal(bySlug.foto.basis, 'provider_cost')
   assert.equal(bySlug.foto.quoted_credits, 52)
   assert.equal(bySlug.foto.stale, true)
+  assert.equal(bySlug.foto.trusted, false)
   // Com custo: US$ 0,039 × 5,60 × 1,15 ÷ 0,01 = 25,12 → 26; conferido agora.
   assert.equal(bySlug['foto-persona'].basis, 'provider_cost')
   assert.equal(bySlug['foto-persona'].quoted_credits, 26)
@@ -1455,7 +1462,7 @@ await test('preços v2: cotação usa custo × câmbio × segurança ÷ orçamen
   assert.equal(Number(quotes.settings.safety_factor), 1.15)
 
   await as(db, 'authenticated', ana, async () => {
-    await expectError(db.query(`select admin_confirm_model_cost('foto', 'https://fal.ai/models/x')`), 'cost_required')
+    await expectError(db.query(`select admin_confirm_model_cost('copy', 'https://fal.ai/models/x')`), 'cost_required')
     await expectError(db.query(`select admin_confirm_model_cost('foto-persona', '')`), 'source_required')
     const confirmed = (await db.query(`select cost_source from admin_confirm_model_cost('foto-persona', 'https://fal.ai/models/fal-ai/nano-banana-2/edit')`)).rows[0]
     assert.match(confirmed.cost_source, /^https:\/\/fal\.ai/)
@@ -1477,57 +1484,105 @@ await test('preços v2: boas-vindas vêm da configuração', async (db) => {
   assert.equal(await balanceOf(db, await newUser(db, 'bia@x.com')), 100)
 })
 
-await test('preços v2: virada exige pausa e motivo, converte tudo pelo mesmo fator e não repete', async (db) => {
+/** Tarifa de texto com volume medido e conferência de todo modelo: o mínimo para a virada. */
+async function trustAllModels(db, adminId) {
+  await as(db, 'authenticated', adminId, async () => {
+    const text = (await db.query(`select slug from models where kind = 'text'`)).rows
+    for (const { slug } of text) {
+      await db.query(`select admin_set_model_tariff($1, $2::jsonb, 'https://platform.claude.com/docs/en/about-claude/pricing')`, [
+        slug,
+        JSON.stringify({ unit: 'token', input_usd_per_mtok: 4, output_usd_per_mtok: 20, est_input_tokens: 4000, est_output_tokens: 3000 }),
+      ])
+    }
+    const media = (await db.query(`select slug from models where kind <> 'text'`)).rows
+    for (const { slug } of media) await db.query(`select admin_confirm_model_cost($1, 'https://fal.ai/models (conferido)')`, [slug])
+  })
+}
+
+await test('preços v3: virada exige pausa, motivo, custo confiável e aceite da margem; converte tudo e volta', async (db) => {
   const dona = await newUser(db, 'dona@x.com')
   await makeAdmin(db, dona)
   const ana = await newUser(db, 'ana@x.com')
   const sub = await newSubscription(db, ana, 'pro')
   await activate(db, sub, 'pay_v2')
   const before = await walletOf(db, ana)
-  const run = (welcome, reason = 'Aprovado pela Lay na revisão de preços') =>
-    as(db, 'authenticated', dona, async () => (await db.query(`select admin_activate_pricing_v2($1, $2) as r`, [welcome, reason])).rows[0].r)
+  const run = (reason = 'Aprovado pela Lay na revisão de preços', accept = false) =>
+    as(db, 'authenticated', dona, async () => (await db.query(`select admin_activate_pricing_v2($1, $2) as r`, [reason, accept])).rows[0].r)
+  const preflight = () => as(db, 'authenticated', dona, async () => (await db.query(`select admin_pricing_v2_preflight() as p`)).rows[0].p)
 
-  await expectError(run(10, 'curto'), 'reason_required')
-  await expectError(run(10), 'pause_required')
+  await expectError(run('curto'), 'reason_required')
+  await expectError(run(), 'pause_required')
   const open = (await create(db, ana, 'foto')).rows[0]
   await db.query(`update pricing_settings set generation_paused = true, paused_reason = 'virada de preço'`)
-  await expectError(run(10), 'open_generations')
+  await expectError(run(), 'open_generations')
+  assert.deepEqual((await preflight()).blockers, ['open_generations', 'unverified_models'])
   await db.query(`select fail_generation($1, 'cancelada para a virada')`, [open.id])
+  await expectError(run(), 'unverified_models')
 
-  const result = await run(10)
+  await trustAllModels(db, dona)
+  const check = await preflight()
+  assert.deepEqual(check.blockers, [])
+  assert.deepEqual(check.warnings, ['margin_below_target'])
+  assert.equal(Number(check.factor), 10.35)
+  assert.equal(check.next_welcome_credits, 100)
+  assert.equal(check.wallets.subscription_after, Math.floor(before.subscription_balance * 10.35))
+  // Com o plano usado por inteiro: Start 59,2%, Pro 55,2%, Max 53,3% contra a meta de 60%.
+  assert.deepEqual(check.plans.map((plan) => Number(plan.full_use_margin)), [0.5921, 0.5519, 0.5335])
+  await expectError(run(), 'margin_below_target')
+
+  const result = await run('Aprovado pela Lay abaixo da meta, revisar em 30 dias', true)
   assert.equal(Number(result.factor), 10.35)
   const after = await walletOf(db, ana)
   assert.equal(after.subscription_balance, Math.floor(before.subscription_balance * 10.35))
   assert.equal(after.purchased_balance, Math.floor(before.purchased_balance * 10.35))
-  const last = (await db.query(`select reason from credit_ledger where user_id = $1 order by created_at desc, id desc limit 1`, [ana])).rows[0]
-  assert.equal(last.reason, 'adjustment')
 
   const models = Object.fromEntries((await db.query(`select slug, credits from models`)).rows.map((row) => [row.slug, row.credits]))
   assert.equal(models.foto, 52)
-  assert.equal(models['video-kling'], 414)
-  assert.equal(models.multiplicador, 83)
+  assert.equal(models['video-kling'], 406)
+  assert.equal(models['video-veo'], 2061)
+  // 4.000 tokens de entrada e 3.000 de saída: US$ 0,076 × 5,60 × 1,15 ÷ 0,01 = 48,94 → 49.
+  assert.equal(models.copy, 49)
 
   assert.equal((await db.query(`select monthly_credits from subscriptions where id = $1`, [sub])).rows[0].monthly_credits, Math.floor(450 * 10.35))
-  const plans = Object.fromEntries((await db.query(`select slug, status, public from subscription_plans`)).rows.map((row) => [row.slug, row]))
+  const plans = Object.fromEntries((await db.query(`select slug, status, public, price_cents, monthly_credits from subscription_plans`)).rows.map((row) => [row.slug, row]))
   assert.equal(plans.pro.status, 'legacy')
   assert.equal(plans.pro.public, false)
-  assert.equal(plans.gratis.status, 'live')
   assert.equal(plans['creator-pro'].status, 'live')
   assert.equal(plans['creator-pro'].public, true)
+  assert.equal(plans['creator-pro'].price_cents, 16990)
+  assert.equal(plans['creator-pro'].monthly_credits, 6000)
   assert.equal(plans['business-pro'].status, 'draft')
-  // O plano antigo continua valendo para quem já assina.
   assert.equal((await db.query(`select (effective_plan($1)).slug as s`, [ana])).rows[0].s, 'pro')
 
-  assert.equal(await balanceOf(db, await newUser(db, 'nova@x.com')), 10)
-  const settings = (await db.query(`select credit_scale, credit_value_brl from pricing_settings`)).rows[0]
+  assert.equal(await balanceOf(db, await newUser(db, 'nova@x.com')), 100)
+  const settings = (await db.query(`select credit_scale, credit_value_brl, require_trusted_cost from pricing_settings`)).rows[0]
   assert.equal(settings.credit_scale, 2)
-  assert.equal(Number(settings.credit_value_brl), 0.05)
-  await expectError(run(10), 'already_activated')
-  await expectError(
-    as(db, 'authenticated', dona, () => db.query(`select admin_update_credit_policy(1.15, 0.02, 0.09, 30)`)),
-    'budget_locked_after_activation',
-  )
-  assert.equal((await db.query(`select count(*)::int as n from admin_audit_logs where action = 'pricing.activate_v2'`)).rows[0].n, 1)
+  assert.equal(Number(settings.credit_value_brl), 0.0269)
+  assert.equal(settings.require_trusted_cost, true)
+  await expectError(run(), 'already_activated')
+  const log = (await db.query(`select details, reason from admin_audit_logs where action = 'pricing.activate_v2'`)).rows
+  assert.equal(log.length, 1)
+  assert.deepEqual(log[0].details.below_target_accepted, ['creator-start', 'creator-pro', 'creator-max'])
+
+  // A volta devolve saldos (arredondando a favor da pessoa), modelos, planos e parâmetros.
+  const rollback = (reason = 'Voltando: preço novo gerou reclamação') =>
+    as(db, 'authenticated', dona, async () => (await db.query(`select admin_rollback_pricing_v2($1) as r`, [reason])).rows[0].r)
+  const bia = await newUser(db, 'bia@x.com')
+  const v2sub = await newSubscription(db, bia, 'creator-pro')
+  await activate(db, v2sub, 'pay_v2_bia')
+  await expectError(rollback(), 'v2_subscribers_exist')
+  await db.query(`update subscriptions set status = 'expired' where id = $1`, [v2sub])
+  await rollback()
+  const back = await walletOf(db, ana)
+  assert.equal(back.subscription_balance, before.subscription_balance)
+  assert.equal((await db.query(`select credits from models where slug = 'foto'`)).rows[0].credits, 5)
+  const restored = Object.fromEntries((await db.query(`select slug, status, public from subscription_plans`)).rows.map((row) => [row.slug, row]))
+  assert.deepEqual(restored.pro, { slug: 'pro', status: 'live', public: true })
+  assert.deepEqual(restored['creator-pro'], { slug: 'creator-pro', status: 'draft', public: false })
+  assert.equal((await db.query(`select monthly_credits from subscriptions where id = $1`, [sub])).rows[0].monthly_credits, 450)
+  const settingsBack = (await db.query(`select credit_scale, welcome_credits, require_trusted_cost from pricing_settings`)).rows[0]
+  assert.deepEqual(settingsBack, { credit_scale: 1, welcome_credits: 20, require_trusted_cost: false })
+  await expectError(rollback(), 'not_activated')
 })
 
 await test('preços v2: financeiro soma receita, custo de API, falha cobrada e exportações; só para finance.view', async (db) => {
@@ -1566,6 +1621,196 @@ await test('preços v2: financeiro soma receita, custo de API, falha cobrada e e
   await expectError(as(db, 'authenticated', support, () => db.query(`select admin_finance_settings()`)), 'forbidden')
   await as(db, 'authenticated', dona, () => db.query(`select admin_update_finance_settings(0.08, 50000, 13000, 0, 0, 300000, 0.15, 0.45)`))
   assert.equal(Number((await db.query(`select tax_rate from finance_settings`)).rows[0].tax_rate), 0.08)
+})
+
+// ------------------------------------------------------------ preços v3 (0019)
+
+/** Foto pronta da própria pessoa, para servir de origem a vídeo. */
+async function sourceImage(db, userId) {
+  const { rows } = await create(db, userId, 'foto')
+  await db.query(`select complete_generation($1, $2, 'image/png')`, [rows[0].id, `${userId}/${rows[0].id}.png`])
+  return rows[0].id
+}
+
+const cost = async (db, pricing, params) =>
+  (await db.query(`select operation_cost_usd($1::jsonb, $2::jsonb) as c`, [JSON.stringify(pricing), JSON.stringify(params)])).rows[0].c
+
+await test('preços v3: motor calcula o custo pela tarifa e pela configuração, sem inventar', async (db) => {
+  const image = { unit: 'image', usd: 0.08, resolution_multipliers: { '1K': 1, '2K': 1.5 } }
+  assert.equal(Number(await cost(db, image, { num_images: 1 })), 0.08)
+  assert.equal(Number(await cost(db, image, { num_images: 2, resolution: '2K' })), 0.24)
+  assert.equal(await cost(db, image, { resolution: '8K' }), null)
+  const video = { unit: 'second', usd: 0.084, usd_audio: 0.126 }
+  assert.equal(Number(await cost(db, video, { duration: '5', generate_audio: true })), 0.63)
+  assert.equal(Number(await cost(db, video, { duration: '8s', generate_audio: false })), 0.672)
+  assert.equal(await cost(db, video, { generate_audio: true }), null)
+  const text = { unit: 'token', input_usd_per_mtok: 4, output_usd_per_mtok: 20, est_input_tokens: null, est_output_tokens: null }
+  assert.equal(await cost(db, text, {}), null)
+  assert.equal(Number(await cost(db, { ...text, est_input_tokens: 2000, est_output_tokens: 1000 }, {})), 0.028)
+
+  // Tarifas oficiais da 0019: custo por operação nos `defaults` de cada modelo.
+  const models = Object.fromEntries((await db.query(`select slug, provider_cost_usd, cost_checked_at from models`)).rows.map((row) => [row.slug, row]))
+  assert.equal(Number(models.foto.provider_cost_usd), 0.08)
+  assert.equal(Number(models['video-kling'].provider_cost_usd), 0.63)
+  assert.equal(Number(models['video-veo'].provider_cost_usd), 3.2)
+  assert.equal(models.copy.provider_cost_usd, null)
+  assert.ok(Object.values(models).every((model) => model.cost_checked_at === null))
+})
+
+await test('preços v3: tarifa pelo painel valida, recalcula créditos só para pedidos novos e fica auditada', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const ana = await newUser(db, 'ana@x.com')
+  await activate(db, await newSubscription(db, ana, 'studio'), 'pay_tarifa')
+  const tariff = (slug, pricing, source = 'https://fal.ai/models/fal-ai/kling-video') =>
+    as(db, 'authenticated', dona, async () => (await db.query(`select * from admin_set_model_tariff($1, $2::jsonb, $3)`, [slug, JSON.stringify(pricing), source])).rows[0])
+
+  await expectError(tariff('video-kling', { unit: 'second', usd: -1 }), 'invalid_pricing')
+  await expectError(tariff('video-kling', { unit: 'second', usd: 0.1, extra: 1 }), 'invalid_pricing')
+  await expectError(tariff('copy', { unit: 'second', usd: 0.1 }), 'invalid_pricing')
+  await expectError(tariff('video-kling', { unit: 'second', usd: 0.084, usd_audio: 0.126 }, ''), 'source_required')
+
+  const old = (await create(db, ana, 'video-kling', 'ela sorri', null, await sourceImage(db, ana))).rows[0]
+  await db.query(`update pricing_settings set credit_scale = 2`)
+  const updated = await tariff('video-kling', { unit: 'second', usd: 0.1, usd_audio: 0.2 })
+  // US$ 0,20 × 5 s = US$ 1,00 × 5,60 × 1,15 ÷ 0,01 = 644.
+  assert.equal(Number(updated.provider_cost_usd), 1)
+  assert.equal(updated.credits, 644)
+  assert.ok(updated.cost_checked_at)
+  const kept = (await db.query(`select credits, provider_cost_usd from generations where id = $1`, [old.id])).rows[0]
+  assert.equal(kept.credits, 40)
+  assert.equal(Number(kept.provider_cost_usd), 0.63)
+  const log = (await db.query(`select details from admin_audit_logs where action = 'model.tariff'`)).rows[0].details
+  assert.equal(log.before.credits, 40)
+  assert.equal(log.after.credits, 644)
+
+  const analyst = await newUser(db, 'analista@x.com')
+  await makeAdmin(db, analyst, 'analyst')
+  await expectError(as(db, 'authenticated', analyst, () => db.query(`select admin_set_model_tariff('foto', '{"unit":"image","usd":0.08}', 'https://fal.ai/x')`)), 'forbidden')
+})
+
+await test('preços v3: trava bloqueia modelo sem custo confiável, acima do teto ou com preço mudado no fornecedor', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const ana = await newUser(db, 'ana@x.com')
+  await activate(db, await newSubscription(db, ana, 'studio'), 'pay_trava')
+  const source = await sourceImage(db, ana)
+  const balance = await balanceOf(db, ana)
+
+  // Antes da virada a trava fica desligada: o produto de hoje continua igual.
+  await create(db, ana, 'copy', 'legenda curta')
+  await db.query(`update pricing_settings set require_trusted_cost = true`)
+  const afterFirst = await balanceOf(db, ana)
+  await expectError(create(db, ana, 'copy', 'legenda curta'), 'model_cost_unverified')
+  await expectError(create(db, ana, 'foto'), 'model_cost_unverified')
+  assert.equal(await balanceOf(db, ana), afterFirst)
+  assert.equal(afterFirst, balance - 3)
+
+  await as(db, 'authenticated', dona, () => db.query(`select admin_confirm_model_cost('foto', 'https://fal.ai/models/fal-ai/nano-banana-2')`))
+  await create(db, ana, 'foto')
+
+  // Preço diferente no fornecedor: o modelo sai do ar até o admin rever a tarifa.
+  const priceCheck = (checks) =>
+    as(db, 'authenticated', dona, async () => (await db.query(`select admin_record_price_check($1::jsonb) as r`, [JSON.stringify(checks)])).rows[0].r)
+  const results = await priceCheck([{ endpoint_id: 'fal-ai/nano-banana-2', unit_price: 0.1, unit: 'image', currency: 'USD' }])
+  assert.deepEqual(results.map((row) => [row.slug, row.matches]), [['foto', false]])
+  await expectError(create(db, ana, 'foto'), 'model_cost_unverified')
+  const same = await priceCheck([{ endpoint_id: 'fal-ai/kling-video/v3/standard/image-to-video', unit_price: 0.084, unit: 'second', currency: 'USD' }])
+  assert.equal(same[0].matches, true)
+  await as(db, 'authenticated', dona, () =>
+    db.query(`select admin_set_model_tariff('foto', '{"unit":"image","usd":0.1}', 'https://fal.ai/models/fal-ai/nano-banana-2 (novo preço)')`))
+  await create(db, ana, 'foto')
+
+  // Teto por operação vale sempre, com ou sem trava.
+  await db.query(`update pricing_settings set require_trusted_cost = false, max_operation_cost_usd = 3`)
+  await expectError(create(db, ana, 'video-veo', 'ela acena', null, source), 'operation_cost_above_cap')
+})
+
+await test('preços v3: custo real do texto entra no gasto sem mudar os créditos cobrados', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const text = (await create(db, ana, 'copy', 'legenda para o café')).rows[0]
+  await db.query(`select complete_text_generation($1, '{"title":"x","items":[]}')`, [text.id])
+  const record = (input, output) => db.query(`select record_text_usage($1, $2, $3) as c`, [text.id, input, output])
+  await expectError(record(-1, 10), 'invalid_usage')
+  // 1.800 tokens × US$ 4 + 900 × US$ 20 por milhão. Repetir não reconcilia de novo.
+  assert.equal(Number((await record(1800, 900)).rows[0].c), 0.0252)
+  assert.equal(Number((await record(99999, 99999)).rows[0].c), 0.0252)
+  const row = (await db.query(`select credits, spend_usd, actual_cost_usd, input_tokens, output_tokens from generations where id = $1`, [text.id])).rows[0]
+  assert.deepEqual([row.credits, Number(row.spend_usd), Number(row.actual_cost_usd), row.input_tokens, row.output_tokens], [3, 0.0252, 0.0252, 1800, 900])
+  await expectError(as(db, 'authenticated', ana, () => db.query(`select record_text_usage($1, 1, 1)`, [text.id])), 'permission denied')
+})
+
+await test('preços v3: boas-vindas só com e-mail confirmado, uma vez por e-mail e até o teto do dia', async (db) => {
+  const unconfirmed = (await db.query(`insert into auth.users (email, email_confirmed_at) values ('nova@x.com', null) returning id`)).rows[0].id
+  assert.equal(await balanceOf(db, unconfirmed), 0)
+  await db.query(`update auth.users set email_confirmed_at = now() where id = $1`, [unconfirmed])
+  assert.equal(await balanceOf(db, unconfirmed), 20)
+  await db.query(`update auth.users set email_confirmed_at = now() where id = $1`, [unconfirmed])
+  assert.equal(await balanceOf(db, unconfirmed), 20)
+
+  // Apagar a conta e voltar com o mesmo Gmail escrito de outro jeito não dá crédito de novo.
+  const first = await newUser(db, 'Ana.Lima@gmail.com')
+  assert.equal(await balanceOf(db, first), 20)
+  await db.query(`delete from auth.users where id = $1`, [first])
+  assert.equal(await balanceOf(db, await newUser(db, 'analima+teste@googlemail.com')), 0)
+  assert.equal(await balanceOf(db, await newUser(db, 'ana.lima@outro.com')), 20)
+
+  await db.query(`update pricing_settings set welcome_daily_cap = (select count(*) from welcome_grants where granted_at >= spend_day_start())`)
+  assert.equal(await balanceOf(db, await newUser(db, 'depois-do-teto@x.com')), 0)
+})
+
+await test('preços v3: vitrine lê do banco, sem rascunho de venda direta nem custo, e bate com o checkout', async (db) => {
+  const read = async () => as(db, 'anon', null, async () => (await db.query(`select storefront_plans() as s`)).rows[0].s)
+  const before = await read()
+  assert.deepEqual(before.plans.map((plan) => plan.slug), ['gratis', 'business-start', 'business-pro', 'business-scale', 'enterprise'])
+  assert.equal(before.welcome_credits, 20)
+  assert.ok(before.plans.filter((plan) => plan.line === 'business').every((plan) => plan.cta === 'contact'))
+  const enterprise = before.plans.find((plan) => plan.slug === 'enterprise')
+  assert.deepEqual([enterprise.price_cents, enterprise.monthly_credits, enterprise.seats], [null, null, null])
+  assert.ok(before.plans.every((plan) => !('ai_budget_cents' in plan) && !('provider_cost_usd' in plan)))
+
+  // Depois da virada, os Creator entram com os números da tabela de planos, a mesma do checkout.
+  await db.query(`update pricing_settings set credit_scale = 2`)
+  await db.query(`update subscription_plans set status = 'legacy', public = false where slug in ('starter', 'pro', 'studio')`)
+  await db.query(`update subscription_plans set status = 'live', active = true, public = true where slug like 'creator-%'`)
+  const after = await read()
+  const creator = after.plans.filter((plan) => plan.slug.startsWith('creator-'))
+  assert.deepEqual(creator.map((plan) => [plan.slug, plan.price_cents, plan.monthly_credits, plan.exports_month, plan.highlight, plan.cta]), [
+    ['creator-start', 7990, 2500, 40, false, 'subscribe'],
+    ['creator-pro', 16990, 6000, 150, true, 'subscribe'],
+    ['creator-max', 34990, 13000, 400, false, 'subscribe'],
+  ])
+  const sold = (await db.query(`select slug, price_cents, monthly_credits from subscription_plans where public and status = 'live' order by position`)).rows
+  assert.deepEqual(sold, creator.map((plan) => ({ slug: plan.slug, price_cents: plan.price_cents, monthly_credits: plan.monthly_credits })))
+  assert.ok(creator.every((plan) => !plan.features.some((feature) => /\d\.\d{3}/.test(feature))))
+})
+
+await test('preços v3: rascunho muda pelo painel com motivo; plano no ar não; margem usa a escala certa', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const update = (slug, price, credits, exports, budget, reason = 'Calculadora: meta de 60%') =>
+    as(db, 'authenticated', dona, async () => (await db.query(`select * from admin_update_draft_plan($1, $2, $3, $4, $5, $6)`, [slug, price, credits, exports, budget, reason])).rows[0])
+
+  await expectError(update('pro', 7990, 450, 150, 0), 'plan_not_draft')
+  await expectError(update('creator-pro', 16990, -5, 150, 5100), 'invalid_plan_values')
+  await expectError(update('creator-pro', 16990, 5100, 150, 5100, ''), 'reason_required')
+  const plan = await update('creator-pro', 16990, 5100, 150, 5100)
+  assert.deepEqual([plan.monthly_credits, plan.daily_credit_limit, plan.monthly_credit_limit, plan.status, plan.public], [5100, 5100, 25500, 'draft', false])
+  assert.equal((await db.query(`select ai_budget_cents from plan_cost_budgets where plan_slug = 'creator-pro'`)).rows[0].ai_budget_cents, 5100)
+  const log = (await db.query(`select details from admin_audit_logs where action = 'plan.draft_update'`)).rows[0]
+  assert.equal(Number(log.details.after.full_use_margin), 0.6048)
+
+  const economics = await as(db, 'authenticated', dona, async () => (await db.query(`select admin_plan_economics() as e`)).rows[0].e)
+  const bySlug = Object.fromEntries(economics.plans.map((row) => [row.slug, row]))
+  // Plano no ar ainda na escala atual: 300 créditos × R$ 0,09 × 1,15 = R$ 31,05 de IA no uso integral.
+  assert.equal(Number(bySlug.starter.full_use_margin), 0.3866)
+  assert.equal(Number(bySlug['creator-pro'].full_use_margin), 0.6048)
+  assert.equal(economics.models.find((model) => model.slug === 'foto').quoted_credits, 52)
+
+  const finance = await newUser(db, 'fin@x.com')
+  await makeAdmin(db, finance, 'finance')
+  await expectError(as(db, 'authenticated', finance, () => db.query(`select admin_update_draft_plan('creator-pro', 1, 1, 1, 1, 'tentativa')`)), 'forbidden')
+  assert.ok(await as(db, 'authenticated', finance, async () => (await db.query(`select admin_plan_economics() as e`)).rows[0].e))
 })
 
 console.log(`\n${passed} testes do banco passaram`)

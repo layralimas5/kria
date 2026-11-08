@@ -10,7 +10,17 @@ import { moneyInput, parseMoneyCents, parsePercent, percentInput } from './input
 
 type Draft = Record<keyof FinanceSettings, string>
 
-const MONEY_FIELDS = ['fixed_costs_cents', 'infra_costs_cents', 'storage_costs_cents', 'render_cost_cents_per_export', 'pro_labore_cents'] as const
+const MONEY_FIELDS = [
+  'fixed_costs_cents',
+  'infra_costs_cents',
+  'storage_costs_cents',
+  'render_cost_cents_per_export',
+  'pro_labore_cents',
+  'payment_fee_fixed_cents',
+  'storage_cents_per_subscriber',
+  'transfer_cents_per_subscriber',
+  'other_variable_cents_per_subscriber',
+] as const
 const RATE_FIELDS = ['tax_rate', 'reserve_rate', 'min_margin_rate'] as const
 
 const LABELS: Record<keyof FinanceSettings, { readonly label: string; readonly hint: string }> = {
@@ -21,7 +31,11 @@ const LABELS: Record<keyof FinanceSettings, { readonly label: string; readonly h
   render_cost_cents_per_export: { label: 'Custo por exportação (R$)', hint: 'Zero enquanto a montagem roda no navegador.' },
   pro_labore_cents: { label: 'Pró-labore por mês (R$)', hint: 'Sai antes do lucro distribuível.' },
   reserve_rate: { label: 'Reserva (% do resultado)', hint: 'Fica no caixa antes de distribuir.' },
-  min_margin_rate: { label: 'Margem mínima (%)', hint: 'Abaixo disso o painel alerta.' },
+  min_margin_rate: { label: 'Meta de margem de contribuição (%)', hint: 'Com o plano usado por inteiro. Abaixo disso o painel alerta e a virada pede aceite.' },
+  payment_fee_fixed_cents: { label: 'Taxa fixa por cobrança (R$)', hint: 'Parte fixa da tarifa do Asaas, se houver.' },
+  storage_cents_per_subscriber: { label: 'Armazenamento por assinante (R$/mês)', hint: 'Custo variável de storage das mídias.' },
+  transfer_cents_per_subscriber: { label: 'Transferência por assinante (R$/mês)', hint: 'Download e exibição das mídias.' },
+  other_variable_cents_per_subscriber: { label: 'Outros variáveis por assinante (R$/mês)', hint: 'E-mail, filas, o que cresce com a base.' },
 }
 
 function toDraft(settings: FinanceSettings): Draft {
@@ -34,6 +48,10 @@ function toDraft(settings: FinanceSettings): Draft {
     pro_labore_cents: moneyInput(settings.pro_labore_cents),
     reserve_rate: percentInput(settings.reserve_rate),
     min_margin_rate: percentInput(settings.min_margin_rate),
+    payment_fee_fixed_cents: moneyInput(settings.payment_fee_fixed_cents),
+    storage_cents_per_subscriber: moneyInput(settings.storage_cents_per_subscriber),
+    transfer_cents_per_subscriber: moneyInput(settings.transfer_cents_per_subscriber),
+    other_variable_cents_per_subscriber: moneyInput(settings.other_variable_cents_per_subscriber),
   }
 }
 

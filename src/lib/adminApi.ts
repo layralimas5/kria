@@ -4,10 +4,11 @@
 import { z } from 'zod'
 import { adminMeSchema, adminRoleSchema, dashboardSchema, type AdminMe, type AdminRole, type Period } from '@/domain/adminDashboard'
 import { financeSchema, financeSettingsSchema, type FinanceSettings } from '@/domain/finance'
-import { modelQuotesSchema } from '@/domain/creditPolicy'
+import { modelQuotesSchema, preflightSchema, type Tariff } from '@/domain/creditPolicy'
+import { economicsSchema } from '@/domain/planEconomics'
 import { spendGuardSchema } from '@/domain/spendGuard'
 import { ledgerReasonSchema, subscriptionStatusSchema } from '@/domain/types'
-import { ApiError } from './api'
+import { ApiError, invoke } from './api'
 import { supabase } from './supabase'
 
 const ADMIN_ERRORS: Record<string, string> = {
@@ -34,6 +35,16 @@ const ADMIN_ERRORS: Record<string, string> = {
   source_required: 'Cole o link da página de preço do fornecedor.',
   cost_required: 'Cadastre o custo do fornecedor antes de confirmar.',
   budget_locked_after_activation: 'Depois da virada, o orçamento por crédito não muda pelo painel.',
+  unverified_models: 'Há modelo ativo sem custo conferido. Cadastre a tarifa ou desligue o modelo antes da virada.',
+  margin_below_target: 'Algum plano novo fica abaixo da meta de margem. Revise na calculadora ou aceite o risco explicitamente.',
+  invalid_pricing: 'Tarifa inválida. Confira a unidade e os valores (texto cobra por token; foto e vídeo, por imagem ou segundo).',
+  plan_not_draft: 'Só plano em rascunho muda por aqui. Plano no ar muda pela virada.',
+  invalid_plan_values: 'Confira preço, créditos, exportações e orçamento: nenhum pode ser negativo.',
+  rollback_reason_required: 'Escreva o motivo da volta (pelo menos 10 caracteres).',
+  not_activated: 'Os preços v2 não estão ligados.',
+  snapshot_not_found: 'Não há foto da virada para voltar.',
+  v2_subscribers_exist: 'Já há assinante em plano novo. A volta pelo painel ficou travada; fale com o suporte técnico.',
+  invalid_checks: 'Resposta do fornecedor fora do formato.',
 }
 
 async function rpc<T>(name: string, args: Record<string, unknown>, schema: z.ZodType<T, z.ZodTypeDef, unknown>): Promise<T> {
@@ -294,6 +305,10 @@ export const updateFinanceSettings = (settings: FinanceSettings) =>
       p_pro_labore_cents: settings.pro_labore_cents,
       p_reserve_rate: settings.reserve_rate,
       p_min_margin_rate: settings.min_margin_rate,
+      p_payment_fee_fixed_cents: settings.payment_fee_fixed_cents,
+      p_storage_cents_per_subscriber: settings.storage_cents_per_subscriber,
+      p_transfer_cents_per_subscriber: settings.transfer_cents_per_subscriber,
+      p_other_variable_cents_per_subscriber: settings.other_variable_cents_per_subscriber,
     },
     financeSettingsSchema,
   )
@@ -321,5 +336,74 @@ export const updateCreditPolicy = (update: CreditPolicyUpdate) =>
 
 export const confirmModelCost = (slug: string, source: string) => rpc('admin_confirm_model_cost', { p_slug: slug, p_source: source }, z.unknown())
 
-export const activatePricingV2 = (welcomeCredits: number, reason: string) =>
-  rpc('admin_activate_pricing_v2', { p_welcome_credits: welcomeCredits, p_reason: reason }, z.object({ factor: numeric, wallets: numeric }))
+// ------------------------------------------------------ preços v3 (0019)
+
+export const fetchPlanEconomics = () => rpc('admin_plan_economics', {}, economicsSchema)
+
+export interface DraftPlanUpdate {
+  readonly slug: string
+  readonly priceCents: number
+  readonly monthlyCredits: number
+  readonly exportsPerMonth: number | null
+  readonly aiBudgetCents: number
+  readonly reason: string
+}
+
+export const updateDraftPlan = (update: DraftPlanUpdate) =>
+  rpc(
+    'admin_update_draft_plan',
+    {
+      p_slug: update.slug,
+      p_price_cents: update.priceCents,
+      p_monthly_credits: update.monthlyCredits,
+      p_max_exports_month: update.exportsPerMonth,
+      p_ai_budget_cents: update.aiBudgetCents,
+      p_reason: update.reason,
+    },
+    z.unknown(),
+  )
+
+export const setModelTariff = (slug: string, tariff: Tariff, source: string) =>
+  rpc('admin_set_model_tariff', { p_slug: slug, p_pricing: tariff, p_source: source }, z.unknown())
+
+export interface CostGuardUpdate {
+  readonly maxOperationCostUsd: number
+  readonly nextWelcomeCredits: number
+  readonly welcomeDailyCap: number
+  readonly priceDriftTolerance: number
+}
+
+export const updateCostGuard = (update: CostGuardUpdate) =>
+  rpc(
+    'admin_update_cost_guard',
+    {
+      p_max_operation_cost_usd: update.maxOperationCostUsd,
+      p_next_welcome_credits: update.nextWelcomeCredits,
+      p_welcome_daily_cap: update.welcomeDailyCap,
+      p_price_drift_tolerance: update.priceDriftTolerance,
+    },
+    z.unknown(),
+  )
+
+const priceCheckSchema = z.object({
+  checked: z.array(z.object({ slug: z.string(), observed: numeric.nullable(), stored: z.array(numeric), matches: z.boolean() })),
+  missing: z.array(z.string()),
+})
+export type PriceCheck = z.infer<typeof priceCheckSchema>
+
+/** Consulta a API de preço do fal (sem gerar nada) e marca modelo com preço mudado. Function `pricing-check`. */
+export async function runPriceCheck(): Promise<PriceCheck> {
+  return priceCheckSchema.parse(await invoke('pricing-check', {}))
+}
+
+export const fetchPreflight = () => rpc('admin_pricing_v2_preflight', {}, preflightSchema)
+
+export const activatePricingV2 = (reason: string, acceptBelowTarget: boolean) =>
+  rpc(
+    'admin_activate_pricing_v2',
+    { p_reason: reason, p_accept_below_target: acceptBelowTarget },
+    z.object({ factor: numeric, wallets: numeric, snapshot: z.string() }),
+  )
+
+export const rollbackPricingV2 = (reason: string) =>
+  rpc('admin_rollback_pricing_v2', { p_reason: reason }, z.object({ snapshot: z.string(), wallets: numeric }))

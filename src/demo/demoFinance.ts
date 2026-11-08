@@ -2,6 +2,7 @@
 // contrato e as mesmas recusas das funções do banco, calculados sobre o estado do navegador.
 
 import type { DemoState, Row } from './demoData'
+import { fullUseMarginOf, modelTrusted, policyOf } from './demoPricingV3'
 
 const FINANCE_DEFAULTS: Row = {
   tax_rate: 0.06,
@@ -11,10 +12,12 @@ const FINANCE_DEFAULTS: Row = {
   render_cost_cents_per_export: 0,
   pro_labore_cents: 0,
   reserve_rate: 0.1,
-  min_margin_rate: 0.4,
+  min_margin_rate: 0.6,
+  payment_fee_fixed_cents: 0,
+  storage_cents_per_subscriber: 0,
+  transfer_cents_per_subscriber: 0,
+  other_variable_cents_per_subscriber: 0,
 }
-
-const POLICY_DEFAULTS = { credit_budget_brl: 0.01, safety_factor: 1.15, legacy_cost_per_credit_brl: 0.09, cost_stale_days: 30, welcome_credits: 20, credit_scale: 1 }
 const STALE_MINUTES = 30
 
 const monthStart = () => {
@@ -28,10 +31,6 @@ export const isRefusal = (value: unknown): value is Refusal => typeof value === 
 
 export function financeSettings(state: DemoState): Row {
   return { ...FINANCE_DEFAULTS, ...(state.finance ?? {}) }
-}
-
-function policy(state: DemoState) {
-  return { ...POLICY_DEFAULTS, ...state.pricing } as typeof POLICY_DEFAULTS & Row
 }
 
 function exportsUsed(state: DemoState): number {
@@ -66,13 +65,21 @@ export function startExport(state: DemoState, plan: Row, body: Row): Row | Refus
 export function settleExport(state: DemoState, body: Row, status: 'done' | 'failed'): boolean {
   const row = state.multiplierExports.find((item) => item.id === body.p_export_id && item.status === 'started')
   if (!row) return false
-  Object.assign(row, { status, finished_at: new Date().toISOString(), render_ms: body.p_render_ms ?? null, bytes: body.p_bytes ?? null })
+  Object.assign(row, {
+    status,
+    finished_at: new Date().toISOString(),
+    render_ms: body.p_render_ms ?? null,
+    bytes: body.p_bytes ?? null,
+    duration_seconds: body.p_duration_seconds ?? null,
+    width: body.p_width ?? null,
+    height: body.p_height ?? null,
+  })
   return true
 }
 
 /** Mesma conta do banco: custo (US$ × câmbio) ou preço atual × custo do crédito, × segurança ÷ orçamento. */
 export function modelQuotes(state: DemoState): Row {
-  const settings = policy(state)
+  const settings = policyOf(state)
   const usdBrl = Number(settings.usd_brl)
   return {
     settings: {
@@ -84,6 +91,11 @@ export function modelQuotes(state: DemoState): Row {
       credit_scale: settings.credit_scale,
       scale_activated_at: null,
       welcome_credits: settings.welcome_credits,
+      next_welcome_credits: settings.next_welcome_credits,
+      require_trusted_cost: settings.require_trusted_cost,
+      max_operation_cost_usd: settings.max_operation_cost_usd,
+      welcome_daily_cap: settings.welcome_daily_cap,
+      price_drift_tolerance: settings.price_drift_tolerance,
     },
     models: state.models.map((model) => {
       const cost = model.provider_cost_usd === null || model.provider_cost_usd === undefined ? null : Number(model.provider_cost_usd)
@@ -106,6 +118,14 @@ export function modelQuotes(state: DemoState): Row {
         protected_brl: Number((estimated * settings.safety_factor).toFixed(4)),
         quoted_credits: Math.max(1, Math.ceil(Number(((estimated * settings.safety_factor) / settings.credit_budget_brl).toFixed(6)))),
         stale: checkedAt === null || Date.now() - new Date(checkedAt).getTime() > settings.cost_stale_days * 86_400_000,
+        pricing: model.pricing ?? null,
+        cost_drift_at: model.cost_drift_at ?? null,
+        cost_drift_note: model.cost_drift_note ?? null,
+        trusted: modelTrusted(model, settings.cost_stale_days),
+        avg_input_tokens: null,
+        avg_output_tokens: null,
+        max_output_tokens: null,
+        reconciled: 0,
       }
     }),
   }
@@ -140,6 +160,7 @@ export function demoFinance(state: DemoState, users: readonly Row[], from: Date,
     usd_brl: usdBrl,
     payment_fee_rate: 0.035,
     credit_scale: 1,
+    credit_budget_brl: 0.01,
     settings: financeSettings(state),
     revenue_cents: revenue,
     revenue_previous_cents: revenuePrevious,
@@ -150,16 +171,26 @@ export function demoFinance(state: DemoState, users: readonly Row[], from: Date,
     api_cost_previous_usd: 0,
     api_cost_estimated_count: billed.filter((item) => item.provider_cost_usd === null || item.provider_cost_usd === undefined).length,
     failed_billed_usd: 0,
+    credits_consumed: billed.reduce((sum, item) => sum + Number(item.credits), 0),
     exports_done: exportsDone.length,
+    exports_failed: state.multiplierExports.filter((item) => item.status === 'failed' && inPeriod(item.created_at)).length,
     export_render_ms: exportsDone.reduce((sum, item) => sum + Number(item.render_ms ?? 0), 0),
     export_bytes: exportsDone.reduce((sum, item) => sum + Number(item.bytes ?? 0), 0),
+    export_seconds: exportsDone.reduce((sum, item) => sum + Number(item.duration_seconds ?? 0), 0),
+    export_resolutions: exportsDone.reduce<Record<string, number>>((sizes, item) => {
+      if (item.width && item.height) sizes[`${item.width}x${item.height}`] = (sizes[`${item.width}x${item.height}`] ?? 0) + 1
+      return sizes
+    }, {}),
     by_plan: state.plans.map((plan) => ({
       slug: plan.slug,
       name: plan.name,
       line: plan.line ?? 'creator',
       status: plan.status ?? 'live',
       price_cents: plan.price_cents,
-      ai_budget_cents: null,
+      monthly_credits: plan.monthly_credits,
+      max_exports_month: plan.max_exports_month ?? null,
+      ai_budget_cents: state.planBudgets[String(plan.slug)] ?? null,
+      full_use_margin: fullUseMarginOf(state, plan.slug),
       subscribers: live.filter((item) => item.plan_slug === plan.slug).length,
       mrr_cents: live.filter((item) => item.plan_slug === plan.slug).reduce((sum, item) => sum + Number(item.price_cents ?? 0), 0),
       revenue_cents: payments
@@ -194,11 +225,14 @@ export function demoFinance(state: DemoState, users: readonly Row[], from: Date,
         provider_cost_usd: model.provider_cost_usd ?? null,
         cost_checked_at: model.cost_checked_at ?? null,
         stale: !model.cost_checked_at,
+        trusted: modelTrusted(model, 30),
         total: mine.length,
         failed: mine.filter((item) => item.status === 'failed').length,
         billed: ok.length,
         credits: ok.reduce((sum, item) => sum + Number(item.credits), 0),
         cost_usd: Number(ok.reduce((sum, item) => sum + costOf(item), 0).toFixed(4)),
+        quoted_cost_usd: Number(ok.reduce((sum, item) => sum + costOf(item), 0).toFixed(4)),
+        reconciled: 0,
         estimated: ok.filter((item) => item.provider_cost_usd === null || item.provider_cost_usd === undefined).length,
         deficit: 0,
       }

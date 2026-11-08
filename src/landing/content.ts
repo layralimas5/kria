@@ -2,12 +2,12 @@
 // e são conferidos contra as migrations nos testes de lá.
 import avatarSpecs from './avatars.json'
 import generatedMedia from './avatars.generated.json'
-import { WELCOME_CREDITS_V2 } from './pricing/catalogV2'
 import { PRICING_V2 } from './pricing/flags'
+import { WELCOME_CREDITS_V3 } from './pricing/storefront'
 
 export const SIGNUP_PATH = '/entrar'
-/** Boas-vindas da conta nova: 20 na escala atual; na v2, o valor escolhido na virada. */
-export const WELCOME_CREDITS = PRICING_V2 ? WELCOME_CREDITS_V2 : 20
+/** Boas-vindas da conta nova: 20 na escala atual; com a vitrine nova, o da proposta v3 (conferido contra a 0019). */
+export const WELCOME_CREDITS = PRICING_V2 ? WELCOME_CREDITS_V3 : 20
 
 /** Seção "Seus dados" dos termos, linkada como Privacidade no rodapé. */
 export const PRIVACY_ANCHOR = 'seus-dados'

@@ -15,7 +15,7 @@ import {
   SYSTEM_PROMPT,
   type BrandContext,
 } from '../_shared/assistant.ts'
-import { ClaudeError, generateText } from '../_shared/claude.ts'
+import { ClaudeError, generateText, recordUsage } from '../_shared/claude.ts'
 import { providerFor } from '../_shared/providers.ts'
 import { checkPrompt } from '../_shared/generation.ts'
 import {
@@ -113,7 +113,7 @@ Deno.serve(
       })
       const output = parseAssistantOutput(result.json)
       if (!output) throw new ClaudeError('saída fora do formato', 'A resposta veio incompleta. Tente de novo.')
-      console.log('assistant usage', body.tool, result.usage)
+      await recordUsage(admin, generation.id, result.usage)
 
       const { error: completeError } = await admin.rpc('complete_text_generation', {
         p_id: generation.id,

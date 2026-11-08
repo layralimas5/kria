@@ -5,8 +5,8 @@ import { formatBRL } from '@/domain/format'
 import { track } from '@/lib/analytics'
 import { SIGNUP_PATH } from '../content'
 import { CARD_HOVER } from '../styles'
-import type { V2Plan } from './catalogV2'
 import { subscribePath } from './PlanCard'
+import type { StorefrontPlan } from './storefront'
 
 const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL
 
@@ -17,7 +17,7 @@ const LIGHT = 'bg-zinc-50 text-zinc-950 shadow-[0_3px_0_0_#a1a1aa] hover:bg-whit
 
 const number = (value: number) => value.toLocaleString('pt-BR')
 
-function PlanAction({ plan }: { readonly plan: V2Plan }) {
+function PlanAction({ plan }: { readonly plan: StorefrontPlan }) {
   const tone = plan.highlight ? ACCENT : LIGHT
   if (plan.cta === 'contact') {
     if (!CONTACT_EMAIL) {
@@ -44,11 +44,11 @@ function PlanAction({ plan }: { readonly plan: V2Plan }) {
   )
 }
 
-/** Card de plano v2: preço, créditos, exportações, usuários, o que tem, o que não tem e a ação. */
-export function PlanCardV2({ plan }: { readonly plan: V2Plan }) {
+/** Card de plano da vitrine: tudo vem de `storefront_plans`, nada de número fixo aqui. */
+export function PlanCardV2({ plan }: { readonly plan: StorefrontPlan }) {
   const titleId = `plano-${plan.slug}`
-  const available = plan.features.filter((feature) => !feature.soon)
-  const upcoming = plan.features.filter((feature) => feature.soon)
+  const available = plan.features
+  const upcoming = plan.soon_features
   const free = plan.price_cents === 0
 
   return (
@@ -66,7 +66,7 @@ export function PlanCardV2({ plan }: { readonly plan: V2Plan }) {
       <h3 id={titleId} className="font-landing text-xl font-bold uppercase tracking-[-0.02em] text-zinc-50">
         {plan.name}
       </h3>
-      <p className="mt-1.5 min-h-[2.5rem] text-pretty text-sm text-zinc-400">{plan.tagline}</p>
+      <p className="mt-1.5 min-h-[2.5rem] text-pretty text-sm text-zinc-400">{plan.tagline ?? ''}</p>
 
       <p className="mt-5 flex items-baseline gap-1">
         <span className="font-landing text-[2.4rem] font-bold leading-none tracking-[-0.045em] text-zinc-50">
@@ -96,18 +96,18 @@ export function PlanCardV2({ plan }: { readonly plan: V2Plan }) {
 
       <ul className="mt-6 space-y-2.5 border-t border-white/[0.06] pt-5 text-sm" aria-label={`O que vem no ${plan.name}`}>
         {available.map((feature) => (
-          <li key={feature.label} className="flex gap-2.5 text-zinc-200">
+          <li key={feature} className="flex gap-2.5 text-zinc-200">
             <Check className="mt-0.5 size-4 shrink-0 text-accent-soft" aria-hidden="true" />
-            {feature.label}
+            {feature}
           </li>
         ))}
       </ul>
       {upcoming.length > 0 && (
         <ul className="mt-3 space-y-2 text-sm" aria-label="Chegando em breve">
           {upcoming.map((feature) => (
-            <li key={feature.label} className="flex items-center gap-2.5 text-zinc-500">
+            <li key={feature} className="flex items-center gap-2.5 text-zinc-500">
               <Clock className="size-4 shrink-0" aria-hidden="true" />
-              <span className="flex-1">{feature.label}</span>
+              <span className="flex-1">{feature}</span>
               <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Em breve</span>
             </li>
           ))}

@@ -4,7 +4,7 @@
 // A montagem dos vídeos acontece no navegador; aqui só nasce o roteiro.
 
 import { z } from 'npm:zod@3'
-import { ClaudeError, generateText } from '../_shared/claude.ts'
+import { ClaudeError, generateText, recordUsage } from '../_shared/claude.ts'
 import { effortFrom } from '../_shared/assistant.ts'
 import { checkPrompt } from '../_shared/generation.ts'
 import {
@@ -95,7 +95,7 @@ Deno.serve(
       })
       const output = parseMultiplierOutput(result.json, project.takes, body.count)
       if (!output) throw new ClaudeError('saída fora do formato', 'Os roteiros vieram incompletos. Tente de novo.')
-      console.log('multiplier usage', body.count, result.usage)
+      await recordUsage(admin, generation.id, result.usage)
 
       const { error: completeError } = await admin.rpc('complete_multiplier_batch', {
         p_generation_id: generation.id,

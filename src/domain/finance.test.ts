@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { financeAlerts, financeStatement, simulate, statementOf, userProfitability, type Finance, type FinanceSettings } from './finance'
+import {
+  CONSUMPTION_PROFILES,
+  financeAlerts,
+  financeStatement,
+  scenarioUsage,
+  simulate,
+  statementOf,
+  userProfitability,
+  type Finance,
+  type FinanceSettings,
+  type SimulatorInput,
+} from './finance'
 
 const SETTINGS: FinanceSettings = {
   tax_rate: 0.06,
@@ -10,6 +21,10 @@ const SETTINGS: FinanceSettings = {
   pro_labore_cents: 300_000,
   reserve_rate: 0.1,
   min_margin_rate: 0.4,
+  payment_fee_fixed_cents: 0,
+  storage_cents_per_subscriber: 0,
+  transfer_cents_per_subscriber: 0,
+  other_variable_cents_per_subscriber: 0,
 }
 
 function finance(overrides: Partial<Finance> = {}): Finance {
@@ -18,6 +33,7 @@ function finance(overrides: Partial<Finance> = {}): Finance {
     usd_brl: 5.6,
     payment_fee_rate: 0.035,
     credit_scale: 1,
+    credit_budget_brl: 0.01,
     settings: SETTINGS,
     revenue_cents: 1_000_000,
     revenue_previous_cents: 800_000,
@@ -28,9 +44,13 @@ function finance(overrides: Partial<Finance> = {}): Finance {
     api_cost_previous_usd: 200,
     api_cost_estimated_count: 0,
     failed_billed_usd: 0,
+    credits_consumed: 0,
     exports_done: 300,
+    exports_failed: 0,
     export_render_ms: 0,
     export_bytes: 0,
+    export_seconds: 0,
+    export_resolutions: {},
     by_plan: [],
     by_user: [],
     by_model: [],
@@ -78,7 +98,18 @@ describe('financeStatement', () => {
 })
 
 describe('financeAlerts', () => {
-  const model = { slug: 'foto', name: 'Nano Banana 2', provider: 'fal', kind: 'image', current_credits: 5, provider_cost_usd: null, cost_checked_at: null }
+  const model = {
+    slug: 'foto',
+    name: 'Nano Banana 2',
+    provider: 'fal',
+    kind: 'image',
+    current_credits: 5,
+    provider_cost_usd: null,
+    cost_checked_at: null,
+    trusted: false,
+    quoted_cost_usd: 0,
+    reconciled: 0,
+  }
 
   it('avisa preço velho, operação deficitária, falha demais, margem baixa e custo crescendo', () => {
     const alerts = financeAlerts(
@@ -121,38 +152,58 @@ describe('userProfitability', () => {
 })
 
 describe('simulate', () => {
-  const input = {
+  const mixed = CONSUMPTION_PROFILES.find((profile) => profile.id === 'mixed')!
+  const input: SimulatorInput = {
     plans: [
-      { name: 'Creator Start', priceCents: 6990, subscribers: 40, monthlyCredits: 1000, exportsPerMonth: 40, aiBudgetCents: 1000 },
-      { name: 'Creator Pro', priceCents: 14_990, subscribers: 50, monthlyCredits: 2500, exportsPerMonth: 150, aiBudgetCents: 2500 },
-      { name: 'Creator Max', priceCents: 29_990, subscribers: 10, monthlyCredits: 6000, exportsPerMonth: 400, aiBudgetCents: 6000 },
+      { name: 'Creator Start', priceCents: 7990, subscribers: 40, monthlyCredits: 2500, exportsPerMonth: 40, aiBudgetCents: 2500 },
+      { name: 'Creator Pro', priceCents: 16_990, subscribers: 50, monthlyCredits: 6000, exportsPerMonth: 150, aiBudgetCents: 6000 },
+      { name: 'Creator Max', priceCents: 34_990, subscribers: 10, monthlyCredits: 13_000, exportsPerMonth: 400, aiBudgetCents: 13_000 },
     ],
-    usageRate: 0.5,
-    aiCostPerCreditCents: 0.87,
+    profile: mixed,
+    aiCostPerCreditCents: 1,
     editCostCentsPerExport: 0,
     paymentFeeRate: 0.035,
+    paymentFeeFixedCents: 0,
+    storageCentsPerGb: 0,
+    transferCentsPerGb: 0,
+    otherVariableCentsPerSubscriber: 0,
     settings: SETTINGS,
     acquisitionCents: 100_000,
     supportCents: 0,
   }
 
-  it('monta os três cenários com receita, custo e ponto de equilíbrio', () => {
-    const [conservative, expected, heavy] = simulate(input)
-    expect(expected!.subscribers).toBe(100)
-    expect(expected!.revenueCents).toBe(40 * 6990 + 50 * 14_990 + 10 * 29_990)
-    expect(heavy!.statement.apiCostCents).toBeGreaterThan(expected!.statement.apiCostCents)
-    expect(conservative!.subscribers).toBe(70)
-    expect(expected!.breakEvenSubscribers).toBeGreaterThan(0)
-    expect(expected!.breakEvenWithProLaboreSubscribers!).toBeGreaterThan(expected!.breakEvenSubscribers!)
+  it('monta 25%, 60% e 100% com receita, custo e ponto de equilíbrio', () => {
+    const [low, mid, full] = simulate(input)
+    expect([low!.utilization, mid!.utilization, full!.utilization]).toEqual([0.25, 0.6, 1])
+    expect(mid!.revenueCents).toBe(40 * 7990 + 50 * 16_990 + 10 * 34_990)
+    expect(low!.statement.apiCostCents).toBeLessThan(mid!.statement.apiCostCents)
+    expect(mid!.breakEvenWithProLaboreSubscribers!).toBeGreaterThan(mid!.breakEvenSubscribers!)
+  })
+
+  it('100% usa todo benefício, qualquer que seja o perfil', () => {
+    const multiplier = CONSUMPTION_PROFILES.find((profile) => profile.id === 'multiplier')!
+    const full = simulate({ ...input, profile: multiplier })[2]!
+    expect([full.creditUse, full.exportUse]).toEqual([1, 1])
+    expect(full.statement.apiCostCents).toBe(40 * 2500 + 50 * 6000 + 10 * 13_000)
+    expect(scenarioUsage(0.6, multiplier)).toEqual({ credits: 0.18, exports: 0.6 })
   })
 
   it('custo de IA nunca passa do orçamento interno do plano', () => {
-    const heavy = simulate({ ...input, aiCostPerCreditCents: 5 })[2]!
-    expect(heavy.statement.apiCostCents).toBe(40 * 1000 + 50 * 2500 + 10 * 6000)
+    const full = simulate({ ...input, aiCostPerCreditCents: 5 })[2]!
+    expect(full.statement.apiCostCents).toBe(40 * 2500 + 50 * 6000 + 10 * 13_000)
+  })
+
+  it('armazenamento, transferência e taxa fixa entram no custo variável', () => {
+    const images = CONSUMPTION_PROFILES.find((profile) => profile.id === 'images')!
+    const base = simulate({ ...input, profile: images })[2]!
+    const heavy = simulate({ ...input, profile: images, storageCentsPerGb: 12, transferCentsPerGb: 50, paymentFeeFixedCents: 49 })[2]!
+    const gigabytes = ((40 * 2500 + 50 * 6000 + 10 * 13_000) * 0.03) / 1024
+    expect(heavy.statement.otherVariableCents).toBe(Math.round(100 * 49 + gigabytes * 62))
+    expect(heavy.statement.contributionCents).toBe(base.statement.contributionCents - heavy.statement.otherVariableCents)
   })
 
   it('sem margem por assinante não há ponto de equilíbrio', () => {
-    const expected = simulate({ ...input, plans: input.plans.map((plan) => ({ ...plan, priceCents: 0 })) })[1]!
-    expect(expected.breakEvenSubscribers).toBeNull()
+    const mid = simulate({ ...input, plans: input.plans.map((plan) => ({ ...plan, priceCents: 0 })) })[1]!
+    expect(mid.breakEvenSubscribers).toBeNull()
   })
 })

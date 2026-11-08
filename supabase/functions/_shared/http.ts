@@ -75,6 +75,8 @@ const DATABASE_ERRORS: Record<string, { status: number; message: string }> = {
   takes_required: { status: 400, message: 'Adicione pelo menos um vídeo ou foto ao projeto.' },
   invalid_count: { status: 400, message: 'Escolha quantas variações quer gerar.' },
   too_many_variations: { status: 403, message: 'Seu plano gera menos variações por lote. Veja os planos em Assinatura.' },
+  model_cost_unverified: { status: 503, message: 'Esse modelo está em revisão de preço e volta em breve. Nenhum crédito foi usado.' },
+  operation_cost_above_cap: { status: 503, message: 'Esse modelo está indisponível agora. Nenhum crédito foi usado.' },
   platform_spend_cap: { status: 503, message: 'As gerações estão pausadas por alguns instantes. Tente de novo mais tarde; nenhum crédito foi usado.' },
 }
 

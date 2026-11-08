@@ -5,7 +5,9 @@ import { AlertsList } from '@/components/admin/dashboard/DashboardSections'
 import { PeriodFilter } from '@/components/admin/dashboard/PeriodFilter'
 import { CreditPolicyPanel } from '@/components/admin/finance/CreditPolicyPanel'
 import { FinanceSettingsForm } from '@/components/admin/finance/FinanceSettingsForm'
-import { ModelProfitTable, PlanRevenueTable, StatementSection, UserProfitTable } from '@/components/admin/finance/FinanceOverview'
+import { ModelProfitTable, MultiplierSection, PlanRevenueTable, ProviderCostTable, StatementSection, UserProfitTable } from '@/components/admin/finance/FinanceOverview'
+import { PlanCalculator } from '@/components/admin/finance/PlanCalculator'
+import { PlanTargets } from '@/components/admin/finance/PlanTargets'
 import { ProfitSimulator } from '@/components/admin/finance/ProfitSimulator'
 import { Notice } from '@/components/ui/Notice'
 import { Spinner } from '@/components/ui/Spinner'
@@ -13,13 +15,14 @@ import { financeAlerts, statementOf } from '@/domain/finance'
 import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { useAdminPeriod } from '@/hooks/useAdminPeriod'
 import { useQuery } from '@/hooks/useQuery'
-import { fetchFinance, fetchFinanceSettings, fetchModelQuotes, fetchPricing } from '@/lib/adminApi'
+import { fetchFinance, fetchFinanceSettings, fetchModelQuotes, fetchPlanEconomics, fetchPricing } from '@/lib/adminApi'
 
 const TABS = [
   { id: 'resultado', label: 'Resultado' },
   { id: 'rentabilidade', label: 'Rentabilidade' },
+  { id: 'calculadora', label: 'Calculadora de planos' },
   { id: 'simulador', label: 'Simulador' },
-  { id: 'creditos', label: 'Créditos v2' },
+  { id: 'creditos', label: 'Preços e créditos' },
 ] as const
 type TabId = (typeof TABS)[number]['id']
 
@@ -47,6 +50,7 @@ function Loading() {
 
 function PeriodTabs({ tab }: { readonly tab: 'resultado' | 'rentabilidade' }) {
   const { can } = useAdminAccess()
+  const economics = useQuery(fetchPlanEconomics, 'Não deu para carregar a economia dos planos.')
   const { preset, custom, period, setPreset, setCustom } = useAdminPeriod()
   const load = useCallback(() => (period ? fetchFinance(period) : Promise.resolve(null)), [period])
   const finance = useQuery(load, 'Não deu para carregar o financeiro do período.')
@@ -65,12 +69,15 @@ function PeriodTabs({ tab }: { readonly tab: 'resultado' | 'rentabilidade' }) {
           {tab === 'resultado' ? (
             <>
               <StatementSection finance={data} statement={statement} />
+              {economics.data && <PlanTargets economics={economics.data} />}
               <PlanRevenueTable finance={data} />
+              <MultiplierSection finance={data} />
               <FinanceSettingsForm key={JSON.stringify(data.settings)} settings={data.settings} canEdit={can('pricing.manage')} onSaved={() => void finance.reload()} />
             </>
           ) : (
             <>
               <UserProfitTable finance={data} />
+              <ProviderCostTable finance={data} />
               <ModelProfitTable finance={data} />
             </>
           )}
@@ -83,10 +90,21 @@ function PeriodTabs({ tab }: { readonly tab: 'resultado' | 'rentabilidade' }) {
 function SimulatorTab() {
   const settings = useQuery(fetchFinanceSettings, 'Não deu para carregar as premissas.')
   const pricing = useQuery(fetchPricing, 'Não deu para carregar a taxa do gateway.')
-  const error = settings.error ?? pricing.error
+  const economics = useQuery(fetchPlanEconomics, 'Não deu para carregar os planos.')
+  const error = settings.error ?? pricing.error ?? economics.error
   if (error) return <Notice tone="error">{error}</Notice>
-  if (!settings.data || !pricing.data) return <Loading />
-  return <ProfitSimulator settings={settings.data} paymentFeeRate={pricing.data.payment_fee_rate} />
+  if (!settings.data || !pricing.data || !economics.data) return <Loading />
+  const drafts = economics.data.plans.filter((plan) => plan.line === 'creator' && plan.status === 'draft' && !plan.contact_only)
+  const plans = drafts.length > 0 ? drafts : economics.data.plans.filter((plan) => plan.line === 'creator' && plan.status === 'live' && plan.price_cents > 0)
+  return <ProfitSimulator settings={settings.data} paymentFeeRate={pricing.data.payment_fee_rate} plans={plans} />
+}
+
+function CalculatorTab() {
+  const { can } = useAdminAccess()
+  const economics = useQuery(fetchPlanEconomics, 'Não deu para carregar a economia dos planos.')
+  if (economics.error) return <Notice tone="error">{economics.error}</Notice>
+  if (!economics.data) return <Loading />
+  return <PlanCalculator economics={economics.data} canSave={can('plans.manage') && can('pricing.manage')} onSaved={() => void economics.reload()} />
 }
 
 function CreditsTab() {
@@ -123,7 +141,15 @@ export function AdminFinancePage() {
         ))}
       </div>
       <div id="finance-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
-        {tab === 'resultado' || tab === 'rentabilidade' ? <PeriodTabs tab={tab} /> : tab === 'simulador' ? <SimulatorTab /> : <CreditsTab />}
+        {tab === 'resultado' || tab === 'rentabilidade' ? (
+          <PeriodTabs tab={tab} />
+        ) : tab === 'calculadora' ? (
+          <CalculatorTab />
+        ) : tab === 'simulador' ? (
+          <SimulatorTab />
+        ) : (
+          <CreditsTab />
+        )}
       </div>
     </div>
   )

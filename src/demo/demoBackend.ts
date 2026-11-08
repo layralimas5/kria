@@ -12,10 +12,11 @@ import { createDemoState, DEMO_USER_ID, nextLedgerId, uuid, type DemoState, type
 import { DEMO_VIDEO, demoImageAt, demoMediaType } from './demoMedia'
 import { demoMultiplierOutput } from './demoMultiplier'
 import { demoFinance, exportUsage, financeSettings, isRefusal, modelQuotes, settleExport, startExport } from './demoFinance'
+import { fullUseMarginOf, planEconomics, preflight, setTariff, storefront, updateCostGuard, updateDraftPlan } from './demoPricingV3'
 import { demoRefusal, demoSpendGuard, demoUsage } from './demoSpend'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
-const SESSION_KEY = 'kria-demo-state-v11'
+const SESSION_KEY = 'kria-demo-state-v12'
 
 function loadState(): DemoState {
   try {
@@ -739,6 +740,10 @@ function adminRpc(name: string, body: Row): Response | null {
         pro_labore_cents: body.p_pro_labore_cents,
         reserve_rate: body.p_reserve_rate,
         min_margin_rate: body.p_min_margin_rate,
+        payment_fee_fixed_cents: body.p_payment_fee_fixed_cents ?? 0,
+        storage_cents_per_subscriber: body.p_storage_cents_per_subscriber ?? 0,
+        transfer_cents_per_subscriber: body.p_transfer_cents_per_subscriber ?? 0,
+        other_variable_cents_per_subscriber: body.p_other_variable_cents_per_subscriber ?? 0,
       }
       audit('finance.settings', null, null)
       persist()
@@ -766,9 +771,38 @@ function adminRpc(name: string, body: Row): Response | null {
       persist()
       return json(model)
     }
-    case 'admin_activate_pricing_v2':
+    case 'admin_activate_pricing_v2': {
       // A virada mexe em saldos e assinaturas reais: no demo ela só mostra a recusa de segurança.
-      return rpcFail(state.pricing.generation_paused ? 'open_generations' : 'pause_required')
+      const blockers = preflight(state).blockers as string[]
+      return rpcFail(blockers[0] ?? 'pause_required')
+    }
+    case 'admin_rollback_pricing_v2':
+      return rpcFail('not_activated')
+    case 'admin_pricing_v2_preflight':
+      return json(preflight(state))
+    case 'admin_plan_economics':
+      return json(planEconomics(state))
+    case 'admin_update_draft_plan': {
+      const plan = updateDraftPlan(state, body)
+      if (isRefusal(plan)) return rpcFail(plan.code)
+      audit('plan.draft_update', String(body.p_slug), String(body.p_reason ?? ''))
+      persist()
+      return json({ ...plan, full_use_margin: fullUseMarginOf(state, body.p_slug) })
+    }
+    case 'admin_set_model_tariff': {
+      const model = setTariff(state, body)
+      if (isRefusal(model)) return rpcFail(model.code)
+      audit('model.tariff', String(body.p_slug), null)
+      persist()
+      return json(model)
+    }
+    case 'admin_update_cost_guard':
+      audit('pricing.cost_guard', null, null)
+      updateCostGuard(state, body)
+      persist()
+      return json(state.pricing)
+    case 'storefront_plans':
+      return json(storefront(state))
     case 'admin_update_pricing':
       state.pricing = { ...state.pricing, usd_brl: body.p_usd_brl, fx_buffer: body.p_fx_buffer, markup: body.p_markup, credit_value_brl: body.p_credit_value_brl }
       audit('pricing.update', null, null)
@@ -861,6 +895,7 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
     if (name === 'account') return account(body)
     if (name === 'assistant') return assistant(body)
     if (name === 'multiplier') return multiplier(body)
+    if (name === 'pricing-check') return fail(503, 'demo_only', 'No modo demo a consulta ao fal não roda. Nada foi alterado.')
     return fail(404, 'not_found', 'Função desconhecida.')
   }
 

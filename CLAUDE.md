@@ -51,6 +51,14 @@ são telas reais do modo demo (`npm run landing:screens`).
   `plan_cost_budgets` (admin), nunca na tabela pública de planos. Exportação do Multiplicador conta por `start_`/`finish_`/
   `fail_multiplier_export` (`max_exports_month`). A vitrine v2 só aparece com `VITE_PRICING_V2=true`, junto com a virada.
   Financeiro e simulador em `/admin/financeiro`; as contas ficam em `src/domain/finance.ts`.
+- Preços v3 (0019, `docs/precos-v3.md`): custo de cada modelo sai da tarifa oficial em `models.pricing` (imagem, segundo
+  ou token) × `defaults` (`operation_cost_usd`); sem tarifa ou volume, o custo fica nulo, nunca inventado. Tarifa muda por
+  `admin_set_model_tariff` (confere a data e, depois da virada, recalcula créditos só dos pedidos novos). Com
+  `require_trusted_cost` (ligado na virada), modelo sem custo confiável não gera (gatilho `generations_cost_policy`).
+  Texto grava tokens reais por `record_text_usage`. Boas-vindas só com e-mail confirmado, uma vez por e-mail normalizado
+  (`welcome_grants`). A vitrine lê `storefront_plans`: nenhum preço mora no front. Margem por plano = `plan_full_use_margin`
+  (mesma conta de `src/domain/planEconomics.ts`); calculadora em `/admin/financeiro?aba=calculadora` só salva rascunho.
+  Virada abaixo da meta exige `finance.override`; `admin_rollback_pricing_v2` desfaz enquanto ninguém assinar plano novo.
 - O painel do usuário não tem nada de admin (nem link no menu). A operação fica em `/admin`, com moldura
   própria, fora do `AppShell`; só abre para quem está em `admin_users`. Cada função `admin_*` chama
   `assert_admin_permission('x')` (papel + sessão aal2, 0014) e grava `admin_audit_logs`, que é imutável.

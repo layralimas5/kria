@@ -16,6 +16,10 @@ export const financeSettingsSchema = z.object({
   pro_labore_cents: num,
   reserve_rate: num,
   min_margin_rate: num,
+  payment_fee_fixed_cents: num.default(0),
+  storage_cents_per_subscriber: num.default(0),
+  transfer_cents_per_subscriber: num.default(0),
+  other_variable_cents_per_subscriber: num.default(0),
 })
 export type FinanceSettings = z.infer<typeof financeSettingsSchema>
 
@@ -25,7 +29,11 @@ const financePlanSchema = z.object({
   line: z.enum(['creator', 'business']),
   status: z.enum(['draft', 'live', 'legacy']),
   price_cents: num,
+  monthly_credits: num,
+  max_exports_month: num.nullable(),
   ai_budget_cents: num.nullable(),
+  /** Margem de contribuição com o plano usado por inteiro (0019 `plan_full_use_margin`). */
+  full_use_margin: num.nullable(),
   subscribers: num,
   mrr_cents: num,
   revenue_cents: num,
@@ -53,11 +61,15 @@ const financeModelSchema = z.object({
   provider_cost_usd: num.nullable(),
   cost_checked_at: z.string().nullable(),
   stale: z.boolean(),
+  trusted: z.boolean(),
   total: num,
   failed: num,
   billed: num,
   credits: num,
   cost_usd: num,
+  /** Custo previsto na autorização (tarifa × configuração), para comparar com o gasto reconciliado. */
+  quoted_cost_usd: num,
+  reconciled: num,
   estimated: num,
   deficit: num,
 })
@@ -68,6 +80,7 @@ export const financeSchema = z.object({
   usd_brl: num,
   payment_fee_rate: num,
   credit_scale: num,
+  credit_budget_brl: num,
   settings: financeSettingsSchema,
   revenue_cents: num,
   revenue_previous_cents: num,
@@ -78,9 +91,13 @@ export const financeSchema = z.object({
   api_cost_previous_usd: num,
   api_cost_estimated_count: num,
   failed_billed_usd: num,
+  credits_consumed: num,
   exports_done: num,
+  exports_failed: num,
   export_render_ms: num,
   export_bytes: num,
+  export_seconds: num,
+  export_resolutions: z.record(num),
   by_plan: z.array(financePlanSchema),
   by_user: z.array(financeUserSchema),
   by_model: z.array(financeModelSchema),
@@ -100,6 +117,8 @@ export interface StatementInput {
   readonly settings: FinanceSettings
   /** Custos mensais extras do simulador (aquisição, suporte). */
   readonly extraFixedCents?: number
+  /** Custos variáveis além de API, render, gateway e tributo (armazenamento, transferência, taxa fixa). */
+  readonly extraVariableCents?: number
 }
 
 export interface Statement {
@@ -108,6 +127,7 @@ export interface Statement {
   readonly taxesCents: number
   readonly apiCostCents: number
   readonly renderCents: number
+  readonly otherVariableCents: number
   readonly variableCents: number
   readonly contributionCents: number
   readonly contributionRate: number | null
@@ -130,7 +150,8 @@ export function financeStatement(input: StatementInput): Statement {
   const gatewayCents = Math.round(Math.max(0, netRevenueCents) * input.paymentFeeRate)
   const taxesCents = Math.round(Math.max(0, netRevenueCents) * settings.tax_rate)
   const renderCents = input.exports * settings.render_cost_cents_per_export
-  const variableCents = input.apiCostCents + renderCents + gatewayCents + taxesCents
+  const otherVariableCents = Math.round(input.extraVariableCents ?? 0)
+  const variableCents = input.apiCostCents + renderCents + gatewayCents + taxesCents + otherVariableCents
   const contributionCents = netRevenueCents - variableCents
   const fixedCents = Math.round(
     (settings.fixed_costs_cents + settings.infra_costs_cents + settings.storage_costs_cents + (input.extraFixedCents ?? 0)) * months,
@@ -145,6 +166,7 @@ export function financeStatement(input: StatementInput): Statement {
     taxesCents,
     apiCostCents: input.apiCostCents,
     renderCents,
+    otherVariableCents,
     variableCents,
     contributionCents,
     contributionRate: ratio(contributionCents, netRevenueCents),
@@ -292,44 +314,87 @@ export interface SimulatorPlan {
   readonly aiBudgetCents: number
 }
 
+/**
+ * Como a base usa o plano. A parcela dos créditos e das exportações vale para os cenários de 25% e 60%;
+ * no de 100% todo benefício é usado, qualquer que seja o perfil. "MB por crédito" é o peso médio do
+ * arquivo gerado (hipótese: foto ~1,5 MB a 52 créditos, vídeo ~6 MB a 406), para armazenamento e transferência.
+ */
+export interface ConsumptionProfile {
+  readonly id: 'images' | 'videos' | 'multiplier' | 'mixed' | 'premium'
+  readonly label: string
+  readonly creditShare: number
+  readonly exportShare: number
+  readonly mbPerCredit: number
+}
+
+export const CONSUMPTION_PROFILES: readonly ConsumptionProfile[] = [
+  { id: 'images', label: 'Foco em imagens', creditShare: 1, exportShare: 0.2, mbPerCredit: 0.03 },
+  { id: 'videos', label: 'Foco em vídeos', creditShare: 1, exportShare: 0.4, mbPerCredit: 0.015 },
+  { id: 'multiplier', label: 'Foco no Multiplicador', creditShare: 0.3, exportShare: 1, mbPerCredit: 0.005 },
+  { id: 'mixed', label: 'Consumo misto', creditShare: 0.8, exportShare: 0.6, mbPerCredit: 0.02 },
+  { id: 'premium', label: 'Modelos premium', creditShare: 1, exportShare: 0.3, mbPerCredit: 0.006 },
+]
+
 export interface SimulatorInput {
   readonly plans: readonly SimulatorPlan[]
-  /** Fração média dos créditos e exportações usada (0 a 1). */
-  readonly usageRate: number
-  /** Custo real de IA por crédito usado, em centavos (R$ 0,01 ÷ 1,15 ≈ 0,87). */
+  readonly profile: ConsumptionProfile
+  /** Custo real de IA por crédito usado, em centavos (1,00 conta a reserva de segurança como gasta). */
   readonly aiCostPerCreditCents: number
   readonly editCostCentsPerExport: number
   readonly paymentFeeRate: number
+  readonly paymentFeeFixedCents: number
+  readonly storageCentsPerGb: number
+  readonly transferCentsPerGb: number
+  readonly otherVariableCentsPerSubscriber: number
   readonly settings: FinanceSettings
   readonly acquisitionCents: number
   readonly supportCents: number
 }
 
+export const UTILIZATIONS = [0.25, 0.6, 1] as const
+export type Utilization = (typeof UTILIZATIONS)[number]
+
 export interface Scenario {
-  readonly id: 'conservative' | 'expected' | 'heavy'
+  readonly utilization: Utilization
   readonly label: string
   readonly description: string
   readonly subscribers: number
   readonly revenueCents: number
+  readonly creditUse: number
+  readonly exportUse: number
   readonly statement: Statement
   /** Assinantes (no mesmo mix de planos) para cobrir custos fixos; e com pró-labore. */
   readonly breakEvenSubscribers: number | null
   readonly breakEvenWithProLaboreSubscribers: number | null
 }
 
-function runScenario(input: SimulatorInput, subscriberFactor: number, usageRate: number) {
-  const usage = Math.min(1, Math.max(0, usageRate))
+const MB_PER_GB = 1024
+
+/** Uso de créditos e exportações num cenário: 100% é tudo usado; abaixo disso, a parcela do perfil. */
+export function scenarioUsage(utilization: Utilization, profile: ConsumptionProfile): { credits: number; exports: number } {
+  if (utilization === 1) return { credits: 1, exports: 1 }
+  return { credits: Math.min(1, utilization * profile.creditShare), exports: Math.min(1, utilization * profile.exportShare) }
+}
+
+function runScenario(input: SimulatorInput, utilization: Utilization) {
+  const usage = scenarioUsage(utilization, input.profile)
   let revenueCents = 0
   let aiCents = 0
   let exports = 0
   let subscribers = 0
+  let gigabytes = 0
   for (const plan of input.plans) {
-    const count = Math.round(plan.subscribers * subscriberFactor)
+    const count = plan.subscribers
     subscribers += count
     revenueCents += count * plan.priceCents
-    aiCents += count * Math.min(plan.monthlyCredits * usage * input.aiCostPerCreditCents, plan.aiBudgetCents)
-    exports += count * plan.exportsPerMonth * usage
+    const creditsUsed = plan.monthlyCredits * usage.credits
+    aiCents += count * Math.min(creditsUsed * input.aiCostPerCreditCents, plan.aiBudgetCents)
+    exports += count * plan.exportsPerMonth * usage.exports
+    gigabytes += (count * creditsUsed * input.profile.mbPerCredit) / MB_PER_GB
   }
+  const paying = input.plans.filter((plan) => plan.priceCents > 0).reduce((sum, plan) => sum + plan.subscribers, 0)
+  const extraVariableCents =
+    paying * input.paymentFeeFixedCents + subscribers * input.otherVariableCentsPerSubscriber + gigabytes * (input.storageCentsPerGb + input.transferCentsPerGb)
   const settings = { ...input.settings, render_cost_cents_per_export: input.editCostCentsPerExport }
   const statement = financeStatement({
     revenueCents,
@@ -340,31 +405,28 @@ function runScenario(input: SimulatorInput, subscriberFactor: number, usageRate:
     paymentFeeRate: input.paymentFeeRate,
     settings,
     extraFixedCents: input.acquisitionCents + input.supportCents,
+    extraVariableCents,
   })
   const perSubscriber = subscribers > 0 ? statement.contributionCents / subscribers : 0
   const breakEven = (costCents: number) => (perSubscriber > 0 ? Math.ceil(costCents / perSubscriber) : null)
   return {
     subscribers,
     revenueCents,
+    creditUse: usage.credits,
+    exportUse: usage.exports,
     statement,
     breakEvenSubscribers: breakEven(statement.fixedCents),
     breakEvenWithProLaboreSubscribers: breakEven(statement.fixedCents + statement.proLaboreCents),
   }
 }
 
-const CONSERVATIVE_SUBSCRIBERS = 0.7
-const CONSERVATIVE_EXTRA_USAGE = 0.2
+const SCENARIO_TEXT: Record<Utilization, { label: string; description: string }> = {
+  0.25: { label: 'Uso de 25%', description: 'Base usando pouco do plano.' },
+  0.6: { label: 'Uso de 60%', description: 'Base usando boa parte do plano.' },
+  1: { label: 'Uso de 100%', description: 'Todo assinante usa todos os créditos e todas as exportações.' },
+}
 
-/** Três cenários: todos são estimativas até haver dados reais de uso e fatura. */
+/** Três cenários de utilização para o mesmo perfil. Uso médio passado não garante o consumo futuro. */
 export function simulate(input: SimulatorInput): Scenario[] {
-  return [
-    {
-      id: 'conservative',
-      label: 'Conservador',
-      description: '30% menos assinantes e uso 20 pontos acima do esperado.',
-      ...runScenario(input, CONSERVATIVE_SUBSCRIBERS, input.usageRate + CONSERVATIVE_EXTRA_USAGE),
-    },
-    { id: 'expected', label: 'Esperado', description: 'Assinantes e uso como preenchidos.', ...runScenario(input, 1, input.usageRate) },
-    { id: 'heavy', label: 'Alto consumo', description: 'Todo assinante usa 100% dos créditos e exportações.', ...runScenario(input, 1, 1) },
-  ]
+  return UTILIZATIONS.map((utilization) => ({ utilization, ...SCENARIO_TEXT[utilization], ...runScenario(input, utilization) }))
 }

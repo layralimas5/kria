@@ -1,21 +1,23 @@
 import clsx from 'clsx'
 import { Info } from 'lucide-react'
 import { useState } from 'react'
+import { useQuery } from '@/hooks/useQuery'
 import { Reveal } from '../components/Reveal'
 import { SectionHeading } from '../components/SectionHeading'
-import { BUSINESS_PLANS, CREATOR_PLANS, CREDIT_NOTICE, type V2Plan } from '../pricing/catalogV2'
 import { PlanCardV2 } from '../pricing/PlanCardV2'
 import { subscribePath } from '../pricing/PlanCard'
+import { CREDIT_NOTICE, fetchStorefront, withWelcome, type StorefrontPlan } from '../pricing/storefront'
 
 const TABS = [
-  { id: 'creator', label: 'Creator', plans: CREATOR_PLANS },
-  { id: 'business', label: 'Business', plans: BUSINESS_PLANS },
+  { id: 'creator', label: 'Creator' },
+  { id: 'business', label: 'Business' },
 ] as const
 type TabId = (typeof TABS)[number]['id']
 
 /** Dados estruturados só dos planos com preço e checkout. */
-function PlansJsonLd({ plans }: { readonly plans: readonly V2Plan[] }) {
+function PlansJsonLd({ plans }: { readonly plans: readonly StorefrontPlan[] }) {
   const sold = plans.filter((plan) => plan.cta === 'subscribe' && plan.price_cents !== null)
+  if (sold.length === 0) return null
   const data = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -32,15 +34,28 @@ function PlansJsonLd({ plans }: { readonly plans: readonly V2Plan[] }) {
   return <script type="application/ld+json">{JSON.stringify(data)}</script>
 }
 
+function PlanSkeleton() {
+  return (
+    <ul className="mx-auto mt-10 grid max-w-7xl gap-5 sm:grid-cols-2 xl:grid-cols-4" aria-hidden="true">
+      {[0, 1, 2, 3].map((index) => (
+        <li key={index} className="h-[30rem] animate-pulse rounded-2xl border border-white/[0.06] bg-panel motion-reduce:animate-none" />
+      ))}
+    </ul>
+  )
+}
+
+/** Planos lidos de `storefront_plans`: os mesmos números do checkout e do painel. */
 export function PricingV2() {
   const [tab, setTab] = useState<TabId>('creator')
-  const current = TABS.find((item) => item.id === tab) ?? TABS[0]
+  const storefront = useQuery(fetchStorefront, 'Não deu para carregar os planos.')
+  const plans = storefront.data ? withWelcome(storefront.data) : []
+  const current = plans.filter((plan) => plan.line === tab)
 
   return (
     <section id="precos" aria-labelledby="precos-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
       <div className="mx-auto max-w-[1440px]">
         <SectionHeading id="precos-title" align="center" title="Planos para criar e para crescer" lead="Creator para quem produz conteúdo. Business para equipes e empresas." />
-        <PlansJsonLd plans={CREATOR_PLANS} />
+        <PlansJsonLd plans={plans} />
 
         <div className="mt-10 flex justify-center">
           <div role="tablist" aria-label="Linha de planos" className="inline-flex gap-1 rounded-xl bg-panel p-1 ring-1 ring-white/[0.08]">
@@ -64,14 +79,29 @@ export function PricingV2() {
           </div>
         </div>
 
-        <div id="precos-painel" role="tabpanel" aria-labelledby={`precos-tab-${tab}`}>
-          <ul className="mx-auto mt-10 grid max-w-7xl gap-5 sm:grid-cols-2 xl:grid-cols-4 xl:items-stretch">
-            {current.plans.map((plan, index) => (
-              <Reveal key={plan.slug} as="li" delay={index * 0.05}>
-                <PlanCardV2 plan={plan} />
-              </Reveal>
-            ))}
-          </ul>
+        <div id="precos-painel" role="tabpanel" aria-labelledby={`precos-tab-${tab}`} aria-busy={storefront.loading}>
+          {storefront.error ? (
+            <div className="mx-auto mt-10 max-w-md rounded-2xl border border-white/[0.07] bg-panel p-6 text-center text-sm text-zinc-300">
+              <p>Os planos não carregaram agora.</p>
+              <button
+                type="button"
+                onClick={() => void storefront.reload()}
+                className="mt-3 min-h-10 rounded-lg px-4 font-semibold text-accent-soft underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                Tentar de novo
+              </button>
+            </div>
+          ) : !storefront.data ? (
+            <PlanSkeleton />
+          ) : (
+            <ul className="mx-auto mt-10 grid max-w-7xl gap-5 sm:grid-cols-2 xl:grid-cols-4 xl:items-stretch">
+              {current.map((plan, index) => (
+                <Reveal key={plan.slug} as="li" delay={index * 0.05}>
+                  <PlanCardV2 plan={plan} />
+                </Reveal>
+              ))}
+            </ul>
+          )}
           {tab === 'business' && (
             <p className="mx-auto mt-6 max-w-3xl text-center text-[13px] text-zinc-400">
               O Business está em preparação: contratação por conversa, com os recursos marcados como em breve entrando aos poucos.

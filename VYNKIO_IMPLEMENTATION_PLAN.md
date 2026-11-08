@@ -125,6 +125,13 @@ cota de exportação do Multiplicador, Financeiro e rentabilidade no admin (resu
 alertas, simulador) e a virada travada atrás de pausa, motivo e confirmação. Landing com hero, Creator, Business
 e FAQ novos; preços v2 atrás de `VITE_PRICING_V2`. Decisões, riscos financeiros e roteiro em `docs/precos-v2.md`.
 
+### Preços v3: créditos dinâmicos e rentabilidade (**pronto em 07/11, mesma branch, sem publicar**)
+
+Tarifa oficial por modelo (fal e Anthropic) com custo por configuração, trava de modelo sem custo confiável, custo
+real do texto por token, boas-vindas de 100 com proteção contra conta repetida, proposta v3 nos rascunhos (R$ 79,90,
+169,90 e 349,90), vitrine lendo o banco, calculadora de planos, simulador de 25/60/100% por perfil, checagem da virada
+e volta. Recomendação: 2.400, 5.100 e 10.600 créditos para 60% de margem no uso integral. Tudo em `docs/precos-v3.md`.
+
 ### Sprint 3: Vynkio AI
 
 Custo por parâmetro (duração, resolução) em `create_generation`; texto para vídeo; cancelamento;

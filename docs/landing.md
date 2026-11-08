@@ -6,7 +6,7 @@ com print real e CTA que abre a ferramenta no app), Como funciona (4 passos), Pa
 Produtividade (uma ideia, cinco entregas), Planos, Perguntas e CTA final.
 
 - Textos, recursos, passos, casos de uso e FAQ: `src/landing/content.ts`.
-- Planos: `src/landing/pricing/catalog.ts` (`catalog.test.ts`); preços v2 em `catalogV2.ts` (`catalogV2.test.ts`), só com `VITE_PRICING_V2=true` (`docs/precos-v2.md`). Custo por geração e pacotes avulsos:
+- Planos: `src/landing/pricing/catalog.ts` (`catalog.test.ts`); vitrine v2/v3 lida do banco por `storefront_plans` (`storefront.ts`), só com `VITE_PRICING_V2=true` (`docs/precos-v3.md`). Custo por geração e pacotes avulsos:
   `src/landing/pricing/costs.ts` (`costs.test.ts` confere com a tabela `models` e `credit_packs`).
 - O selo "Recomendado" do Pro tem o motivo escrito (`highlight_reason`). Nada de "mais popular"
   enquanto não houver assinante para provar.
