@@ -56,6 +56,7 @@ const ADMIN_ERRORS: Record<string, string> = {
   expense_not_found: 'Despesa não encontrada ou já anulada.',
   email_taken: 'Já existe uma conta com esse e-mail.',
   invalid_email: 'E-mail inválido.',
+  demo_only: 'No modo demo essa ação não roda. Nada foi alterado.',
 }
 
 async function rpc<T>(name: string, args: Record<string, unknown>, schema: z.ZodType<T, z.ZodTypeDef, unknown>): Promise<T> {

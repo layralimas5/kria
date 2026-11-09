@@ -68,6 +68,7 @@ export const businessSchema = z.object({
   money: z
     .object({
       payment_fee_rate: num,
+      min_margin_rate: num,
       received_cents: num,
       expenses_cents: num,
       expenses: list(expenseSchema),

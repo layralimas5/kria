@@ -4,6 +4,7 @@ import {
   CreditCard,
   Cpu,
   LayoutDashboard,
+  LineChart,
   Repeat,
   ScrollText,
   ShieldCheck,
@@ -39,6 +40,7 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
   {
     label: 'Analytics',
     items: [
+      { label: 'Visão executiva', icon: LineChart, to: '/admin/analytics?aba=executivo', permission: 'dashboard.view' },
       { label: 'Retenção', icon: Repeat, to: '/admin/analytics?aba=retencao', permission: 'dashboard.view' },
       { label: 'Ferramentas', icon: BarChart3, to: '/admin/analytics?aba=ferramentas', permission: 'dashboard.view' },
       { label: 'Créditos e tokens', icon: Coins, to: '/admin/analytics?aba=creditos', permission: 'dashboard.view' },

@@ -61,7 +61,7 @@ function AdminNav({ collapsed }: { readonly collapsed: boolean }) {
     if (!pathname.startsWith(path ?? to)) return false
     if (!query) return true
     const wanted = new URLSearchParams(query).get('aba')
-    const current = new URLSearchParams(search).get('aba') ?? 'retencao'
+    const current = new URLSearchParams(search).get('aba') ?? 'executivo'
     return wanted === current
   }
 

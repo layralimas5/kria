@@ -63,6 +63,12 @@ são telas reais do modo demo (`npm run landing:screens`).
   própria, fora do `AppShell`; só abre para quem está em `admin_users`. Cada função `admin_*` chama
   `assert_admin_permission('x')` (papel + sessão aal2, 0014) e grava `admin_audit_logs`, que é imutável.
   Permissão nova entra em `admin_role_permissions`, nunca só no front. Diagnóstico e etapas em `docs/admin.md`.
+- Central de inteligência (0025, `docs/admin-inteligencia.md`): custo de IA vem de `ai_usage_events` (uma linha por
+  geração cobrada, por gatilho; base `metered`/`estimated`/`unknown`, câmbio da primeira gravação). Nunca somar custo
+  direto de `generations` em tela nova. Preço de modelo tem vigência em `model_price_history`. "Alterar plano" no admin
+  é cortesia (`plan_grants`, lida por `effective_plan` depois da assinatura paga): não mexe em assinatura, MRR nem
+  créditos. Conta nova pelo admin só por convite (function `admin-users`), nunca com senha definida pelo admin.
+  Lucro estimado só desconta despesas lançadas em `operating_expenses`.
 - Ferramenta que ainda não existe aparece como "Breve", sem link nem botão.
 - Persona nasce só de imagem gerada aqui (`create_persona`). Sem upload de foto:
   é o que impede deepfake de pessoa real. Não abrir upload sem moderação de rosto.

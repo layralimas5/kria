@@ -8,6 +8,7 @@ import { assistantToolSchema } from '@/domain/types'
 import { ADMIN_ROLE_LABELS, adminRoleSchema } from '@/domain/adminDashboard'
 import { buildDemoDashboard } from './demoAdmin'
 import { buildDemoAnalytics } from './demoAnalytics'
+import { buildDemoAiCosts, buildDemoBusiness, demoExpenses, demoUserProfile, demoUsersPage } from './demoIntelligence'
 import { demoGenerations, demoSubscriptions } from './demoLists'
 import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_USER_ID, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
@@ -565,7 +566,7 @@ function demoUserRow(): Row {
 
 const SUPER_ADMIN_PERMISSIONS = [
   'dashboard.view', 'finance.view', 'users.view', 'users.manage', 'credits.adjust', 'plans.view', 'plans.manage',
-  'models.view', 'models.manage', 'pricing.manage', 'audit.view', 'admins.manage',
+  'models.view', 'models.manage', 'pricing.manage', 'audit.view', 'admins.manage', 'expenses.manage',
 ]
 
 function setRole(body: Row): Response {
@@ -592,7 +593,56 @@ function adminRpc(name: string, body: Row): Response | null {
     case 'is_admin':
       return json(true)
     case 'admin_me':
-      return json({ role: 'super_admin', permissions: SUPER_ADMIN_PERMISSIONS, aal: 'aal2' })
+      return json({ role: 'super_admin', permissions: SUPER_ADMIN_PERMISSIONS, aal: 'aal2', email: 'demo@kria.ia', display_name: state.profile.display_name, avatar_path: null })
+    case 'admin_ai_costs': {
+      const from = new Date(String(body.p_from))
+      const to = new Date(String(body.p_to))
+      if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) return rpcFail('invalid_period')
+      return json(buildDemoAiCosts(state, from, to, body))
+    }
+    case 'admin_business': {
+      const from = new Date(String(body.p_from))
+      const to = new Date(String(body.p_to))
+      if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) return rpcFail('invalid_period')
+      return json(buildDemoBusiness(state, from, to, body))
+    }
+    case 'admin_model_price_history': {
+      const model = state.models.find((item) => item.slug === body.p_slug)
+      if (!model) return rpcFail('model_not_found')
+      return json([{ id: 1, credits: model.credits, pricing: model.pricing ?? null, provider_cost_usd: model.provider_cost_usd ?? null, target_margin_rate: model.target_margin_rate ?? null, active: model.active ?? true, effective_from: state.profile.created_at, effective_to: null, changed_by_email: null }])
+    }
+    case 'admin_set_model_target_margin': {
+      if (String(body.p_reason ?? '').trim().length < 5) return rpcFail('reason_required')
+      const model = state.models.find((item) => item.slug === body.p_slug)
+      if (!model) return rpcFail('model_not_found')
+      model.target_margin_rate = body.p_rate ?? null
+      persist()
+      return json(model)
+    }
+    case 'admin_users_list':
+      return json(demoUsersPage([demoUserRow(), ...state.otherUsers], state, body))
+    case 'admin_user_profile': {
+      const profile = demoUserProfile([demoUserRow(), ...state.otherUsers], state, String(body.p_user_id))
+      return profile ? json(profile) : rpcFail('account_not_found')
+    }
+    case 'admin_grant_plan':
+    case 'admin_revoke_plan_grant':
+      if (String(body.p_reason ?? '').trim().length < 5) return rpcFail('reason_required')
+      return rpcFail('demo_only')
+    case 'admin_add_expense': {
+      if (Number(body.p_amount_cents ?? 0) <= 0) return rpcFail('invalid_amount')
+      const id = uuid()
+      demoExpenses.unshift({ id, incurred_on: body.p_incurred_on, category: body.p_category, description: body.p_description, amount_cents: Number(body.p_amount_cents), created_at: new Date().toISOString(), voided_at: null, void_reason: null })
+      return json(id)
+    }
+    case 'admin_void_expense': {
+      if (String(body.p_reason ?? '').trim().length < 5) return rpcFail('reason_required')
+      const expense = demoExpenses.find((item) => item.id === body.p_id && !item.voided_at)
+      if (!expense) return rpcFail('expense_not_found')
+      expense.voided_at = new Date().toISOString()
+      expense.void_reason = body.p_reason
+      return json(true)
+    }
     case 'admin_analytics': {
       const from = new Date(String(body.p_from))
       const to = new Date(String(body.p_to))
@@ -909,6 +959,7 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
     if (name === 'account') return account(body)
     if (name === 'assistant') return assistant(body)
     if (name === 'multiplier') return multiplier(body)
+    if (name === 'admin-users') return fail(503, 'demo_only', 'No modo demo o convite não sai. Nada foi criado.')
     if (name === 'pricing-check') return fail(503, 'demo_only', 'No modo demo a consulta ao fal não roda. Nada foi alterado.')
     return fail(404, 'not_found', 'Função desconhecida.')
   }

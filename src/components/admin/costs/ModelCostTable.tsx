@@ -45,7 +45,7 @@ export function ModelCostTable({ data, onOpen }: { readonly data: AiCosts; reado
                   </td>
                   <td className="px-3 py-3 text-zinc-300">{KIND_LABELS[model.kind] ?? model.kind}</td>
                   <td className="px-3 py-3 text-right tabular-nums text-zinc-200">{unitPriceUsd(model).label}</td>
-                  <td className="px-3 py-3 text-zinc-400">{UNIT_LABELS[model.unit]}</td>
+                  <td className="whitespace-nowrap px-3 py-3 text-zinc-400">{UNIT_LABELS[model.unit]}</td>
                   <td className="px-3 py-3 text-right tabular-nums text-zinc-300">
                     {model.provider_cost_usd === null ? <span className="text-zinc-500">medido por uso</span> : formatUsd(model.provider_cost_usd)}
                   </td>

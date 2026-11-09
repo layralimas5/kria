@@ -603,6 +603,7 @@ begin
     ), '[]'::jsonb) end,
     'money', case when sees_money then jsonb_build_object(
       'payment_fee_rate', fee_rate,
+      'min_margin_rate', (select min_margin_rate from public.finance_settings),
       'received_cents', (select coalesce(sum(cents), 0) from received where at >= p_from and at < p_to),
       'expenses_cents', (select coalesce(sum(amount_cents), 0) from public.operating_expenses
         where voided_at is null and incurred_on >= (p_from at time zone tz)::date and incurred_on <= ((p_to - interval '1 microsecond') at time zone tz)::date),

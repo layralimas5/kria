@@ -107,6 +107,7 @@ const business = (overrides: Partial<Business> = {}): Business => ({
   unusual_users: [],
   money: {
     payment_fee_rate: 0.05,
+    min_margin_rate: 0.4,
     received_cents: 120_000,
     expenses_cents: 10_000,
     expenses: [],
