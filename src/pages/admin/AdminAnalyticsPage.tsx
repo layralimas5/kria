@@ -1,8 +1,7 @@
 import clsx from 'clsx'
 import { useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { CreditsSection } from '@/components/admin/analytics/CreditsSection'
-import { ExecutiveSection } from '@/components/admin/analytics/ExecutiveSection'
 import { RetentionSection } from '@/components/admin/analytics/RetentionSection'
 import { ToolsSection } from '@/components/admin/analytics/ToolsSection'
 import { PeriodFilter } from '@/components/admin/dashboard/PeriodFilter'
@@ -13,7 +12,6 @@ import { useQuery } from '@/hooks/useQuery'
 import { fetchAnalytics } from '@/lib/adminApi'
 
 const TABS = [
-  { id: 'executivo', label: 'Visão executiva' },
   { id: 'retencao', label: 'Retenção' },
   { id: 'ferramentas', label: 'Ferramentas' },
   { id: 'creditos', label: 'Créditos e tokens' },
@@ -22,7 +20,7 @@ type TabId = (typeof TABS)[number]['id']
 
 function useTab(): [TabId, (tab: TabId) => void] {
   const [params, setParams] = useSearchParams()
-  const tab = TABS.find((item) => item.id === params.get('aba'))?.id ?? 'executivo'
+  const tab = TABS.find((item) => item.id === params.get('aba'))?.id ?? 'retencao'
   const setTab = (next: TabId) => {
     const merged = new URLSearchParams(params)
     merged.set('aba', next)
@@ -32,6 +30,13 @@ function useTab(): [TabId, (tab: TabId) => void] {
 }
 
 export function AdminAnalyticsPage() {
+  const [params] = useSearchParams()
+  // A antiga Visão executiva virou a central de comando; links salvos caem lá.
+  if (params.get('aba') === 'executivo') return <Navigate to="/admin" replace />
+  return <AnalyticsTabs />
+}
+
+function AnalyticsTabs() {
   const [tab, setTab] = useTab()
   const { preset, custom, period, setPreset, setCustom } = useAdminPeriod()
   const load = useCallback(() => (period ? fetchAnalytics(period) : Promise.resolve(null)), [period])
@@ -43,7 +48,7 @@ export function AdminAnalyticsPage() {
       <div className="space-y-4">
         <div>
           <h1 className="font-headline text-3xl text-zinc-50 md:text-4xl">Analytics</h1>
-          <p className="mt-2 text-sm text-zinc-400">Quanto o Vynkio faturou, quanto gastou com IA e o que sobrou, mais retenção, ferramentas e créditos. Tudo direto do banco.</p>
+          <p className="mt-2 text-sm text-zinc-400">Retenção, uso das ferramentas e créditos em detalhe. Receita, custos e lucro ficam na central de comando.</p>
         </div>
         <div role="tablist" aria-label="Seções do analytics" className="flex gap-1 overflow-x-auto rounded-2xl bg-surface p-1 ring-1 ring-white/[0.06] [scrollbar-width:none]">
           {TABS.map((item) => (
@@ -66,19 +71,13 @@ export function AdminAnalyticsPage() {
       </div>
 
       {analytics.error && <Notice tone="error">{analytics.error}</Notice>}
-      {!data && analytics.loading && tab !== 'executivo' && (
+      {!data && analytics.loading && (
         <div className="grid place-items-center py-24 text-zinc-500" role="status" aria-label="Carregando">
           <Spinner className="size-6" />
         </div>
       )}
 
-      {tab === 'executivo' && period && (
-        <div role="tabpanel" aria-label="Visão executiva">
-          <ExecutiveSection period={period} analytics={data} stale={analytics.loading} />
-        </div>
-      )}
-
-      {data && tab !== 'executivo' && (
+      {data && (
         <div role="tabpanel" aria-label={TABS.find((item) => item.id === tab)?.label}>
           {tab === 'retencao' && <RetentionSection data={data} stale={analytics.loading} />}
           {tab === 'ferramentas' && <ToolsSection data={data} stale={analytics.loading} />}

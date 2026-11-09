@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { costAlerts, summarizeCosts, type AiCosts, type CostModel } from './aiCosts'
-import { buildInsights, executiveMetrics, planMargin, toCsv, type Business } from './business'
-import type { Dashboard } from './adminDashboard'
+import { buildInsights, planMargin, toCsv, type Business } from './business'
 
 const model = (overrides: Partial<CostModel> = {}): CostModel => ({
   slug: 'foto',
@@ -92,12 +91,6 @@ describe('custos de IA', () => {
   })
 })
 
-const dashboard = {
-  users: { total: 100, active_in_period: 30, new_in_period: 20, new_previous: 10, paying: 10 },
-  plan_distribution: [{ slug: 'gratis', name: 'Grátis', users: 90 }],
-  finance: { mrr_cents: 100_000, received_cents: 120_000, refunds_cents: 20_000, churn_lost: 1, churn_base: 10, cancellations: 2 },
-} as unknown as Dashboard
-
 const business = (overrides: Partial<Business> = {}): Business => ({
   period: { from: '', to: '' },
   ai: { cost_brl: 150, cost_previous_brl: 100, generations: 100, generations_previous: 100, unknown_cost: 0, estimated_cost: 0 },
@@ -118,30 +111,7 @@ const business = (overrides: Partial<Business> = {}): Business => ({
   ...overrides,
 })
 
-describe('analytics executivo', () => {
-  it('calcula ARR, ARPU, churn, margem bruta e lucro só com despesas registradas', () => {
-    const metrics = executiveMetrics(dashboard, business())
-    expect(metrics.freeUsers).toBe(90)
-    expect(metrics.conversion).toBe(0.1)
-    expect(metrics.conversionChange).toBeCloseTo(-0.5)
-    expect(metrics.money).toEqual({
-      mrrCents: 100_000,
-      arrCents: 1_200_000,
-      arpuCents: 10_000,
-      churn: 0.1,
-      cancellations: 2,
-      netReceivedCents: 100_000,
-      paymentFeesCents: 5_000,
-      expensesCents: 10_000,
-      grossMargin: 0.85,
-      profitCents: 100_000 - 5_000 - 15_000 - 10_000,
-    })
-  })
-
-  it('sem permissão de financeiro, o bloco de dinheiro some', () => {
-    expect(executiveMetrics({ ...dashboard, finance: null }, business({ money: null })).money).toBeNull()
-  })
-
+describe('negócio', () => {
   it('insights disparam por regra e com volume mínimo', () => {
     const ids = buildInsights(
       business({
