@@ -125,6 +125,9 @@ export type UserDetail = z.infer<typeof userDetailSchema>
 export const adminPlanSchema = z.object({
   slug: z.string(),
   name: z.string(),
+  /** Rascunho não vende: só entra no checkout com a virada (0018/0019). */
+  status: z.enum(['draft', 'live', 'legacy']).catch('live'),
+  line: z.enum(['creator', 'business']).catch('creator'),
   price_cents: numeric,
   monthly_credits: numeric,
   max_concurrent: numeric,

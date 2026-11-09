@@ -1,10 +1,14 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { formatBRL } from '@/domain/format'
 import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { useQuery } from '@/hooks/useQuery'
 import { useToast } from '@/hooks/useToast'
-import { fetchAdminPlans, updatePlan, updatePlanLimits, type AdminPlan } from '@/lib/adminApi'
+import { fetchAdminPlans, fetchPlanEconomics, updatePlan, updatePlanLimits, type AdminPlan } from '@/lib/adminApi'
 import { errorMessage } from '@/lib/api'
+import { Section } from './dashboard/DashboardSections'
+import { PlanTargets } from './finance/PlanTargets'
+import { formatPercent } from './finance/format'
 import { Button } from '../ui/Button'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { TextField } from '../ui/Field'
@@ -109,15 +113,76 @@ function PlanRow({ plan, canEdit, onSaved }: { readonly plan: AdminPlan; readonl
   )
 }
 
+function DraftCard({ plan, margin, target }: { readonly plan: AdminPlan; readonly margin: number | null; readonly target: number | null }) {
+  const below = margin !== null && target !== null && margin < target
+  return (
+    <article className="space-y-3 rounded-3xl bg-surface p-5 ring-1 ring-dashed ring-white/[0.1]">
+      <header className="flex items-baseline justify-between gap-3">
+        <h3 className="font-headline text-xl text-zinc-100">{plan.name}</h3>
+        <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[11px] font-semibold text-zinc-400">rascunho</span>
+      </header>
+      <dl className="grid grid-cols-3 gap-3 text-sm">
+        <div>
+          <dt className="text-[12px] text-zinc-500">Preço</dt>
+          <dd className="font-semibold text-zinc-100">{formatBRL(plan.price_cents)}/mês</dd>
+        </div>
+        <div>
+          <dt className="text-[12px] text-zinc-500">Créditos</dt>
+          <dd className="font-semibold text-zinc-100">{plan.monthly_credits.toLocaleString('pt-BR')}</dd>
+        </div>
+        <div>
+          <dt className="text-[12px] text-zinc-500">Margem no uso integral</dt>
+          <dd className={below ? 'font-semibold text-red-300' : 'font-semibold text-accent-soft'}>{formatPercent(margin)}</dd>
+        </div>
+      </dl>
+    </article>
+  )
+}
+
 export function PlansTab() {
   const { can } = useAdminAccess()
   const plans = useQuery(fetchAdminPlans, 'Não deu para carregar os planos.')
+  const economics = useQuery(fetchPlanEconomics, 'Não deu para carregar a margem dos planos.')
+  const all = plans.data ?? []
+  const selling = all.filter((plan) => plan.status !== 'draft')
+  const drafts = all.filter((plan) => plan.status === 'draft' && plan.line === 'creator')
+  const marginOf = (slug: string) => economics.data?.plans.find((plan) => plan.slug === slug)?.full_use_margin ?? null
+  const target = economics.data?.finance.min_margin_rate ?? null
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-10">
       {plans.error && <Notice tone="error">{plans.error}</Notice>}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {plans.data?.map((plan) => <PlanRow key={`${plan.slug}:${plan.version}:${plan.active}:${plan.daily_credit_limit}:${plan.monthly_credit_limit}`} plan={plan} canEdit={can('plans.manage')} onSaved={() => void plans.reload()} />)}
-      </div>
+
+      <Section title="No checkout agora" description="É o que quem assina hoje paga e recebe. Mudar preço ou créditos aqui cria uma versão nova do plano; quem já assina mantém o contratado.">
+        <div className="grid gap-4 lg:grid-cols-2">
+          {selling.map((plan) => (
+            <PlanRow key={`${plan.slug}:${plan.version}:${plan.active}:${plan.daily_credit_limit}:${plan.monthly_credit_limit}`} plan={plan} canEdit={can('plans.manage')} onSaved={() => void plans.reload()} />
+          ))}
+        </div>
+      </Section>
+
+      {drafts.length > 0 && (
+        <Section title="Proposta nova, em rascunho" description="Não aparece no checkout nem na landing. Só entra no ar pela virada de preços, com a sua aprovação.">
+          <div className="grid gap-4 lg:grid-cols-3">
+            {drafts.map((plan) => (
+              <DraftCard key={plan.slug} plan={plan} margin={marginOf(plan.slug)} target={target} />
+            ))}
+          </div>
+          <p className="text-sm text-zinc-400">
+            Créditos e preço dos rascunhos mudam na{' '}
+            <Link to="/admin/financeiro?aba=calculadora" className="font-semibold text-accent-soft underline-offset-4 hover:underline">
+              calculadora de planos
+            </Link>
+            , e a virada fica em{' '}
+            <Link to="/admin/financeiro?aba=creditos" className="font-semibold text-accent-soft underline-offset-4 hover:underline">
+              Preços e créditos
+            </Link>
+            .
+          </p>
+        </Section>
+      )}
+
+      {economics.data && <PlanTargets economics={economics.data} />}
     </div>
   )
 }
