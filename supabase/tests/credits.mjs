@@ -1867,4 +1867,46 @@ await test('analytics: retenção, ferramentas, créditos e tokens; custo e e-ma
   await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_analytics(now(), now() - interval '1 day')`)), 'invalid_period')
 })
 
+// ------------------------------------------------------- listas do admin (0022)
+
+await test('admin: lista gerações e assinaturas com filtro; valores só para o financeiro', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const failed = (await create(db, ana, 'foto')).rows[0]
+  await db.query(`select fail_generation($1, 'fornecedor fora do ar')`, [failed.id])
+  await create(db, bia, 'foto')
+  const sub = await newSubscription(db, ana, 'pro')
+  await activate(db, sub, 'pay_lists')
+
+  const list = (args) => as(db, 'authenticated', dona, async () => (await db.query(`select admin_generations(${args}) as r`)).rows[0].r)
+  const all = await list('')
+  assert.equal(all.total, 2)
+  const onlyFailed = await list(`'failed'`)
+  assert.deepEqual([onlyFailed.total, onlyFailed.rows[0].email, onlyFailed.rows[0].error], [1, 'ana@x.com', 'fornecedor fora do ar'])
+  assert.equal((await list(`null, null, 'BIA@'`)).total, 1)
+  assert.equal((await list(`null, null, null, 1, 0`)).rows.length, 1)
+
+  const subs = await as(db, 'authenticated', dona, async () => (await db.query(`select admin_subscriptions() as r`)).rows[0].r)
+  assert.equal(subs.total, 1)
+  assert.equal(subs.rows[0].email, 'ana@x.com')
+  assert.equal(subs.rows[0].status, 'active')
+  assert.equal(subs.rows[0].payments, 1)
+  assert.ok(subs.rows[0].paid_cents > 0)
+  assert.equal(subs.counts.active, 1)
+
+  const support = await newUser(db, 'suporte@x.com')
+  await makeAdmin(db, support, 'support')
+  const seen = await as(db, 'authenticated', support, async () => (await db.query(`select admin_subscriptions() as r`)).rows[0].r)
+  assert.deepEqual([seen.rows[0].price_cents, seen.rows[0].paid_cents], [null, null])
+  const gens = await as(db, 'authenticated', support, async () => (await db.query(`select admin_generations() as r`)).rows[0].r)
+  assert.equal(gens.rows[0].cost_usd, null)
+
+  const analyst = await newUser(db, 'analista@x.com')
+  await makeAdmin(db, analyst, 'analyst')
+  await expectError(as(db, 'authenticated', analyst, () => db.query(`select admin_generations()`)), 'forbidden')
+  await expectError(as(db, 'authenticated', bia, () => db.query(`select admin_subscriptions()`)), 'forbidden')
+})
+
 console.log(`\n${passed} testes do banco passaram`)

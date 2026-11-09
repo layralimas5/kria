@@ -3,6 +3,7 @@
 
 import { z } from 'zod'
 import { analyticsSchema } from '@/domain/adminAnalytics'
+import { generationPageSchema, PAGE_SIZE, subscriptionPageSchema } from '@/domain/adminLists'
 import { adminMeSchema, adminRoleSchema, dashboardSchema, type AdminMe, type AdminRole, type Period } from '@/domain/adminDashboard'
 import { financeSchema, financeSettingsSchema, type FinanceSettings } from '@/domain/finance'
 import { modelQuotesSchema, preflightSchema, type Tariff } from '@/domain/creditPolicy'
@@ -71,6 +72,22 @@ export const fetchDashboard = (period: Period) =>
 
 export const fetchAnalytics = (period: Period) =>
   rpc('admin_analytics', { p_from: period.from.toISOString(), p_to: period.to.toISOString() }, analyticsSchema)
+
+export interface GenerationFilters {
+  readonly status: string | null
+  readonly model: string | null
+  readonly email: string
+}
+
+export const fetchGenerations = (filters: GenerationFilters, page: number) =>
+  rpc(
+    'admin_generations',
+    { p_status: filters.status, p_model: filters.model, p_email: filters.email || null, p_limit: PAGE_SIZE, p_offset: page * PAGE_SIZE },
+    generationPageSchema,
+  )
+
+export const fetchSubscriptions = (status: string | null, email: string, page: number) =>
+  rpc('admin_subscriptions', { p_status: status, p_email: email || null, p_limit: PAGE_SIZE, p_offset: page * PAGE_SIZE }, subscriptionPageSchema)
 
 const numeric = z.coerce.number()
 

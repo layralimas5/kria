@@ -42,6 +42,8 @@ const MultiplierProjectPage = page(() => import('@/pages/MultiplierProjectPage')
 const AdminRoot = page(() => import('@/pages/admin/AdminRoot'), 'AdminRoot')
 const AdminDashboardPage = page(() => import('@/pages/admin/AdminDashboardPage'), 'AdminDashboardPage')
 const AdminAnalyticsPage = page(() => import('@/pages/admin/AdminAnalyticsPage'), 'AdminAnalyticsPage')
+const AdminGenerationsPage = page(() => import('@/pages/admin/AdminListsPages'), 'AdminGenerationsPage')
+const AdminSubscriptionsPage = page(() => import('@/pages/admin/AdminListsPages'), 'AdminSubscriptionsPage')
 const AdminUsersPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminUsersPage')
 const AdminPlansPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminPlansPage')
 const AdminModelsPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminModelsPage')
@@ -99,6 +101,8 @@ export function App() {
                 <Route index element={<AdminDashboardPage />} />
                 <Route path="analytics" element={<AdminAnalyticsPage />} />
                 <Route path="usuarios" element={<AdminUsersPage />} />
+                <Route path="geracoes" element={<AdminGenerationsPage />} />
+                <Route path="assinaturas" element={<AdminSubscriptionsPage />} />
                 <Route path="modelos" element={<AdminModelsPage />} />
                 <Route path="planos" element={<AdminPlansPage />} />
                 <Route path="financeiro" element={<AdminFinancePage />} />

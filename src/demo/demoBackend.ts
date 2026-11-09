@@ -8,6 +8,7 @@ import { assistantToolSchema } from '@/domain/types'
 import { ADMIN_ROLE_LABELS, adminRoleSchema } from '@/domain/adminDashboard'
 import { buildDemoDashboard } from './demoAdmin'
 import { buildDemoAnalytics } from './demoAnalytics'
+import { demoGenerations, demoSubscriptions } from './demoLists'
 import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_USER_ID, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 import { DEMO_VIDEO, demoImageAt, demoMediaType } from './demoMedia'
@@ -625,6 +626,10 @@ function adminRpc(name: string, body: Row): Response | null {
       const users = [demoUserRow(), ...state.otherUsers]
       return json(users.filter((user) => [user.email, user.username, user.display_name].some((field) => String(field ?? '').toLowerCase().includes(term))))
     }
+    case 'admin_generations':
+      return json(demoGenerations(state, String(demoUserRow().email), body))
+    case 'admin_subscriptions':
+      return json(demoSubscriptions(state, String(demoUserRow().email), body))
     case 'admin_user_detail': {
       const self = body.p_user_id === DEMO_USER_ID
       return json({

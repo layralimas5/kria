@@ -39,14 +39,14 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
     label: 'Operação',
     items: [
       { label: 'Usuários', icon: Users, to: '/admin/usuarios', permission: 'users.view' },
-      { label: 'Gerações', icon: Sparkles },
+      { label: 'Gerações', icon: Sparkles, to: '/admin/geracoes', permission: 'users.view' },
       { label: 'Modelos e custos', icon: Cpu, to: '/admin/modelos', permission: 'models.view' },
     ],
   },
   {
     label: 'Comercial',
     items: [
-      { label: 'Assinaturas', icon: CreditCard },
+      { label: 'Assinaturas', icon: CreditCard, to: '/admin/assinaturas', permission: 'users.view' },
       { label: 'Planos', icon: Tags, to: '/admin/planos', permission: 'plans.view' },
       { label: 'Financeiro', icon: Wallet, to: '/admin/financeiro', permission: 'finance.view' },
     ],
