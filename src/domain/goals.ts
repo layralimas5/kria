@@ -1,5 +1,5 @@
 import type { PlanTool } from './plans'
-import type { Goal } from './types'
+import type { Goal, MediaKind } from './types'
 
 export interface QuickAction {
   readonly title: string
@@ -29,12 +29,14 @@ export type HomeActionId = (typeof HOME_ACTION_IDS)[number]
 
 export interface HomeAction extends QuickAction {
   readonly id: HomeActionId
-  /** Ferramenta de plano que libera a ação; sem ela, a ação aparece com cadeado e leva aos planos. */
+  /** Ferramenta de plano que libera a ação; sem ela, a ação não aparece. */
   readonly tool?: PlanTool
+  /** Tipo de criação que precisa de um modelo liberado no plano (vídeo). */
+  readonly kind?: MediaKind
 }
 
 const ACTIONS: Record<HomeActionId, HomeAction> = {
-  video: { id: 'video', title: 'Criar vídeo', description: 'Anime uma foto ou personagem com movimento e som.', to: '/estudio?modo=video' },
+  video: { id: 'video', title: 'Criar vídeo', description: 'Anime uma foto ou personagem com movimento e som.', to: '/estudio?modo=video', kind: 'video' },
   image: { id: 'image', title: 'Criar imagem', description: 'Descreva a cena e receba uma foto realista.', to: '/estudio?modo=imagem' },
   persona: { id: 'persona', title: 'Criar personagem', description: 'O mesmo rosto em todas as fotos e vídeos.', to: '/personas' },
   ugc: { id: 'ugc', title: 'Criar UGC', description: 'Vídeo estilo criador apresentando o produto, com cenas para o Studio.', to: '/assistente/ugc', tool: 'ugc_studio' },
@@ -57,7 +59,14 @@ const GOAL_PRIORITY: Record<Goal, readonly HomeActionId[]> = {
   all_tools: [],
 }
 
-export function homeActions(goal: Goal, hasTool: (tool: PlanTool) => boolean): readonly HomeAction[] {
+/** As portas do dashboard na ordem do objetivo, só com o que o plano libera. */
+export function homeActions(
+  goal: Goal,
+  hasTool: (tool: PlanTool) => boolean,
+  canCreate: (kind: MediaKind) => boolean = () => true,
+): readonly HomeAction[] {
   const order = [...new Set([...GOAL_PRIORITY[goal], ...HOME_ACTION_IDS])]
-  return order.map((id) => (id === 'projects' && !hasTool('projects') ? LIBRARY : ACTIONS[id]))
+  return order
+    .map((id) => (id === 'projects' && !hasTool('projects') ? LIBRARY : ACTIONS[id]))
+    .filter((action) => (action.tool === undefined || hasTool(action.tool)) && (action.kind === undefined || canCreate(action.kind)))
 }

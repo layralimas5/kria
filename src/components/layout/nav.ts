@@ -21,7 +21,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { planIncludes, type PlanTool } from '@/domain/plans'
-import type { Plan } from '@/domain/types'
+import type { MediaKind, Plan } from '@/domain/types'
 
 export interface NavItem {
   readonly label: string
@@ -32,6 +32,8 @@ export interface NavItem {
   readonly soon?: true
   /** Só aparece para o plano que inclui essa ferramenta. Sem `tool`, é de todos. */
   readonly tool?: PlanTool
+  /** Só aparece se o plano libera algum modelo desse tipo no Estúdio. */
+  readonly mediaKind?: MediaKind
   /** Imagem e Vídeo apontam para a mesma rota; quem decide o ativo é o `?modo`. */
   readonly isActive: (pathname: string, params: URLSearchParams) => boolean
 }
@@ -63,7 +65,7 @@ export const MULTIPLIER_TAB: NavItem = {
   isActive: (pathname) => pathname === '/multiplicador' || pathname.startsWith('/multiplicador/'),
 }
 export const IMAGE_TAB: NavItem = { label: 'Imagens', to: '/estudio?modo=imagem', icon: ImageIcon, isActive: isStudioMode('image') }
-export const VIDEO_TAB: NavItem = { label: 'Vídeos', to: '/estudio?modo=video', icon: Clapperboard, badge: 'NOVO', isActive: isStudioMode('video') }
+export const VIDEO_TAB: NavItem = { label: 'Vídeos', to: '/estudio?modo=video', icon: Clapperboard, badge: 'NOVO', mediaKind: 'video', isActive: isStudioMode('video') }
 export const PERSONAS_TAB: NavItem = { label: 'Personagens', to: '/personas', icon: UserRound, badge: 'TOP', isActive: isPath('/personas') }
 export const UGC_TAB: NavItem = { label: 'UGC', to: '/assistente/ugc', icon: Megaphone, tool: 'ugc_studio', isActive: isAssistant('ugc') }
 export const IDEAS_TAB: NavItem = { label: 'Ideias', to: '/assistente/ideias', icon: Lightbulb, tool: 'copy', isActive: isAssistant('ideias') }
@@ -94,11 +96,13 @@ const NAV_GROUPS: readonly NavGroup[] = [
   { title: 'Gerenciamento', items: [BRANDS_TAB, PROJECTS_TAB, CREDITS_TAB, SUBSCRIPTION_TAB, SETTINGS_TAB] },
 ]
 
-/** O menu do plano em vigor: o que o plano não inclui não aparece. */
-export function navGroupsFor(plan: Plan | null): readonly NavGroup[] {
+/** O menu do plano em vigor: ferramenta ou tipo de criação que o plano não inclui não aparece. */
+export function navGroupsFor(plan: Plan | null, kinds: readonly MediaKind[] | null): readonly NavGroup[] {
+  const allowed = (item: NavItem) =>
+    (item.tool === undefined || planIncludes(plan, item.tool)) && (item.mediaKind === undefined || (kinds ?? []).includes(item.mediaKind))
   return NAV_GROUPS.map((group) => ({
     ...group,
-    items: group.items.filter((item) => item.tool === undefined || planIncludes(plan, item.tool)),
+    items: group.items.filter(allowed),
   })).filter((group) => group.items.length > 0)
 }
 

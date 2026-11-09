@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Clapperboard, ImageIcon, Lock } from 'lucide-react'
+import { Clapperboard, ImageIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { modelSpecs } from '@/domain/format'
 import { canUseModel } from '@/domain/plans'
@@ -15,7 +15,7 @@ interface ModelsOverviewProps {
   readonly usage: ReadonlyMap<string, number>
 }
 
-/** Modelos ativos no catálogo, com preço e se o plano atual libera. */
+/** Os modelos que o plano atual libera, com o preço em créditos. O que o plano não inclui não aparece. */
 export function ModelsOverview({ models, planSlug, usage }: ModelsOverviewProps) {
   const favorites = new Set(
     [...usage.entries()]
@@ -35,13 +35,12 @@ export function ModelsOverview({ models, planSlug, usage }: ModelsOverviewProps)
         </Link>
       </div>
       <ul className="divide-y divide-white/[0.05] overflow-hidden rounded-3xl bg-surface ring-1 ring-white/[0.06]">
-        {models.map((model) => {
-          const allowed = canUseModel(model.allowed_plans, planSlug)
+        {models.filter((model) => canUseModel(model.allowed_plans, planSlug)).map((model) => {
           const Icon = model.kind === 'video' ? Clapperboard : ImageIcon
           return (
             <li key={model.slug}>
               <Link
-                to={allowed ? `/estudio?modo=${model.kind === 'video' ? 'video' : 'imagem'}` : '/assinatura'}
+                to={`/estudio?modo=${model.kind === 'video' ? 'video' : 'imagem'}`}
                 className={clsx('flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.03]', FOCUS)}
               >
                 <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-surface-3 text-zinc-300">
@@ -59,13 +58,7 @@ export function ModelsOverview({ models, planSlug, usage }: ModelsOverviewProps)
                     {[model.description, ...modelSpecs(model.defaults)].join(' · ')}
                   </span>
                 </span>
-                {allowed ? (
-                  <span className="shrink-0 text-xs font-bold tabular-nums text-zinc-400">{model.credits} cr</span>
-                ) : (
-                  <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-zinc-500">
-                    <Lock className="size-3.5" aria-hidden="true" /> Plano pago
-                  </span>
-                )}
+                <span className="shrink-0 text-xs font-bold tabular-nums text-zinc-400">{model.credits} cr</span>
               </Link>
             </li>
           )

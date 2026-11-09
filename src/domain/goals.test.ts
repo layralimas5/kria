@@ -6,7 +6,7 @@ const allTools = () => true
 const without = (missing: PlanTool) => (tool: PlanTool) => tool !== missing
 
 describe('homeActions', () => {
-  it('mostra sempre as oito portas, sem repetir', () => {
+  it('com tudo liberado, mostra as oito portas, sem repetir', () => {
     const actions = homeActions('all_tools', allTools)
     expect(actions.map((action) => action.id)).toEqual([...HOME_ACTION_IDS])
   })
@@ -21,5 +21,12 @@ describe('homeActions', () => {
     const last = homeActions('all_tools', without('projects')).at(-1)
     expect(last).toMatchObject({ to: '/galeria', title: 'Criações anteriores' })
     expect(last?.tool).toBeUndefined()
+  })
+
+  it('o que o plano não libera não aparece: UGC sem a ferramenta, vídeo sem modelo de vídeo', () => {
+    const ids = homeActions('all_tools', without('ugc_studio'), (kind) => kind !== 'video').map((action) => action.id)
+    expect(ids).not.toContain('ugc')
+    expect(ids).not.toContain('video')
+    expect(ids).toContain('image')
   })
 })

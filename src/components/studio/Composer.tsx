@@ -27,10 +27,12 @@ const KINDS = [
   { value: 'video', label: 'Vídeo', icon: Clapperboard },
 ] as const
 
-function KindSwitch({ value, onChange }: { readonly value: MediaKind; readonly onChange: (kind: MediaKind) => void }) {
+function KindSwitch({ value, kinds, onChange }: { readonly value: MediaKind; readonly kinds: readonly MediaKind[]; readonly onChange: (kind: MediaKind) => void }) {
+  // Um tipo só (plano sem vídeo): não há o que trocar.
+  if (kinds.length < 2) return null
   return (
     <div role="radiogroup" aria-label="Tipo de criação" className="inline-flex rounded-lg bg-surface-3/80 p-0.5">
-      {KINDS.map(({ value: kind, label, icon: Icon }) => (
+      {KINDS.filter((item) => kinds.includes(item.value)).map(({ value: kind, label, icon: Icon }) => (
         <button
           key={kind}
           type="button"
@@ -232,7 +234,7 @@ export function Composer({ studio, personas, images }: ComposerProps) {
 
           {/* flex-wrap, não overflow: um container com rolagem cortaria o menu de modelos que abre para cima. */}
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <KindSwitch value={studio.kind} onChange={studio.setKind} />
+            <KindSwitch value={studio.kind} kinds={studio.kinds} onChange={studio.setKind} />
             <ModelMenu models={studio.modelsOfKind} value={studio.model} onChange={studio.selectModel} />
             <AspectMenu studio={studio} />
             {specs.map((spec) => (

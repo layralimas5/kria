@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { Coins, Menu } from 'lucide-react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useAccount } from '@/hooks/useAccount'
+import { usePlanModels } from '@/hooks/usePlanModels'
 import { useBalance } from '@/hooks/useBalance'
 import { UserMenu } from '../account/UserMenu'
 import { BrandSwitcher } from '../workspace/BrandSwitcher'
@@ -43,9 +44,10 @@ function FullMenu({ onNavigate }: { readonly onNavigate: () => void }) {
   const { pathname } = useLocation()
   const [params] = useSearchParams()
   const { plan } = useAccount()
+  const { kinds } = usePlanModels()
   return (
     <nav aria-label="Todas as áreas" className="max-h-[70dvh] w-[min(88vw,20rem)] space-y-3 overflow-y-auto p-1">
-      {navGroupsFor(plan).map((group) => (
+      {navGroupsFor(plan, kinds).map((group) => (
         <div key={group.title}>
           <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500">{group.title}</p>
           <ul>

@@ -8,6 +8,7 @@ import { ModelTiles } from '@/components/studio/ModelTiles'
 import { Notice } from '@/components/ui/Notice'
 import type { Generation } from '@/domain/types'
 import { useModels, usePersonas } from '@/hooks/useCatalog'
+import { usePlanModels } from '@/hooks/usePlanModels'
 import { useGenerations } from '@/hooks/useGenerations'
 import { useStudio } from '@/hooks/useStudio'
 import { useProjects } from '@/hooks/useWorkspace'
@@ -53,7 +54,8 @@ export function StudioPage() {
   const models = useModels()
   const personas = usePersonas()
   const { generations, error } = useGenerations()
-  const studio = useStudio(models.data ?? [])
+  const planModels = usePlanModels()
+  const studio = useStudio(planModels.models ?? [])
   const [personaSource, setPersonaSource] = useState<Generation | null>(null)
 
   const ownImages = useMemo(

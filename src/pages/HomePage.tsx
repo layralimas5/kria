@@ -16,6 +16,7 @@ import { isOpen } from '@/domain/types'
 import { useAccount } from '@/hooks/useAccount'
 import { useBalance } from '@/hooks/useBalance'
 import { useModels, usePersonas } from '@/hooks/useCatalog'
+import { usePlanModels } from '@/hooks/usePlanModels'
 import { useGenerations } from '@/hooks/useGenerations'
 import { displayNameOf, useProfile } from '@/hooks/useProfile'
 
@@ -54,7 +55,8 @@ export function HomePage() {
 
   const name = displayNameOf(profile)
   const hasTool = (tool: PlanTool) => planIncludes(plan, tool)
-  const actions = homeActions(preferences?.goal ?? 'all_tools', hasTool)
+  const { kinds } = usePlanModels()
+  const actions = homeActions(preferences?.goal ?? 'all_tools', hasTool, (kind) => (kinds ?? []).includes(kind))
 
   return (
     <div className="mx-auto max-w-6xl space-y-10 pb-10 pt-4">
@@ -77,7 +79,7 @@ export function HomePage() {
 
       <HomeStats wallet={wallet} plan={plan} subscription={subscription} running={running} />
 
-      <QuickActions actions={actions} hasTool={hasTool} />
+      <QuickActions actions={actions} />
 
       <section aria-labelledby="recent-title" className="min-w-0">
         <SectionTitle id="recent-title" title="Criações recentes" to="/galeria" linkLabel="Ver todas" />

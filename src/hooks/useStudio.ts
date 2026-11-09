@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { canUseModel } from '@/domain/plans'
-import type { ImageSource, MediaKind, Model } from '@/domain/types'
+import { MEDIA_KINDS, type ImageSource, type MediaKind, type Model } from '@/domain/types'
 import { errorMessage, generate } from '@/lib/api'
 import { useAccount } from './useAccount'
 import { useActiveBrand } from './useActiveBrand'
@@ -30,7 +30,9 @@ export function useStudio(models: readonly Model[]) {
   const { plan } = useAccount()
   const { upsert } = useGenerations()
 
-  const kind: MediaKind = params.get('modo') === 'video' ? 'video' : 'image'
+  // Só os tipos que o plano libera: sem modelo de vídeo, o Estúdio fica em imagem mesmo com ?modo=video.
+  const kinds = useMemo(() => MEDIA_KINDS.filter((item) => models.some((model) => model.kind === item && model.studio)), [models])
+  const kind: MediaKind = params.get('modo') === 'video' && kinds.includes('video') ? 'video' : 'image'
   const setKind = useCallback(
     (next: MediaKind) =>
       setParams(
@@ -131,6 +133,7 @@ export function useStudio(models: readonly Model[]) {
 
   return {
     kind,
+    kinds,
     setKind,
     modelsOfKind,
     model,

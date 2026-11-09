@@ -3,6 +3,7 @@ import { Coins } from 'lucide-react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { formatCredits } from '@/domain/format'
 import { useAccount } from '@/hooks/useAccount'
+import { usePlanModels } from '@/hooks/usePlanModels'
 import { useBalance } from '@/hooks/useBalance'
 import { Logo, LogoMark } from '../Logo'
 import { Badge } from '../ui/Badge'
@@ -115,6 +116,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { pathname } = useLocation()
   const [params] = useSearchParams()
   const { plan } = useAccount()
+  const { kinds } = usePlanModels()
 
   return (
     <aside
@@ -128,7 +130,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </div>
 
       <nav aria-label="Principal" className={clsx('flex-1 space-y-4 overflow-y-auto py-2', collapsed ? 'px-3' : 'px-3')}>
-        {navGroupsFor(plan).map((group) => (
+        {navGroupsFor(plan, kinds).map((group) => (
           <div key={group.title}>
             {collapsed ? (
               <div aria-hidden="true" className="mx-auto mb-2 h-px w-6 bg-white/10" />
