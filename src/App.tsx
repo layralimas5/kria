@@ -51,6 +51,7 @@ const AdminAuditPage = page(() => import('@/pages/admin/AdminSectionPages'), 'Ad
 const AdminFinancePage = page(() => import('@/pages/admin/AdminFinancePage'), 'AdminFinancePage')
 const AdminAdminsPage = page(() => import('@/pages/admin/AdminAdminsPage'), 'AdminAdminsPage')
 const AdminSecurityPage = page(() => import('@/pages/admin/AdminSecurityPage'), 'AdminSecurityPage')
+const AdminAccountPage = page(() => import('@/pages/admin/AdminAccountPage'), 'AdminAccountPage')
 const TermsPage = page(() => import('@/landing/TermsPage'), 'TermsPage')
 
 function PageFallback() {
@@ -109,6 +110,7 @@ export function App() {
                 <Route path="auditoria" element={<AdminAuditPage />} />
                 <Route path="administradores" element={<AdminAdminsPage />} />
                 <Route path="seguranca" element={<AdminSecurityPage />} />
+                <Route path="conta" element={<AdminAccountPage />} />
                 <Route path="*" element={<Navigate to="/admin" replace />} />
               </Route>
               <Route

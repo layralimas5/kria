@@ -1,13 +1,13 @@
 import { ChevronLeft, Download, KeyRound, LogOut, Mail, Target, Trash2 } from 'lucide-react'
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { GoalSelect } from '@/components/account/GoalSelect'
+import { PasswordForm } from '@/components/account/PasswordForm'
 import { DeleteAccount, ExportData } from '@/components/account/PrivacyActions'
 import { Button } from '@/components/ui/Button'
-import { TextField } from '@/components/ui/Field'
 import { Notice } from '@/components/ui/Notice'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { changePassword, errorMessage, signOutEverywhere } from '@/lib/api'
+import { errorMessage, signOutEverywhere } from '@/lib/api'
 import { useSession } from '@/hooks/useSession'
 
 function SettingsCard({ icon, title, description, children }: { icon: ReactNode; title: string; description: string; children: ReactNode }) {
@@ -25,43 +25,6 @@ function SettingsCard({ icon, title, description, children }: { icon: ReactNode;
   )
 }
 
-function PasswordForm() {
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState<{ tone: 'error' | 'success'; text: string } | null>(null)
-
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (password.length < 8) return setMessage({ tone: 'error', text: 'A senha precisa de pelo menos 8 caracteres.' })
-    if (password !== confirm) return setMessage({ tone: 'error', text: 'As duas senhas não são iguais.' })
-    setSaving(true)
-    setMessage(null)
-    try {
-      await changePassword(password)
-      setPassword('')
-      setConfirm('')
-      setMessage({ tone: 'success', text: 'Senha trocada.' })
-    } catch (passwordError) {
-      setMessage({ tone: 'error', text: errorMessage(passwordError) })
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <TextField label="Nova senha" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} />
-        <TextField label="Repita a nova senha" type="password" autoComplete="new-password" value={confirm} onChange={(event) => setConfirm(event.target.value)} minLength={8} />
-      </div>
-      {message && <Notice tone={message.tone}>{message.text}</Notice>}
-      <Button type="submit" loading={saving} disabled={!password || !confirm}>
-        Trocar senha
-      </Button>
-    </form>
-  )
-}
 
 export function AccountSettingsPage() {
   const { session } = useSession()

@@ -1,312 +1,316 @@
 import clsx from 'clsx'
-import { Search } from 'lucide-react'
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { formatBRL, formatDateTime } from '@/domain/format'
-import { STATUS_LABELS } from '@/domain/plans'
+import { ChevronRight, Search, SlidersHorizontal, UserPlus, Users } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import {
+  activeFilterCount,
+  displayName,
+  EMPTY_USER_FILTERS,
+  SORT_LABELS,
+  SUBSCRIPTION_FILTER_LABELS,
+  USER_SORTS,
+  USERS_PAGE_SIZE,
+  type UserFilters,
+  type UserRow,
+} from '@/domain/adminUsers'
+import { formatDate, formatDateTime } from '@/domain/format'
 import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { useQuery } from '@/hooks/useQuery'
-import { useToast } from '@/hooks/useToast'
-import { adjustCredits, fetchUserDetail, searchUsers, setSuspended, type AdminUser } from '@/lib/adminApi'
-import { errorMessage } from '@/lib/api'
+import { fetchAdminPlans, fetchUsersPage } from '@/lib/adminApi'
 import { Button } from '../ui/Button'
-import { ConfirmDialog } from '../ui/ConfirmDialog'
+import { EmptyState } from '../ui/EmptyState'
 import { TextField } from '../ui/Field'
 import { Notice } from '../ui/Notice'
+import { ScopeSelect } from './dashboard/ScopeFilter'
+import { formatBrlValue, formatNumber } from './finance/format'
+import { Pager } from './lists/ListControls'
+import { AdminAvatar } from './ProfileMenu'
+import { CreateUserDrawer } from './users/CreateUserDrawer'
+import { UserDrawer } from './users/UserDrawer'
 
-const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
+const ANY = 'any'
+const orNull = <T extends string>(value: string) => (value === ANY ? null : (value as T))
+const TH = 'px-3 py-3 font-bold whitespace-nowrap'
 
-function AdjustForm({ user, onDone }: { readonly user: AdminUser; readonly onDone: () => void }) {
-  const notify = useToast()
-  const [amount, setAmount] = useState('')
-  const [reason, setReason] = useState('')
-  const [confirming, setConfirming] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const value = Number.parseInt(amount, 10)
-
-  function review(event: FormEvent) {
-    event.preventDefault()
-    if (!Number.isInteger(value) || value === 0) return setError('Informe um número inteiro diferente de zero.')
-    setError(null)
-    setConfirming(true)
-  }
-
-  async function apply() {
-    setBusy(true)
-    try {
-      const balance = await adjustCredits(user.id, value, reason)
-      notify(`Ajuste feito. Saldo agora: ${balance}.`)
-      setAmount('')
-      setReason('')
-      onDone()
-    } catch (adjustError) {
-      setError(errorMessage(adjustError))
-    } finally {
-      setBusy(false)
-      setConfirming(false)
-    }
-  }
-
+function FilterPanel({ filters, plans, onChange }: { readonly filters: UserFilters; readonly plans: readonly { slug: string; name: string }[]; readonly onChange: (next: UserFilters) => void }) {
+  const set = <K extends keyof UserFilters>(key: K, value: UserFilters[K]) => onChange({ ...filters, [key]: value })
   return (
-    <form onSubmit={review} className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-[8rem_1fr]">
-        <TextField label="Créditos (+/-)" inputMode="numeric" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="50" />
-        <TextField label="Motivo (fica na auditoria)" value={reason} onChange={(event) => setReason(event.target.value)} maxLength={300} />
-      </div>
-      {error && <Notice tone="error">{error}</Notice>}
-      <Button type="submit" variant="secondary" disabled={!amount || reason.trim().length < 5}>
-        Revisar ajuste
-      </Button>
-      <ConfirmDialog
-        open={confirming}
-        title={value > 0 ? 'Conceder créditos' : 'Remover créditos'}
-        confirmLabel={value > 0 ? `Conceder ${value}` : `Remover ${Math.abs(value)}`}
-        busy={busy}
-        onConfirm={() => void apply()}
-        onCancel={() => setConfirming(false)}
-      >
-        <p>
-          {value > 0 ? 'Entram' : 'Saem'} <strong className="text-zinc-100">{Math.abs(value)} créditos</strong> do saldo comprado de {user.email}. O
-          movimento vai para o extrato da pessoa e não se desfaz: para corrigir, faça um ajuste contrário.
-        </p>
-        <p className="text-zinc-400">Motivo: {reason.trim()}</p>
-      </ConfirmDialog>
-    </form>
-  )
-}
-
-function SuspendForm({ user, onDone }: { readonly user: AdminUser; readonly onDone: () => void }) {
-  const notify = useToast()
-  const suspended = user.suspended_at !== null
-  const [reason, setReason] = useState('')
-  const [confirming, setConfirming] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  async function apply() {
-    setBusy(true)
-    setError(null)
-    try {
-      await setSuspended(user.id, !suspended, reason)
-      notify(suspended ? 'Conta reativada.' : 'Conta suspensa.')
-      setReason('')
-      onDone()
-    } catch (suspendError) {
-      setError(errorMessage(suspendError))
-    } finally {
-      setBusy(false)
-      setConfirming(false)
-    }
-  }
-
-  return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault()
-        setConfirming(true)
-      }}
-      className="space-y-3"
-    >
-      <TextField label={suspended ? 'Motivo da reativação' : 'Motivo da suspensão'} value={reason} onChange={(event) => setReason(event.target.value)} maxLength={300} />
-      {error && <Notice tone="error">{error}</Notice>}
-      <Button type="submit" variant="secondary" disabled={reason.trim().length < 5}>
-        {suspended ? 'Reativar conta' : 'Suspender conta'}
-      </Button>
-      <ConfirmDialog
-        open={confirming}
-        title={suspended ? 'Reativar conta' : 'Suspender conta'}
-        confirmLabel={suspended ? 'Reativar' : 'Suspender'}
-        busy={busy}
-        onConfirm={() => void apply()}
-        onCancel={() => setConfirming(false)}
-      >
-        <p>
-          {suspended
-            ? `${user.email} volta a gerar normalmente.`
-            : `${user.email} não consegue mais gerar nada enquanto estiver suspensa. O saldo e as criações ficam como estão.`}
-        </p>
-        <p className="text-zinc-400">Motivo: {reason.trim()}</p>
-      </ConfirmDialog>
-    </form>
-  )
-}
-
-function UserDetailPanel({ user, onChanged }: { readonly user: AdminUser; readonly onChanged: () => void }) {
-  const { can } = useAdminAccess()
-  const load = useCallback(() => fetchUserDetail(user.id), [user.id])
-  const detail = useQuery(load, 'Não deu para carregar o histórico.')
-  const refreshAll = () => {
-    void detail.reload()
-    onChanged()
-  }
-
-  return (
-    <div className="space-y-6 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
-      <div>
-        <p className="text-lg font-bold text-zinc-50">{user.display_name || user.username}</p>
-        <p className="text-sm text-zinc-400">
-          {user.email} · @{user.username}
-        </p>
-        <p className="mt-2 text-sm text-zinc-300">
-          Saldo {user.balance ?? 0} ({user.subscription_balance ?? 0} plano · {user.purchased_balance ?? 0} comprado) · {user.plan_slug ?? 'grátis'}
-          {user.subscription_status && ` (${STATUS_LABELS[user.subscription_status]})`}
-        </p>
-        {user.suspended_at && <p className="mt-1 text-sm font-semibold text-red-300">Suspensa desde {formatDateTime(user.suspended_at)}</p>}
-      </div>
-
-      {(can('credits.adjust') || can('users.manage')) && (
-        <div className="grid gap-6 lg:grid-cols-2">
-          {can('credits.adjust') && (
-            <section aria-label="Ajustar créditos">
-              <h3 className="mb-2 text-sm font-bold text-zinc-200">Ajustar créditos</h3>
-              <AdjustForm user={user} onDone={refreshAll} />
-            </section>
-          )}
-          {can('users.manage') && (
-            <section aria-label="Suspensão">
-              <h3 className="mb-2 text-sm font-bold text-zinc-200">Suspensão</h3>
-              <SuspendForm user={user} onDone={refreshAll} />
-            </section>
-          )}
-        </div>
-      )}
-
-      {detail.error && <Notice tone="error">{detail.error}</Notice>}
-      {detail.data && (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <section aria-label="Gerações">
-            <h3 className="mb-2 text-sm font-bold text-zinc-200">Gerações recentes</h3>
-            <ul className="max-h-72 divide-y divide-white/[0.05] overflow-y-auto rounded-2xl bg-surface-2 text-sm">
-              {detail.data.generations.map((generation) => (
-                <li key={generation.id} className="flex justify-between gap-3 px-3 py-2">
-                  <span className="min-w-0 truncate text-zinc-300">
-                    {generation.model_slug} · {generation.status}
-                    {generation.error && <span className="text-zinc-500"> · {generation.error}</span>}
-                  </span>
-                  <span className="shrink-0 tabular-nums text-zinc-500">{generation.credits} cr</span>
-                </li>
-              ))}
-              {detail.data.generations.length === 0 && <li className="px-3 py-4 text-center text-zinc-500">Nenhuma geração.</li>}
-            </ul>
-          </section>
-          <section aria-label="Financeiro">
-            <h3 className="mb-2 text-sm font-bold text-zinc-200">{detail.data.payments === null ? 'Extrato de créditos' : 'Pagamentos e extrato'}</h3>
-            <ul className="max-h-72 divide-y divide-white/[0.05] overflow-y-auto rounded-2xl bg-surface-2 text-sm">
-              {detail.data.payments === null && <li className="px-3 py-2 text-xs text-zinc-500">Pagamentos ficam com o financeiro.</li>}
-              {detail.data.payments?.map((payment, index) => (
-                <li key={`p-${index}`} className="flex justify-between gap-3 px-3 py-2">
-                  <span className="text-zinc-300">
-                    {payment.type === 'subscription' ? 'Mensalidade' : 'Pacote'} · {payment.status}
-                  </span>
-                  <span className="tabular-nums text-zinc-400">{formatBRL(payment.amount_cents)}</span>
-                </li>
-              ))}
-              {detail.data.ledger.map((entry) => (
-                <li key={`l-${entry.id}`} className="flex justify-between gap-3 px-3 py-2">
-                  <span className="min-w-0 truncate text-zinc-400">
-                    {entry.reason} {entry.note && `· ${entry.note}`}
-                  </span>
-                  <span className={clsx('shrink-0 tabular-nums', entry.delta > 0 ? 'text-accent' : 'text-zinc-500')}>
-                    {entry.delta > 0 ? '+' : ''}
-                    {entry.delta}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
-      )}
+    <div className="grid gap-3 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
+      <ScopeSelect
+        label="Plano"
+        value={filters.plan ?? ANY}
+        onChange={(value) => set('plan', orNull(value))}
+        options={[{ value: ANY, label: 'Todos' }, ...plans.map((plan) => ({ value: plan.slug, label: plan.name }))]}
+      />
+      <ScopeSelect
+        label="Assinatura"
+        value={filters.subscription ?? ANY}
+        onChange={(value) => set('subscription', orNull(value))}
+        options={[{ value: ANY, label: 'Todas' }, ...Object.entries(SUBSCRIPTION_FILTER_LABELS).map(([value, label]) => ({ value, label }))]}
+      />
+      <ScopeSelect
+        label="Conta"
+        value={filters.account ?? ANY}
+        onChange={(value) => set('account', orNull<'active' | 'suspended'>(value))}
+        options={[
+          { value: ANY, label: 'Todas' },
+          { value: 'active', label: 'Ativas' },
+          { value: 'suspended', label: 'Bloqueadas' },
+        ]}
+      />
+      <ScopeSelect
+        label="Último acesso"
+        value={filters.seen ?? ANY}
+        onChange={(value) => set('seen', orNull<'7d' | '30d' | 'idle30'>(value))}
+        options={[
+          { value: ANY, label: 'Qualquer' },
+          { value: '7d', label: 'Últimos 7 dias' },
+          { value: '30d', label: 'Últimos 30 dias' },
+          { value: 'idle30', label: 'Sumidos há 30+ dias' },
+        ]}
+      />
+      <ScopeSelect
+        label="Créditos"
+        value={filters.credits ?? ANY}
+        onChange={(value) => set('credits', orNull<'with' | 'without'>(value))}
+        options={[
+          { value: ANY, label: 'Todos' },
+          { value: 'with', label: 'Com saldo' },
+          { value: 'without', label: 'Sem saldo' },
+        ]}
+      />
+      <ScopeSelect
+        label="Origem"
+        value={filters.manual === null ? ANY : filters.manual ? 'manual' : 'signup'}
+        onChange={(value) => set('manual', value === ANY ? null : value === 'manual')}
+        options={[
+          { value: ANY, label: 'Todas' },
+          { value: 'manual', label: 'Criados no admin' },
+          { value: 'signup', label: 'Cadastro próprio' },
+        ]}
+      />
+      <TextField label="Cadastro de" type="date" value={filters.createdFrom} onChange={(event) => set('createdFrom', event.target.value)} />
+      <TextField label="Cadastro até" type="date" value={filters.createdTo} onChange={(event) => set('createdTo', event.target.value)} />
     </div>
   )
 }
 
-export function UsersTab() {
-  const [query, setQuery] = useState('')
-  const [submitted, setSubmitted] = useState('')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const load = useCallback(() => searchUsers(submitted), [submitted])
-  const users = useQuery(load, 'Não deu para buscar usuários.')
-  const selected = users.data?.find((user) => user.id === selectedId) ?? null
+function StatusBadge({ user }: { readonly user: UserRow }) {
+  return (
+    <span
+      className={clsx(
+        'inline-flex rounded-md px-2 py-0.5 text-[11px] font-bold',
+        user.suspended_at ? 'bg-red-400/10 text-red-300' : 'bg-emerald-400/10 text-emerald-300',
+      )}
+    >
+      {user.suspended_at ? 'Bloqueada' : 'Ativa'}
+    </span>
+  )
+}
 
-  useEffect(() => setSelectedId(null), [submitted])
+function UsersTable({ rows, showCost, onOpen }: { readonly rows: readonly UserRow[]; readonly showCost: boolean; readonly onOpen: (id: string) => void }) {
+  return (
+    <div className="overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+      <table className="w-full min-w-[60rem] text-left text-sm">
+        <caption className="sr-only">Usuários</caption>
+        <thead className="text-[11px] uppercase tracking-wider text-zinc-500">
+          <tr>
+            <th scope="col" className={TH}>Usuário</th>
+            <th scope="col" className={TH}>Plano</th>
+            <th scope="col" className={clsx(TH, 'text-right')}>Saldo</th>
+            <th scope="col" className={clsx(TH, 'text-right')}>Consumidos</th>
+            <th scope="col" className={clsx(TH, 'text-right')}>Gerações</th>
+            {showCost && <th scope="col" className={clsx(TH, 'text-right')}>Custo IA</th>}
+            <th scope="col" className={TH}>Cadastro</th>
+            <th scope="col" className={TH}>Último acesso</th>
+            <th scope="col" className={TH}>Status</th>
+            <th scope="col" className={TH}><span className="sr-only">Ações</span></th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-white/[0.05]">
+          {rows.map((user) => {
+            const name = displayName(user)
+            return (
+              <tr key={user.id} className="hover:bg-white/[0.02]">
+                <td className="px-3 py-2.5">
+                  <div className="flex items-center gap-3">
+                    <AdminAvatar name={name} path={user.avatar_path} className="size-8" />
+                    <div className="min-w-0">
+                      <p className="max-w-56 truncate font-semibold text-zinc-100">
+                        {name}
+                        {user.manual && <span className="ml-1.5 rounded bg-white/[0.06] px-1 py-px text-[10px] font-bold uppercase text-zinc-400">admin</span>}
+                      </p>
+                      <p className="max-w-56 truncate text-xs text-zinc-500">{user.email}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-3 py-2.5 text-zinc-300">
+                  {user.plan_slug}
+                  {user.courtesy && <span className="block text-[11px] text-amber-300">cortesia</span>}
+                </td>
+                <td className="px-3 py-2.5 text-right tabular-nums text-zinc-200">{formatNumber(user.balance)}</td>
+                <td className="px-3 py-2.5 text-right tabular-nums text-zinc-300">{formatNumber(user.consumed)}</td>
+                <td className="px-3 py-2.5 text-right tabular-nums text-zinc-300">{formatNumber(user.generations)}</td>
+                {showCost && <td className="px-3 py-2.5 text-right tabular-nums text-zinc-300">{user.ai_cost_brl === null ? '–' : formatBrlValue(user.ai_cost_brl)}</td>}
+                <td className="whitespace-nowrap px-3 py-2.5 text-zinc-400">{formatDate(user.created_at)}</td>
+                <td className="whitespace-nowrap px-3 py-2.5 text-zinc-400">{user.last_sign_in_at ? formatDateTime(user.last_sign_in_at) : 'nunca'}</td>
+                <td className="px-3 py-2.5">
+                  <StatusBadge user={user} />
+                </td>
+                <td className="px-2 py-2.5">
+                  <button
+                    type="button"
+                    onClick={() => onOpen(user.id)}
+                    aria-label={`Abrir conta de ${name}`}
+                    className="grid size-8 place-items-center rounded-lg text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  >
+                    <ChevronRight className="size-4" aria-hidden="true" />
+                  </button>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function TableSkeleton() {
+  return (
+    <div className="space-y-2 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]" role="status" aria-label="Carregando usuários">
+      {Array.from({ length: 6 }, (_, index) => (
+        <div key={index} className="h-11 animate-pulse rounded-xl bg-surface-2" />
+      ))}
+    </div>
+  )
+}
+
+/** Gestão de usuários: busca, filtros combinados, perfil completo e cadastro por convite. */
+export function UsersTab() {
+  const { can } = useAdminAccess()
+  const [filters, setFilters] = useState<UserFilters>(EMPTY_USER_FILTERS)
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(0)
+  const [showFilters, setShowFilters] = useState(false)
+  const [openId, setOpenId] = useState<string | null>(null)
+  const [params, setParams] = useSearchParams()
+  const creating = params.get('novo') === '1'
+  const setCreating = (open: boolean) => {
+    const next = new URLSearchParams(params)
+    if (open) next.set('novo', '1')
+    else next.delete('novo')
+    setParams(next, { replace: true })
+  }
+
+  const plans = useQuery(fetchAdminPlans, 'Não deu para carregar os planos.')
+  const livePlans = useMemo(() => (plans.data ?? []).filter((plan) => plan.status === 'live' && plan.active).map((plan) => ({ slug: plan.slug, name: plan.name })), [plans.data])
+  const load = useCallback(() => fetchUsersPage(filters, page), [filters, page])
+  const users = useQuery(load, 'Não deu para carregar os usuários.')
+  const active = activeFilterCount(filters)
+
+  useEffect(() => setPage(0), [filters])
+
+  function search(event: FormEvent) {
+    event.preventDefault()
+    setFilters((current) => ({ ...current, query }))
+  }
 
   return (
     <div className="space-y-5">
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          setSubmitted(query.trim())
-        }}
-        className="flex gap-2"
-        role="search"
-      >
-        <label htmlFor="admin-user-search" className="sr-only">
-          Buscar por e-mail, @ ou nome
-        </label>
-        <input
-          id="admin-user-search"
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="E-mail, @ ou nome"
-          className="min-h-10 w-full max-w-md rounded-xl border border-white/[0.08] bg-surface-2 px-3.5 text-[15px] text-zinc-100 placeholder:text-zinc-500 focus:border-accent/60 focus:outline-none focus:ring-2 focus:ring-accent/20"
-        />
-        <Button type="submit" variant="secondary" aria-label="Buscar">
-          <Search className="size-4" aria-hidden="true" />
-        </Button>
-      </form>
-
-      {users.error && <Notice tone="error">{users.error}</Notice>}
-
-      <div className="overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
-        <table className="w-full min-w-[40rem] text-left text-sm">
-          <thead className="text-[11px] uppercase tracking-wider text-zinc-500">
-            <tr>
-              <th scope="col" className="px-4 py-3 font-bold">Conta</th>
-              <th scope="col" className="px-4 py-3 font-bold">Plano</th>
-              <th scope="col" className="px-4 py-3 text-right font-bold">Saldo</th>
-              <th scope="col" className="px-4 py-3 text-right font-bold">Gerações</th>
-              <th scope="col" className="px-4 py-3 font-bold">Desde</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/[0.05]">
-            {users.data?.map((user) => (
-              <tr key={user.id} className={clsx(user.id === selectedId && 'bg-white/[0.04]')}>
-                <td className="px-4 py-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedId(user.id === selectedId ? null : user.id)}
-                    aria-expanded={user.id === selectedId}
-                    className={clsx('rounded text-left', FOCUS)}
-                  >
-                    <span className="block font-semibold text-zinc-100">{user.email}</span>
-                    <span className="text-xs text-zinc-500">
-                      @{user.username}
-                      {user.suspended_at && <span className="font-semibold text-red-300"> · suspensa</span>}
-                    </span>
-                  </button>
-                </td>
-                <td className="px-4 py-2.5 text-zinc-300">
-                  {user.plan_slug ?? 'grátis'}
-                  {user.subscription_status && <span className="text-xs text-zinc-500"> · {STATUS_LABELS[user.subscription_status]}</span>}
-                </td>
-                <td className="px-4 py-2.5 text-right tabular-nums text-zinc-200">{user.balance ?? 0}</td>
-                <td className="px-4 py-2.5 text-right tabular-nums text-zinc-400">{user.generations}</td>
-                <td className="px-4 py-2.5 text-zinc-500">{formatDateTime(user.created_at)}</td>
-              </tr>
-            ))}
-            {users.data?.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
-                  Ninguém encontrado.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <form onSubmit={search} role="search" className="flex flex-1 gap-2">
+          <label htmlFor="admin-user-search" className="sr-only">
+            Buscar por nome ou e-mail
+          </label>
+          <input
+            id="admin-user-search"
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Nome, e-mail ou @"
+            className="min-h-10 w-full max-w-md rounded-xl border border-white/[0.08] bg-surface-2 px-3.5 text-[15px] text-zinc-100 placeholder:text-zinc-500 focus:border-accent/60 focus:outline-none focus:ring-2 focus:ring-accent/20"
+          />
+          <Button type="submit" variant="secondary" aria-label="Buscar">
+            <Search className="size-4" aria-hidden="true" />
+          </Button>
+        </form>
+        <div className="flex flex-wrap items-end gap-2">
+          <ScopeSelect
+            label="Ordenar"
+            value={filters.sort}
+            onChange={(value) => setFilters((current) => ({ ...current, sort: value as UserFilters['sort'] }))}
+            options={USER_SORTS.filter((sort) => sort !== 'cost' || can('finance.view')).map((sort) => ({ value: sort, label: SORT_LABELS[sort] }))}
+          />
+          <Button variant="secondary" aria-expanded={showFilters} aria-controls="user-filters" onClick={() => setShowFilters((value) => !value)}>
+            <SlidersHorizontal className="size-4" aria-hidden="true" />
+            Filtros{active > 0 && ` (${active})`}
+          </Button>
+          {active > 0 && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setQuery('')
+                setFilters((current) => ({ ...EMPTY_USER_FILTERS, sort: current.sort }))
+              }}
+            >
+              Limpar tudo
+            </Button>
+          )}
+        </div>
       </div>
 
-      {selected && <UserDetailPanel key={selected.id} user={selected} onChanged={() => void users.reload()} />}
+      <div id="user-filters" hidden={!showFilters}>
+        <FilterPanel filters={filters} plans={[{ slug: 'gratis', name: 'Grátis' }, ...livePlans.filter((plan) => plan.slug !== 'gratis')]} onChange={setFilters} />
+      </div>
+
+      {users.error && <Notice tone="error">{users.error}</Notice>}
+      {!users.data && users.loading && <TableSkeleton />}
+      {users.data && users.data.rows.length === 0 && (
+        <EmptyState
+          icon={<Users className="size-6" aria-hidden="true" />}
+          title={active > 0 ? 'Ninguém com esses filtros' : 'Nenhum usuário ainda'}
+          description={active > 0 ? 'Afrouxe ou limpe os filtros para ver mais contas.' : 'As contas aparecem aqui assim que alguém se cadastra.'}
+        />
+      )}
+      {users.data && users.data.rows.length > 0 && (
+        <div className={clsx('space-y-3 transition-opacity', users.loading && 'opacity-60')}>
+          <UsersTable rows={users.data.rows} showCost={can('finance.view')} onOpen={setOpenId} />
+          <Pager page={page} total={users.data.total} onPage={setPage} pageSize={USERS_PAGE_SIZE} />
+        </div>
+      )}
+
+      <UserDrawer key={openId ?? 'none'} userId={openId} plans={livePlans.filter((plan) => plan.slug !== 'gratis')} onClose={() => setOpenId(null)} onChanged={() => void users.reload()} />
+      {can('users.manage') && (
+        <CreateUserDrawer
+          open={creating}
+          plans={livePlans}
+          onClose={() => setCreating(false)}
+          onCreated={(id) => {
+            void users.reload()
+            setOpenId(id)
+          }}
+        />
+      )}
     </div>
+  )
+}
+
+/** Botão do topo da página: abre o cadastro pela URL (`?novo=1`), sem depender do estado da lista. */
+export function AddUserButton() {
+  const { can } = useAdminAccess()
+  const [params, setParams] = useSearchParams()
+  if (!can('users.manage')) return null
+  return (
+    <Button
+      onClick={() => {
+        const next = new URLSearchParams(params)
+        next.set('novo', '1')
+        setParams(next, { replace: true })
+      }}
+    >
+      <UserPlus className="size-4" aria-hidden="true" />
+      Adicionar usuário
+    </Button>
   )
 }

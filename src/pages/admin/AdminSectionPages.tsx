@@ -2,14 +2,24 @@ import type { ReactNode } from 'react'
 import { AuditTab } from '@/components/admin/AuditTab'
 import { ModelsTab } from '@/components/admin/ModelsTab'
 import { PlansTab } from '@/components/admin/PlansTab'
-import { UsersTab } from '@/components/admin/UsersTab'
+import { AddUserButton, UsersTab } from '@/components/admin/UsersTab'
 
-function SectionPage({ title, description, children }: { readonly title: string; readonly description: string; readonly children: ReactNode }) {
+interface SectionPageProps {
+  readonly title: string
+  readonly description: string
+  readonly action?: ReactNode
+  readonly children: ReactNode
+}
+
+function SectionPage({ title, description, action, children }: SectionPageProps) {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-headline text-3xl text-zinc-50 md:text-4xl">{title}</h1>
-        <p className="mt-2 text-sm text-zinc-400">{description}</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="font-headline text-3xl text-zinc-50 md:text-4xl">{title}</h1>
+          <p className="mt-2 text-sm text-zinc-400">{description}</p>
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
       </div>
       {children}
     </div>
@@ -18,7 +28,11 @@ function SectionPage({ title, description, children }: { readonly title: string;
 
 export function AdminUsersPage() {
   return (
-    <SectionPage title="Usuários" description="Busca por e-mail, @ ou nome. Ajuste de crédito e suspensão pedem motivo e vão para a auditoria.">
+    <SectionPage
+      title="Usuários"
+      description="Filtros combinados, perfil completo e cadastro por convite. Toda ação sensível pede confirmação e motivo, e vai para a auditoria."
+      action={<AddUserButton />}
+    >
       <UsersTab />
     </SectionPage>
   )
@@ -34,7 +48,10 @@ export function AdminPlansPage() {
 
 export function AdminModelsPage() {
   return (
-    <SectionPage title="Modelos e custos" description="Preço em créditos, custo real no fornecedor e planos liberados por modelo. Vale para as próximas gerações, sem deploy.">
+    <SectionPage
+      title="Modelos e custos"
+      description="Quanto cada IA custa de verdade, quanto o Vynkio cobra em créditos e o que sobra. Custo medido ou estimado aparece sempre identificado."
+    >
       <ModelsTab />
     </SectionPage>
   )

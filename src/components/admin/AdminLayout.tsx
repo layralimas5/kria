@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { ArrowLeft, LogOut, Menu, X } from 'lucide-react'
+import { ArrowLeft, Menu, X } from 'lucide-react'
 import { Suspense, useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAdminAccess } from '@/hooks/useAdminAccess'
@@ -9,6 +9,7 @@ import { Logo, LogoMark } from '../Logo'
 import { SidebarToggle } from '../layout/SidebarToggle'
 import { Spinner } from '../ui/Spinner'
 import { adminNavFor, type AdminNavItem } from './adminNav'
+import { ProfileMenu } from './ProfileMenu'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 const COLLAPSE_KEY = 'vynkio-admin-sidebar-collapsed'
@@ -111,21 +112,13 @@ export function AdminLayout() {
   }
 
   const actions = (
-    <div className="ml-auto flex items-center gap-1">
+    <div className="ml-auto flex items-center gap-2">
       <Link to="/inicio" className={clsx('inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-zinc-400 hover:text-zinc-100', FOCUS)}>
         <ArrowLeft className="size-4" aria-hidden="true" />
         <span className="hidden sm:inline">Voltar ao app</span>
         <span className="sm:hidden">App</span>
       </Link>
-      <button
-        type="button"
-        onClick={() => void signOut()}
-        className={clsx('inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-zinc-400 hover:text-zinc-100', FOCUS)}
-      >
-        <LogOut className="size-4" aria-hidden="true" />
-        <span className="hidden sm:inline">Sair</span>
-        <span className="sr-only sm:hidden">Sair</span>
-      </button>
+      <ProfileMenu onSignOut={() => void signOut()} />
     </div>
   )
 

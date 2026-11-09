@@ -12,7 +12,6 @@ import { financeSchema, financeSettingsSchema, type FinanceSettings } from '@/do
 import { modelQuotesSchema, preflightSchema, type Tariff } from '@/domain/creditPolicy'
 import { economicsSchema } from '@/domain/planEconomics'
 import { spendGuardSchema } from '@/domain/spendGuard'
-import { ledgerReasonSchema, subscriptionStatusSchema } from '@/domain/types'
 import { ApiError, invoke } from './api'
 import { supabase } from './supabase'
 
@@ -119,46 +118,6 @@ export const pricingSettingsSchema = z.object({
   payment_fee_rate: numeric,
 })
 
-export const adminUserSchema = z.object({
-  id: z.string().uuid(),
-  email: z.string().nullable(),
-  display_name: z.string().nullable(),
-  username: z.string(),
-  balance: z.number().int().nullable(),
-  subscription_balance: z.number().int().nullable(),
-  purchased_balance: z.number().int().nullable(),
-  plan_slug: z.string().nullable(),
-  subscription_status: subscriptionStatusSchema.nullable(),
-  suspended_at: z.string().nullable(),
-  created_at: z.string(),
-  generations: numeric,
-})
-export type AdminUser = z.infer<typeof adminUserSchema>
-
-export const userDetailSchema = z.object({
-  ledger: z.array(
-    z.object({ id: numeric, delta: numeric, reason: ledgerReasonSchema, note: z.string().nullable(), balance_after: numeric.nullable(), created_at: z.string() }),
-  ),
-  generations: z.array(
-    z.object({
-      id: z.string(),
-      model_slug: z.string(),
-      kind: z.string(),
-      status: z.string(),
-      credits: numeric,
-      provider_cost_usd: numeric.nullable(),
-      error: z.string().nullable(),
-      created_at: z.string(),
-    }),
-  ),
-  subscriptions: z.array(
-    z.object({ id: z.string(), plan_slug: z.string(), status: subscriptionStatusSchema, price_cents: numeric, current_period_end: z.string().nullable(), created_at: z.string() }),
-  ),
-  /** Nulo para quem não tem `finance.view`. */
-  payments: z.array(z.object({ type: z.string(), amount_cents: numeric, status: z.string(), at: z.string() })).nullable(),
-})
-export type UserDetail = z.infer<typeof userDetailSchema>
-
 export const adminPlanSchema = z.object({
   slug: z.string(),
   name: z.string(),
@@ -205,10 +164,6 @@ export const auditEntrySchema = z.object({
 export type AuditEntry = z.infer<typeof auditEntrySchema>
 
 export const fetchPricing = () => rpc('admin_pricing', {}, pricingSettingsSchema)
-
-export const searchUsers = (query: string) => rpc('admin_search_users', { p_query: query, p_limit: 30 }, z.array(adminUserSchema))
-
-export const fetchUserDetail = (userId: string) => rpc('admin_user_detail', { p_user_id: userId }, userDetailSchema)
 
 export const adjustCredits = (userId: string, amount: number, reason: string) =>
   rpc('admin_adjust_credits', { p_user_id: userId, p_amount: amount, p_reason: reason }, numeric)

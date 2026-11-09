@@ -23,8 +23,18 @@ export function EmailSearch({ onSearch, children }: { readonly onSearch: (email:
 }
 
 /** Página atual, total e anterior/próxima. */
-export function Pager({ page, total, onPage }: { readonly page: number; readonly total: number; readonly onPage: (page: number) => void }) {
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+export function Pager({
+  page,
+  total,
+  onPage,
+  pageSize = PAGE_SIZE,
+}: {
+  readonly page: number
+  readonly total: number
+  readonly onPage: (page: number) => void
+  readonly pageSize?: number
+}) {
+  const pages = Math.max(1, Math.ceil(total / pageSize))
   if (total === 0) return null
   return (
     <nav aria-label="Paginação" className="flex items-center justify-between gap-3 text-sm text-zinc-400">

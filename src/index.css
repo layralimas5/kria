@@ -32,6 +32,15 @@
 
   --animate-card-pulse: card-pulse 1s ease-in-out infinite;
   --animate-marquee: marquee 45s linear infinite;
+  --animate-drawer-in: drawer-in 200ms ease-out;
+
+  /* Painel lateral do admin entra pela direita. */
+  @keyframes drawer-in {
+    from {
+      transform: translateX(2rem);
+      opacity: 0;
+    }
+  }
 
   /* A faixa leva a lista duas vezes; andar metade emenda o fim no começo. */
   @keyframes marquee {

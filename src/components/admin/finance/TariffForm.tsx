@@ -78,7 +78,7 @@ function tariffFrom(kind: ModelQuote['kind'], draft: TariffDraft): Tariff | null
   return multipliers === undefined ? { unit: 'image', usd } : { unit: 'image', usd, resolution_multipliers: multipliers }
 }
 
-function Editor({ model, quotes, onSaved }: { readonly model: ModelQuote; readonly quotes: ModelQuotes; readonly onSaved: () => void }) {
+export function ModelTariffEditor({ model, quotes, onSaved }: { readonly model: ModelQuote; readonly quotes: ModelQuotes; readonly onSaved: () => void }) {
   const notify = useToast()
   const [draft, setDraft] = useState(() => draftOf(model))
   const [busy, setBusy] = useState(false)
@@ -162,7 +162,7 @@ export function TariffForm({ quotes, onSaved }: { readonly quotes: ModelQuotes; 
       <div className="max-w-sm">
         <SelectField label="Modelo" value={slug} onChange={setSlug} options={quotes.models.map((item) => ({ value: item.slug, label: item.name }))} />
       </div>
-      {model && <Editor key={`${model.slug}:${JSON.stringify(model.pricing)}`} model={model} quotes={quotes} onSaved={onSaved} />}
+      {model && <ModelTariffEditor key={`${model.slug}:${JSON.stringify(model.pricing)}`} model={model} quotes={quotes} onSaved={onSaved} />}
     </div>
   )
 }
