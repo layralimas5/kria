@@ -2,7 +2,10 @@
 // O front só esconde a rota; quem barra quem não é admin é o servidor.
 
 import { z } from 'zod'
+import { aiCostsSchema, priceHistorySchema, type CostFilters } from '@/domain/aiCosts'
 import { analyticsSchema } from '@/domain/adminAnalytics'
+import { businessSchema, type ExpenseCategory } from '@/domain/business'
+import { USERS_PAGE_SIZE, userPageSchema, userProfileSchema, type UserFilters } from '@/domain/adminUsers'
 import { generationPageSchema, PAGE_SIZE, subscriptionPageSchema } from '@/domain/adminLists'
 import { adminMeSchema, adminRoleSchema, dashboardSchema, type AdminMe, type AdminRole, type Period } from '@/domain/adminDashboard'
 import { financeSchema, financeSettingsSchema, type FinanceSettings } from '@/domain/finance'
@@ -47,6 +50,13 @@ const ADMIN_ERRORS: Record<string, string> = {
   snapshot_not_found: 'Não há foto da virada para voltar.',
   v2_subscribers_exist: 'Já há assinante em plano novo. A volta pelo painel ficou travada; fale com o suporte técnico.',
   invalid_checks: 'Resposta do fornecedor fora do formato.',
+  invalid_sort: 'Ordenação inválida.',
+  invalid_days: 'Escolha de 1 a 365 dias.',
+  grant_not_found: 'Essa conta não tem cortesia em vigor.',
+  invalid_date: 'Data inválida.',
+  expense_not_found: 'Despesa não encontrada ou já anulada.',
+  email_taken: 'Já existe uma conta com esse e-mail.',
+  invalid_email: 'E-mail inválido.',
 }
 
 async function rpc<T>(name: string, args: Record<string, unknown>, schema: z.ZodType<T, z.ZodTypeDef, unknown>): Promise<T> {
@@ -441,3 +451,105 @@ export const activatePricingV2 = (reason: string, acceptBelowTarget: boolean) =>
 
 export const rollbackPricingV2 = (reason: string) =>
   rpc('admin_rollback_pricing_v2', { p_reason: reason }, z.object({ snapshot: z.string(), wallets: numeric }))
+
+// ------------------------------------------------- central de inteligência (0025)
+
+export const fetchAiCosts = (period: Period, filters: CostFilters) =>
+  rpc(
+    'admin_ai_costs',
+    {
+      p_from: period.from.toISOString(),
+      p_to: period.to.toISOString(),
+      p_provider: filters.provider,
+      p_kind: filters.kind,
+      p_model: filters.model,
+      p_active: filters.active,
+    },
+    aiCostsSchema,
+  )
+
+export const fetchModelPriceHistory = (slug: string) => rpc('admin_model_price_history', { p_slug: slug }, priceHistorySchema)
+
+export const setModelTargetMargin = (slug: string, rate: number | null, reason: string) =>
+  rpc('admin_set_model_target_margin', { p_slug: slug, p_rate: rate, p_reason: reason }, z.unknown())
+
+export interface BusinessScope {
+  readonly plan: string | null
+  readonly model: string | null
+  readonly provider: string | null
+}
+
+export const fetchBusiness = (period: Period, scope: BusinessScope) =>
+  rpc(
+    'admin_business',
+    { p_from: period.from.toISOString(), p_to: period.to.toISOString(), p_plan: scope.plan, p_model: scope.model, p_provider: scope.provider },
+    businessSchema,
+  )
+
+export const addExpense = (expense: { incurredOn: string; category: ExpenseCategory; description: string; amountCents: number }) =>
+  rpc(
+    'admin_add_expense',
+    { p_incurred_on: expense.incurredOn, p_category: expense.category, p_description: expense.description, p_amount_cents: expense.amountCents },
+    z.string(),
+  )
+
+export const voidExpense = (id: string, reason: string) => rpc('admin_void_expense', { p_id: id, p_reason: reason }, z.boolean())
+
+const dayStart = (day: string) => (day ? new Date(`${day}T00:00:00-03:00`).toISOString() : null)
+const dayEnd = (day: string) => (day ? new Date(new Date(`${day}T00:00:00-03:00`).getTime() + 86_400_000).toISOString() : null)
+
+export const fetchUsersPage = (filters: UserFilters, page: number) =>
+  rpc(
+    'admin_users_list',
+    {
+      p_query: filters.query.trim() || null,
+      p_plan: filters.plan,
+      p_subscription_status: filters.subscription,
+      p_account: filters.account,
+      p_created_from: dayStart(filters.createdFrom),
+      p_created_to: dayEnd(filters.createdTo),
+      p_seen: filters.seen,
+      p_credits: filters.credits,
+      p_manual: filters.manual,
+      p_sort: filters.sort,
+      p_limit: USERS_PAGE_SIZE,
+      p_offset: page * USERS_PAGE_SIZE,
+    },
+    userPageSchema,
+  )
+
+export const fetchUserProfile = (userId: string) => rpc('admin_user_profile', { p_user_id: userId }, userProfileSchema)
+
+export const grantPlan = (userId: string, planSlug: string, days: number, reason: string) =>
+  rpc('admin_grant_plan', { p_user_id: userId, p_plan_slug: planSlug, p_days: days, p_reason: reason }, z.unknown())
+
+export const revokePlanGrant = (userId: string, reason: string) => rpc('admin_revoke_plan_grant', { p_user_id: userId, p_reason: reason }, z.boolean())
+
+export interface NewUserInput {
+  readonly email: string
+  readonly displayName: string
+  readonly planSlug: string | null
+  readonly grantDays: number | null
+  readonly credits: number
+  readonly suspended: boolean
+  readonly role: AdminRole | null
+  readonly reason: string
+}
+
+const createdUserSchema = z.object({ user_id: z.string(), partial: z.boolean(), error: z.string().optional() })
+
+/** Convite pelo Supabase Auth (function `admin-users`): a pessoa escolhe a própria senha pelo link do e-mail. */
+export async function createUser(input: NewUserInput) {
+  return createdUserSchema.parse(
+    await invoke('admin-users', {
+      email: input.email,
+      display_name: input.displayName,
+      plan_slug: input.planSlug,
+      grant_days: input.grantDays,
+      credits: input.credits,
+      suspended: input.suspended,
+      role: input.role,
+      reason: input.reason,
+    }),
+  )
+}

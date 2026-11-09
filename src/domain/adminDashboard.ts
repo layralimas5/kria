@@ -39,12 +39,16 @@ export const ADMIN_PERMISSION_LABELS: Readonly<Record<string, string>> = {
   'audit.view': 'Ver a auditoria',
   'admins.manage': 'Dar e remover acesso à operação',
   'finance.override': 'Ligar preço abaixo da meta de margem (exceção)',
+  'expenses.manage': 'Lançar e anular despesas',
 }
 
 export const adminMeSchema = z.object({
   role: adminRoleSchema,
   permissions: z.array(z.string()),
   aal: z.string(),
+  email: z.string().nullish(),
+  display_name: z.string().nullish(),
+  avatar_path: z.string().nullish(),
 })
 export type AdminMe = z.infer<typeof adminMeSchema>
 

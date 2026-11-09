@@ -20,6 +20,10 @@ max_frequency = "60s"
 subject = "Seu código do Vynkio"
 content_path = "./supabase/templates/recovery.html"
 
+[auth.email.template.invite]
+subject = "Seu convite para o Vynkio"
+content_path = "./supabase/templates/invite.html"
+
 # Segundo fator por app autenticador. O painel /admin só responde com a sessão em aal2 (0014).
 [auth.mfa]
 max_enrolled_factors = 10

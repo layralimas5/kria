@@ -1936,4 +1936,250 @@ await test('dashboard: filtro por plano e por ferramenta recorta a base', async 
   assert.deepEqual(all.filters, { plan: null, model: null })
 })
 
+// ---------------------------------------------- central de inteligência (0025)
+
+const aiUsageOf = async (db, generationId) =>
+  (await db.query(`select * from ai_usage_events where generation_id = $1`, [generationId])).rows
+
+await test('inteligência: consumo de IA é registrado uma vez por geração, com base do custo e câmbio da hora', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await setWallet(db, ana, 500)
+  const ok = (await create(db, ana, 'foto')).rows[0]
+  await db.query(`select complete_generation($1, 'a.png', 'image/png')`, [ok.id])
+  await db.query(`select complete_generation($1, 'a.png', 'image/png')`, [ok.id])
+  const events = await aiUsageOf(db, ok.id)
+  assert.equal(events.length, 1)
+  const [event] = events
+  assert.equal(event.cost_basis, 'estimated')
+  assert.equal(event.status, 'succeeded')
+  assert.equal(event.unit, 'image')
+  assert.equal(Number(event.units), 1)
+  assert.equal(event.credits, ok.credits)
+  assert.equal(Number(event.cost_brl), Number((Number(event.cost_original) * Number(event.fx_rate)).toFixed(4)))
+
+  const failed = (await create(db, ana, 'foto')).rows[0]
+  await db.query(`select fail_generation($1, 'erro')`, [failed.id])
+  assert.equal((await aiUsageOf(db, failed.id)).length, 0, 'falha não cobrada pelo fornecedor não entra no custo')
+
+  const text = (await create(db, ana, 'copy', 'legenda para o café')).rows[0]
+  await db.query(`select fail_generation($1, 'timeout')`, [text.id])
+  const [billed] = await aiUsageOf(db, text.id)
+  assert.deepEqual([billed.status, billed.credits], ['failed_billed', 0])
+
+  const done = (await create(db, ana, 'copy', 'legenda para o bolo')).rows[0]
+  await db.query(`select complete_text_generation($1, '{"title":"x","items":[]}')`, [done.id])
+  const before = (await aiUsageOf(db, done.id))[0]
+  await db.query(`update pricing_settings set usd_brl = 9`)
+  await db.query(`select record_text_usage($1, 1000, 500)`, [done.id])
+  const [metered] = await aiUsageOf(db, done.id)
+  assert.equal(metered.cost_basis, 'metered')
+  assert.equal(Number(metered.units), 1500)
+  assert.equal(Number(metered.fx_rate), Number(before.fx_rate), 'o câmbio fica o da primeira gravação')
+  assert.equal(Number(metered.cost_original), 0.014)
+})
+
+await test('inteligência: preço do modelo tem vigência e meta de margem fica auditada', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const history = async () => (await db.query(`select * from model_price_history where model_slug = 'foto' order by id`)).rows
+  assert.equal((await history()).length, 1)
+  await db.query(`update models set description = 'outra' where slug = 'foto'`)
+  assert.equal((await history()).length, 1, 'mudança fora do preço não abre vigência')
+
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_set_model_target_margin('foto', 0.5, 'x')`)), 'reason_required')
+  await as(db, 'authenticated', dona, () => db.query(`select admin_set_model_target_margin('foto', 0.5, 'meta do trimestre')`))
+  const rows = await history()
+  assert.equal(rows.length, 2)
+  assert.notEqual(rows[0].effective_to, null)
+  assert.equal(rows[1].effective_to, null)
+  assert.equal(rows[1].changed_by, dona)
+  const list = await as(db, 'authenticated', dona, async () => (await db.query(`select admin_model_price_history('foto') as h`)).rows[0].h)
+  assert.equal(list[0].changed_by_email, 'dona@x.com')
+  const audit = await db.query(`select count(*)::int as n from admin_audit_logs where action = 'model.target_margin'`)
+  assert.equal(audit.rows[0].n, 1)
+})
+
+await test('inteligência: custos de IA somam o período, filtram e escondem receita de quem não é financeiro', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const ana = await newUser(db, 'ana@x.com')
+  await setWallet(db, ana, 500)
+  for (let i = 0; i < 2; i += 1) await succeed(db, (await create(db, ana, 'foto')).rows[0].id)
+  const costs = (args = '') =>
+    as(db, 'authenticated', dona, async () => (await db.query(`select admin_ai_costs(${PERIOD}${args}) as c`)).rows[0].c)
+  const all = await costs()
+  assert.equal(all.kpis.generations, 2)
+  assert.equal(all.kpis.active_users, 1)
+  assert.ok(Number(all.kpis.cost_period_brl) > 0)
+  assert.equal(Number(all.kpis.cost_today_brl), Number(all.kpis.cost_period_brl))
+  assert.ok(all.kpis.revenue_estimated_brl > 0)
+  const foto = all.models.find((m) => m.slug === 'foto')
+  assert.deepEqual([foto.uses_period, foto.uses_total], [2, 2])
+  assert.ok(all.series.length >= 2)
+  assert.equal(all.trend_30d.length, 30)
+
+  const videos = await costs(`, null, 'video'`)
+  assert.equal(videos.kpis.generations, 0)
+  assert.ok(videos.models.every((m) => m.kind === 'video'))
+
+  const analyst = await newUser(db, 'analista@x.com')
+  await makeAdmin(db, analyst, 'analyst')
+  const seen = await as(db, 'authenticated', analyst, async () => (await db.query(`select admin_ai_costs(${PERIOD}) as c`)).rows[0].c)
+  assert.equal(seen.kpis.revenue_estimated_brl, null)
+  const support = await newUser(db, 'suporte@x.com')
+  await makeAdmin(db, support, 'support')
+  await expectError(as(db, 'authenticated', support, () => db.query(`select admin_ai_costs(${PERIOD})`)), 'forbidden')
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_ai_costs(now(), now() - interval '1 day')`)), 'invalid_period')
+})
+
+await test('inteligência: cortesia de plano libera o plano sem cobrança, sem MRR, e assinatura paga vem antes', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const ana = await newUser(db, 'ana@x.com')
+  const planOf = async () => (await db.query(`select (effective_plan($1)).slug as s`, [ana])).rows[0].s
+  const startBalance = await balanceOf(db, ana)
+  assert.equal(await planOf(), 'gratis')
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_grant_plan($1, 'pro', 30, 'x')`, [ana])), 'reason_required')
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_grant_plan($1, 'gratis', 30, 'parceria')`, [ana])), 'plan_not_found')
+  await as(db, 'authenticated', dona, () => db.query(`select admin_grant_plan($1, 'pro', 30, 'parceria com criadora')`, [ana]))
+  assert.equal(await planOf(), 'pro')
+  const dash = await as(db, 'authenticated', dona, async () => (await db.query(`select admin_dashboard(${PERIOD}) as d`)).rows[0].d)
+  assert.equal(Number(dash.finance.mrr_cents), 0)
+  assert.equal(await balanceOf(db, ana), startBalance, 'cortesia não dá crédito de plano')
+
+  await as(db, 'authenticated', dona, () => db.query(`select admin_grant_plan($1, 'starter', 7, 'troca de cortesia')`, [ana]))
+  assert.equal(await planOf(), 'starter')
+  assert.equal((await db.query(`select count(*)::int as n from plan_grants where user_id = $1 and revoked_at is null`, [ana])).rows[0].n, 1)
+
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_grant')
+  assert.equal(await planOf(), 'pro', 'assinatura paga vale antes da cortesia')
+  await as(db, 'authenticated', dona, () => db.query(`select admin_revoke_plan_grant($1, 'fim da parceria')`, [ana]))
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_revoke_plan_grant($1, 'de novo sem nada')`, [ana])), 'grant_not_found')
+
+  const support = await newUser(db, 'suporte@x.com')
+  await makeAdmin(db, support, 'support')
+  await expectError(
+    as(db, 'authenticated', support, () => db.query(`select admin_grant_plan($1, 'pro', 30, 'tentativa do suporte')`, [ana])),
+    'forbidden',
+  )
+})
+
+await test('inteligência: conta criada no admin passa pela conferência, recebe só uma configuração e fica auditada', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  await newUser(db, 'ana@x.com')
+  const check = (email, plan = 'pro', days = 30, credits = 50, reason = 'conta de parceira') =>
+    as(db, 'authenticated', dona, () => db.query(`select admin_check_new_user($1, $2, $3, $4, $5)`, [email, plan, days, credits, reason]))
+  await expectError(check('ana@x.com'), 'email_taken')
+  await expectError(check('ANA@x.com'), 'email_taken')
+  await expectError(check('nao-e-email'), 'invalid_email')
+  await expectError(check('nova@x.com', 'pro', null), 'invalid_days')
+  await expectError(check('nova@x.com', 'pro', 30, 50, 'x'), 'reason_required')
+  await check('nova@x.com')
+
+  const nova = await newUser(db, 'nova@x.com')
+  const startBalance = await balanceOf(db, nova)
+  const setup = () =>
+    as(db, 'authenticated', dona, () => db.query(`select admin_setup_new_user($1, 'pro', 30, 50, false, 'conta de parceira')`, [nova]))
+  await setup()
+  await expectError(setup(), 'account_not_found')
+  assert.equal(await balanceOf(db, nova), startBalance + 50)
+  assert.equal((await db.query(`select (effective_plan($1)).slug as s`, [nova])).rows[0].s, 'pro')
+
+  const velha = await newUser(db, 'velha@x.com')
+  await db.query(`update profiles set created_at = now() - interval '1 hour' where id = $1`, [velha])
+  await expectError(
+    as(db, 'authenticated', dona, () => db.query(`select admin_setup_new_user($1, null, null, 0, false, 'tentar conta antiga')`, [velha])),
+    'account_not_found',
+  )
+
+  const admin = await newUser(db, 'admin2@x.com')
+  await makeAdmin(db, admin, 'admin')
+  const outra = await newUser(db, 'outra@x.com')
+  await as(db, 'authenticated', admin, () => db.query(`select admin_setup_new_user($1, null, null, 0, true, 'conta bloqueada de teste')`, [outra]))
+  assert.notEqual((await db.query(`select suspended_at from profiles where id = $1`, [outra])).rows[0].suspended_at, null)
+
+  const list = await as(db, 'authenticated', dona, async () => (await db.query(`select admin_users_list(p_manual => true) as r`)).rows[0].r)
+  assert.deepEqual(list.rows.map((row) => row.email).sort(), ['nova@x.com', 'outra@x.com'])
+  const audit = await db.query(`select count(*)::int as n from admin_audit_logs where action = 'user.create'`)
+  assert.equal(audit.rows[0].n, 2)
+})
+
+await test('inteligência: lista de usuários combina filtros, ordena por consumo e mostra custo só ao financeiro', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  await setWallet(db, ana, 500)
+  await activate(db, await newSubscription(db, bia, 'pro'), 'pay_list')
+  for (let i = 0; i < 2; i += 1) await succeed(db, (await create(db, ana, 'foto')).rows[0].id)
+  await db.query(`update auth.users set last_sign_in_at = now() where id = $1`, [ana])
+  await db.query(`update profiles set suspended_at = now() where id = $1`, [bia])
+
+  const list = (args) => as(db, 'authenticated', dona, async () => (await db.query(`select admin_users_list(${args}) as r`)).rows[0].r)
+  const byCost = await list(`p_sort => 'cost'`)
+  assert.equal(byCost.total, 3)
+  assert.equal(byCost.rows[0].email, 'ana@x.com')
+  assert.ok(Number(byCost.rows[0].ai_cost_brl) > 0)
+  assert.equal(byCost.rows[0].generations, 2)
+  assert.equal((await list(`p_plan => 'pro'`)).rows[0].email, 'bia@x.com')
+  assert.equal((await list(`p_account => 'suspended'`)).total, 1)
+  assert.equal((await list(`p_seen => '7d', p_credits => 'with'`)).rows[0].email, 'ana@x.com')
+  assert.equal((await list(`p_query => 'bia', p_subscription_status => 'active'`)).total, 1)
+  assert.equal((await list(`p_limit => 1, p_offset => 1`)).rows.length, 1)
+  await expectError(list(`p_sort => 'drop'`), 'invalid_sort')
+
+  const support = await newUser(db, 'suporte@x.com')
+  await makeAdmin(db, support, 'support')
+  const seen = await as(db, 'authenticated', support, async () => (await db.query(`select admin_users_list(p_sort => 'cost') as r`)).rows[0].r)
+  assert.equal(seen.rows[0].ai_cost_brl, null)
+  const profile = await as(db, 'authenticated', support, async () => (await db.query(`select admin_user_profile($1) as p`, [ana])).rows[0].p)
+  assert.equal(profile.account.email, 'ana@x.com')
+  assert.equal(profile.generations.length, 2)
+  assert.deepEqual([profile.ai_cost, profile.payments, profile.admin_actions], [null, null, null])
+  assert.equal(profile.top_models[0].model_slug, 'foto')
+  const full = await as(db, 'authenticated', dona, async () => (await db.query(`select admin_user_profile($1) as p`, [ana])).rows[0].p)
+  assert.ok(Number(full.ai_cost.total_brl) > 0)
+  assert.equal(full.activity.active_days_30d, 1)
+})
+
+await test('inteligência: negócio traz MRR, créditos, despesas registradas e rentabilidade por plano', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const ana = await newUser(db, 'ana@x.com')
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_business')
+  await succeed(db, (await create(db, ana, 'foto')).rows[0].id)
+
+  const business = () => as(db, 'authenticated', dona, async () => (await db.query(`select admin_business(${PERIOD}) as b`)).rows[0].b)
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_add_expense(current_date, 'infra', 'Supabase', 0)`)), 'invalid_amount')
+  const expense = await as(db, 'authenticated', dona, async () =>
+    (await db.query(`select admin_add_expense(current_date, 'infra', 'Supabase Pro', 13000) as id`)).rows[0].id)
+  let data = await business()
+  assert.equal(Number(data.money.expenses_cents), 13000)
+  assert.ok(Number(data.money.received_cents) > 0)
+  assert.ok(Number(data.money.mrr_series.at(-1).mrr_cents) > 0)
+  assert.equal(data.money.mrr_series.length, 12)
+  assert.equal(data.conversion.signups, 2)
+  assert.equal(data.conversion.converted, 1)
+  assert.ok(data.credits.consumed > 0)
+  assert.ok(data.credits.distributed > 0)
+  const pro = data.money.plans.find((plan) => plan.slug === 'pro')
+  assert.deepEqual([pro.users, pro.credits > 0, Number(pro.ai_cost_brl) > 0], [1, true, true])
+
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_void_expense($1, 'x')`, [expense])), 'reason_required')
+  await as(db, 'authenticated', dona, () => db.query(`select admin_void_expense($1, 'lançada em dobro')`, [expense]))
+  data = await business()
+  assert.equal(Number(data.money.expenses_cents), 0)
+  assert.notEqual(data.money.expenses[0].voided_at, null)
+
+  const analyst = await newUser(db, 'analista@x.com')
+  await makeAdmin(db, analyst, 'analyst')
+  const seen = await as(db, 'authenticated', analyst, async () => (await db.query(`select admin_business(${PERIOD}) as b`)).rows[0].b)
+  assert.deepEqual([seen.money, seen.unusual_users], [null, null])
+  await expectError(
+    as(db, 'authenticated', analyst, () => db.query(`select admin_add_expense(current_date, 'infra', 'Supabase', 100)`)),
+    'forbidden',
+  )
+})
+
 console.log(`\n${passed} testes do banco passaram`)
