@@ -2232,4 +2232,49 @@ await test('central: receita bruta, consumo por funcionalidade, usuários, coort
   await expectError(center(bia), 'forbidden')
 })
 
+// ---------------------------------------------------- virada pelo console (0027)
+
+await test('virada pelo console: troca o checkout sem exigir tarifa conferida, mantém a trava desligada e tem volta', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const ana = await newUser(db, 'ana@x.com')
+  const sub = await newSubscription(db, ana, 'pro')
+  await activate(db, sub, 'pay_console')
+  const before = await walletOf(db, ana)
+  const run = (reason = 'Virada para os preços finais aprovados') =>
+    db.query(`select pricing_switch_from_console($1) as r`, [reason]).then((result) => result.rows[0].r)
+
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select pricing_switch_from_console('Virada pelo app, não pode')`)), 'permission denied')
+  await expectError(run('curto'), 'activation_reason_required')
+  const open = (await create(db, ana, 'foto')).rows[0]
+  await expectError(run(), 'open_generations')
+  await db.query(`select fail_generation($1, 'cancelada para a virada')`, [open.id])
+
+  const result = await run()
+  assert.equal(Number(result.factor), 10.35)
+  await expectError(run(), 'already_activated')
+  const after = await walletOf(db, ana)
+  assert.equal(after.subscription_balance, Math.floor(before.subscription_balance * 10.35))
+
+  const checkout = (await db.query(`select slug, price_cents, monthly_credits from subscription_plans where status = 'live' and public and active order by price_cents`)).rows
+  assert.deepEqual(checkout.map((plan) => [plan.slug, plan.price_cents, plan.monthly_credits]), [
+    ['creator-start', 7990, 2300],
+    ['creator-pro', 16990, 5000],
+    ['creator-max', 34990, 10000],
+  ])
+  const settings = (await db.query(`select credit_scale, require_trusted_cost, welcome_credits from pricing_settings`)).rows[0]
+  assert.deepEqual([settings.credit_scale, settings.require_trusted_cost, settings.welcome_credits], [2, false, 100])
+  assert.equal((await db.query(`select monthly_credits from subscriptions where id = $1`, [sub])).rows[0].monthly_credits, Math.floor(450 * 10.35))
+
+  // Texto sem volume medido continua gerando (trava desligada), cobrando pela conversão do preço antigo.
+  const text = (await create(db, ana, 'copy', 'legenda para o lançamento')).rows[0]
+  assert.ok(text.credits > 3)
+  await db.query(`select fail_generation($1, 'teste')`, [text.id])
+
+  await db.query(`update pricing_settings set generation_paused = true, paused_reason = 'volta da virada'`)
+  await as(db, 'authenticated', dona, () => db.query(`select admin_rollback_pricing_v2('Volta de teste da virada pelo console')`))
+  assert.equal((await walletOf(db, ana)).subscription_balance, before.subscription_balance)
+  assert.equal((await db.query(`select status from subscription_plans where slug = 'pro'`)).rows[0].status, 'live')
+})
+
 console.log(`\n${passed} testes do banco passaram`)
