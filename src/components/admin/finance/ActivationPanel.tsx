@@ -138,7 +138,7 @@ function ActivationForm({ preflight, onDone }: { readonly preflight: Preflight; 
         <h3 className="text-sm font-bold text-zinc-100">Ligar os preços novos</h3>
         <p className="mt-1 text-sm text-zinc-400">
           Converte saldos, pacotes, assinaturas e planos atuais pelo fator {preflight.factor.toLocaleString('pt-BR')}, guarda uma foto de tudo para a volta, liga a trava de custo e põe
-          Creator Start, Pro e Max à venda. Business segue em rascunho. Publique o front com a vitrine nova junto.
+          Starter, Pro e Max à venda. Business segue em rascunho. Publique o front com a vitrine nova junto.
         </p>
       </div>
       {preflight.blockers.map((code) => (
