@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { track } from '@/lib/analytics'
+import { captureUtmFromLocation } from '@/lib/utm'
 import { PRICING_V2 } from './pricing/flags'
 import { Examples } from './sections/Examples'
 import { Faq } from './sections/Faq'
@@ -19,7 +20,10 @@ import { Workflow } from './sections/Workflow'
 // comparação de fluxos, exemplos reais (só com mídia gerada), planos, dúvidas, chamada final e rodapé.
 // Os preços v2 só entram com VITE_PRICING_V2, junto com a virada.
 export function LandingPage() {
-  useEffect(() => track({ name: 'landing_view' }), [])
+  useEffect(() => {
+    captureUtmFromLocation()
+    track({ name: 'landing_view' })
+  }, [])
 
   return (
     <div className="min-h-dvh overflow-x-clip bg-stage">

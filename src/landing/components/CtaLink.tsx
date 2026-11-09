@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { track } from '@/lib/analytics'
+import { appendUtmToPath } from '@/lib/utm'
 import { CTA_LABEL, SIGNUP_PATH } from '../content'
 
 const BASE =
@@ -34,10 +35,11 @@ interface CtaLinkProps {
 
 /** A ação da página: abrir uma ferramenta do app, passando pelo cadastro se precisar. */
 export function CtaLink({ cta, className, children, size = 'md', tone = 'accent', to = SIGNUP_PATH }: CtaLinkProps) {
+  const destination = appendUtmToPath(to)
   return (
     <Link
-      to={to}
-      onClick={() => track({ name: 'cta_click', params: { cta_id: cta, destination: to } })}
+      to={destination}
+      onClick={() => track({ name: 'cta_click', params: { cta_id: cta, destination } })}
       className={clsx(BASE, SIZES[size], PRESSABLE[tone], className)}
     >
       {children ?? CTA_LABEL}
