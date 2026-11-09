@@ -57,7 +57,8 @@ estimada; o recebido de fato está no Analytics).
 ## Para publicar (precisa da Lay)
 
 1. Rodar `0025_admin_intelligence.sql` no SQL Editor.
-2. `npx supabase functions deploy admin-users --use-api` (usa `APP_URL`, já nos secrets).
+2. `npx supabase functions deploy admin-users --project-ref dhjnicbfrvmjzfbadcba --use-api` (feito em 09/11). Precisa
+   do secret `APP_URL=https://vynkio-ia.com.br`, que não existia no projeto.
 3. No painel do Auth, colar o template de convite (Email Templates > Invite user) com o assunto
    "Seu convite para o Vynkio" e conferir que `/nova-senha` está nas Redirect URLs.
 4. Merge na main (a Netlify publica).
