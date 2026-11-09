@@ -7,6 +7,7 @@
 import { assistantToolSchema } from '@/domain/types'
 import { ADMIN_ROLE_LABELS, adminRoleSchema } from '@/domain/adminDashboard'
 import { buildDemoDashboard } from './demoAdmin'
+import { buildDemoAnalytics } from './demoAnalytics'
 import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_USER_ID, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 import { DEMO_VIDEO, demoImageAt, demoMediaType } from './demoMedia'
@@ -591,6 +592,12 @@ function adminRpc(name: string, body: Row): Response | null {
       return json(true)
     case 'admin_me':
       return json({ role: 'super_admin', permissions: SUPER_ADMIN_PERMISSIONS, aal: 'aal2' })
+    case 'admin_analytics': {
+      const from = new Date(String(body.p_from))
+      const to = new Date(String(body.p_to))
+      if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) return rpcFail('invalid_period')
+      return json(buildDemoAnalytics(state, from, to))
+    }
     case 'admin_dashboard': {
       const from = new Date(String(body.p_from))
       const to = new Date(String(body.p_to))

@@ -38,7 +38,7 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
     label: 'Visão geral',
     items: [
       { label: 'Dashboard', icon: LayoutDashboard, to: '/admin', permission: 'dashboard.view' },
-      { label: 'Analytics', icon: BarChart3 },
+      { label: 'Analytics', icon: BarChart3, to: '/admin/analytics', permission: 'dashboard.view' },
     ],
   },
   {

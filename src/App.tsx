@@ -41,6 +41,7 @@ const MultiplierPage = page(() => import('@/pages/MultiplierPage'), 'MultiplierP
 const MultiplierProjectPage = page(() => import('@/pages/MultiplierProjectPage'), 'MultiplierProjectPage')
 const AdminRoot = page(() => import('@/pages/admin/AdminRoot'), 'AdminRoot')
 const AdminDashboardPage = page(() => import('@/pages/admin/AdminDashboardPage'), 'AdminDashboardPage')
+const AdminAnalyticsPage = page(() => import('@/pages/admin/AdminAnalyticsPage'), 'AdminAnalyticsPage')
 const AdminUsersPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminUsersPage')
 const AdminPlansPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminPlansPage')
 const AdminModelsPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminModelsPage')
@@ -96,6 +97,7 @@ export function App() {
               {/* Operação: moldura própria, fora do painel do usuário e sem link em menu (docs/admin.md). */}
               <Route path="admin" element={<AdminRoot />}>
                 <Route index element={<AdminDashboardPage />} />
+                <Route path="analytics" element={<AdminAnalyticsPage />} />
                 <Route path="usuarios" element={<AdminUsersPage />} />
                 <Route path="modelos" element={<AdminModelsPage />} />
                 <Route path="planos" element={<AdminPlansPage />} />

@@ -2,6 +2,7 @@
 // O front só esconde a rota; quem barra quem não é admin é o servidor.
 
 import { z } from 'zod'
+import { analyticsSchema } from '@/domain/adminAnalytics'
 import { adminMeSchema, adminRoleSchema, dashboardSchema, type AdminMe, type AdminRole, type Period } from '@/domain/adminDashboard'
 import { financeSchema, financeSettingsSchema, type FinanceSettings } from '@/domain/finance'
 import { modelQuotesSchema, preflightSchema, type Tariff } from '@/domain/creditPolicy'
@@ -67,6 +68,9 @@ export async function fetchAdminMe(): Promise<AdminMe | null> {
 
 export const fetchDashboard = (period: Period) =>
   rpc('admin_dashboard', { p_from: period.from.toISOString(), p_to: period.to.toISOString() }, dashboardSchema)
+
+export const fetchAnalytics = (period: Period) =>
+  rpc('admin_analytics', { p_from: period.from.toISOString(), p_to: period.to.toISOString() }, analyticsSchema)
 
 const numeric = z.coerce.number()
 

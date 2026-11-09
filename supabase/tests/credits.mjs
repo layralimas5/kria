@@ -17,7 +17,7 @@ const SUPABASE_STUBS = [
   `alter default privileges in schema public grant all on tables to anon, authenticated, service_role`,
   `alter default privileges in schema public grant all on functions to anon, authenticated, service_role`,
   `create schema auth`,
-  `create table auth.users (id uuid primary key default gen_random_uuid(), email text, email_confirmed_at timestamptz default now(), raw_user_meta_data jsonb default '{}'::jsonb)`,
+  `create table auth.users (id uuid primary key default gen_random_uuid(), email text, email_confirmed_at timestamptz default now(), raw_user_meta_data jsonb default '{}'::jsonb, last_sign_in_at timestamptz)`,
   `create function auth.uid() returns uuid language sql stable as $$ select (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')::uuid $$`,
   `create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb, '{}'::jsonb) $$`,
   `grant usage on schema auth to anon, authenticated, service_role`,
@@ -1811,6 +1811,55 @@ await test('preços v3: rascunho muda pelo painel com motivo; plano no ar não; 
   await makeAdmin(db, finance, 'finance')
   await expectError(as(db, 'authenticated', finance, () => db.query(`select admin_update_draft_plan('creator-pro', 1, 1, 1, 1, 'tentativa')`)), 'forbidden')
   assert.ok(await as(db, 'authenticated', finance, async () => (await db.query(`select admin_plan_economics() as e`)).rows[0].e))
+})
+
+// ------------------------------------------------------- analytics do admin (0020)
+
+await test('analytics: retenção, ferramentas, créditos e tokens; custo e e-mail só com permissão', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  await db.query(`update profiles set created_at = now() - interval '10 days' where id = $1`, [ana])
+  const text = (await create(db, ana, 'copy', 'legenda para o café')).rows[0]
+  await db.query(`select complete_text_generation($1, '{"title":"x","items":[]}')`, [text.id])
+  await db.query(`select record_text_usage($1, 1800, 900)`, [text.id])
+  // Ana voltou no oitavo dia depois do cadastro: conta no D7. Bia nunca gerou.
+  await db.query(`update generations set created_at = now() - interval '2 days' where id = $1`, [text.id])
+
+  const data = await as(db, 'authenticated', dona, async () =>
+    (await db.query(`select admin_analytics(now() - interval '30 days', now() + interval '1 day') as a`)).rows[0].a)
+  assert.equal(data.retention.total_users, 3)
+  assert.equal(data.retention.ever_active, 1)
+  assert.equal(data.retention.wau, 1)
+  const d7 = data.retention.returning.find((row) => row.day === 7)
+  assert.deepEqual([d7.eligible, d7.returned], [1, 1])
+  assert.equal(data.retention.activation.signed_up, 3)
+  assert.equal(data.retention.activation.activated, 1)
+  assert.equal(data.retention.cohorts.reduce((sum, row) => sum + row.size, 0), 3)
+
+  const copy = data.tools.by_tool.find((row) => row.model_slug === 'copy')
+  assert.deepEqual([copy.total, copy.users, copy.succeeded], [1, 1, 1])
+  assert.equal(Number(copy.cost_usd), 0.0252)
+  assert.equal(data.tools.series.reduce((sum, day) => sum + day.text, 0), 1)
+
+  assert.equal(data.credits.spent, 3)
+  assert.equal(data.credits.outstanding, (await db.query(`select sum(balance)::int as n from credit_balances`)).rows[0].n)
+  assert.equal(data.credits.top_spenders[0].email, 'ana@x.com')
+  assert.deepEqual([data.tokens.input, data.tokens.output, data.tokens.measured], [1800, 900, 1])
+  assert.equal(data.tokens.top_users[0].email, 'ana@x.com')
+
+  const analyst = await newUser(db, 'analista@x.com')
+  await makeAdmin(db, analyst, 'analyst')
+  const limited = await as(db, 'authenticated', analyst, async () =>
+    (await db.query(`select admin_analytics(now() - interval '30 days', now() + interval '1 day') as a`)).rows[0].a)
+  assert.equal(limited.retention.dormant, null)
+  assert.equal(limited.credits.top_spenders, null)
+  assert.equal(limited.tokens.cost_usd, null)
+  assert.equal(limited.tools.by_tool[0].cost_usd, null)
+
+  await expectError(as(db, 'authenticated', bia, () => db.query(`select admin_analytics(${PERIOD})`)), 'forbidden')
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_analytics(now(), now() - interval '1 day')`)), 'invalid_period')
 })
 
 console.log(`\n${passed} testes do banco passaram`)
