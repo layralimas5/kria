@@ -14,7 +14,7 @@ const WEEKS = 8
 function CohortTable({ cohorts }: { readonly cohorts: readonly Cohort[] }) {
   if (cohorts.length === 0) return <p className="rounded-2xl bg-surface px-4 py-6 text-sm text-zinc-500 ring-1 ring-white/[0.06]">Sem cadastros nas últimas oito semanas.</p>
   return (
-    <div role="region" aria-label="Coortes semanais" tabIndex={0} className="overflow-x-auto rounded-2xl ring-1 ring-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+    <div role="region" aria-label="Coortes semanais" tabIndex={0} className="relative overflow-x-auto rounded-2xl ring-1 ring-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
       <table className="w-full min-w-[720px] text-sm">
         <caption className="sr-only">Porcentagem de cada turma de cadastro que usou o Vynkio em cada semana seguinte</caption>
         <thead className="bg-surface-2 text-[12px] text-zinc-400">

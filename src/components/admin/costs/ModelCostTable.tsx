@@ -13,7 +13,7 @@ export function ModelCostTable({ data, onOpen }: { readonly data: AiCosts; reado
       <h2 id="model-table" className="font-headline text-xl text-zinc-50">
         Custo por modelo
       </h2>
-      <div className="overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+      <div className="relative overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
         <table className="w-full min-w-[64rem] text-left text-sm">
           <caption className="sr-only">Modelos de IA com custo, créditos, utilizações e situação</caption>
           <thead className="text-[11px] uppercase tracking-wider text-zinc-500">

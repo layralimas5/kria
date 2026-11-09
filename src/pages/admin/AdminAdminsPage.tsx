@@ -150,7 +150,7 @@ export function AdminAdminsPage() {
       <RoleForm key={editing} initialEmail={editing} onSaved={() => void admins.reload()} />
 
       {admins.error && <Notice tone="error">{admins.error}</Notice>}
-      <div className="overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+      <div className="relative overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead className="text-[11px] uppercase tracking-wider text-zinc-500">
             <tr>

@@ -41,7 +41,7 @@ export function PlanTargets({ economics }: { readonly economics: Economics }) {
       {rows.length === 0 ? (
         <p className="text-sm text-zinc-500">Nenhuma proposta em rascunho para comparar.</p>
       ) : (
-        <div className="overflow-x-auto rounded-2xl ring-1 ring-white/[0.06]">
+        <div className="relative overflow-x-auto rounded-2xl ring-1 ring-white/[0.06]">
           <table className="w-full min-w-[40rem] text-sm">
             <caption className="sr-only">Comparativo entre o plano atual, a proposta v3 e a recomendação do sistema</caption>
             <thead className="bg-surface text-xs text-zinc-500">

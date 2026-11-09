@@ -22,7 +22,7 @@ export function DataTable<T>({ caption, rows, columns, rowKey, empty, rowTone }:
   const captionId = useId()
   if (rows.length === 0) return <p className="rounded-2xl bg-surface px-4 py-6 text-sm text-zinc-500 ring-1 ring-white/[0.06]">{empty}</p>
   return (
-    <div role="region" aria-labelledby={captionId} tabIndex={0} className="overflow-x-auto rounded-2xl ring-1 ring-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+    <div role="region" aria-labelledby={captionId} tabIndex={0} className="relative overflow-x-auto rounded-2xl ring-1 ring-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
       <table className="w-full min-w-[640px] text-left text-sm">
         <caption id={captionId} className="sr-only">
           {caption}
