@@ -32,15 +32,17 @@ content_path = "./supabase/templates/email_change.html"
 subject = "Seu link de acesso ao Vynkio"
 content_path = "./supabase/templates/magic_link.html"
 
-# Remetente próprio (Resend). Sem SMTP próprio, o plano free não aceita template nem remetente.
-# A senha é a chave da API do Resend, em RESEND_API_KEY (nunca no repositório).
+# Remetente próprio pelo Gmail do Vynkio (limite de 500 envios por dia). Sem SMTP próprio, o plano
+# free não aceita template nem remetente. A senha é uma senha de app do Google, em
+# SUPABASE_AUTH_SMTP_PASS (nunca no repositório). O Gmail reescreve o remetente para o
+# endereço autenticado: o nome é nosso, o endereço é obrigatoriamente esse.
 [auth.email.smtp]
 enabled = true
-host = "smtp.resend.com"
+host = "smtp.gmail.com"
 port = 465
-user = "resend"
-pass = "env(RESEND_API_KEY)"
-admin_email = "nao-responda@vynkio-ia.com.br"
+user = "vynkio.suporte@gmail.com"
+pass = "env(SUPABASE_AUTH_SMTP_PASS)"
+admin_email = "vynkio.suporte@gmail.com"
 sender_name = "Vynkio"
 
 # Segundo fator por app autenticador. O painel /admin só responde com a sessão em aal2 (0014).
