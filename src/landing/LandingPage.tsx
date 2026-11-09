@@ -18,7 +18,7 @@ import { Workflow } from './sections/Workflow'
 
 // Ordem: topo, demonstração do painel, o estúdio e para quem, showcase das ferramentas, vídeo,
 // comparação de fluxos, exemplos reais (só com mídia gerada), planos, dúvidas, chamada final e rodapé.
-// Os preços v2 só entram com VITE_PRICING_V2, junto com a virada.
+// Preços v2 ligados desde a virada (0027); `VITE_PRICING_V2=false` volta a vitrine antiga.
 export function LandingPage() {
   // Antes do primeiro render: os CTAs montam o link com a UTM já guardada.
   useState(captureUtmFromLocation)

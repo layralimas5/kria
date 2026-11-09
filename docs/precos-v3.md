@@ -4,6 +4,13 @@ Branch `feat/vynkio-pricing-v2`, migration `0019_pricing_v3.sql`. Continua a v2 
 recriado, e nada aqui foi publicado, cobrado ou migrado. Os planos v3 estão em rascunho, e a virada continua dependendo
 de aprovação explícita.
 
+
+> **09/11/2026: virada feita pelo console (0027).** A Lay pediu os preços finais no checkout antes de conferir todas as
+> tarifas. `pricing_switch_from_console` faz os passos da virada sem exigir custo conferido e mantém a trava de custo
+> desligada. Continuam pendentes: chaves do fal e da Anthropic, medir os tokens de texto, conferir as tarifas e só então
+> ligar a trava no painel; substituto do Veo 3.1 (sai do fal em 17/11). A volta (`admin_rollback_pricing_v2`) vale
+> enquanto ninguém assinar plano novo.
+
 ## 1. Arquitetura financeira encontrada
 
 - **Carteira (0004):** dois baldes, plano (renova) e comprado (não expira). Crédito só muda por `wallet_move`, o
