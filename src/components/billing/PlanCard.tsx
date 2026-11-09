@@ -1,7 +1,7 @@
 import clsx from 'clsx'
-import { Check, Clock } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { formatBRL } from '@/domain/format'
-import { isFreePlan, PLAN_TOOL_INFO, PLAN_TOOLS, planYield, pricePerCredit, WELCOME_CREDITS } from '@/domain/plans'
+import { isFreePlan, planYield, pricePerCredit, WELCOME_CREDITS } from '@/domain/plans'
 import type { Model, Plan } from '@/domain/types'
 import { Button } from '../ui/Button'
 
@@ -28,7 +28,6 @@ export function PlanCard({ plan, models, current, switching, busy, disabled, onS
   const perCredit = pricePerCredit(plan)
   const credits = free ? WELCOME_CREDITS : plan.monthly_credits
   const yields = planYield(plan, models, credits)
-  const upcoming = PLAN_TOOLS.filter((tool) => plan.tools.includes(tool) && !PLAN_TOOL_INFO[tool].ready)
   return (
     <article
       className={clsx(
@@ -76,19 +75,6 @@ export function PlanCard({ plan, models, current, switching, busy, disabled, onS
             </li>
           ))}
         </ul>
-        {upcoming.length > 0 && (
-          <>
-            <p className="mt-5 text-[11px] font-bold uppercase tracking-wider text-zinc-500">Chega em breve no plano</p>
-            <ul className="mt-2 space-y-2 text-sm text-zinc-400">
-              {upcoming.map((tool) => (
-                <li key={tool} className="flex items-start gap-2">
-                  <Clock className="mt-0.5 size-4 shrink-0 text-zinc-500" aria-hidden="true" />
-                  {PLAN_TOOL_INFO[tool].label}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
       </div>
 
       <Button

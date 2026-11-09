@@ -1,13 +1,10 @@
 import {
   BarChart3,
-  BookOpen,
   CalendarDays,
   Clapperboard,
   Coins,
-  Compass,
   CopyPlus,
   CreditCard,
-  FileText,
   FolderKanban,
   House,
   ImageIcon,
@@ -19,13 +16,11 @@ import {
   PenLine,
   ScrollText,
   Settings,
-  Sparkles,
   Store,
   UserRound,
-  Waves,
   type LucideIcon,
 } from 'lucide-react'
-import { PLAN_TOOL_INFO, planIncludes, type PlanTool } from '@/domain/plans'
+import { planIncludes, type PlanTool } from '@/domain/plans'
 import type { Plan } from '@/domain/types'
 
 export interface NavItem {
@@ -51,7 +46,6 @@ const isStudioMode = (mode: 'image' | 'video') => (pathname: string, params: URL
 
 const isPath = (path: string) => (pathname: string) => pathname === path
 const isAssistant = (...paths: string[]) => (pathname: string) => paths.some((path) => pathname === `/assistente/${path}`)
-const never = () => false
 
 export const HOME_TAB: NavItem = { label: 'Dashboard', to: '/inicio', icon: House, isActive: isPath('/inicio') }
 export const FORMATS_TAB: NavItem = {
@@ -89,18 +83,14 @@ export const CREDITS_TAB: NavItem = { label: 'Créditos e consumo', to: '/credit
 export const SUBSCRIPTION_TAB: NavItem = { label: 'Assinatura', to: '/assinatura', icon: CreditCard, isActive: isPath('/assinatura') }
 export const SETTINGS_TAB: NavItem = { label: 'Configurações', to: '/conta/configuracoes', icon: Settings, isActive: isPath('/conta/configuracoes') }
 
-/** Recurso de etapa futura que depende de plano. */
-const toolSoon = (tool: PlanTool, icon: LucideIcon): NavItem => ({ label: PLAN_TOOL_INFO[tool].label, to: '', icon, soon: true, tool, isActive: never })
-/** Recurso de etapa futura aberto a todos (docs/vynkio-evolucao.md, seção 7). */
-const soon = (label: string, icon: LucideIcon): NavItem => ({ label, to: '', icon, soon: true, isActive: never })
 
-// As seis áreas do Vynkio. Só entra com link o que funciona; o resto é "Breve".
+// As seis áreas do Vynkio. Só entra o que funciona hoje.
 const NAV_GROUPS: readonly NavGroup[] = [
   { title: 'Início', items: [HOME_TAB] },
-  { title: 'Criar', items: [MULTIPLIER_TAB, FORMATS_TAB, IMAGE_TAB, VIDEO_TAB, PERSONAS_TAB, UGC_TAB, toolSoon('motion_control', Waves)] },
-  { title: 'Inteligência', items: [IDEAS_TAB, SCRIPT_TAB, COPY_TAB, PLANNING_TAB, soon('Assistente de estratégia', Compass)] },
-  { title: 'Conteúdo', items: [CONTENT_TAB, CALENDAR_TAB, GALLERY_TAB, toolSoon('prompt_library', BookOpen)] },
-  { title: 'Resultados', items: [RESULTS_TAB, soon('Relatórios', FileText), soon('Recomendações', Sparkles)] },
+  { title: 'Criar', items: [MULTIPLIER_TAB, FORMATS_TAB, IMAGE_TAB, VIDEO_TAB, PERSONAS_TAB, UGC_TAB] },
+  { title: 'Inteligência', items: [IDEAS_TAB, SCRIPT_TAB, COPY_TAB, PLANNING_TAB] },
+  { title: 'Conteúdo', items: [CONTENT_TAB, CALENDAR_TAB, GALLERY_TAB] },
+  { title: 'Resultados', items: [RESULTS_TAB] },
   { title: 'Gerenciamento', items: [BRANDS_TAB, PROJECTS_TAB, CREDITS_TAB, SUBSCRIPTION_TAB, SETTINGS_TAB] },
 ]
 

@@ -1,15 +1,9 @@
 import {
   BarChart3,
-  Bell,
-  Boxes,
-  Coins,
   CreditCard,
   Cpu,
   LayoutDashboard,
-  LifeBuoy,
-  Megaphone,
   ScrollText,
-  Settings,
   ShieldCheck,
   Sparkles,
   Tags,
@@ -46,9 +40,7 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
     items: [
       { label: 'Usuários', icon: Users, to: '/admin/usuarios', permission: 'users.view' },
       { label: 'Gerações', icon: Sparkles },
-      { label: 'Ferramentas', icon: Boxes },
       { label: 'Modelos e custos', icon: Cpu, to: '/admin/modelos', permission: 'models.view' },
-      { label: 'Créditos', icon: Coins },
     ],
   },
   {
@@ -57,14 +49,6 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
       { label: 'Assinaturas', icon: CreditCard },
       { label: 'Planos', icon: Tags, to: '/admin/planos', permission: 'plans.view' },
       { label: 'Financeiro', icon: Wallet, to: '/admin/financeiro', permission: 'finance.view' },
-      { label: 'Marketing', icon: Megaphone },
-    ],
-  },
-  {
-    label: 'Relacionamento',
-    items: [
-      { label: 'Suporte', icon: LifeBuoy },
-      { label: 'Comunicados', icon: Bell },
     ],
   },
   {
@@ -73,7 +57,6 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
       { label: 'Auditoria', icon: ScrollText, to: '/admin/auditoria', permission: 'audit.view' },
       { label: 'Administradores', icon: UserCog, to: '/admin/administradores', permission: 'admins.manage' },
       { label: 'Segurança', icon: ShieldCheck, to: '/admin/seguranca' },
-      { label: 'Configurações', icon: Settings },
     ],
   },
 ]

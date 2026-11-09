@@ -15,7 +15,6 @@ const NEWS: readonly NewsItem[] = [
   { title: 'Conteúdos e calendário', text: 'Roteiro, copy, imagens e vídeos de cada post, com status e data.' },
   { title: 'Planejamento editorial', text: 'Uma semana ou um mês de posts, direto para o calendário.' },
   { title: 'Marca ativa', text: 'Escolha a marca no topo e tudo sai no tom e para o público dela.' },
-  { title: 'Motion Control', text: 'Transferir o movimento de um vídeo para o seu personagem.', soon: true, tool: 'motion_control' },
 ]
 
 export function PlatformNews({ plan }: { readonly plan: Plan | null }) {

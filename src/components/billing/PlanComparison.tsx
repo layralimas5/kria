@@ -35,10 +35,6 @@ function NotIncluded() {
   )
 }
 
-function Soon() {
-  return <span className="text-xs font-semibold text-zinc-400">Em breve</span>
-}
-
 function buildRows(models: readonly Model[]): Row[] {
   return [
     { label: 'Preço por mês', cell: (plan) => (isFreePlan(plan) ? 'Grátis' : formatBRL(plan.price_cents)) },
@@ -52,12 +48,10 @@ function buildRows(models: readonly Model[]): Row[] {
       label: model.name,
       cell: (plan: Plan) => (canUseModel(model.allowed_plans, plan.slug) ? <Included /> : <NotIncluded />),
     })),
-    ...PLAN_TOOLS.map((tool) => ({
+    // Ferramenta que ainda não existe não entra na comparação.
+    ...PLAN_TOOLS.filter((tool) => PLAN_TOOL_INFO[tool].ready).map((tool) => ({
       label: PLAN_TOOL_INFO[tool].label,
-      cell: (plan: Plan) => {
-        if (!plan.tools.includes(tool)) return <NotIncluded />
-        return PLAN_TOOL_INFO[tool].ready ? <Included /> : <Soon />
-      },
+      cell: (plan: Plan) => (plan.tools.includes(tool) ? <Included /> : <NotIncluded />),
     })),
   ]
 }

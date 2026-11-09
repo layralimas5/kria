@@ -202,7 +202,6 @@ export const AI_MODELS: readonly AiModel[] = [
   { name: 'Wan', kind: 'Vídeo', logo: 'alibaba-color', soon: true },
   { name: 'FLUX', kind: 'Imagem', logo: 'flux', soon: true },
   { name: 'Ideogram', kind: 'Imagem', logo: 'ideogram', soon: true },
-  { name: 'ElevenLabs', kind: 'Voz', logo: 'elevenlabs', soon: true },
 ]
 
 /** Uma ideia, os entregáveis que saem dela no Vynkio. Cada etapa é uma ferramenta que existe hoje. */

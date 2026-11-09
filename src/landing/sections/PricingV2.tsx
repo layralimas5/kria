@@ -1,18 +1,10 @@
-import clsx from 'clsx'
 import { Info } from 'lucide-react'
-import { useState } from 'react'
 import { useQuery } from '@/hooks/useQuery'
 import { Reveal } from '../components/Reveal'
 import { SectionHeading } from '../components/SectionHeading'
 import { PlanCardV2 } from '../pricing/PlanCardV2'
 import { subscribePath } from '../pricing/PlanCard'
 import { CREDIT_NOTICE, fetchStorefront, withWelcome, type StorefrontPlan } from '../pricing/storefront'
-
-const TABS = [
-  { id: 'creator', label: 'Creator' },
-  { id: 'business', label: 'Business' },
-] as const
-type TabId = (typeof TABS)[number]['id']
 
 /** Dados estruturados só dos planos com preço e checkout. */
 function PlansJsonLd({ plans }: { readonly plans: readonly StorefrontPlan[] }) {
@@ -46,40 +38,18 @@ function PlanSkeleton() {
 
 /** Planos lidos de `storefront_plans`: os mesmos números do checkout e do painel. */
 export function PricingV2() {
-  const [tab, setTab] = useState<TabId>('creator')
   const storefront = useQuery(fetchStorefront, 'Não deu para carregar os planos.')
   const plans = storefront.data ? withWelcome(storefront.data) : []
-  const current = plans.filter((plan) => plan.line === tab)
+  // O Business volta para a vitrine quando existir de verdade; por enquanto, só o que se assina.
+  const current = plans.filter((plan) => plan.line === 'creator')
 
   return (
     <section id="precos" aria-labelledby="precos-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
       <div className="mx-auto max-w-[1440px]">
-        <SectionHeading id="precos-title" align="center" title="Planos para criar e para crescer" lead="Creator para quem produz conteúdo. Business para equipes e empresas." />
+        <SectionHeading id="precos-title" align="center" title="Planos para criar com IA" lead="Comece grátis. Assine quando quiser criar toda semana." />
         <PlansJsonLd plans={plans} />
 
-        <div className="mt-10 flex justify-center">
-          <div role="tablist" aria-label="Linha de planos" className="inline-flex gap-1 rounded-xl bg-panel p-1 ring-1 ring-white/[0.08]">
-            {TABS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                id={`precos-tab-${item.id}`}
-                aria-selected={tab === item.id}
-                aria-controls="precos-painel"
-                onClick={() => setTab(item.id)}
-                className={clsx(
-                  'min-h-10 rounded-lg px-6 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                  tab === item.id ? 'bg-accent text-accent-ink' : 'text-zinc-300 hover:text-zinc-50',
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div id="precos-painel" role="tabpanel" aria-labelledby={`precos-tab-${tab}`} aria-busy={storefront.loading}>
+        <div aria-busy={storefront.loading}>
           {storefront.error ? (
             <div className="mx-auto mt-10 max-w-md rounded-2xl border border-white/[0.07] bg-panel p-6 text-center text-sm text-zinc-300">
               <p>Os planos não carregaram agora.</p>
@@ -101,11 +71,6 @@ export function PricingV2() {
                 </Reveal>
               ))}
             </ul>
-          )}
-          {tab === 'business' && (
-            <p className="mx-auto mt-6 max-w-3xl text-center text-[13px] text-zinc-400">
-              O Business está em preparação: contratação por conversa, com os recursos marcados como em breve entrando aos poucos.
-            </p>
           )}
         </div>
 
