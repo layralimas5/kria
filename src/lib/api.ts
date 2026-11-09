@@ -159,23 +159,31 @@ export async function fetchPreferences(userId: string): Promise<Preferences | nu
   return data ? preferencesSchema.parse(data) : null
 }
 
+type PreferencesPatch = { goal?: Goal; onboarded_at?: string; active_brand_id?: string | null }
+
+/**
+ * A linha nasce no cadastro (gatilho do banco), então é update. Upsert não serve: ele reescreve
+ * o user_id no conflito, e o banco só libera atualizar as colunas de preferência.
+ * Conta antiga sem linha cai no insert.
+ */
+async function savePreferences(userId: string, patch: PreferencesPatch) {
+  const updated = await supabase.from('user_preferences').update(patch).eq('user_id', userId).select(PREFERENCES_COLUMNS).maybeSingle()
+  if (updated.error || updated.data) return updated
+  return supabase.from('user_preferences').insert({ user_id: userId, ...patch }).select(PREFERENCES_COLUMNS).single()
+}
+
 export async function saveGoal(userId: string, goal: Goal): Promise<Preferences> {
-  const { data, error } = await supabase
-    .from('user_preferences')
-    .upsert({ user_id: userId, goal, onboarded_at: new Date().toISOString() }, { onConflict: 'user_id' })
-    .select(PREFERENCES_COLUMNS)
-    .single()
-  if (error) throw new ApiError('preferences_failed', 'Não deu para salvar sua escolha. Tente de novo.')
+  const { data, error } = await savePreferences(userId, { goal, onboarded_at: new Date().toISOString() })
+  if (error) {
+    console.error('saveGoal', error)
+    throw new ApiError('preferences_failed', 'Não deu para salvar sua escolha. Tente de novo.')
+  }
   return preferencesSchema.parse(data)
 }
 
 /** A marca que passa a valer no assistente, no Studio e nos conteúdos. O banco recusa marca de outra pessoa. */
 export async function saveActiveBrand(userId: string, brandId: string | null): Promise<Preferences> {
-  const { data, error } = await supabase
-    .from('user_preferences')
-    .upsert({ user_id: userId, active_brand_id: brandId }, { onConflict: 'user_id' })
-    .select(PREFERENCES_COLUMNS)
-    .single()
+  const { data, error } = await savePreferences(userId, { active_brand_id: brandId })
   if (error) throw new ApiError(error.message, error.message === 'brand_not_found' ? 'Essa marca não existe mais.' : 'Não deu para trocar a marca.')
   return preferencesSchema.parse(data)
 }
