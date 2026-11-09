@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Coins, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Coins } from 'lucide-react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { formatCredits } from '@/domain/format'
 import { useAccount } from '@/hooks/useAccount'
@@ -7,6 +7,7 @@ import { useBalance } from '@/hooks/useBalance'
 import { Logo, LogoMark } from '../Logo'
 import { Badge } from '../ui/Badge'
 import { navGroupsFor, type NavItem } from './nav'
+import { SidebarToggle } from './SidebarToggle'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
@@ -147,18 +148,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       <div className="space-y-2 p-3">
         <CreditsCard collapsed={collapsed} />
-        <div className={clsx('flex', collapsed ? 'justify-center' : 'justify-end')}>
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-expanded={!collapsed}
-            aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
-            title={collapsed ? 'Expandir menu' : 'Recolher menu'}
-            className={clsx('grid size-9 place-items-center rounded-lg text-zinc-500 transition-colors hover:bg-white/[0.04] hover:text-zinc-100', FOCUS)}
-          >
-            {collapsed ? <PanelLeftOpen className="size-4" aria-hidden="true" /> : <PanelLeftClose className="size-4" aria-hidden="true" />}
-          </button>
-        </div>
+        <SidebarToggle collapsed={collapsed} onToggle={onToggle} />
       </div>
     </aside>
   )

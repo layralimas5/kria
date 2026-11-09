@@ -1,24 +1,37 @@
 import clsx from 'clsx'
-import { ArrowLeft, LogOut, Menu, ShieldCheck, X } from 'lucide-react'
+import { ArrowLeft, LogOut, Menu, X } from 'lucide-react'
 import { Suspense, useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { ADMIN_ROLE_LABELS } from '@/domain/adminDashboard'
 import { useAdminAccess } from '@/hooks/useAdminAccess'
+import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed'
 import { supabase } from '@/lib/supabase'
-import { Logo } from '../Logo'
+import { Logo, LogoMark } from '../Logo'
+import { SidebarToggle } from '../layout/SidebarToggle'
 import { Spinner } from '../ui/Spinner'
 import { adminNavFor, type AdminNavItem } from './adminNav'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
+const COLLAPSE_KEY = 'vynkio-admin-sidebar-collapsed'
 
-function NavLink({ item, active }: { readonly item: AdminNavItem; readonly active: boolean }) {
+function AdminBadge() {
+  return <span className="inline-flex rounded-md bg-accent/15 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent-soft ring-1 ring-accent/25">Admin</span>
+}
+
+function NavLink({ item, active, collapsed }: { readonly item: AdminNavItem; readonly active: boolean; readonly collapsed: boolean }) {
   const Icon = item.icon
+  const layout = clsx('flex min-h-9 items-center gap-3 whitespace-nowrap rounded-xl text-[14px] font-semibold', collapsed ? 'justify-center px-0' : 'px-3')
   if (!item.to) {
     return (
-      <span aria-disabled="true" className="flex min-h-9 cursor-default items-center gap-3 rounded-xl px-3 text-[14px] font-semibold text-zinc-600">
+      <span aria-disabled="true" title={`${item.label}: em breve`} className={clsx(layout, 'cursor-default text-zinc-600')}>
         <Icon className="size-[18px] shrink-0" aria-hidden="true" />
-        <span className="min-w-0 flex-1 truncate">{item.label}</span>
-        <span className="rounded-md bg-white/[0.05] px-1 py-px text-[9px] font-bold uppercase tracking-wide text-zinc-500">Breve</span>
+        {collapsed ? (
+          <span className="sr-only">{item.label}, em breve</span>
+        ) : (
+          <>
+            <span className="min-w-0 flex-1 truncate">{item.label}</span>
+            <span className="rounded-md bg-white/[0.05] px-1 py-px text-[9px] font-bold uppercase tracking-wide text-zinc-500">Breve</span>
+          </>
+        )}
       </span>
     )
   }
@@ -26,33 +39,35 @@ function NavLink({ item, active }: { readonly item: AdminNavItem; readonly activ
     <Link
       to={item.to}
       aria-current={active ? 'page' : undefined}
-      className={clsx(
-        'relative flex min-h-9 items-center gap-3 rounded-xl px-3 text-[14px] font-semibold transition-colors',
-        FOCUS,
-        active ? 'bg-white/[0.07] text-zinc-50' : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100',
-      )}
+      aria-label={collapsed ? item.label : undefined}
+      title={collapsed ? item.label : undefined}
+      className={clsx(layout, 'relative transition-colors', FOCUS, active ? 'bg-white/[0.07] text-zinc-50' : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100')}
     >
       {active && <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-accent" />}
       <Icon className={clsx('size-[18px] shrink-0', active && 'text-accent-soft')} aria-hidden="true" />
-      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
     </Link>
   )
 }
 
-function AdminNav() {
+function AdminNav({ collapsed }: { readonly collapsed: boolean }) {
   const { can } = useAdminAccess()
   const { pathname } = useLocation()
   const isActive = (to: string) => (to === '/admin' ? pathname === '/admin' : pathname.startsWith(to))
 
   return (
-    <nav aria-label="Operação" className="space-y-5">
+    <nav aria-label="Admin" className="space-y-4">
       {adminNavFor(can).map((group) => (
         <div key={group.label}>
-          <p className="mb-1.5 px-3 text-[11px] font-bold uppercase tracking-wider text-zinc-500">{group.label}</p>
+          {collapsed ? (
+            <div aria-hidden="true" className="mx-auto mb-2 h-px w-6 bg-white/10" />
+          ) : (
+            <p className="mb-1.5 px-3 text-[11px] font-bold uppercase tracking-wider text-zinc-500">{group.label}</p>
+          )}
           <ul className="space-y-0.5">
             {group.items.map((item) => (
               <li key={item.label}>
-                <NavLink item={item} active={item.to !== undefined && isActive(item.to)} />
+                <NavLink item={item} collapsed={collapsed} active={item.to !== undefined && isActive(item.to)} />
               </li>
             ))}
           </ul>
@@ -70,10 +85,10 @@ function PageFallback() {
   )
 }
 
-/** Moldura da operação: separada do painel do usuário, com menu próprio por permissão. */
+/** Moldura do admin: separada do app, com menu próprio por permissão e recolhível no desktop. */
 export function AdminLayout() {
-  const { me } = useAdminAccess()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [collapsed, toggleCollapsed] = useSidebarCollapsed(COLLAPSE_KEY)
   const { pathname } = useLocation()
   const navigate = useNavigate()
 
@@ -86,13 +101,52 @@ export function AdminLayout() {
     navigate('/entrar', { replace: true })
   }
 
+  const actions = (
+    <div className="ml-auto flex items-center gap-1">
+      <Link to="/inicio" className={clsx('inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-zinc-400 hover:text-zinc-100', FOCUS)}>
+        <ArrowLeft className="size-4" aria-hidden="true" />
+        <span className="hidden sm:inline">Voltar ao app</span>
+        <span className="sm:hidden">App</span>
+      </Link>
+      <button
+        type="button"
+        onClick={() => void signOut()}
+        className={clsx('inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-zinc-400 hover:text-zinc-100', FOCUS)}
+      >
+        <LogOut className="size-4" aria-hidden="true" />
+        <span className="hidden sm:inline">Sair</span>
+        <span className="sr-only sm:hidden">Sair</span>
+      </button>
+    </div>
+  )
+
   return (
-    <div className="min-h-dvh bg-canvas">
+    <div className={clsx('min-h-dvh bg-canvas [--admin-w:0px]', collapsed ? 'lg:[--admin-w:72px]' : 'lg:[--admin-w:15rem]')}>
       <a href="#conteudo" className={clsx('sr-only rounded-lg bg-surface px-3 py-2 text-sm focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50', FOCUS)}>
         Pular para o conteúdo
       </a>
-      <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-canvas/90 backdrop-blur-xl">
-        <div className="flex h-14 items-center gap-3 px-4">
+
+      {/* Desktop: barra fixa com a marca, o selo Admin e o botão de recolher no rodapé. */}
+      <aside
+        aria-label="Menu do admin"
+        className="fixed inset-y-0 left-0 z-40 hidden w-[var(--admin-w)] flex-col border-r border-white/[0.05] bg-canvas transition-[width] duration-200 ease-out lg:flex"
+      >
+        <div className={clsx('flex shrink-0 flex-col gap-2 pb-3 pt-4', collapsed ? 'items-center px-2' : 'items-start px-4')}>
+          <Link to="/admin" aria-label="Vynkio Admin, dashboard" className={clsx('rounded-lg', FOCUS)}>
+            {collapsed ? <LogoMark /> : <Logo />}
+          </Link>
+          {collapsed ? <span className="text-[9px] font-bold uppercase tracking-wider text-accent-soft">Admin</span> : <AdminBadge />}
+        </div>
+        <div className="flex-1 overflow-y-auto px-3 py-2">
+          <AdminNav collapsed={collapsed} />
+        </div>
+        <div className="p-3">
+          <SidebarToggle collapsed={collapsed} onToggle={toggleCollapsed} />
+        </div>
+      </aside>
+
+      <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-canvas/90 backdrop-blur-xl lg:border-b-0">
+        <div className="flex h-14 items-center gap-3 px-4 transition-[padding] duration-200 lg:pl-[calc(var(--admin-w)+2rem)] lg:pr-8">
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
@@ -103,49 +157,26 @@ export function AdminLayout() {
           >
             {menuOpen ? <X className="size-5" aria-hidden="true" /> : <Menu className="size-5" aria-hidden="true" />}
           </button>
-          <Logo />
-          <span className="inline-flex items-center gap-1 rounded-md bg-hot/15 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-hot">
-            <ShieldCheck className="size-3.5" aria-hidden="true" />
-            Operação
+          <span className="flex items-center gap-2 lg:hidden">
+            <Logo />
+            <AdminBadge />
           </span>
-          <span className="hidden text-xs font-semibold text-zinc-400 sm:inline">{ADMIN_ROLE_LABELS[me.role]}</span>
-          <div className="ml-auto flex items-center gap-1">
-            <Link to="/inicio" className={clsx('inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-zinc-400 hover:text-zinc-100', FOCUS)}>
-              <ArrowLeft className="size-4" aria-hidden="true" />
-              <span className="hidden sm:inline">Voltar ao app</span>
-              <span className="sm:hidden">App</span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => void signOut()}
-              className={clsx('inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-zinc-400 hover:text-zinc-100', FOCUS)}
-            >
-              <LogOut className="size-4" aria-hidden="true" />
-              <span className="hidden sm:inline">Sair</span>
-              <span className="sr-only sm:hidden">Sair</span>
-            </button>
-          </div>
+          {actions}
         </div>
       </header>
 
-      <div className="lg:grid lg:grid-cols-[15rem_1fr]">
-        <aside
-          id="admin-menu"
-          className={clsx(
-            'border-b border-white/[0.05] px-3 py-4 lg:sticky lg:top-14 lg:block lg:h-[calc(100dvh-3.5rem)] lg:overflow-y-auto lg:border-b-0 lg:border-r',
-            menuOpen ? 'block' : 'hidden',
-          )}
-        >
-          <AdminNav />
-        </aside>
-        <main id="conteudo" className="min-w-0 px-4 pb-16 pt-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <Suspense fallback={<PageFallback />}>
-              <Outlet />
-            </Suspense>
-          </div>
-        </main>
+      {/* Celular e tablet: o menu abre abaixo do topo. */}
+      <div id="admin-menu" className={clsx('border-b border-white/[0.05] px-3 py-4 lg:hidden', menuOpen ? 'block' : 'hidden')}>
+        <AdminNav collapsed={false} />
       </div>
+
+      <main id="conteudo" className="min-w-0 px-4 pb-16 pt-6 transition-[padding] duration-200 lg:pl-[calc(var(--admin-w)+2rem)] lg:pr-8">
+        <div className="mx-auto max-w-6xl">
+          <Suspense fallback={<PageFallback />}>
+            <Outlet />
+          </Suspense>
+        </div>
+      </main>
     </div>
   )
 }

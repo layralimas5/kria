@@ -1,30 +1,30 @@
 import { useCallback, useState } from 'react'
 
-const STORAGE_KEY = 'kria-sidebar-collapsed'
+const APP_KEY = 'kria-sidebar-collapsed'
 
-function readSaved(): boolean {
+function readSaved(key: string): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) === '1'
+    return localStorage.getItem(key) === '1'
   } catch {
     return false
   }
 }
 
-/** Barra lateral recolhida (só ícones). Lembra a escolha neste navegador. */
-export function useSidebarCollapsed(): [boolean, () => void] {
-  const [collapsed, setCollapsed] = useState(readSaved)
+/** Barra lateral recolhida (só ícones). Lembra a escolha neste navegador, uma por moldura (app e admin). */
+export function useSidebarCollapsed(key: string = APP_KEY): [boolean, () => void] {
+  const [collapsed, setCollapsed] = useState(() => readSaved(key))
 
   const toggle = useCallback(() => {
     setCollapsed((value) => {
       const next = !value
       try {
-        localStorage.setItem(STORAGE_KEY, next ? '1' : '0')
+        localStorage.setItem(key, next ? '1' : '0')
       } catch {
         // Sem armazenamento (aba anônima): a escolha vale só nesta visita.
       }
       return next
     })
-  }, [])
+  }, [key])
 
   return [collapsed, toggle]
 }
