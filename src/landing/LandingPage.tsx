@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { track } from '@/lib/analytics'
 import { captureUtmFromLocation } from '@/lib/utm'
 import { PRICING_V2 } from './pricing/flags'
@@ -20,8 +20,9 @@ import { Workflow } from './sections/Workflow'
 // comparação de fluxos, exemplos reais (só com mídia gerada), planos, dúvidas, chamada final e rodapé.
 // Os preços v2 só entram com VITE_PRICING_V2, junto com a virada.
 export function LandingPage() {
+  // Antes do primeiro render: os CTAs montam o link com a UTM já guardada.
+  useState(captureUtmFromLocation)
   useEffect(() => {
-    captureUtmFromLocation()
     track({ name: 'landing_view' })
   }, [])
 
