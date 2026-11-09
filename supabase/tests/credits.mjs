@@ -1499,7 +1499,7 @@ async function trustAllModels(db, adminId) {
   })
 }
 
-await test('preços v3: virada exige pausa, motivo, custo confiável e aceite da margem; converte tudo e volta', async (db) => {
+await test('preços v3: virada exige pausa, motivo, custo confiável e margem na meta; converte tudo e volta', async (db) => {
   const dona = await newUser(db, 'dona@x.com')
   await makeAdmin(db, dona)
   const ana = await newUser(db, 'ana@x.com')
@@ -1522,15 +1522,20 @@ await test('preços v3: virada exige pausa, motivo, custo confiável e aceite da
   await trustAllModels(db, dona)
   const check = await preflight()
   assert.deepEqual(check.blockers, [])
-  assert.deepEqual(check.warnings, ['margin_below_target'])
+  // Preços finais (0021): Starter 2.300, Pro 5.000, Max 10.000, todos acima da meta de 60%.
+  assert.deepEqual(check.warnings, [])
   assert.equal(Number(check.factor), 10.35)
   assert.equal(check.next_welcome_credits, 100)
   assert.equal(check.wallets.subscription_after, Math.floor(before.subscription_balance * 10.35))
-  // Com o plano usado por inteiro: Start 59,2%, Pro 55,2%, Max 53,3% contra a meta de 60%.
-  assert.deepEqual(check.plans.map((plan) => Number(plan.full_use_margin)), [0.5921, 0.5519, 0.5335])
-  await expectError(run(), 'margin_below_target')
+  assert.deepEqual(check.plans.map((plan) => Number(plan.full_use_margin)), [0.6171, 0.6107, 0.6192])
 
-  const result = await run('Aprovado pela Lay abaixo da meta, revisar em 30 dias', true)
+  // Rascunho abaixo da meta continua travando a virada sem aceite explícito.
+  await db.query(`update subscription_plans set monthly_credits = 13000 where slug = 'creator-max'`)
+  assert.deepEqual((await preflight()).warnings, ['margin_below_target'])
+  await expectError(run(), 'margin_below_target')
+  await db.query(`update subscription_plans set monthly_credits = 10000 where slug = 'creator-max'`)
+
+  const result = await run()
   assert.equal(Number(result.factor), 10.35)
   const after = await walletOf(db, ana)
   assert.equal(after.subscription_balance, Math.floor(before.subscription_balance * 10.35))
@@ -1550,19 +1555,19 @@ await test('preços v3: virada exige pausa, motivo, custo confiável e aceite da
   assert.equal(plans['creator-pro'].status, 'live')
   assert.equal(plans['creator-pro'].public, true)
   assert.equal(plans['creator-pro'].price_cents, 16990)
-  assert.equal(plans['creator-pro'].monthly_credits, 6000)
+  assert.equal(plans['creator-pro'].monthly_credits, 5000)
   assert.equal(plans['business-pro'].status, 'draft')
   assert.equal((await db.query(`select (effective_plan($1)).slug as s`, [ana])).rows[0].s, 'pro')
 
   assert.equal(await balanceOf(db, await newUser(db, 'nova@x.com')), 100)
   const settings = (await db.query(`select credit_scale, credit_value_brl, require_trusted_cost from pricing_settings`)).rows[0]
   assert.equal(settings.credit_scale, 2)
-  assert.equal(Number(settings.credit_value_brl), 0.0269)
+  assert.equal(Number(settings.credit_value_brl), 0.034)
   assert.equal(settings.require_trusted_cost, true)
   await expectError(run(), 'already_activated')
   const log = (await db.query(`select details, reason from admin_audit_logs where action = 'pricing.activate_v2'`)).rows
   assert.equal(log.length, 1)
-  assert.deepEqual(log[0].details.below_target_accepted, ['creator-start', 'creator-pro', 'creator-max'])
+  assert.deepEqual(log[0].details.below_target_accepted, [])
 
   // A volta devolve saldos (arredondando a favor da pessoa), modelos, planos e parâmetros.
   const rollback = (reason = 'Voltando: preço novo gerou reclamação') =>
@@ -1776,9 +1781,9 @@ await test('preços v3: vitrine lê do banco, sem rascunho de venda direta nem c
   const after = await read()
   const creator = after.plans.filter((plan) => plan.slug.startsWith('creator-'))
   assert.deepEqual(creator.map((plan) => [plan.slug, plan.price_cents, plan.monthly_credits, plan.exports_month, plan.highlight, plan.cta]), [
-    ['creator-start', 7990, 2500, 40, false, 'subscribe'],
-    ['creator-pro', 16990, 6000, 150, true, 'subscribe'],
-    ['creator-max', 34990, 13000, 400, false, 'subscribe'],
+    ['creator-start', 7990, 2300, 40, false, 'subscribe'],
+    ['creator-pro', 16990, 5000, 150, true, 'subscribe'],
+    ['creator-max', 34990, 10000, 400, false, 'subscribe'],
   ])
   const sold = (await db.query(`select slug, price_cents, monthly_credits from subscription_plans where public and status = 'live' order by position`)).rows
   assert.deepEqual(sold, creator.map((plan) => ({ slug: plan.slug, price_cents: plan.price_cents, monthly_credits: plan.monthly_credits })))
