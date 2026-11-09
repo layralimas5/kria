@@ -69,6 +69,9 @@ são telas reais do modo demo (`npm run landing:screens`).
   é cortesia (`plan_grants`, lida por `effective_plan` depois da assinatura paga): não mexe em assinatura, MRR nem
   créditos. Conta nova pelo admin só por convite (function `admin-users`), nunca com senha definida pelo admin.
   Lucro estimado só desconta despesas lançadas em `operating_expenses`.
+- Central de comando (`/admin`, 0026, `docs/central-de-comando.md`): toda definição de número fica em
+  `src/domain/commandCenter.ts`; a tela só desenha. Sem base, o valor é nulo e aparece "Dados insuficientes";
+  projeção e simulação levam selo. Indicador novo entra numa das sete seções da central, não em página nova.
 - Ferramenta que ainda não existe aparece como "Breve", sem link nem botão.
 - Persona nasce só de imagem gerada aqui (`create_persona`). Sem upload de foto:
   é o que impede deepfake de pessoa real. Não abrir upload sem moderação de rosto.

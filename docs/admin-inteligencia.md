@@ -10,7 +10,8 @@ Branch `feat/admin-intelligence` (saiu da main 0a7b1e2). Migration **0025** e fu
   unidade, custo por geração, créditos, margem, usos, custo acumulado, status), filtros (período, provedor,
   categoria, modelo, status), 7 gráficos e gaveta por modelo com meta de margem, tarifa oficial, preço em
   créditos/planos e histórico de vigências. Guarda de gasto e parâmetros de preço ficaram no fim da página.
-- **Analytics > Visão executiva** (aba padrão): 15 indicadores com definição, insights por regra, 8 gráficos,
+- **Analytics > Visão executiva** (desde a 0026 incorporada à central de comando em `/admin`, ver
+  `docs/central-de-comando.md`): 15 indicadores com definição, insights por regra, 8 gráficos,
   rentabilidade por plano, despesas registradas e exportação CSV (respeita os filtros). Retenção, Ferramentas e
   Créditos continuam nas outras abas.
 - **Usuários**: botão "Adicionar usuário" (convite), busca, 8 filtros combináveis, ordenação (recentes, mais
