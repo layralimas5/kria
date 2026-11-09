@@ -5,6 +5,8 @@ export interface ColumnSeries {
   readonly key: string
   readonly label: string
   readonly color: string
+  /** Linha tracejada e mais apagada: comparação, como o período anterior. */
+  readonly dashed?: boolean
 }
 
 export interface ColumnPoint {

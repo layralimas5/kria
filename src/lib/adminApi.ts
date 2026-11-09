@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { aiCostsSchema, priceHistorySchema, type CostFilters } from '@/domain/aiCosts'
 import { analyticsSchema } from '@/domain/adminAnalytics'
 import { businessSchema, type ExpenseCategory } from '@/domain/business'
+import { centerSchema } from '@/domain/commandCenter'
 import { USERS_PAGE_SIZE, userPageSchema, userProfileSchema, type UserFilters } from '@/domain/adminUsers'
 import { generationPageSchema, PAGE_SIZE, subscriptionPageSchema } from '@/domain/adminLists'
 import { adminMeSchema, adminRoleSchema, dashboardSchema, type AdminMe, type AdminRole, type Period } from '@/domain/adminDashboard'
@@ -441,6 +442,9 @@ export const fetchBusiness = (period: Period, scope: BusinessScope) =>
     { p_from: period.from.toISOString(), p_to: period.to.toISOString(), p_plan: scope.plan, p_model: scope.model, p_provider: scope.provider },
     businessSchema,
   )
+
+export const fetchCommandCenter = (period: Period) =>
+  rpc('admin_command_center', { p_from: period.from.toISOString(), p_to: period.to.toISOString() }, centerSchema)
 
 export const addExpense = (expense: { incurredOn: string; category: ExpenseCategory; description: string; amountCents: number }) =>
   rpc(

@@ -110,7 +110,7 @@ function StatusBadge({ user }: { readonly user: UserRow }) {
 
 function UsersTable({ rows, showCost, onOpen }: { readonly rows: readonly UserRow[]; readonly showCost: boolean; readonly onOpen: (id: string) => void }) {
   return (
-    <div className="overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+    <div className="relative overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
       <table className="w-full min-w-[60rem] text-left text-sm">
         <caption className="sr-only">Usuários</caption>
         <thead className="text-[11px] uppercase tracking-wider text-zinc-500">
@@ -193,15 +193,18 @@ export function UsersTab() {
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
-  const [openId, setOpenId] = useState<string | null>(null)
   const [params, setParams] = useSearchParams()
   const creating = params.get('novo') === '1'
-  const setCreating = (open: boolean) => {
+  // Conta aberta fica na URL (`?usuario=`): a central de comando abre a ficha direto pelo link.
+  const openId = params.get('usuario')
+  const setParam = (key: string, value: string | null) => {
     const next = new URLSearchParams(params)
-    if (open) next.set('novo', '1')
-    else next.delete('novo')
+    if (value) next.set(key, value)
+    else next.delete(key)
     setParams(next, { replace: true })
   }
+  const setCreating = (open: boolean) => setParam('novo', open ? '1' : null)
+  const setOpenId = (id: string | null) => setParam('usuario', id)
 
   const plans = useQuery(fetchAdminPlans, 'Não deu para carregar os planos.')
   const livePlans = useMemo(() => (plans.data ?? []).filter((plan) => plan.status === 'live' && plan.active).map((plan) => ({ slug: plan.slug, name: plan.name })), [plans.data])
@@ -288,7 +291,10 @@ export function UsersTab() {
           onClose={() => setCreating(false)}
           onCreated={(id) => {
             void users.reload()
-            setOpenId(id)
+            const next = new URLSearchParams(params)
+            next.delete('novo')
+            next.set('usuario', id)
+            setParams(next, { replace: true })
           }}
         />
       )}

@@ -128,3 +128,12 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* PDF da central de comando: mantém o tema escuro na impressão em vez de texto claro sobre papel branco. */
+@media print {
+  html,
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useId, useState, type KeyboardEvent } from 'react'
 import type { ColumnSeries } from './ColumnChart'
 
@@ -16,6 +17,8 @@ interface LineChartProps {
   readonly stale?: boolean
   /** Preenche a área abaixo da primeira série (tendência de uma linha só). */
   readonly area?: boolean
+  /** Gráfico de destaque da seção: mais alto. */
+  readonly tall?: boolean
 }
 
 const dayFormat = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' })
@@ -37,13 +40,19 @@ const HEIGHT = 160
  * Linhas por ponto (dia ou mês), uma por série. Mouse ou setas mostram o ponto; a tabela abaixo
  * traz todos os valores sem depender do tooltip.
  */
-export function LineChart({ title, series, points, format, stale = false, area = false }: LineChartProps) {
+export function LineChart({ title, series, points, format, stale = false, area = false, tall = false }: LineChartProps) {
   const [active, setActive] = useState<number | null>(null)
   const titleId = useId()
-  const max = niceMax(Math.max(0, ...points.flatMap((point) => series.map((item) => point.values[item.key] ?? 0))))
-  const empty = points.every((point) => series.every((item) => (point.values[item.key] ?? 0) === 0))
+  const reduceMotion = useReducedMotion()
+  const values = points.flatMap((point) => series.map((item) => point.values[item.key] ?? 0))
+  const max = niceMax(Math.max(0, ...values))
+  const lowest = Math.min(0, ...values)
+  // Valor negativo (lucro, por exemplo) desce abaixo do zero com a mesma escala arredondada.
+  const min = lowest < 0 ? -niceMax(-lowest) : 0
+  const empty = values.every((value) => value === 0)
   const x = (index: number) => (points.length <= 1 ? WIDTH / 2 : (index / (points.length - 1)) * WIDTH)
-  const y = (value: number) => HEIGHT - (value / max) * HEIGHT
+  const y = (value: number) => HEIGHT - ((value - min) / (max - min)) * HEIGHT
+  const ticks = min < 0 ? [max, 0, min] : [max, max / 2, 0]
   const current = active === null ? null : points[active]
 
   function handleKey(event: KeyboardEvent) {
@@ -76,9 +85,9 @@ export function LineChart({ title, series, points, format, stale = false, area =
       )}
 
       <div className={clsx('relative mt-4 transition-opacity', stale && 'opacity-50')}>
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bottom-5 flex flex-col justify-between">
-          {(empty ? [] : [max, max / 2, 0]).map((tick) => (
-            <div key={tick} className="flex items-center gap-2">
+        <div aria-hidden="true" className={clsx('pointer-events-none absolute inset-x-0 top-0', tall ? 'h-56' : 'h-40')}>
+          {(empty ? [] : ticks).map((tick) => (
+            <div key={tick} className="absolute inset-x-0 flex -translate-y-1/2 items-center gap-2" style={{ top: `${(y(tick) / HEIGHT) * 100}%` }}>
               <span className="w-14 shrink-0 text-right text-[10px] tabular-nums text-zinc-500">{format(tick)}</span>
               <span className="h-px flex-1 bg-white/[0.06]" />
             </div>
@@ -98,18 +107,34 @@ export function LineChart({ title, series, points, format, stale = false, area =
             const share = (event.clientX - box.left) / box.width
             setActive(Math.min(points.length - 1, Math.max(0, Math.round(share * (points.length - 1)))))
           }}
-          className="relative ml-16 h-40 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className={clsx('relative ml-16 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent', tall ? 'h-56' : 'h-40')}
         >
           {empty ? (
             <p className="absolute inset-0 grid place-items-center text-xs text-zinc-500">Sem registros no período.</p>
           ) : (
             <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" className="size-full overflow-visible" aria-hidden="true">
               {area && firstSeries && points.length > 1 && (
-                <path d={`${path(firstSeries.key)} L${WIDTH},${HEIGHT} L0,${HEIGHT} Z`} fill={firstSeries.color} opacity={0.12} />
+                <path d={`${path(firstSeries.key)} L${WIDTH},${y(0)} L0,${y(0)} Z`} fill={firstSeries.color} opacity={0.12} />
               )}
-              {series.map((item) => (
-                <path key={item.key} d={path(item.key)} fill="none" stroke={item.color} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-              ))}
+              {min < 0 && <line x1={0} x2={WIDTH} y1={y(0)} y2={y(0)} stroke="rgb(255 255 255 / 0.18)" vectorEffect="non-scaling-stroke" />}
+              {series.map((item) =>
+                item.dashed ? (
+                  <path key={item.key} d={path(item.key)} fill="none" stroke={item.color} strokeWidth={1.5} strokeDasharray="4 4" opacity={0.7} vectorEffect="non-scaling-stroke" />
+                ) : (
+                  <motion.path
+                    key={`${item.key}:${points.length}`}
+                    d={path(item.key)}
+                    fill="none"
+                    stroke={item.color}
+                    strokeWidth={2}
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinejoin="round"
+                    initial={reduceMotion ? false : { pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.7, ease: 'easeOut' }}
+                  />
+                ),
+              )}
               {active !== null && <line x1={x(active)} x2={x(active)} y1={0} y2={HEIGHT} stroke="rgb(255 255 255 / 0.15)" vectorEffect="non-scaling-stroke" />}
             </svg>
           )}

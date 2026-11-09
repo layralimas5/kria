@@ -334,3 +334,198 @@ export function demoUserProfile(users: readonly Row[], state: DemoState, userId:
     admin_actions: [],
   }
 }
+
+const featureOfRow = (row: Row) =>
+  row.kind === 'text' ? 'text' : row.format_slug ? 'format' : row.persona_id ? 'character' : String(row.kind)
+
+/** `admin_command_center` (0026) no demo: mesmo formato, calculado sobre o estado falso. */
+export function buildDemoCommandCenter(state: DemoState, from: Date, to: Date): Row {
+  const span = to.getTime() - from.getTime()
+  const now = Date.now()
+  const today = new Date(`${brtDay(new Date())}T00:00:00-03:00`).getTime()
+  const month = new Date(`${brtDay(new Date()).slice(0, 7)}-01T00:00:00-03:00`).getTime()
+  const at = (iso: unknown) => new Date(String(iso)).getTime()
+  const within = (time: number, start: number, end: number) => time >= start && time < end
+  const all = events(state)
+  const cur = all.filter((row) => within(row.at, from.getTime(), to.getTime()))
+  const generations = state.generations
+  const genCur = generations.filter((row) => within(at(row.created_at), from.getTime(), to.getTime()))
+  const generationById = new Map(generations.map((row) => [String(row.id), row]))
+  const featureOf = (event: DemoEvent) => featureOfRow(generationById.get(event.generation_id) ?? { kind: event.kind })
+  const payments = state.subscriptionPayments
+  const periodDays = days(from, to)
+  const paidIn = (start: number, end: number) => payments.filter((row) => within(at(row.paid_at), start, end))
+  const cents = (rows: readonly Row[]) => sum(rows, (row) => num(row.amount_cents))
+  const users = [{ id: state.profile.id, balance: state.purchasedBalance + state.subscriptionBalance, created_at: state.profile.created_at }, ...state.otherUsers]
+  const generatedBy = new Set(generations.map((row) => String(row.user_id)))
+  const group = (rows: readonly DemoEvent[], key: (row: DemoEvent) => string) =>
+    [...new Set(rows.map(key))].map((value) => {
+      const mine = rows.filter((row) => key(row) === value)
+      return { value, generations: mine.length, credits: sum(mine, (row) => row.credits), cost_brl: costOf(mine), users: new Set(mine.map((row) => row.user_id)).size }
+    })
+  const modelOf = (slug: unknown) => state.models.find((model) => model.slug === slug)
+  const providerOf = (slug: unknown) => String(modelOf(slug)?.provider ?? 'fal')
+  const topModels = group(cur, (row) => row.model_slug)
+    .sort((a, b) => b.cost_brl - a.cost_brl)
+    .slice(0, 5)
+    .map((row) => row.value)
+  const weekStart = (time: number) => {
+    const date = new Date(`${brtDay(new Date(time))}T00:00:00Z`)
+    return date.getTime() - ((date.getUTCDay() + 6) % 7) * DAY_MS
+  }
+  const thisWeek = weekStart(now)
+  const cohorts = Array.from({ length: 8 }, (_, index) => thisWeek - (7 - index) * 7 * DAY_MS)
+    .map((cohort) => {
+      const members = users.filter((user) => weekStart(at(user.created_at)) === cohort)
+      return {
+        cohort: new Date(cohort).toISOString().slice(0, 10),
+        size: members.length,
+        active: Array.from({ length: 8 }, (_, week) =>
+          cohort + week * 7 * DAY_MS > thisWeek
+            ? null
+            : members.filter((user) =>
+                generations.some((row) => String(row.user_id) === String(user.id) && weekStart(at(row.created_at)) === cohort + week * 7 * DAY_MS),
+              ).length,
+        ),
+      }
+    })
+    .filter((row) => row.size > 0)
+  const durations = ['image', 'video', 'text']
+    .map((kind) => {
+      const seconds = genCur
+        .filter((row) => row.kind === kind && row.status === 'succeeded' && row.completed_at)
+        .map((row) => (at(row.completed_at) - at(row.created_at)) / 1000)
+        .sort((a, b) => a - b)
+      const avg = seconds.length ? sum(seconds, (value) => value) / seconds.length : 0
+      return { kind, samples: seconds.length, avg_seconds: Math.round(avg * 10) / 10, p90_seconds: seconds[Math.floor(seconds.length * 0.9)] ?? 0 }
+    })
+    .filter((row) => row.samples > 0)
+  const activeSubs = state.subscriptions.filter((row) => row.status === 'active')
+  const mrr = sum(activeSubs, (row) => num(row.price_cents))
+  const periodPaid = paidIn(from.getTime(), to.getTime())
+
+  return {
+    period: { from: from.toISOString(), to: to.toISOString() },
+    settings: { credit_value_brl: CREDIT_VALUE_BRL, usd_brl: USD_BRL, payment_fee_rate: 0.0399, min_margin_rate: 0.4 },
+    plans: state.plans
+      .filter((plan) => plan.status !== 'draft')
+      .map((plan) => ({ slug: plan.slug, name: plan.name, price_cents: num(plan.price_cents), monthly_credits: num(plan.monthly_credits), status: plan.status ?? 'active' })),
+    revenue: {
+      series: periodDays.map((day) => {
+        const start = new Date(`${day}T00:00:00-03:00`).getTime()
+        const rows = paidIn(start, start + DAY_MS)
+        return {
+          day,
+          gross_cents: cents(rows),
+          refunds_cents: cents(rows.filter((row) => row.status === 'refunded')),
+          previous_gross_cents: cents(paidIn(start - span, start - span + DAY_MS)),
+        }
+      }),
+      gross_cents: cents(periodPaid),
+      refunds_cents: cents(periodPaid.filter((row) => row.status === 'refunded')),
+      previous_gross_cents: cents(paidIn(from.getTime() - span, from.getTime())),
+      previous_refunds_cents: 0,
+      lifetime_gross_cents: cents(payments),
+      lifetime_refunds_cents: cents(payments.filter((row) => row.status === 'refunded')),
+      month_received_cents: cents(paidIn(month, now + 1).filter((row) => row.status !== 'refunded')),
+      projected_next_month_cents: sum(activeSubs.filter((row) => !row.canceled_at), (row) => num(row.price_cents)),
+      at_risk_cents: sum(state.subscriptions.filter((row) => row.status === 'past_due'), (row) => num(row.price_cents)),
+      mrr_start_cents: mrr,
+      mrr_lost_cents: 0,
+      churn_30d: { base: activeSubs.length, lost: 0, base_cents: mrr, lost_cents: 0 },
+      expenses_90d_cents: sum(demoExpenses.filter((row) => !row.voided_at), (row) => num(row.amount_cents)),
+      expenses_by_day: [],
+      marketing_cents: sum(demoExpenses.filter((row) => !row.voided_at && row.category === 'marketing'), (row) => num(row.amount_cents)),
+      new_paying: activeSubs.filter((row) => within(at(row.created_at), from.getTime(), to.getTime())).length,
+      paying_ai_cost_brl: costOf(cur.filter((row) => row.user_id === String(state.profile.id))),
+    },
+    ai: {
+      cost_today_brl: costOf(all.filter((row) => row.at >= today)),
+      cost_month_brl: costOf(all.filter((row) => row.at >= month)),
+      cost_brl: costOf(cur),
+      credits: sum(cur, (row) => row.credits),
+      events: cur.length,
+      unknown: cur.filter((row) => row.basis === 'unknown').length,
+      series: periodDays.map((day) => {
+        const rows = cur.filter((row) => brtDay(new Date(row.at)) === day)
+        return { day, cost_brl: costOf(rows), generations: rows.length }
+      }),
+      by_feature: group(cur, featureOf).map((row) => ({ feature: row.value, generations: row.generations, credits: row.credits, cost_brl: row.cost_brl, users: row.users })),
+      by_model: group(cur, (row) => row.model_slug).map((row) => ({
+        model_slug: row.value,
+        name: String(modelOf(row.value)?.name ?? row.value),
+        provider: providerOf(row.value),
+        generations: row.generations,
+        credits: row.credits,
+        cost_brl: row.cost_brl,
+      })),
+      model_series: periodDays.flatMap((day) =>
+        topModels.map((slug) => ({ day, model_slug: slug, cost_brl: costOf(cur.filter((row) => row.model_slug === slug && brtDay(new Date(row.at)) === day)) })),
+      ),
+      top_users: group(cur, (row) => row.user_id)
+        .sort((a, b) => b.cost_brl - a.cost_brl)
+        .slice(0, 10)
+        .map((row) => {
+          const other = state.otherUsers.find((user) => String(user.id) === row.value)
+          return {
+            user_id: row.value,
+            email: other ? String(other.email) : 'demo@kria.ia',
+            plan_name: other ? String(other.plan_name ?? 'Grátis') : 'Pro',
+            plan_slug: other ? String(other.plan_slug ?? 'gratis') : 'pro',
+            generations: row.generations,
+            credits: row.credits,
+            cost_brl: row.cost_brl,
+          }
+        }),
+    },
+    users: {
+      dau: new Set(generations.filter((row) => at(row.created_at) >= today).map((row) => String(row.user_id))).size,
+      wau: new Set(generations.filter((row) => at(row.created_at) >= thisWeek).map((row) => String(row.user_id))).size,
+      mau: new Set(generations.filter((row) => at(row.created_at) >= now - 30 * DAY_MS).map((row) => String(row.user_id))).size,
+      active_period: new Set(genCur.map((row) => String(row.user_id))).size,
+      generations_period: genCur.length,
+      never_used: users.filter((user) => !generatedBy.has(String(user.id))).length,
+      used_ai: users.filter((user) => generatedBy.has(String(user.id))).length,
+      near_limit: users.filter((user) => num(user.balance) > 0 && num(user.balance) < 200).length,
+      exhausted: users.filter((user) => num(user.balance) === 0 && generatedBy.has(String(user.id))).length,
+      active_series: periodDays.map((day) => ({
+        day,
+        users: new Set(genCur.filter((row) => brtDay(new Date(at(row.created_at))) === day).map((row) => String(row.user_id))).size,
+      })),
+      cohorts,
+    },
+    operations: {
+      total: genCur.length,
+      succeeded: genCur.filter((row) => row.status === 'succeeded').length,
+      failed: genCur.filter((row) => row.status === 'failed').length,
+      open: generations.filter((row) => row.status === 'queued' || row.status === 'running').length,
+      stuck: 0,
+      failed_billed: 0,
+      failed_billed_cost_brl: 0,
+      duration: durations,
+      providers: [...new Set(state.models.map((model) => String(model.provider ?? 'fal')))].map((provider) => {
+        const mine = generations.filter((row) => providerOf(row.model_slug) === provider)
+        const recent = mine.filter((row) => at(row.created_at) >= now - DAY_MS)
+        const last = (status: string) =>
+          mine
+            .filter((row) => row.status === status)
+            .map((row) => String(row.completed_at ?? row.created_at))
+            .sort()
+            .at(-1) ?? null
+        return { provider, total_24h: recent.length, failed_24h: recent.filter((row) => row.status === 'failed').length, last_success_at: last('succeeded'), last_failure_at: last('failed') }
+      }),
+      errors: genCur
+        .filter((row) => row.status === 'failed')
+        .slice(0, 15)
+        .map((row) => ({
+          id: String(row.id),
+          at: String(row.created_at),
+          model_name: String(modelOf(row.model_slug)?.name ?? row.model_slug),
+          provider: providerOf(row.model_slug),
+          kind: String(row.kind),
+          error: String(row.error ?? 'sem mensagem'),
+          email: 'demo@kria.ia',
+        })),
+    },
+  }
+}

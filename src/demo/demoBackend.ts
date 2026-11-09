@@ -8,7 +8,7 @@ import { assistantToolSchema } from '@/domain/types'
 import { ADMIN_ROLE_LABELS, adminRoleSchema } from '@/domain/adminDashboard'
 import { buildDemoDashboard } from './demoAdmin'
 import { buildDemoAnalytics } from './demoAnalytics'
-import { buildDemoAiCosts, buildDemoBusiness, demoExpenses, demoUserProfile, demoUsersPage } from './demoIntelligence'
+import { buildDemoAiCosts, buildDemoBusiness, buildDemoCommandCenter, demoExpenses, demoUserProfile, demoUsersPage } from './demoIntelligence'
 import { demoGenerations, demoSubscriptions } from './demoLists'
 import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_USER_ID, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
@@ -605,6 +605,12 @@ function adminRpc(name: string, body: Row): Response | null {
       const to = new Date(String(body.p_to))
       if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) return rpcFail('invalid_period')
       return json(buildDemoBusiness(state, from, to, body))
+    }
+    case 'admin_command_center': {
+      const from = new Date(String(body.p_from))
+      const to = new Date(String(body.p_to))
+      if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) return rpcFail('invalid_period')
+      return json(buildDemoCommandCenter(state, from, to))
     }
     case 'admin_model_price_history': {
       const model = state.models.find((item) => item.slug === body.p_slug)

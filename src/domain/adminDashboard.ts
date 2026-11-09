@@ -141,7 +141,7 @@ export type Dashboard = z.infer<typeof dashboardSchema>
 
 // ------------------------------------------------------------- períodos
 
-export const PERIOD_PRESETS = ['today', 'yesterday', '7d', '30d', '90d', 'custom'] as const
+export const PERIOD_PRESETS = ['today', 'yesterday', '7d', '30d', 'month', 'last_month', '90d', 'year', 'custom'] as const
 export type PeriodPreset = (typeof PERIOD_PRESETS)[number]
 
 export const PERIOD_LABELS: Readonly<Record<PeriodPreset, string>> = {
@@ -149,7 +149,10 @@ export const PERIOD_LABELS: Readonly<Record<PeriodPreset, string>> = {
   yesterday: 'Ontem',
   '7d': '7 dias',
   '30d': '30 dias',
+  month: 'Mês atual',
+  last_month: 'Mês anterior',
   '90d': '90 dias',
+  year: 'Ano atual',
   custom: 'Personalizado',
 }
 
@@ -191,6 +194,15 @@ export function resolvePeriod(preset: PeriodPreset, now: Date, custom?: { start:
       return lastDays(30)
     case '90d':
       return lastDays(90)
+    case 'month':
+      return { from: startOfBrtDay(`${brtDay(now).slice(0, 7)}-01`), to: tomorrow }
+    case 'last_month': {
+      const monthStart = startOfBrtDay(`${brtDay(now).slice(0, 7)}-01`)
+      const previous = brtDay(new Date(monthStart.getTime() - DAY_MS)).slice(0, 7)
+      return { from: startOfBrtDay(`${previous}-01`), to: monthStart }
+    }
+    case 'year':
+      return { from: startOfBrtDay(`${brtDay(now).slice(0, 4)}-01-01`), to: tomorrow }
     case 'custom': {
       if (!custom || !ISO_DAY.test(custom.start) || !ISO_DAY.test(custom.end)) return null
       const from = startOfBrtDay(custom.start)
@@ -230,11 +242,6 @@ export function contribution(finance: DashboardFinance): Contribution {
   const apiCostCents = Math.round(finance.api_cost_usd * finance.usd_brl * 100)
   const marginCents = receivedCents - feesCents - apiCostCents
   return { receivedCents, feesCents, apiCostCents, marginCents, marginRate: ratio(marginCents, receivedCents) }
-}
-
-/** Ticket médio: recebido ÷ número de pagamentos do período. */
-export function averageTicket(finance: DashboardFinance): number | null {
-  return finance.payments_count > 0 ? Math.round(finance.received_cents / finance.payments_count) : null
 }
 
 // ---------------------------------------------------------------- alertas

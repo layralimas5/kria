@@ -1,82 +1,89 @@
-import { useCallback, useMemo, useState } from 'react'
-import { AiSection, AlertsList, BreakdownSection, ChartsSection, Definitions, RevenueSection, UsersSection } from '@/components/admin/dashboard/DashboardSections'
+import clsx from 'clsx'
+import { Download, Printer, RefreshCw } from 'lucide-react'
+import { AiSection } from '@/components/admin/center/AiSection'
+import { BusinessSection } from '@/components/admin/center/BusinessSection'
+import { CenterSkeleton, SectionNav } from '@/components/admin/center/CenterLayout'
+import { FinanceSection } from '@/components/admin/center/FinanceSection'
+import { OperationsSection } from '@/components/admin/center/OperationsSection'
+import { OverviewSection } from '@/components/admin/center/OverviewSection'
+import { SubscriptionsSection } from '@/components/admin/center/SubscriptionsSection'
+import { UsersSection } from '@/components/admin/center/UsersSection'
 import { PeriodFilter } from '@/components/admin/dashboard/PeriodFilter'
-import { ALL_SCOPE, ScopeSelect } from '@/components/admin/dashboard/ScopeFilter'
 import { Notice } from '@/components/ui/Notice'
-import { Spinner } from '@/components/ui/Spinner'
-import { buildAlerts } from '@/domain/adminDashboard'
+import { brtDay, PERIOD_LABELS } from '@/domain/adminDashboard'
+import { downloadCsv, toCsv } from '@/domain/business'
+import { centerCsvRows, DAILY_CSV_HEADER, type CenterData } from '@/domain/commandCenter'
 import { useAdminPeriod } from '@/hooks/useAdminPeriod'
-import { useQuery } from '@/hooks/useQuery'
-import { fetchAdminModels, fetchAdminPlans, fetchDashboard } from '@/lib/adminApi'
+import { useCommandCenter } from '@/hooks/useCommandCenter'
 
-const scopeValue = (value: string) => (value === ALL_SCOPE ? null : value)
+const ACTION =
+  'inline-flex min-h-9 items-center gap-1.5 rounded-xl px-3 text-[13px] font-semibold text-zinc-300 ring-1 ring-white/[0.08] transition-colors hover:bg-white/[0.05] hover:text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40'
 
+function exportCsv(data: CenterData) {
+  const { indicators, daily } = centerCsvRows(data)
+  const content = `${toCsv(['Seção', 'Indicador', 'Valor'], indicators)}\r\n\r\n${toCsv([...DAILY_CSV_HEADER], daily).replace(/^﻿/, '')}`
+  downloadCsv(`vynkio-central-${brtDay(new Date(data.center.period.from))}-a-${brtDay(new Date(Date.parse(data.center.period.to) - 1))}.csv`, content)
+}
+
+/**
+ * Central de comando do admin: em poucos segundos, quanto entrou, quanto saiu, quanto sobrou, o que
+ * custa mais e se o crescimento é saudável. Um período vale para a página inteira; cada seção tem
+ * âncora própria e os cards levam ao detalhe nas outras telas.
+ */
 export function AdminDashboardPage() {
   const { preset, custom, period, setPreset, setCustom } = useAdminPeriod()
-  const [plan, setPlan] = useState(ALL_SCOPE)
-  const [model, setModel] = useState(ALL_SCOPE)
-  const plans = useQuery(fetchAdminPlans, 'Não deu para carregar os planos.')
-  const models = useQuery(fetchAdminModels, 'Não deu para carregar as ferramentas.')
-  // Período inválido não consulta o banco: o filtro já explica o que corrigir.
-  const load = useCallback(
-    () => (period ? fetchDashboard(period, { plan: scopeValue(plan), model: scopeValue(model) }) : Promise.resolve(null)),
-    [period, plan, model],
-  )
-  const dashboard = useQuery(load, 'Não deu para carregar os números do período.')
-  const data = dashboard.data
-  const alerts = useMemo(() => (data ? buildAlerts(data) : []), [data])
-  const planOptions = useMemo(
-    () => [{ value: ALL_SCOPE, label: 'Todos' }, ...(plans.data ?? []).filter((item) => item.status !== 'draft').map((item) => ({ value: item.slug, label: item.name }))],
-    [plans.data],
-  )
-  const modelOptions = useMemo(() => [{ value: ALL_SCOPE, label: 'Todas' }, ...(models.data ?? []).map((item) => ({ value: item.slug, label: item.name }))], [models.data])
-  const scoped = plan !== ALL_SCOPE || model !== ALL_SCOPE
+  const center = useCommandCenter(period)
+  const data = center.data
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="font-headline text-3xl text-zinc-50 md:text-4xl">Dashboard</h1>
-        <p className="mt-2 text-sm text-zinc-400">Saúde do Vynkio com dados reais do banco. Onde não há registro, aparece vazio, nunca estimado.</p>
+    <div className="space-y-10">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-soft">Vynkio · {PERIOD_LABELS[preset]}</p>
+          <h1 className="mt-1 font-headline text-3xl text-zinc-50 md:text-4xl">Central de comando</h1>
+          <p className="mt-2 max-w-2xl text-sm text-zinc-400">
+            Receita, custos de IA, lucro, base e operação com dados reais do banco. Onde não há registro suficiente, a tela diz o que falta em vez de estimar.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 print:hidden">
+          <button type="button" onClick={() => void center.reload()} disabled={center.loading} className={ACTION}>
+            <RefreshCw className={clsx('size-4', center.loading && 'animate-spin motion-reduce:animate-none')} aria-hidden="true" />
+            Atualizar
+          </button>
+          <button type="button" onClick={() => data && exportCsv(data)} disabled={!data} className={ACTION}>
+            <Download className="size-4" aria-hidden="true" />
+            CSV
+          </button>
+          <button type="button" onClick={() => window.print()} disabled={!data} className={ACTION}>
+            <Printer className="size-4" aria-hidden="true" />
+            PDF
+          </button>
+        </div>
+      </header>
+
+      {/* Período e atalhos presos no topo (no computador): continuam à mão enquanto a página rola. */}
+      <div className="z-20 -mx-4 space-y-3 border-b border-white/[0.05] bg-canvas/90 px-4 py-3 backdrop-blur-xl print:hidden lg:sticky lg:top-14 lg:-mx-8 lg:px-8">
+        <PeriodFilter key={`${custom.start}:${custom.end}`} preset={preset} custom={custom} invalid={period === null} onPreset={setPreset} onCustom={setCustom} />
+        {data && <SectionNav />}
       </div>
 
-      {/* Filtros presos no topo (no computador): continuam à mão enquanto a página rola. */}
-      <div className="z-20 -mx-4 border-b border-white/[0.05] bg-canvas/90 px-4 py-3 backdrop-blur-xl lg:sticky lg:top-14 lg:-mx-8 lg:px-8">
-        <div className="flex flex-wrap items-center gap-3">
-          <PeriodFilter key={`${custom.start}:${custom.end}`} preset={preset} custom={custom} invalid={period === null} onPreset={setPreset} onCustom={setCustom} />
-          <ScopeSelect label="Plano" value={plan} options={planOptions} onChange={setPlan} />
-          <ScopeSelect label="Ferramenta" value={model} options={modelOptions} onChange={setModel} />
-          {scoped && (
-            <button
-              type="button"
-              onClick={() => {
-                setPlan(ALL_SCOPE)
-                setModel(ALL_SCOPE)
-              }}
-              className="min-h-10 rounded-xl px-3 text-[13px] font-semibold text-accent-soft hover:text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              Limpar filtros
-            </button>
-          )}
-        </div>
-      </div>
-
-      {dashboard.error && <Notice tone="error">{dashboard.error}</Notice>}
-      {!data && dashboard.loading && (
-        <div className="grid place-items-center py-24 text-zinc-500" role="status" aria-label="Carregando">
-          <Spinner className="size-6" />
-        </div>
-      )}
+      {center.error && <Notice tone="error">{center.error}</Notice>}
+      {!data && center.loading && <CenterSkeleton />}
 
       {data && (
-        <>
-          {!scoped && <AlertsList alerts={alerts} />}
-          <UsersSection data={data} />
-          {data.finance && <RevenueSection finance={data.finance} />}
+        <div className={clsx('space-y-14 transition-opacity duration-300', center.loading && 'opacity-60')} aria-busy={center.loading}>
+          <OverviewSection data={data} />
+          <FinanceSection data={data} onChanged={() => void center.reload()} />
           <AiSection data={data} />
-          <ChartsSection data={data} stale={dashboard.loading} />
-          <BreakdownSection data={data} />
-          <Definitions />
-        </>
+          <SubscriptionsSection data={data} />
+          <UsersSection data={data} />
+          <BusinessSection data={data} />
+          <OperationsSection data={data} />
+          <p className="text-xs text-zinc-500">
+            Períodos em dias inteiros de Brasília; variações comparam com o período anterior de mesmo tamanho. Custo de IA vem do registro de cada geração (tokens medidos ou tarifa × uso, no câmbio do dia).
+            Taxa de pagamento é estimada pela taxa cadastrada. Lucro só desconta despesas lançadas.
+          </p>
+        </div>
       )}
     </div>
   )

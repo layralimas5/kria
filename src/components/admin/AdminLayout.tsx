@@ -61,7 +61,7 @@ function AdminNav({ collapsed }: { readonly collapsed: boolean }) {
     if (!pathname.startsWith(path ?? to)) return false
     if (!query) return true
     const wanted = new URLSearchParams(query).get('aba')
-    const current = new URLSearchParams(search).get('aba') ?? 'executivo'
+    const current = new URLSearchParams(search).get('aba') ?? 'retencao'
     return wanted === current
   }
 
@@ -131,7 +131,7 @@ export function AdminLayout() {
       {/* Desktop: barra fixa com a marca, o selo Admin e o botão de recolher no rodapé. */}
       <aside
         aria-label="Menu do admin"
-        className="fixed inset-y-0 left-0 z-40 hidden w-[var(--admin-w)] flex-col border-r border-white/[0.05] bg-canvas transition-[width] duration-200 ease-out lg:flex"
+        className="fixed inset-y-0 left-0 z-40 hidden w-[var(--admin-w)] flex-col border-r border-white/[0.05] bg-canvas transition-[width] duration-200 ease-out lg:flex print:!hidden"
       >
         <div className={clsx('flex shrink-0 flex-col gap-2 pb-3 pt-4', collapsed ? 'items-center px-2' : 'items-start px-4')}>
           <Link to="/admin" aria-label="Vynkio Admin, dashboard" className={clsx('rounded-lg', FOCUS)}>
@@ -147,7 +147,7 @@ export function AdminLayout() {
         </div>
       </aside>
 
-      <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-canvas/90 backdrop-blur-xl lg:border-b-0">
+      <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-canvas/90 backdrop-blur-xl lg:border-b-0 print:hidden">
         <div className="flex h-14 items-center gap-3 px-4 transition-[padding] duration-200 lg:pl-[calc(var(--admin-w)+2rem)] lg:pr-8">
           <button
             type="button"
@@ -172,7 +172,7 @@ export function AdminLayout() {
         <AdminNav collapsed={false} />
       </div>
 
-      <main id="conteudo" className="min-w-0 px-4 pb-16 pt-6 transition-[padding] duration-200 lg:pl-[calc(var(--admin-w)+2rem)] lg:pr-8">
+      <main id="conteudo" className="min-w-0 px-4 pb-16 pt-6 transition-[padding] duration-200 lg:pl-[calc(var(--admin-w)+2rem)] lg:pr-8 print:!p-0">
         <div className="mx-auto max-w-6xl">
           <Suspense fallback={<PageFallback />}>
             <Outlet />

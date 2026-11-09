@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  averageTicket,
   brtDay,
   buildAlerts,
   change,
@@ -78,6 +77,16 @@ describe('resolvePeriod', () => {
     expect(week?.to.toISOString()).toBe('2026-10-24T03:00:00.000Z')
   })
 
+  it('mês atual, mês anterior e ano atual seguem o calendário de Brasília', () => {
+    const month = resolvePeriod('month', NOW)
+    expect(month?.from.toISOString()).toBe('2026-10-01T03:00:00.000Z')
+    expect(month?.to.toISOString()).toBe('2026-10-24T03:00:00.000Z')
+    const last = resolvePeriod('last_month', NOW)
+    expect(last?.from.toISOString()).toBe('2026-09-01T03:00:00.000Z')
+    expect(last?.to.toISOString()).toBe('2026-10-01T03:00:00.000Z')
+    expect(resolvePeriod('year', NOW)?.from.toISOString()).toBe('2026-01-01T03:00:00.000Z')
+  })
+
   it('personalizado inclui o último dia e recusa intervalo invertido ou longo demais', () => {
     const custom = resolvePeriod('custom', NOW, { start: '2026-10-01', end: '2026-10-01' })
     expect(custom?.from.toISOString()).toBe('2026-10-01T03:00:00.000Z')
@@ -101,11 +110,6 @@ describe('indicadores', () => {
     expect(result.apiCostCents).toBe(1100)
     expect(result.marginCents).toBe(100_00 - 350 - 1100)
     expect(result.marginRate).toBeCloseTo(0.855)
-  })
-
-  it('ticket médio só existe com pagamento', () => {
-    expect(averageTicket(finance())).toBeNull()
-    expect(averageTicket(finance({ received_cents: 15_000, payments_count: 2 }))).toBe(7500)
   })
 })
 
