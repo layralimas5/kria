@@ -67,8 +67,18 @@ export async function fetchAdminMe(): Promise<AdminMe | null> {
   return data === null ? null : adminMeSchema.parse(data)
 }
 
-export const fetchDashboard = (period: Period) =>
-  rpc('admin_dashboard', { p_from: period.from.toISOString(), p_to: period.to.toISOString() }, dashboardSchema)
+/** Plano e ferramenta nulos = todos. */
+export interface DashboardScope {
+  readonly plan: string | null
+  readonly model: string | null
+}
+
+export const fetchDashboard = (period: Period, scope: DashboardScope = { plan: null, model: null }) =>
+  rpc(
+    'admin_dashboard',
+    { p_from: period.from.toISOString(), p_to: period.to.toISOString(), p_plan: scope.plan, p_model: scope.model },
+    dashboardSchema,
+  )
 
 export const fetchAnalytics = (period: Period) =>
   rpc('admin_analytics', { p_from: period.from.toISOString(), p_to: period.to.toISOString() }, analyticsSchema)

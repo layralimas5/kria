@@ -1,8 +1,10 @@
 import {
   BarChart3,
+  Coins,
   CreditCard,
   Cpu,
   LayoutDashboard,
+  Repeat,
   ScrollText,
   ShieldCheck,
   Sparkles,
@@ -32,7 +34,14 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
     label: 'Visão geral',
     items: [
       { label: 'Dashboard', icon: LayoutDashboard, to: '/admin', permission: 'dashboard.view' },
-      { label: 'Analytics', icon: BarChart3, to: '/admin/analytics', permission: 'dashboard.view' },
+    ],
+  },
+  {
+    label: 'Analytics',
+    items: [
+      { label: 'Retenção', icon: Repeat, to: '/admin/analytics?aba=retencao', permission: 'dashboard.view' },
+      { label: 'Ferramentas', icon: BarChart3, to: '/admin/analytics?aba=ferramentas', permission: 'dashboard.view' },
+      { label: 'Créditos e tokens', icon: Coins, to: '/admin/analytics?aba=creditos', permission: 'dashboard.view' },
     ],
   },
   {

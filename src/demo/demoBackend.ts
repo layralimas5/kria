@@ -603,7 +603,9 @@ function adminRpc(name: string, body: Row): Response | null {
       const from = new Date(String(body.p_from))
       const to = new Date(String(body.p_to))
       if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) return rpcFail('invalid_period')
-      return json(buildDemoDashboard(state, [demoUserRow(), ...state.otherUsers], from, to))
+      // Demo: a ferramenta recorta as gerações; o plano não muda os números de exemplo.
+      const scoped = body.p_model ? { ...state, generations: state.generations.filter((row) => row.model_slug === body.p_model) } : state
+      return json(buildDemoDashboard(scoped, [demoUserRow(), ...state.otherUsers], from, to))
     }
     case 'admin_pricing':
       return json({ ...state.pricing, payment_fee_rate: 0.035 })

@@ -1909,4 +1909,31 @@ await test('admin: lista gerações e assinaturas com filtro; valores só para o
   await expectError(as(db, 'authenticated', bia, () => db.query(`select admin_subscriptions()`)), 'forbidden')
 })
 
+// ------------------------------------------------------- filtros do dashboard (0024)
+
+await test('dashboard: filtro por plano e por ferramenta recorta a base', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_filter')
+  await create(db, ana, 'foto')
+  await create(db, bia, 'foto')
+  await create(db, bia, 'copy', 'legenda para o café')
+
+  const dash = (plan = null, model = null) =>
+    as(db, 'authenticated', dona, async () => (await db.query(`select admin_dashboard(${PERIOD}, $1, $2) as d`, [plan, model])).rows[0].d)
+  const all = await dash()
+  assert.equal(all.generations.total, 3)
+  const pro = await dash('pro')
+  assert.deepEqual([pro.users.total, pro.generations.total, pro.users.paying], [1, 1, 1])
+  const free = await dash('gratis')
+  assert.equal(free.generations.total, 2)
+  assert.equal(free.users.paying, 0)
+  const foto = await dash(null, 'foto')
+  assert.deepEqual([foto.generations.total, foto.by_model.length], [2, 1])
+  assert.equal((await dash('gratis', 'foto')).generations.total, 1)
+  assert.deepEqual(all.filters, { plan: null, model: null })
+})
+
 console.log(`\n${passed} testes do banco passaram`)

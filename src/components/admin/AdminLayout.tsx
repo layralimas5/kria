@@ -52,8 +52,17 @@ function NavLink({ item, active, collapsed }: { readonly item: AdminNavItem; rea
 
 function AdminNav({ collapsed }: { readonly collapsed: boolean }) {
   const { can } = useAdminAccess()
-  const { pathname } = useLocation()
-  const isActive = (to: string) => (to === '/admin' ? pathname === '/admin' : pathname.startsWith(to))
+  const { pathname, search } = useLocation()
+  // Item com ?aba= (Retenção, Ferramentas...) só fica ativo na própria aba; sem aba, vale a primeira.
+  const isActive = (to: string) => {
+    const [path, query] = to.split('?')
+    if (path === '/admin') return pathname === '/admin'
+    if (!pathname.startsWith(path ?? to)) return false
+    if (!query) return true
+    const wanted = new URLSearchParams(query).get('aba')
+    const current = new URLSearchParams(search).get('aba') ?? 'retencao'
+    return wanted === current
+  }
 
   return (
     <nav aria-label="Admin" className="space-y-4">
