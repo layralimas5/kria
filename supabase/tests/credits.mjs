@@ -552,10 +552,10 @@ await test('Veo 3.1 gera em qualquer plano pago, não no Grátis', async (db) =>
 await test('ferramentas do menu por plano', async (db) => {
   const { rows } = await db.query(`select slug, tools from subscription_plans where status = 'live' order by position`)
   assert.deepEqual(rows, [
-    { slug: 'gratis', tools: ['copy', 'prompt_library'] },
-    { slug: 'starter', tools: ['copy', 'prompt_library'] },
-    { slug: 'pro', tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio'] },
-    { slug: 'studio', tools: ['copy', 'prompt_library', 'motion_control', 'ugc_studio', 'projects'] },
+    { slug: 'gratis', tools: ['copy'] },
+    { slug: 'starter', tools: ['copy'] },
+    { slug: 'pro', tools: ['copy', 'ugc_studio'] },
+    { slug: 'studio', tools: ['copy', 'ugc_studio', 'projects'] },
   ])
   await expectError(db.query(`update subscription_plans set tools = array['hackear'] where slug = 'pro'`), 'check')
 })
