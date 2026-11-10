@@ -12,6 +12,7 @@ import { adminMeSchema, adminRoleSchema, dashboardSchema, type AdminMe, type Adm
 import { financeSchema, financeSettingsSchema, type FinanceSettings } from '@/domain/finance'
 import { modelQuotesSchema, preflightSchema, type Tariff } from '@/domain/creditPolicy'
 import { economicsSchema } from '@/domain/planEconomics'
+import { supportSettingsSchema } from '@/domain/support'
 import { spendGuardSchema } from '@/domain/spendGuard'
 import { ApiError, invoke } from './api'
 import { supabase } from './supabase'
@@ -513,3 +514,14 @@ export async function createUser(input: NewUserInput) {
     }),
   )
 }
+
+// ------------------------------------------------------------ suporte (0028)
+
+export const fetchSupportSettings = () => rpc('admin_support_settings', {}, supportSettingsSchema)
+
+export const setSupportSettings = (settings: { email: string; whatsapp: string; communityUrl: string; reason: string }) =>
+  rpc(
+    'admin_set_support_settings',
+    { p_email: settings.email, p_whatsapp: settings.whatsapp, p_community_url: settings.communityUrl, p_reason: settings.reason },
+    supportSettingsSchema,
+  )

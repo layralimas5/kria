@@ -4,10 +4,11 @@ import { formatBRL } from '@/domain/format'
 import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { useQuery } from '@/hooks/useQuery'
 import { useToast } from '@/hooks/useToast'
-import { fetchAdminPlans, fetchPlanEconomics, updatePlan, updatePlanLimits, type AdminPlan } from '@/lib/adminApi'
+import { fetchAdminPlans, fetchPlanEconomics, fetchSupportSettings, updatePlan, updatePlanLimits, type AdminPlan } from '@/lib/adminApi'
 import { errorMessage } from '@/lib/api'
 import { Section } from './dashboard/DashboardSections'
 import { PlanTargets } from './finance/PlanTargets'
+import { SupportContactsForm } from './SupportContactsForm'
 import { formatPercent } from './finance/format'
 import { Button } from '../ui/Button'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
@@ -144,7 +145,10 @@ export function PlansTab() {
   const plans = useQuery(fetchAdminPlans, 'Não deu para carregar os planos.')
   const economics = useQuery(fetchPlanEconomics, 'Não deu para carregar a margem dos planos.')
   const all = plans.data ?? []
-  const selling = all.filter((plan) => plan.status !== 'draft')
+  const support = useQuery(fetchSupportSettings, 'Não deu para carregar os contatos de suporte.')
+  const selling = all.filter((plan) => plan.status === 'live')
+  // Saíram da venda na virada; quem já assina continua com o contratado.
+  const legacy = all.filter((plan) => plan.status === 'legacy')
   const drafts = all.filter((plan) => plan.status === 'draft' && plan.line === 'creator')
   const marginOf = (slug: string) => economics.data?.plans.find((plan) => plan.slug === slug)?.full_use_margin ?? null
   const target = economics.data?.finance.min_margin_rate ?? null
@@ -159,6 +163,28 @@ export function PlansTab() {
             <PlanRow key={`${plan.slug}:${plan.version}:${plan.active}:${plan.daily_credit_limit}:${plan.monthly_credit_limit}`} plan={plan} canEdit={can('plans.manage')} onSaved={() => void plans.reload()} />
           ))}
         </div>
+      </Section>
+
+      {legacy.length > 0 && (
+        <Section title="Planos antigos" description="Fora de venda desde a virada. Quem já assina continua com o preço contratado e os créditos convertidos para a régua nova.">
+          <ul className="divide-y divide-white/[0.05] rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+            {legacy.map((plan) => (
+              <li key={plan.slug} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
+                <span className="font-semibold text-zinc-100">{plan.name}</span>
+                <span className="tabular-nums text-zinc-400">
+                  {formatBRL(plan.price_cents)} · {plan.monthly_credits.toLocaleString('pt-BR')} créditos
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      <Section title="Canais de suporte" description="O que a aba Suporte do app mostra: e-mail no Starter, WhatsApp no Pro e no Max. Cada plano recebe só o contato do seu canal.">
+        {support.error && <Notice tone="error">{support.error}</Notice>}
+        {support.data && (
+          <SupportContactsForm key={support.data.updated_at} settings={support.data} canEdit={can('plans.manage')} onSaved={() => void support.reload()} />
+        )}
       </Section>
 
       {drafts.length > 0 && (
