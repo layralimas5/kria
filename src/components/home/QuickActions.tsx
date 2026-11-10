@@ -46,15 +46,13 @@ export function QuickActions({ actions }: QuickActionsProps) {
               <Link
                 to={action.to}
                 className={clsx(
-                  'group flex h-full flex-col gap-3 rounded-3xl p-4 ring-1 transition-colors md:p-5',
+                  'card-premium card-hover group relative flex h-full flex-col gap-3 overflow-hidden rounded-3xl p-4 md:p-5',
                   FOCUS,
-                  index === 0
-                    ? 'bg-gradient-to-br from-accent/[0.16] to-surface ring-accent/40 hover:ring-accent/70'
-                    : 'bg-surface ring-white/[0.06] hover:bg-surface-2',
+                  index === 0 && 'border-accent/40 bg-[linear-gradient(135deg,rgb(124_58_237/0.22),rgb(124_58_237/0.04)_60%),var(--color-surface)]',
                 )}
               >
                 <span className="flex items-start justify-between gap-3">
-                  <span className="grid size-9 place-items-center rounded-xl bg-accent/15 text-accent-soft">
+                  <span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-accent/30 to-accent/10 text-accent-soft ring-1 ring-accent/25 transition-transform duration-200 group-hover:scale-105">
                     <Icon className="size-[18px]" aria-hidden="true" />
                   </span>
                   <ArrowUpRight
