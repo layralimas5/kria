@@ -4,7 +4,7 @@ import { Reveal } from '../components/Reveal'
 import { SectionHeading } from '../components/SectionHeading'
 import { PlanCardV2 } from '../pricing/PlanCardV2'
 import { subscribePath } from '../pricing/PlanCard'
-import { CREDIT_NOTICE, fetchStorefront, withWelcome, type StorefrontPlan } from '../pricing/storefront'
+import { CREDIT_NOTICE, fetchStorefront, USAGE_NOTICE, withWelcome, type StorefrontPlan } from '../pricing/storefront'
 
 /** Dados estruturados só dos planos com preço e checkout. */
 function PlansJsonLd({ plans }: { readonly plans: readonly StorefrontPlan[] }) {
@@ -78,7 +78,8 @@ export function PricingV2() {
           <Info className="mt-0.5 size-4 shrink-0 text-accent-soft" aria-hidden="true" />
           {CREDIT_NOTICE}
         </p>
-        <p className="mx-auto mt-4 max-w-3xl text-center text-[13px] text-zinc-500">
+        {current.some((plan) => plan.usage_hint) && <p className="mx-auto mt-4 max-w-3xl text-center text-[13px] text-zinc-500">* {USAGE_NOTICE}</p>}
+        <p className="mx-auto mt-2 max-w-3xl text-center text-[13px] text-zinc-500">
           Cobrança mensal no cartão, pelo Asaas · Cancele quando quiser, sem multa · Falhou, o crédito volta
         </p>
       </div>

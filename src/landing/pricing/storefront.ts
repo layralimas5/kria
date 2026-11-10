@@ -23,6 +23,8 @@ export const storefrontPlanSchema = z.object({
   /** Ainda não existe no produto: aparece como "Em breve", sem data. */
   soon_features: z.array(z.string()),
   limits: z.array(z.string()),
+  /** "Equivale a até X fotos ou Y vídeos" (0028): créditos ÷ créditos da ferramenta, uma ferramenta por vez. */
+  usage_hint: z.string().nullish().transform((value) => value ?? null),
   cta: z.enum(['signup', 'subscribe', 'contact']),
 })
 export type StorefrontPlan = z.infer<typeof storefrontPlanSchema>
@@ -50,6 +52,10 @@ export function withWelcome(storefront: Storefront): StorefrontPlan[] {
  * landing (hero, termos). Os cards leem o valor do banco; `storefront.test.ts` falha se os dois separarem.
  */
 export const WELCOME_CREDITS_V3 = 100
+
+/** Rodapé da linha de equivalência: deixa claro que é "ou", nunca a soma. */
+export const USAGE_NOTICE =
+  'Equivalências considerando todos os créditos do mês usados numa ferramenta só, na configuração padrão (foto em 1K, vídeo de 5 segundos). Resolução maior ou vídeo mais longo consomem mais créditos.'
 
 export const CREDIT_NOTICE =
   'Cada ferramenta de IA consome uma quantidade de créditos conforme o modelo e as configurações escolhidas. O custo em créditos é informado antes de cada geração.'

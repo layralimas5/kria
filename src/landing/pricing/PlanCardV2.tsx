@@ -16,6 +16,8 @@ const ACCENT = 'bg-accent text-accent-ink shadow-[0_3px_0_0_var(--color-accent-d
 const LIGHT = 'bg-zinc-50 text-zinc-950 shadow-[0_3px_0_0_#a1a1aa] hover:bg-white'
 
 const number = (value: number) => value.toLocaleString('pt-BR')
+// Benefício anunciado mas ainda não pronto: vem do banco com este sufixo e vira selo no card.
+const SOON_SUFFIX = ' (em breve)'
 
 function PlanAction({ plan }: { readonly plan: StorefrontPlan }) {
   const tone = plan.highlight ? ACCENT : LIGHT
@@ -92,16 +94,23 @@ export function PlanCardV2({ plan }: { readonly plan: StorefrontPlan }) {
           </div>
         )}
       </dl>
+      {plan.usage_hint && <p className="mt-2 text-[13px] text-zinc-300">{plan.usage_hint}*</p>}
 
       <PlanAction plan={plan} />
 
       <ul className="mt-6 space-y-2.5 border-t border-white/[0.06] pt-5 text-sm" aria-label={`O que vem no ${plan.name}`}>
-        {plan.features.map((feature) => (
-          <li key={feature} className="flex gap-2.5 text-zinc-200">
-            <Check className="mt-0.5 size-4 shrink-0 text-accent-soft" aria-hidden="true" />
-            {feature}
-          </li>
-        ))}
+        {plan.features.map((feature) => {
+          const soon = feature.endsWith(SOON_SUFFIX)
+          return (
+            <li key={feature} className="flex gap-2.5 text-zinc-200">
+              <Check className="mt-0.5 size-4 shrink-0 text-accent-soft" aria-hidden="true" />
+              <span>
+                {soon ? feature.slice(0, -SOON_SUFFIX.length) : feature}
+                {soon && <span className="ml-1.5 rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-semibold text-zinc-400">em breve</span>}
+              </span>
+            </li>
+          )
+        })}
       </ul>
     </article>
   )
