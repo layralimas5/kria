@@ -2434,4 +2434,34 @@ await test('central financeira: receita só do que foi pago, taxas conciliadas, 
 })
 
 
+// ---------------------------------------------------- safeupdate (0030)
+
+await test('nenhuma função faz UPDATE ou DELETE sem WHERE (o Supabase barra isso nas chamadas do app)', async (db) => {
+  const { rows } = await db.query(
+    `select p.proname, p.prosrc from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prolang <> 12`,
+  )
+  // Tira textos entre aspas e comentários: um ";" dentro de string não termina o comando.
+  const clean = (source) => source.replace(/'(?:[^']|'')*'/g, "''").replace(/--[^\n]*/g, '')
+  // A virada pelo console só roda no SQL Editor, fora do papel do app.
+  const consoleOnly = new Set(['pricing_switch_from_console'])
+  const offenders = []
+  for (const { proname, prosrc } of rows) {
+    if (consoleOnly.has(proname)) continue
+    for (const statement of clean(prosrc).split(';')) {
+      if (/\b(update\s+public\.\w+|delete\s+from\s+public\.\w+)/i.test(statement) && !/\bwhere\b/i.test(statement)) {
+        offenders.push(`${proname}: ${statement.trim().split('\n')[0]}`)
+      }
+    }
+  }
+  assert.deepEqual(offenders, [])
+
+  // O suporte salva de verdade: WhatsApp com DDI vira só dígitos.
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const saved = await as(db, 'authenticated', dona, async () =>
+    (await db.query(`select (admin_set_support_settings('vynkio.suporte@gmail.com', '+55 (11) 99999-0000', null, 'número do suporte')).*`)).rows[0])
+  assert.equal(saved.whatsapp, '5511999990000')
+})
+
+
 console.log(`\n${passed} testes do banco passaram`)
