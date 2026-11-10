@@ -3,8 +3,10 @@ import { Check, Clapperboard, ImageIcon, Plus, RectangleHorizontal, X } from 'lu
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ASPECT_LABELS, fixedDefaults, modelSpecs } from '@/domain/format'
+import { useBalance } from '@/hooks/useBalance'
 import type { Generation, MediaKind, Persona } from '@/domain/types'
 import { PROMPT_MAX, type Studio } from '@/hooks/useStudio'
+import { Kbd, modKey } from '../command/Kbd'
 import { MediaView } from '../MediaView'
 import { Spinner } from '../ui/Spinner'
 import { Popover } from '../ui/Popover'
@@ -182,6 +184,30 @@ function GenerateButton({ studio }: { readonly studio: Studio }) {
   )
 }
 
+/** Rodapé da caixa: quanto sobra depois de gerar, tamanho do pedido e o atalho de envio. */
+function ComposerFooter({ studio }: { readonly studio: Studio }) {
+  const { balance } = useBalance()
+  const left = balance !== null && studio.model ? balance - studio.model.credits : null
+  const nearLimit = studio.prompt.length > PROMPT_MAX * 0.9
+  return (
+    <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-white/[0.05] px-1 pt-2 text-[11px] text-zinc-500">
+      <span className="tabular-nums">
+        {left === null ? 'Carregando saldo' : left >= 0 ? `Sobram ${left.toLocaleString('pt-BR')} créditos depois desta` : 'Saldo insuficiente para este modelo'}
+      </span>
+      <span className="flex items-center gap-3">
+        <span className={clsx('tabular-nums', nearLimit && 'text-hot')}>
+          {studio.prompt.length.toLocaleString('pt-BR')}/{PROMPT_MAX.toLocaleString('pt-BR')}
+        </span>
+        <span className="hidden items-center gap-1 sm:inline-flex">
+          <Kbd>{modKey()}</Kbd>
+          <Kbd>Enter</Kbd>
+          gera
+        </span>
+      </span>
+    </div>
+  )
+}
+
 export function Composer({ studio, personas, images }: ComposerProps) {
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -208,7 +234,7 @@ export function Composer({ studio, personas, images }: ComposerProps) {
         )}
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-white/[0.08] bg-surface-2/90 p-2.5 shadow-2xl shadow-black/70 backdrop-blur-xl sm:p-3"
+          className="rounded-2xl border border-white/[0.09] bg-surface-2/90 p-2.5 shadow-2xl shadow-black/70 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus-within:border-accent-soft/40 focus-within:shadow-[0_20px_60px_-20px_rgb(124_58_237/0.55)] sm:p-3"
         >
           <div className="flex items-start gap-2.5">
             {studio.needsSource && <SourceSlot studio={studio} personas={personas} images={images} />}
@@ -250,6 +276,7 @@ export function Composer({ studio, personas, images }: ComposerProps) {
           <div className="mt-2.5 sm:hidden">
             <GenerateButton studio={studio} />
           </div>
+          <ComposerFooter studio={studio} />
         </form>
       </div>
     </div>
