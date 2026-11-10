@@ -1,82 +1,24 @@
 import clsx from 'clsx'
-import { Check, Coins } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
+import { ArrowRight, Check } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { UsageLimits } from '@/components/billing/UsageLimits'
-import { Button } from '@/components/ui/Button'
+import { BalanceHero } from '@/components/credits/BalanceHero'
+import { LedgerList } from '@/components/credits/LedgerList'
+import { PackCard } from '@/components/credits/PackCard'
 import { Notice } from '@/components/ui/Notice'
-import { PageHeader } from '@/components/ui/PageHeader'
 import { Spinner } from '@/components/ui/Spinner'
-import { formatBRL, formatCredits, formatDateTime } from '@/domain/format'
-import { purchaseSchema, type CreditPack, type LedgerEntry, type Model, type Purchase } from '@/domain/types'
+import { monthSummary, packSavings, yieldByModel } from '@/domain/credits'
+import { formatCredits } from '@/domain/format'
+import { purchaseSchema, type CreditPack, type Purchase } from '@/domain/types'
 import { errorMessage, startCheckout } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import { useBalance } from '@/hooks/useBalance'
 import { useLedger, useModels, usePacks } from '@/hooks/useCatalog'
 
-const REASON_LABELS: Record<LedgerEntry['reason'], string> = {
-  signup_bonus: 'Boas-vindas',
-  purchase: 'Compra',
-  generation: 'Geração',
-  generation_refund: 'Estorno',
-  adjustment: 'Ajuste',
-  subscription_grant: 'Plano',
-  subscription_expire: 'Fim do ciclo',
-}
-
+const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 const PERKS = ['Pix ou cartão', 'Créditos de pacote não expiram', 'Falhou? O crédito volta']
-
-/** Quanto o pacote rende em cada modelo, para a pessoa entender o que está comprando. */
-function yieldLines(pack: CreditPack, models: readonly Model[]): string[] {
-  return models
-    .filter((model) => (model.slug === 'foto' || model.kind === 'video') && pack.credits >= model.credits)
-    .map((model) => `${Math.floor(pack.credits / model.credits)} × ${model.name}`)
-}
-
-interface PackCardProps {
-  readonly pack: CreditPack
-  readonly models: readonly Model[]
-  readonly busy: boolean
-  readonly onBuy: () => void
-}
-
-function PackCard({ pack, models, busy, onBuy }: PackCardProps) {
-  const perCredit = pack.price_cents / pack.credits / 100
-  return (
-    <article
-      className={clsx(
-        'relative flex flex-col rounded-3xl p-6 ring-1',
-        pack.highlight ? 'bg-gradient-to-b from-accent/[0.12] to-surface ring-accent/60' : 'bg-surface ring-white/[0.06]',
-      )}
-    >
-      {pack.highlight && (
-        <span className="absolute -top-3 left-6 rounded-md bg-accent px-2 py-0.5 text-[11px] font-bold uppercase italic tracking-wide text-accent-ink">
-          Mais escolhido
-        </span>
-      )}
-      <h3 className="font-headline text-xl text-zinc-100">{pack.name}</h3>
-      <p className="mt-5 flex items-baseline gap-2">
-        <span className="font-headline text-6xl tabular-nums text-zinc-50">{pack.credits}</span>
-        <span className="text-sm font-semibold text-zinc-400">créditos</span>
-      </p>
-      <p className="mt-4 text-2xl font-bold text-zinc-50">{formatBRL(pack.price_cents)}</p>
-      <p className="text-xs text-zinc-500">R$ {perCredit.toFixed(2).replace('.', ',')} por crédito</p>
-
-      <ul className="mt-5 space-y-2 border-t border-white/[0.06] pt-5 text-sm text-zinc-300">
-        {yieldLines(pack, models).map((line) => (
-          <li key={line} className="flex items-center gap-2">
-            <Check className="size-4 shrink-0 text-accent-soft" aria-hidden="true" />
-            Até {line}
-          </li>
-        ))}
-      </ul>
-
-      <Button className="mt-6 min-h-11" variant={pack.highlight ? 'primary' : 'secondary'} onClick={onBuy} loading={busy}>
-        Comprar {pack.name}
-      </Button>
-    </article>
-  )
-}
 
 /** Depois do checkout: acompanha a compra até o webhook creditar. */
 function usePurchaseStatus(purchaseId: string | null): Purchase | null {
@@ -103,8 +45,9 @@ function usePurchaseStatus(purchaseId: string | null): Purchase | null {
 }
 
 export function CreditsPage() {
+  const reduceMotion = useReducedMotion()
   const [params] = useSearchParams()
-  const { balance } = useBalance()
+  const { balance, wallet } = useBalance()
   const packs = usePacks()
   const models = useModels()
   const ledger = useLedger()
@@ -112,10 +55,16 @@ export function CreditsPage() {
   const [buying, setBuying] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const reloadLedger = ledger.reload
+  const now = useMemo(() => new Date(), [])
 
+  // Saldo mudou (geração, compra): o extrato acompanha.
   useEffect(() => {
     if (balance !== null) void reloadLedger()
   }, [balance, reloadLedger])
+
+  const studioModels = useMemo(() => models.data ?? [], [models.data])
+  const balanceYields = useMemo(() => (wallet ? yieldByModel(wallet.balance, studioModels) : []), [wallet, studioModels])
+  const month = useMemo(() => (ledger.data ? monthSummary(ledger.data, now) : null), [ledger.data, now])
 
   async function buy(pack: CreditPack) {
     setBuying(pack.slug)
@@ -129,20 +78,26 @@ export function CreditsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-10 pt-4">
-      <PageHeader
-        title="Créditos"
-        description="Pacotes avulsos, sem mensalidade. Para receber créditos todo mês, veja os planos em Assinatura."
-        action={
-          <div className="flex items-center gap-3 rounded-2xl bg-surface px-4 py-3 ring-1 ring-white/[0.06]">
-            <Coins className="size-5 text-accent-soft" aria-hidden="true" />
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Seu saldo</p>
-              <p className="text-lg font-bold tabular-nums text-zinc-50">{balance === null ? '...' : formatCredits(balance)}</p>
-            </div>
-          </div>
-        }
-      />
+    <div className="mx-auto max-w-6xl space-y-10 pb-10 pt-2">
+      <motion.header
+        initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="flex flex-wrap items-end justify-between gap-5"
+      >
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Créditos e consumo</p>
+          <h1 className="font-headline mt-2 text-4xl text-balance text-zinc-50 md:text-5xl">
+            Créditos que viram{' '}
+            <span className="bg-gradient-to-r from-accent-soft via-violet-300 to-galaxy bg-clip-text text-transparent">criação</span>
+          </h1>
+          <p className="mt-3 max-w-xl text-sm text-pretty text-zinc-400 md:text-base">Veja quanto o seu saldo rende, para onde foram os créditos e compre pacotes avulsos quando precisar.</p>
+        </div>
+        <Link to="/assinatura" className={clsx('group inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/[0.08] bg-surface-2 px-4 text-sm font-semibold text-zinc-100 hover:bg-surface-3', FOCUS)}>
+          Créditos todo mês: ver planos
+          <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+        </Link>
+      </motion.header>
 
       {purchase?.status === 'paid' && <Notice tone="success">Pagamento confirmado. {formatCredits(purchase.credits)} na sua conta.</Notice>}
       {purchase?.status === 'pending' && (
@@ -154,52 +109,47 @@ export function CreditsPage() {
       )}
       {purchase?.status === 'expired' && <Notice tone="error">O pagamento expirou. Você pode comprar de novo abaixo.</Notice>}
       {error && <Notice tone="error">{error}</Notice>}
+      {ledger.error && <Notice tone="error">{ledger.error}</Notice>}
+
+      <BalanceHero wallet={wallet} yields={balanceYields} month={month} now={now} />
 
       <UsageLimits />
 
-      <section aria-label="Pacotes de créditos" className="space-y-5">
-        <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-400">
-          {PERKS.map((perk) => (
-            <li key={perk} className="flex items-center gap-1.5">
-              <Check className="size-4 text-accent-soft" aria-hidden="true" /> {perk}
-            </li>
-          ))}
-        </ul>
-        {packs.error && <Notice tone="error">{packs.error}</Notice>}
-        <div className="grid gap-4 pt-2 md:grid-cols-3">
-          {packs.data?.map((pack) => (
-            <PackCard key={pack.slug} pack={pack} models={models.data ?? []} busy={buying === pack.slug} onBuy={() => void buy(pack)} />
-          ))}
+      <section aria-labelledby="packs-title" className="space-y-5">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 id="packs-title" className="font-headline text-lg text-zinc-100">
+              Pacotes avulsos
+            </h2>
+            <p className="text-sm text-zinc-500">Pagamento único, sem mensalidade. Somam ao saldo na hora.</p>
+          </div>
+          <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-zinc-400">
+            {PERKS.map((perk) => (
+              <li key={perk} className="flex items-center gap-1.5">
+                <Check className="size-4 text-accent-soft" aria-hidden="true" /> {perk}
+              </li>
+            ))}
+          </ul>
         </div>
+        {packs.error && <Notice tone="error">{packs.error}</Notice>}
+        <div className="grid gap-4 md:grid-cols-3">
+          {packs.data
+            ? packs.data.map((pack) => (
+                <PackCard
+                  key={pack.slug}
+                  pack={pack}
+                  yields={yieldByModel(pack.credits, studioModels)}
+                  savings={packSavings(pack, packs.data ?? [])}
+                  busy={buying === pack.slug}
+                  onBuy={() => void buy(pack)}
+                />
+              ))
+            : !packs.error && Array.from({ length: 3 }, (_, index) => <div key={index} className="h-96 animate-pulse rounded-3xl bg-surface" aria-hidden="true" />)}
+        </div>
+        <p className="text-xs text-zinc-500">Quantidades se todos os créditos forem usados num modelo só, na configuração padrão.</p>
       </section>
 
-      <section aria-labelledby="ledger-title" className="space-y-3">
-        <h2 id="ledger-title" className="font-headline text-lg text-zinc-100">
-          Extrato
-        </h2>
-        {ledger.error && <Notice tone="error">{ledger.error}</Notice>}
-        <ul className="divide-y divide-white/[0.05] overflow-hidden rounded-2xl bg-surface ring-1 ring-white/[0.06]">
-          {ledger.data?.map((entry) => (
-            <li key={entry.id} className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-zinc-200">
-                  {REASON_LABELS[entry.reason]}
-                  {entry.note && <span className="font-normal text-zinc-500"> · {entry.note}</span>}
-                </p>
-                <p className="text-xs text-zinc-500">
-                  {formatDateTime(entry.created_at)}
-                  {entry.balance_after !== null && ` · saldo ${entry.balance_after.toLocaleString('pt-BR')}`}
-                </p>
-              </div>
-              <span className={clsx('shrink-0 font-bold tabular-nums', entry.delta > 0 ? 'text-accent-soft' : 'text-zinc-400')}>
-                {entry.delta > 0 ? '+' : ''}
-                {entry.delta}
-              </span>
-            </li>
-          ))}
-          {ledger.data?.length === 0 && <li className="px-4 py-6 text-center text-sm text-zinc-500">Sem movimentos.</li>}
-        </ul>
-      </section>
+      <LedgerList entries={ledger.data ?? (ledger.error ? [] : null)} now={now} />
     </div>
   )
 }

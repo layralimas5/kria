@@ -16,7 +16,7 @@ export function UsageLimits() {
   if (data.daily_limit === null && data.monthly_limit === null && data.exports_limit === null) return null
 
   return (
-    <section aria-labelledby="usage-title" className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+    <section aria-labelledby="usage-title" className="card-premium space-y-4 rounded-3xl p-5">
       <div>
         <h2 id="usage-title" className="font-headline text-lg text-zinc-100">
           Limite de consumo do plano
