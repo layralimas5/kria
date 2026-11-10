@@ -44,7 +44,7 @@ export function AdminDashboardPage() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-soft">Vynkio · {PERIOD_LABELS[preset]}</p>
-          <h1 className="mt-1 font-headline text-3xl text-zinc-50 md:text-4xl">Central de comando</h1>
+          <h1 className="mt-1 font-headline text-3xl text-zinc-50 md:text-4xl">Dashboard</h1>
           <p className="mt-2 max-w-2xl text-sm text-zinc-400">
             Receita, custos de IA, lucro, base e operação com dados reais do banco. Onde não há registro suficiente, a tela diz o que falta em vez de estimar.
           </p>

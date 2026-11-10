@@ -1000,6 +1000,25 @@ async function readBody(init?: RequestInit): Promise<Row> {
   }
 }
 
+/** "Ver como usuário" no demo: mostra a própria conta de exemplo, com as mídias públicas do demo. */
+function demoUserView(): Row {
+  const plan = state.plans.find((item) => item.slug === 'pro') ?? state.plans[0] ?? {}
+  const subscription = state.subscriptions[0] ?? null
+  const generations = state.generations.filter((item) => item.kind === 'image' || item.kind === 'video').slice(0, 60)
+  const paths = [...generations.map((item) => item.output_path), ...state.personas.map((item) => item.image_path)].filter((path): path is string => typeof path === 'string')
+  return {
+    profile: { id: DEMO_USER_ID, display_name: state.profile.display_name, username: state.profile.username ?? 'demo', avatar_path: null, email: 'demo@kria.ia', created_at: state.profile.created_at },
+    goal: 'influencers',
+    plan: { slug: plan.slug, name: plan.name, price_cents: plan.price_cents, monthly_credits: plan.monthly_credits, max_concurrent: plan.max_concurrent, daily_credit_limit: plan.daily_credit_limit ?? null, monthly_credit_limit: plan.monthly_credit_limit ?? null },
+    wallet: { balance: balanceOf(), subscription_balance: state.subscriptionBalance, purchased_balance: state.purchasedBalance },
+    subscription,
+    usage: { used_today: 12, used_month: 67, daily_limit: plan.daily_credit_limit ?? null, monthly_limit: plan.monthly_credit_limit ?? null },
+    generations: generations.map((item) => ({ ...item, model_name: (state.models.find((model) => model.slug === item.model_slug)?.name as string | undefined) ?? null })),
+    personas: state.personas.map((item) => ({ id: item.id, name: item.name, image_path: item.image_path })),
+    media_urls: Object.fromEntries(paths.map((path) => [path, `/${path}`])),
+  }
+}
+
 /** Filtros salvos do modo demo: só na memória da aba. */
 const demoSavedFilters: { id: string; name: string; filters: Row; updated_at: string }[] = []
 
@@ -1023,7 +1042,10 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
     if (name === 'account') return account(body)
     if (name === 'assistant') return assistant(body)
     if (name === 'multiplier') return multiplier(body)
-    if (name === 'admin-users') return fail(503, 'demo_only', 'No modo demo o convite não sai. Nada foi criado.')
+    if (name === 'admin-users') {
+      if (body.action === 'view') return json(demoUserView())
+      return fail(503, 'demo_only', 'No modo demo nada muda em contas. Nenhuma conta foi criada, excluída ou alterada.')
+    }
     if (name === 'pricing-check') return fail(503, 'demo_only', 'No modo demo a consulta ao fal não roda. Nada foi alterado.')
     return fail(404, 'not_found', 'Função desconhecida.')
   }

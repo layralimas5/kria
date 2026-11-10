@@ -15,10 +15,10 @@ export interface ActionTarget {
   readonly suspended_at: string | null
 }
 
-const MIN_REASON = 5
+export const MIN_REASON = 5
 
 /** Estado de uma ação sensível: revisar, confirmar, executar, avisar. */
-function useSensitiveAction(run: () => Promise<string>, onDone: () => void) {
+export function useSensitiveAction(run: () => Promise<string>, onDone: () => void) {
   const notify = useToast()
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)

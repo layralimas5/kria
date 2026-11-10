@@ -7,7 +7,7 @@ import { analyticsSchema } from '@/domain/adminAnalytics'
 import { businessSchema, type ExpenseCategory } from '@/domain/business'
 import { centerSchema } from '@/domain/commandCenter'
 import { explorerSchema, savedFilterSchema } from '@/domain/financeExplorer'
-import { USERS_PAGE_SIZE, userPageSchema, userProfileSchema, type UserFilters } from '@/domain/adminUsers'
+import { USERS_PAGE_SIZE, userPageSchema, userProfileSchema, userViewSchema, type UserFilters } from '@/domain/adminUsers'
 import { generationPageSchema, PAGE_SIZE, subscriptionPageSchema } from '@/domain/adminLists'
 import { adminMeSchema, adminRoleSchema, dashboardSchema, type AdminMe, type AdminRole, type Period } from '@/domain/adminDashboard'
 import { financeSchema, financeSettingsSchema, type FinanceSettings } from '@/domain/finance'
@@ -517,6 +517,25 @@ export async function createUser(input: NewUserInput) {
     }),
   )
 }
+
+// --------------------------------------------------------- controles da conta (0031)
+
+const doneSchema = z.object({ done: z.literal(true) })
+
+/** Exclui a conta como a própria pessoa faria (cancela no Asaas, apaga arquivos). Exige o e-mail digitado. */
+export const deleteUserAccount = async (userId: string, reason: string, confirmEmail: string) =>
+  doneSchema.parse(await invoke('admin-users', { action: 'delete', user_id: userId, reason, confirm_email: confirmEmail.trim().toLowerCase() }))
+
+/** Define uma senha nova. A senha vai só para o Auth; a auditoria registra que houve troca. */
+export const setUserPassword = async (userId: string, reason: string, password: string) =>
+  doneSchema.parse(await invoke('admin-users', { action: 'password', user_id: userId, reason, password }))
+
+/** Manda o e-mail de recuperação com o código, o mesmo do "Esqueci minha senha". */
+export const sendPasswordReset = async (userId: string, reason: string) =>
+  doneSchema.parse(await invoke('admin-users', { action: 'reset_link', user_id: userId, reason }))
+
+/** "Ver como usuário": o Dashboard da pessoa, só leitura e auditado. */
+export const fetchUserView = async (userId: string) => userViewSchema.parse(await invoke('admin-users', { action: 'view', user_id: userId }))
 
 // ------------------------------------------------------------ suporte (0028)
 

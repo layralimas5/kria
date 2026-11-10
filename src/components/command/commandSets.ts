@@ -7,7 +7,7 @@ import { navGroupsFor } from '../layout/nav'
 
 /** Palavras que a pessoa costuma digitar e não estão no nome da tela. */
 const KEYWORDS: Readonly<Record<string, readonly string[]>> = {
-  '/inicio': ['dashboard', 'home', 'painel'],
+  '/inicio': ['inicio', 'home', 'painel'],
   '/estudio?modo=imagem': ['foto', 'gerar', 'criar', 'estudio'],
   '/estudio?modo=video': ['gerar', 'criar', 'kling', 'animar', 'estudio'],
   '/personas': ['persona', 'rosto', 'influenciador', 'avatar'],
@@ -16,7 +16,7 @@ const KEYWORDS: Readonly<Record<string, readonly string[]>> = {
   '/assinatura': ['plano', 'cancelar', 'upgrade', 'pagamento'],
   '/suporte': ['ajuda', 'whatsapp', 'email', 'contato'],
   '/conta/configuracoes': ['perfil', 'senha', 'conta', 'excluir'],
-  '/admin': ['dashboard', 'kpi', 'visao geral', 'mrr'],
+  '/admin': ['central de comando', 'inicio', 'kpi', 'visao geral', 'mrr'],
   '/admin/financeiro': ['receita', 'lucro', 'pagamento', 'despesa', 'margem', 'asaas'],
   '/admin/usuarios': ['clientes', 'contas', 'convite'],
   '/admin/planos': ['precos', 'suporte', 'whatsapp', 'checkout'],
@@ -26,7 +26,7 @@ const KEYWORDS: Readonly<Record<string, readonly string[]>> = {
 }
 
 export const APP_GO_SHORTCUTS: readonly GoShortcut[] = [
-  { key: 'i', to: '/inicio', label: 'Início' },
+  { key: 'i', to: '/inicio', label: 'Dashboard' },
   { key: 'e', to: '/estudio?modo=imagem', label: 'Estúdio de imagens' },
   { key: 'v', to: '/estudio?modo=video', label: 'Estúdio de vídeos' },
   { key: 'p', to: '/personas', label: 'Personagens' },
@@ -36,7 +36,7 @@ export const APP_GO_SHORTCUTS: readonly GoShortcut[] = [
 ]
 
 export const ADMIN_GO_SHORTCUTS: readonly GoShortcut[] = [
-  { key: 'a', to: '/admin', label: 'Central de comando' },
+  { key: 'a', to: '/admin', label: 'Dashboard' },
   { key: 'u', to: '/admin/usuarios', label: 'Usuários' },
   { key: 'f', to: '/admin/financeiro', label: 'Financeiro' },
   { key: 'p', to: '/admin/planos', label: 'Planos' },

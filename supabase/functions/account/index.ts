@@ -6,7 +6,7 @@
 
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
-import { deleteSubscription } from '../_shared/asaas.ts'
+import { deleteAccountData, PaymentCancelError } from '../_shared/accountDeletion.ts'
 import { adminClient, authenticatedUserId, errorResponse, handle, json, readJson } from '../_shared/http.ts'
 
 const bodySchema = z.discriminatedUnion('action', [
@@ -36,37 +36,15 @@ async function exportData(admin: SupabaseClient, userId: string, email: string |
   return result
 }
 
-async function removeFiles(admin: SupabaseClient, userId: string): Promise<void> {
-  const bucket = admin.storage.from('media')
-  for (;;) {
-    const { data, error } = await bucket.list(userId, { limit: 1000 })
-    if (error) throw new Error(`storage list: ${error.message}`)
-    if (!data || data.length === 0) return
-    const { error: removeError } = await bucket.remove(data.map((file) => `${userId}/${file.name}`))
-    if (removeError) throw new Error(`storage remove: ${removeError.message}`)
-  }
-}
-
 async function deleteAccount(admin: SupabaseClient, userId: string): Promise<Response> {
-  const { data: subscriptions, error } = await admin
-    .from('subscriptions')
-    .select('provider_subscription_id')
-    .eq('user_id', userId)
-    .in('status', ['active', 'past_due', 'pending'])
-    .not('provider_subscription_id', 'is', null)
-  if (error) throw new Error(`subscriptions: ${error.message}`)
-
   try {
-    for (const row of subscriptions ?? []) await deleteSubscription(row.provider_subscription_id as string)
-  } catch (cancelError) {
-    console.error('delete account: cancel subscription failed', cancelError)
-    return errorResponse(502, 'payment_unavailable', 'Não conseguimos cancelar sua assinatura agora. Tente de novo em instantes.')
+    await deleteAccountData(admin, userId)
+  } catch (error) {
+    if (error instanceof PaymentCancelError) {
+      return errorResponse(502, 'payment_unavailable', 'Não conseguimos cancelar sua assinatura agora. Tente de novo em instantes.')
+    }
+    throw error
   }
-
-  await removeFiles(admin, userId)
-  // O resto (perfil, extrato, gerações, assinaturas) sai em cascata com o usuário.
-  const { error: deleteError } = await admin.auth.admin.deleteUser(userId)
-  if (deleteError) throw new Error(`deleteUser: ${deleteError.message}`)
   return json({ deleted: true })
 }
 

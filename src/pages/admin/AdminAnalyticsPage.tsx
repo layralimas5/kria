@@ -48,7 +48,7 @@ function AnalyticsTabs() {
       <div className="space-y-4">
         <div>
           <h1 className="font-headline text-3xl text-zinc-50 md:text-4xl">Analytics</h1>
-          <p className="mt-2 text-sm text-zinc-400">Retenção, uso das ferramentas e créditos em detalhe. Receita, custos e lucro ficam na central de comando.</p>
+          <p className="mt-2 text-sm text-zinc-400">Retenção, uso das ferramentas e créditos em detalhe. Receita, custos e lucro ficam no Dashboard.</p>
         </div>
         <div role="tablist" aria-label="Seções do analytics" className="flex gap-1 overflow-x-auto rounded-2xl bg-surface p-1 ring-1 ring-white/[0.06] [scrollbar-width:none]">
           {TABS.map((item) => (

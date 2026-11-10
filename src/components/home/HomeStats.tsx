@@ -13,8 +13,17 @@ import type { Plan, Subscription, Wallet } from '@/domain/types'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
-function StatCard({ icon, label, to, children, index }: { icon: ReactNode; label: string; to: string; children: ReactNode; index: number }) {
+function StatCard({ icon, label, to, children, index }: { icon: ReactNode; label: string; to: string | null; children: ReactNode; index: number }) {
   const reduceMotion = useReducedMotion()
+  const content = (
+    <>
+      <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500 sm:text-[11px]">
+        <span className="grid size-6 place-items-center rounded-lg bg-accent/15 text-accent-soft">{icon}</span>
+        {label}
+      </p>
+      <div className="mt-3 flex flex-1 flex-col sm:mt-4">{children}</div>
+    </>
+  )
   return (
     <motion.li
       initial={reduceMotion ? false : { opacity: 0, y: 12 }}
@@ -22,13 +31,13 @@ function StatCard({ icon, label, to, children, index }: { icon: ReactNode; label
       transition={{ duration: 0.4, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
       className="min-w-0"
     >
-      <Link to={to} className={clsx('card-premium card-hover group flex h-full flex-col rounded-3xl p-4 sm:p-5', FOCUS)}>
-        <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500 sm:text-[11px]">
-          <span className="grid size-6 place-items-center rounded-lg bg-accent/15 text-accent-soft">{icon}</span>
-          {label}
-        </p>
-        <div className="mt-3 flex flex-1 flex-col sm:mt-4">{children}</div>
-      </Link>
+      {to ? (
+        <Link to={to} className={clsx('card-premium card-hover group flex h-full flex-col rounded-3xl p-4 sm:p-5', FOCUS)}>
+          {content}
+        </Link>
+      ) : (
+        <div className="card-premium flex h-full flex-col rounded-3xl p-4 sm:p-5">{content}</div>
+      )}
     </motion.li>
   )
 }
@@ -47,18 +56,21 @@ function Meter({ value, label, tone = 'accent' }: { value: number; label: string
 }
 
 interface HomeStatsProps {
-  readonly wallet: Wallet | null
-  readonly plan: Plan | null
-  readonly subscription: Subscription | null
-  readonly usage: Usage | null
+  readonly wallet: Pick<Wallet, 'balance' | 'subscription_balance' | 'purchased_balance'> | null
+  readonly plan: Pick<Plan, 'name' | 'max_concurrent'> | null
+  readonly subscription: (Pick<Subscription, 'current_period_end'> & { readonly status: string }) | null
+  readonly usage: Pick<Usage, 'used_month' | 'monthly_limit'> | null
   readonly cycle: Cycle | null
   /** Quantas criações da mais barata o saldo paga. */
   readonly yieldCount: number | null
   readonly running: number
   readonly lastDays: readonly number[]
+  /** No "ver como usuário" do admin os cards não levam para as telas do app. */
+  readonly linked?: boolean
 }
 
-export function HomeStats({ wallet, plan, subscription, usage, cycle, yieldCount, running, lastDays }: HomeStatsProps) {
+export function HomeStats({ wallet, plan, subscription, usage, cycle, yieldCount, running, lastDays, linked = true }: HomeStatsProps) {
+  const link = (to: string) => (linked ? to : null)
   const renewal = subscription?.current_period_end
   const monthShare = usage?.monthly_limit ? usage.used_month / usage.monthly_limit : null
   const created = lastDays.reduce((sum, value) => sum + value, 0)
@@ -66,7 +78,7 @@ export function HomeStats({ wallet, plan, subscription, usage, cycle, yieldCount
   return (
     <section aria-label="Resumo da conta">
       <ul className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
-        <StatCard index={0} icon={<Coins className="size-3.5" aria-hidden="true" />} label="Créditos" to="/creditos">
+        <StatCard index={0} icon={<Coins className="size-3.5" aria-hidden="true" />} label="Créditos" to={link('/creditos')}>
           <p className="font-headline text-3xl sm:text-4xl tabular-nums text-zinc-50">{wallet ? wallet.balance.toLocaleString('pt-BR') : '...'}</p>
           <p className="mt-1 text-[11px] leading-snug text-zinc-500 sm:text-xs">
             {yieldCount !== null ? `Rende cerca de ${yieldCount.toLocaleString('pt-BR')} ${yieldCount === 1 ? 'imagem' : 'imagens'}` : 'Disponíveis agora'}
@@ -81,7 +93,7 @@ export function HomeStats({ wallet, plan, subscription, usage, cycle, yieldCount
           )}
         </StatCard>
 
-        <StatCard index={1} icon={<CreditCard className="size-3.5" aria-hidden="true" />} label="Plano" to="/assinatura">
+        <StatCard index={1} icon={<CreditCard className="size-3.5" aria-hidden="true" />} label="Plano" to={link('/assinatura')}>
           <p className="font-headline text-3xl sm:text-4xl text-zinc-50">{plan?.name ?? '...'}</p>
           <p className="mt-1 text-[11px] leading-snug text-zinc-500 sm:text-xs">
             {subscription && renewal
@@ -97,7 +109,7 @@ export function HomeStats({ wallet, plan, subscription, usage, cycle, yieldCount
           )}
         </StatCard>
 
-        <StatCard index={2} icon={<Activity className="size-3.5" aria-hidden="true" />} label="Últimos 14 dias" to="/galeria">
+        <StatCard index={2} icon={<Activity className="size-3.5" aria-hidden="true" />} label="Últimos 14 dias" to={link('/galeria')}>
           <div className="flex items-end justify-between gap-3">
             <p className="font-headline text-3xl sm:text-4xl tabular-nums text-zinc-50">{created}</p>
             {created > 0 && <Sparkline values={lastDays} color={SERIES_COLORS[0]} />}
@@ -105,7 +117,7 @@ export function HomeStats({ wallet, plan, subscription, usage, cycle, yieldCount
           <p className="mt-1 text-[11px] leading-snug text-zinc-500 sm:text-xs">{created === 1 ? 'criação concluída' : 'criações concluídas'}</p>
         </StatCard>
 
-        <StatCard index={3} icon={<Loader className="size-3.5" aria-hidden="true" />} label="Gerando agora" to="/galeria">
+        <StatCard index={3} icon={<Loader className="size-3.5" aria-hidden="true" />} label="Gerando agora" to={link('/galeria')}>
           <p className="flex items-center gap-3 font-headline text-3xl sm:text-4xl tabular-nums text-zinc-50">
             {running}
             {running > 0 && (

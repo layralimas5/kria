@@ -168,6 +168,9 @@ export const ADMIN_ACTION_LABELS: Readonly<Record<string, string>> = {
   'user.create': 'Conta criada pelo admin',
   'user.plan_grant': 'Plano de cortesia',
   'user.plan_revoke': 'Cortesia encerrada',
+  'user.password': 'Senha trocada pelo admin',
+  'user.reset_link': 'E-mail de redefinição de senha',
+  'user.view_as': 'Visualizou como usuário',
 }
 
 /** Nome para mostrar e iniciais do avatar. */
@@ -177,3 +180,61 @@ export function initials(name: string): string {
   const parts = name.replace(/[@._-]/g, ' ').trim().split(/\s+/)
   return ((parts[0]?.[0] ?? 'V') + (parts[1]?.[0] ?? '')).toUpperCase()
 }
+
+// ------------------------------------------------------------ ver como usuário (0031)
+
+/** Retorno da function `admin-users` com `action: 'view'`: o Dashboard da pessoa, só leitura. */
+export const userViewSchema = z.object({
+  profile: z.object({
+    id: z.string(),
+    display_name: z.string().nullable(),
+    username: z.string(),
+    avatar_path: z.string().nullable(),
+    email: z.string().nullable(),
+    created_at: z.string(),
+  }),
+  goal: z.string().nullable(),
+  plan: z.object({
+    slug: z.string(),
+    name: z.string(),
+    price_cents: num,
+    monthly_credits: num,
+    max_concurrent: num,
+    daily_credit_limit: nullableNum,
+    monthly_credit_limit: nullableNum,
+  }),
+  wallet: z.object({ balance: num, subscription_balance: num, purchased_balance: num }),
+  subscription: z
+    .object({
+      id: z.string(),
+      plan_slug: z.string(),
+      status: z.string(),
+      price_cents: num,
+      monthly_credits: num,
+      current_period_start: z.string().nullable(),
+      current_period_end: z.string().nullable(),
+      canceled_at: z.string().nullable(),
+      created_at: z.string(),
+    })
+    .nullable(),
+  usage: z.object({ used_today: num, used_month: num, daily_limit: nullableNum, monthly_limit: nullableNum }),
+  generations: z.array(
+    z.object({
+      id: z.string(),
+      model_slug: z.string(),
+      model_name: z.string().nullable(),
+      kind: z.enum(['image', 'video']),
+      prompt: z.string(),
+      status: z.enum(['queued', 'running', 'succeeded', 'failed']),
+      credits: num,
+      output_path: z.string().nullable(),
+      output_type: z.string().nullable(),
+      error: z.string().nullable(),
+      created_at: z.string(),
+      completed_at: z.string().nullable(),
+    }),
+  ),
+  personas: z.array(z.object({ id: z.string(), name: z.string(), image_path: z.string() })),
+  media_urls: z.record(z.string()),
+})
+export type UserView = z.infer<typeof userViewSchema>

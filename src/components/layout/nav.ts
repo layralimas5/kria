@@ -111,7 +111,7 @@ export function navGroupsFor(plan: Plan | null, kinds: readonly MediaKind[] | nu
 /** A barra de baixo do celular: o que se usa todo dia. O resto fica no botão Menu. */
 const isAnyAssistant = (pathname: string) => pathname.startsWith('/assistente/')
 export const MOBILE_TABS: readonly NavItem[] = [
-  { ...HOME_TAB, label: 'Início' },
+  { ...HOME_TAB, label: 'Dashboard' },
   { ...IMAGE_TAB, label: 'Studio', isActive: isPath('/estudio') },
   { ...PERSONAS_TAB, label: 'Personas' },
   { ...IDEAS_TAB, label: 'IA', isActive: isAnyAssistant },

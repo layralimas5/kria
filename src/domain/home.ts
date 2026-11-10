@@ -21,7 +21,9 @@ export function relativeTime(iso: string, now: Date): string {
 }
 
 /** Criações concluídas por dia nos últimos `days` dias, do mais antigo para hoje. */
-export function dailyCounts(generations: readonly Generation[], now: Date, days = 14): number[] {
+type GenerationFacts = Pick<Generation, 'id' | 'kind' | 'status' | 'credits' | 'model_slug' | 'created_at' | 'completed_at'>
+
+export function dailyCounts(generations: readonly Pick<Generation, 'status' | 'created_at' | 'completed_at'>[], now: Date, days = 14): number[] {
   const today = Date.parse(`${brtDay(now)}T00:00:00Z`)
   const counts = Array.from({ length: days }, () => 0)
   for (const generation of generations) {
@@ -100,7 +102,7 @@ const KIND_LABELS: Readonly<Record<string, { readonly name: string; readonly rea
 }
 
 /** Linha do tempo das últimas gerações, com o que está rodando, o que ficou pronto e o que falhou. */
-export function activityFeed(generations: readonly Generation[], modelName: (slug: string) => string, limit = 6): ActivityItem[] {
+export function activityFeed(generations: readonly GenerationFacts[], modelName: (slug: string) => string, limit = 6): ActivityItem[] {
   return generations.slice(0, limit).map((generation) => {
     const { name: kind, ready } = KIND_LABELS[generation.kind] ?? { name: 'Criação', ready: 'pronta' }
     const model = modelName(generation.model_slug)

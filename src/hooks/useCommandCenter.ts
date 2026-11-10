@@ -16,5 +16,5 @@ export function useCommandCenter(period: Period | null) {
     const [dashboard, business, center] = await Promise.all([fetchDashboard(period), fetchBusiness(period, WHOLE_BASE), fetchCommandCenter(period)])
     return composeCenter(dashboard, business, center)
   }, [period])
-  return useQuery(load, 'Não deu para carregar a central de comando.')
+  return useQuery(load, 'Não deu para carregar o Dashboard.')
 }

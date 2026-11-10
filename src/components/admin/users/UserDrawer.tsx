@@ -1,5 +1,7 @@
 import clsx from 'clsx'
+import { Eye } from 'lucide-react'
 import { useCallback, useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { LEDGER_REASON_LABELS } from '@/domain/adminAnalytics'
 import { ADMIN_ACTION_LABELS, displayName, type UserProfile } from '@/domain/adminUsers'
 import { formatBRL, formatDateTime } from '@/domain/format'
@@ -11,6 +13,7 @@ import { Drawer } from '../../ui/Drawer'
 import { Notice } from '../../ui/Notice'
 import { formatBrlValue, formatNumber } from '../finance/format'
 import { AdminAvatar } from '../ProfileMenu'
+import { DeleteAccountForm, PasswordForm, ResetLinkForm } from './AccountControls'
 import { AdjustCreditsForm, PlanGrantForm, SuspendForm } from './UserActions'
 
 const TABS = [
@@ -223,8 +226,9 @@ function Plan({ profile, plans, onChanged }: { readonly profile: UserProfile; re
   )
 }
 
-function Actions({ profile, onChanged }: { readonly profile: UserProfile; readonly onChanged: () => void }) {
+function Actions({ profile, onChanged, onDeleted }: { readonly profile: UserProfile; readonly onChanged: () => void; readonly onDeleted: () => void }) {
   const { can } = useAdminAccess()
+  const target = { id: profile.account.id, email: profile.account.email, suspended_at: profile.account.suspended_at }
   return (
     <div className="space-y-6">
       {can('users.manage') && (
@@ -235,7 +239,16 @@ function Actions({ profile, onChanged }: { readonly profile: UserProfile; readon
               {profile.account.suspended_reason && `: ${profile.account.suspended_reason}`}
             </Notice>
           )}
-          <SuspendForm user={{ id: profile.account.id, email: profile.account.email, suspended_at: profile.account.suspended_at }} onDone={onChanged} />
+          <SuspendForm user={target} onDone={onChanged} />
+        </Block>
+      )}
+      {can('users.manage') && (
+        <Block title="Senha">
+          <p className="text-sm text-zinc-400">O mais seguro é mandar o código por e-mail: a pessoa cria a senha e ninguém mais sabe. Defina uma senha só quando ela não tiver acesso ao e-mail.</p>
+          <ResetLinkForm user={target} onDone={onChanged} />
+          <div className="border-t border-white/[0.06] pt-4">
+            <PasswordForm user={target} onDone={onChanged} />
+          </div>
         </Block>
       )}
       <Block title="Histórico de ações administrativas">
@@ -255,6 +268,11 @@ function Actions({ profile, onChanged }: { readonly profile: UserProfile; readon
           </Rows>
         )}
       </Block>
+      {can('users.manage') && (
+        <Block title="Excluir conta">
+          <DeleteAccountForm user={target} onDeleted={onDeleted} />
+        </Block>
+      )}
     </div>
   )
 }
@@ -292,12 +310,19 @@ export function UserDrawer({ userId, plans, onClose, onChanged }: UserDrawerProp
         <div className="space-y-5">
           <div className="flex items-center gap-3">
             <AdminAvatar name={name} path={data.account.avatar_path} className="size-12" />
-            <div className="min-w-0 text-sm">
+            <div className="min-w-0 flex-1 text-sm">
               <p className="truncate text-zinc-400">@{data.account.username}</p>
               <p className={clsx('font-semibold', data.account.suspended_at ? 'text-red-300' : 'text-emerald-300')}>
                 {data.account.suspended_at ? 'Bloqueada' : 'Ativa'}
               </p>
             </div>
+            <Link
+              to={`/admin/usuarios/${data.account.id}/visao`}
+              className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-xl bg-accent/15 px-3 text-[13px] font-semibold text-accent-soft ring-1 ring-accent/30 transition-colors hover:bg-accent/25 hover:text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              <Eye className="size-4" aria-hidden="true" />
+              Ver como usuário
+            </Link>
           </div>
           <div role="tablist" aria-label="Seções da conta" className="flex gap-1 overflow-x-auto rounded-2xl bg-surface p-1 ring-1 ring-white/[0.06] [scrollbar-width:none]">
             {TABS.map((item) => (
@@ -321,7 +346,16 @@ export function UserDrawer({ userId, plans, onClose, onChanged }: UserDrawerProp
             {tab === 'geracoes' && <Generations profile={data} />}
             {tab === 'creditos' && <Credits profile={data} onChanged={refresh} />}
             {tab === 'assinatura' && <Plan profile={data} plans={plans} onChanged={refresh} />}
-            {tab === 'acoes' && <Actions profile={data} onChanged={refresh} />}
+            {tab === 'acoes' && (
+              <Actions
+                profile={data}
+                onChanged={refresh}
+                onDeleted={() => {
+                  onChanged()
+                  onClose()
+                }}
+              />
+            )}
           </div>
         </div>
       )}

@@ -2473,4 +2473,47 @@ await test('nenhuma função faz UPDATE ou DELETE sem WHERE (o Supabase barra is
 })
 
 
+// ---------------------------------------------------- controles da conta pelo admin (0031)
+
+await test('controles da conta: excluir e senha só com permissão e motivo, nunca em admin; ver como fica na auditoria', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const suporte = await newUser(db, 'suporte@x.com')
+  await makeAdmin(db, suporte, 'support')
+  const ana = await newUser(db, 'ana@x.com')
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_view')
+  await succeed(db, (await create(db, ana, 'foto')).rows[0].id)
+  await db.query(`insert into personas (user_id, name, image_path) values ($1, 'Luna', 'x/luna.png')`, [ana])
+
+  const check = (who, user, action, reason = 'pedido da cliente por e-mail') =>
+    as(db, 'authenticated', who, async () => (await db.query(`select admin_check_user_action($1, $2, $3) as r`, [user, action, reason])).rows[0].r)
+
+  assert.equal((await check(dona, ana, 'delete')).email, 'ana@x.com')
+  await expectError(check(dona, ana, 'delete', 'x'), 'reason_required')
+  await expectError(check(dona, ana, 'apagar_tudo'), 'invalid_action')
+  await expectError(check(dona, dona, 'password'), 'cannot_change_self')
+  await expectError(check(dona, suporte, 'password'), 'target_is_admin')
+  await expectError(check(suporte, ana, 'delete'), 'forbidden')
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_check_user_action($1, 'delete', 'pedido da cliente')`, [ana]), 'aal1'), 'mfa_required')
+
+  await as(db, 'authenticated', dona, () =>
+    db.query(`select admin_log_user_action($1, 'password', 'cliente esqueceu', $2::jsonb)`, [ana, JSON.stringify({ password: 'segredo123', method: 'set' })]))
+  const log = (await db.query(`select action, details, reason from admin_audit_logs where action = 'user.password'`)).rows[0]
+  assert.deepEqual([log.action, log.details.password, log.details.method, log.reason], ['user.password', undefined, 'set', 'cliente esqueceu'])
+
+  const view = await as(db, 'authenticated', suporte, async () => (await db.query(`select admin_user_view($1) as v`, [ana])).rows[0].v)
+  assert.equal(view.profile.email, 'ana@x.com')
+  assert.equal(view.plan.slug, 'pro')
+  assert.equal(view.subscription.status, 'active')
+  assert.equal(view.generations.length, 1)
+  assert.equal(view.personas[0].name, 'Luna')
+  assert.ok(Number(view.usage.used_month) > 0)
+  assert.equal(Number(view.wallet.balance), Number((await walletOf(db, ana)).balance))
+  const seen = (await db.query(`select admin_id, target_user_id from admin_audit_logs where action = 'user.view_as'`)).rows
+  assert.deepEqual(seen, [{ admin_id: suporte, target_user_id: ana }])
+  await expectError(as(db, 'authenticated', ana, () => db.query(`select admin_user_view($1)`, [dona])), 'forbidden')
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_user_view(gen_random_uuid())`)), 'account_not_found')
+})
+
+
 console.log(`\n${passed} testes do banco passaram`)

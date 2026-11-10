@@ -46,6 +46,7 @@ const AdminAnalyticsPage = page(() => import('@/pages/admin/AdminAnalyticsPage')
 const AdminGenerationsPage = page(() => import('@/pages/admin/AdminListsPages'), 'AdminGenerationsPage')
 const AdminSubscriptionsPage = page(() => import('@/pages/admin/AdminListsPages'), 'AdminSubscriptionsPage')
 const AdminUsersPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminUsersPage')
+const AdminUserViewPage = page(() => import('@/pages/admin/AdminUserViewPage'), 'AdminUserViewPage')
 const AdminPlansPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminPlansPage')
 const AdminModelsPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminModelsPage')
 const AdminAuditPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminAuditPage')
@@ -104,6 +105,7 @@ export function App() {
                 <Route index element={<AdminDashboardPage />} />
                 <Route path="analytics" element={<AdminAnalyticsPage />} />
                 <Route path="usuarios" element={<AdminUsersPage />} />
+                <Route path="usuarios/:id/visao" element={<AdminUserViewPage />} />
                 <Route path="geracoes" element={<AdminGenerationsPage />} />
                 <Route path="assinaturas" element={<AdminSubscriptionsPage />} />
                 <Route path="modelos" element={<AdminModelsPage />} />

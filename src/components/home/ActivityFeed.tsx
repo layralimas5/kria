@@ -10,16 +10,18 @@ const TONES: Readonly<Record<ActivityItem['tone'], { icon: typeof CircleCheck; c
 }
 
 /** Linha do tempo das últimas gerações. */
-export function ActivityFeed({ items, now }: { readonly items: readonly ActivityItem[]; readonly now: Date }) {
+export function ActivityFeed({ items, now, linked = true }: { readonly items: readonly ActivityItem[]; readonly now: Date; readonly linked?: boolean }) {
   return (
     <section aria-labelledby="activity-title" className="card-premium rounded-3xl p-5">
       <div className="flex items-baseline justify-between">
         <h2 id="activity-title" className="font-headline text-lg text-zinc-100">
           Atividade
         </h2>
-        <Link to="/galeria" className="rounded text-xs font-semibold text-zinc-400 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-          Ver tudo
-        </Link>
+        {linked && (
+          <Link to="/galeria" className="rounded text-xs font-semibold text-zinc-400 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            Ver tudo
+          </Link>
+        )}
       </div>
       {items.length === 0 ? (
         <p className="mt-4 text-sm text-zinc-500">Suas gerações aparecem aqui assim que você criar a primeira.</p>
