@@ -191,7 +191,9 @@ export function AdminLayout() {
             </button>
             <span className="flex items-center gap-2 lg:hidden">
               <Logo />
-              <AdminBadge />
+              <span className="hidden min-[420px]:inline-flex">
+                <AdminBadge />
+              </span>
             </span>
             <Breadcrumb />
             <SearchTrigger className="hidden md:flex xl:ml-4" />

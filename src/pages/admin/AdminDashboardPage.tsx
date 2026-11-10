@@ -6,6 +6,7 @@ import { CenterSkeleton, SectionNav } from '@/components/admin/center/CenterLayo
 import { FinanceSection } from '@/components/admin/center/FinanceSection'
 import { OperationsSection } from '@/components/admin/center/OperationsSection'
 import { OverviewSection } from '@/components/admin/center/OverviewSection'
+import { PulseHero } from '@/components/admin/center/PulseHero'
 import { SubscriptionsSection } from '@/components/admin/center/SubscriptionsSection'
 import { UsersSection } from '@/components/admin/center/UsersSection'
 import { PeriodFilter } from '@/components/admin/dashboard/PeriodFilter'
@@ -13,6 +14,7 @@ import { Notice } from '@/components/ui/Notice'
 import { brtDay, PERIOD_LABELS } from '@/domain/adminDashboard'
 import { downloadCsv, toCsv } from '@/domain/business'
 import { centerCsvRows, DAILY_CSV_HEADER, type CenterData } from '@/domain/commandCenter'
+import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { useAdminPeriod } from '@/hooks/useAdminPeriod'
 import { useCommandCenter } from '@/hooks/useCommandCenter'
 
@@ -34,9 +36,11 @@ export function AdminDashboardPage() {
   const { preset, custom, period, setPreset, setCustom } = useAdminPeriod()
   const center = useCommandCenter(period)
   const data = center.data
+  const { me } = useAdminAccess()
+  const firstName = me.display_name?.trim().split(/\s+/)[0] ?? null
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-soft">Vynkio · {PERIOD_LABELS[preset]}</p>
@@ -61,8 +65,10 @@ export function AdminDashboardPage() {
         </div>
       </header>
 
+      {data && <PulseHero data={data} name={firstName} />}
+
       {/* Período e atalhos presos no topo (no computador): continuam à mão enquanto a página rola. */}
-      <div className="z-20 -mx-4 space-y-3 border-b border-white/[0.05] bg-canvas/90 px-4 py-3 backdrop-blur-xl print:hidden lg:sticky lg:top-14 lg:-mx-8 lg:px-8">
+      <div className="glass-bar z-20 -mx-4 space-y-3 border-y border-white/[0.05] px-4 py-3 print:hidden lg:sticky lg:top-14 lg:-mx-8 lg:px-8">
         <PeriodFilter key={`${custom.start}:${custom.end}`} preset={preset} custom={custom} invalid={period === null} onPreset={setPreset} onCustom={setCustom} />
         {data && <SectionNav />}
       </div>

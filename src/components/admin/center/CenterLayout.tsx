@@ -1,7 +1,17 @@
 import clsx from 'clsx'
-import { CircleAlert, TriangleAlert } from 'lucide-react'
+import { BrainCircuit, CircleAlert, CreditCard, Gauge, LayoutDashboard, Lightbulb, TriangleAlert, Users, Wallet, type LucideIcon } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { SECTIONS, type CenterAlert, type SectionId } from '@/domain/commandCenter'
+
+const SECTION_ICONS: Readonly<Record<SectionId, LucideIcon>> = {
+  'visao-geral': LayoutDashboard,
+  financeiro: Wallet,
+  ia: BrainCircuit,
+  assinaturas: CreditCard,
+  usuarios: Users,
+  negocio: Lightbulb,
+  operacional: Gauge,
+}
 
 /** Seção da central: âncora própria (`#financeiro`), título e uma frase do que ela responde. */
 export function CenterSection({
@@ -17,14 +27,20 @@ export function CenterSection({
   readonly actions?: ReactNode
   readonly children: ReactNode
 }) {
+  const Icon = SECTION_ICONS[id]
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-36 space-y-4 print:break-inside-avoid">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/[0.05] pb-3">
-        <div>
-          <h2 id={`${id}-title`} className="font-headline text-2xl text-zinc-50">
-            {title}
-          </h2>
-          <p className="mt-1 text-sm text-zinc-400">{question}</p>
+        <div className="flex items-start gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent/30 to-accent/5 text-accent-soft ring-1 ring-accent/25" aria-hidden="true">
+            <Icon className="size-5" />
+          </span>
+          <div>
+            <h2 id={`${id}-title`} className="font-headline text-2xl text-zinc-50">
+              {title}
+            </h2>
+            <p className="mt-1 text-sm text-zinc-400">{question}</p>
+          </div>
         </div>
         {actions}
       </div>
@@ -64,7 +80,7 @@ export function SectionNav() {
               aria-current={current === section.id ? 'location' : undefined}
               className={clsx(
                 'block whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                current === section.id ? 'bg-accent/15 text-zinc-50' : 'text-zinc-400 hover:text-zinc-100',
+                current === section.id ? 'nav-active text-zinc-50' : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100',
               )}
             >
               {section.label}
@@ -95,7 +111,7 @@ export function CenterAlerts({ alerts }: { readonly alerts: readonly CenterAlert
             href={`#${alert.section}`}
             className={clsx(
               'flex gap-3 rounded-2xl px-4 py-3 ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-              critical ? 'bg-red-500/[0.07] ring-red-400/20 hover:bg-red-500/[0.1]' : 'bg-surface ring-white/[0.06] hover:bg-white/[0.03]',
+              critical ? 'bg-red-500/[0.07] ring-red-400/20 hover:bg-red-500/[0.1]' : 'card-premium card-hover ring-0',
             )}
           >
             <Icon className={clsx('mt-0.5 size-4 shrink-0', critical ? 'text-red-300' : 'text-hot')} aria-hidden="true" />
