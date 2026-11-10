@@ -55,11 +55,11 @@ function Tab({ item, collapsed, active }: { readonly item: NavItem; readonly col
         'group relative flex min-h-9 items-center gap-3 whitespace-nowrap rounded-xl text-[14px] font-semibold transition-colors',
         FOCUS,
         collapsed ? 'justify-center px-0' : 'px-3',
-        active ? 'bg-white/[0.07] text-zinc-50' : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100',
+        active ? 'nav-active text-zinc-50' : 'text-zinc-400 hover:bg-white/[0.045] hover:text-zinc-100',
       )}
     >
-      {active && <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-accent" />}
-      <Icon className={clsx('size-[18px] shrink-0', active && 'text-accent-soft')} aria-hidden="true" />
+      {active && <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-accent-strong shadow-[0_0_12px_2px_rgb(139_92_246/0.7)]" />}
+      <Icon className={clsx('size-[18px] shrink-0 transition-colors', active ? 'text-accent-soft' : 'group-hover:text-zinc-200')} aria-hidden="true" />
       {!collapsed && (
         <>
           <span className="min-w-0 flex-1 truncate">{item.label}</span>
@@ -80,7 +80,7 @@ function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
         to="/creditos"
         title="Comprar créditos"
         aria-label={balance === null ? 'Créditos' : `${balance} créditos. Comprar mais`}
-        className={clsx('flex flex-col items-center gap-1 rounded-xl bg-surface-2 py-2.5 text-[11px] font-bold tabular-nums text-zinc-100', FOCUS)}
+        className={clsx('card-premium flex flex-col items-center gap-1 rounded-xl py-2.5 text-[11px] font-bold tabular-nums text-zinc-100', FOCUS)}
       >
         <Coins className="size-4 text-accent-soft" aria-hidden="true" />
         {balance ?? '...'}
@@ -89,7 +89,8 @@ function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
   }
 
   return (
-    <div className="rounded-2xl bg-surface-2 p-3 ring-1 ring-white/[0.05]">
+    <div className="card-premium relative overflow-hidden rounded-2xl p-3">
+      <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-accent/25 blur-2xl" />
       <p className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-zinc-500">
         Seu saldo
         {plan && (
@@ -104,7 +105,7 @@ function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
       </p>
       <Link
         to="/creditos"
-        className={clsx('btn-accent mt-3 flex min-h-9 items-center justify-center rounded-lg text-[13px] font-semibold', FOCUS)}
+        className={clsx('btn-accent relative mt-3 flex min-h-9 items-center justify-center rounded-lg text-[13px] font-semibold', FOCUS)}
       >
         Comprar créditos
       </Link>
@@ -121,7 +122,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   return (
     <aside
       aria-label="Menu"
-      className="fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar-w)] flex-col border-r border-white/[0.05] bg-canvas transition-[width] duration-200 ease-out md:flex"
+      className="sidebar-surface fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar-w)] flex-col border-r border-white/[0.06] transition-[width] duration-200 ease-out md:flex"
     >
       <div className={clsx('flex h-16 shrink-0 items-center', collapsed ? 'justify-center' : 'px-4')}>
         <Link to="/inicio" aria-label="Vynkio, início" className={clsx('rounded-lg', FOCUS)}>
@@ -135,7 +136,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             {collapsed ? (
               <div aria-hidden="true" className="mx-auto mb-2 h-px w-6 bg-white/10" />
             ) : (
-              <p className="mb-1.5 px-3 text-[11px] font-bold uppercase tracking-wider text-zinc-500">{group.title}</p>
+              <p className="mb-1.5 px-3 text-[10.5px] font-bold uppercase tracking-[0.14em] text-zinc-500">{group.title}</p>
             )}
             <ul className="space-y-0.5">
               {group.items.map((item) => (

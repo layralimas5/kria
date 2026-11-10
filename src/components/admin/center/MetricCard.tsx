@@ -31,7 +31,8 @@ export function MetricCard({ label, value, change, upIsGood = true, hint, info, 
   const hasChange = change !== undefined && change !== null && Number.isFinite(change) && change !== 0
   const good = hasChange && (change > 0) === upIsGood
   return (
-    <div className="group relative flex min-w-0 flex-col rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06] transition-colors hover:ring-white/[0.12]">
+    <div className="card-premium card-hover group relative flex min-w-0 flex-col overflow-hidden rounded-2xl p-4">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-accent-soft/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5">
           <p className="truncate text-[12px] font-semibold text-zinc-400">{label}</p>

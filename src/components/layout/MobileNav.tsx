@@ -6,6 +6,7 @@ import { usePlanModels } from '@/hooks/usePlanModels'
 import { useBalance } from '@/hooks/useBalance'
 import { UserMenu } from '../account/UserMenu'
 import { BrandSwitcher } from '../workspace/BrandSwitcher'
+import { SearchTrigger } from '../command/SearchTrigger'
 import { Logo } from '../Logo'
 import { NotificationsMenu } from './NotificationsMenu'
 import { Popover } from '../ui/Popover'
@@ -18,13 +19,14 @@ const TAB = 'flex min-h-16 w-full flex-col items-center justify-center gap-1 tex
 export function MobileTopBar() {
   const { balance } = useBalance()
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-2 bg-canvas/90 px-4 backdrop-blur-xl md:hidden">
+    <header className="glass-bar sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-white/[0.04] px-4 md:hidden">
       <Link to="/inicio" aria-label="Vynkio, início" className={clsx('shrink-0 rounded-lg', FOCUS)}>
         <Logo />
       </Link>
       <div className="ml-auto min-w-0">
         <BrandSwitcher compact />
       </div>
+      <SearchTrigger compact />
       <NotificationsMenu />
       <Link
         to="/creditos"
