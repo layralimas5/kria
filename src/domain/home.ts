@@ -1,19 +1,15 @@
+import { brtDay, daysAgo } from './timeline'
 import type { Generation, Subscription } from './types'
 
 // Contas da tela Início: atividade recente, ritmo dos últimos dias, ciclo do plano e primeiros passos.
 
 const DAY_MS = 86_400_000
-const BRT_OFFSET_MS = 3 * 3_600_000
-
-/** "2026-11-10" no fuso de Brasília (sem horário de verão desde 2019). */
-const brtDay = (at: Date) => new Date(at.getTime() - BRT_OFFSET_MS).toISOString().slice(0, 10)
-
 /** "agora", "há 5 min", "há 2 h", "ontem", "há 3 dias" ou a data, para quem lê de relance. */
 export function relativeTime(iso: string, now: Date): string {
   const diff = now.getTime() - new Date(iso).getTime()
   if (diff < 60_000) return 'agora'
   if (diff < 3_600_000) return `há ${Math.floor(diff / 60_000)} min`
-  const days = Math.round((Date.parse(`${brtDay(now)}T00:00:00Z`) - Date.parse(`${brtDay(new Date(iso))}T00:00:00Z`)) / DAY_MS)
+  const days = daysAgo(iso, now)
   if (days === 0) return `há ${Math.floor(diff / 3_600_000)} h`
   if (days === 1) return 'ontem'
   if (days < 7) return `há ${days} dias`

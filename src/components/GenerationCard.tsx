@@ -11,6 +11,8 @@ interface GenerationCardProps {
   readonly generation: Generation
   readonly modelName: string
   readonly onMakePersona?: (generation: Generation) => void
+  /** Abre os detalhes da criação (Biblioteca). */
+  readonly onOpen?: (generation: Generation) => void
   readonly className?: string
 }
 
@@ -44,7 +46,7 @@ function Actions({ generation, onMakePersona }: Pick<GenerationCardProps, 'gener
   const url = useSignedUrl(generation.output_path)
   const isImage = generation.kind === 'image'
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="pointer-events-auto flex items-center gap-1.5">
       {url && (
         <a href={url} download target="_blank" rel="noreferrer" className={ACTION} aria-label="Baixar" title="Baixar">
           <Download className="size-4" aria-hidden="true" />
@@ -65,7 +67,7 @@ function Actions({ generation, onMakePersona }: Pick<GenerationCardProps, 'gener
   )
 }
 
-export function GenerationCard({ generation, modelName, onMakePersona, className }: GenerationCardProps) {
+export function GenerationCard({ generation, modelName, onMakePersona, onOpen, className }: GenerationCardProps) {
   const reduceMotion = useReducedMotion()
   const done = generation.status === 'succeeded'
 
@@ -76,7 +78,7 @@ export function GenerationCard({ generation, modelName, onMakePersona, className
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className={clsx(
-        'group relative aspect-[4/5] overflow-hidden rounded-2xl bg-surface ring-1 ring-white/[0.06] transition-shadow hover:ring-white/15',
+        'group relative aspect-[4/5] overflow-hidden rounded-2xl bg-surface ring-1 ring-white/[0.06] transition-shadow hover:shadow-[0_12px_36px_-16px_rgb(124_58_237/0.6)] hover:ring-accent-soft/30',
         className,
       )}
     >
@@ -91,14 +93,23 @@ export function GenerationCard({ generation, modelName, onMakePersona, className
         />
       )}
 
-      <span className="absolute left-2 top-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[11px] font-semibold text-zinc-100 backdrop-blur">
+      {onOpen && (
+        <button
+          type="button"
+          onClick={() => onOpen(generation)}
+          aria-label={`Ver detalhes: ${generation.prompt}`}
+          className="absolute inset-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+        />
+      )}
+
+      <span className="pointer-events-none absolute left-2 top-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[11px] font-semibold text-zinc-100 backdrop-blur">
         {modelName}
       </span>
 
       {done && (
         <div
           className={clsx(
-            'absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 pt-10 transition-opacity duration-200',
+            'pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 pt-10 transition-opacity duration-200',
             'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100',
           )}
         >

@@ -101,12 +101,14 @@ function addLedger(subscriptionDelta: number, purchasedDelta: number, reason: st
 }
 
 
-/** Aplica os filtros `col=eq.valor`, `in`, `gt`, `order` e `limit` do PostgREST que o app usa. */
+/** Aplica os filtros `col=eq.valor`, `in`, `gt`, `lt`, `order` e `limit` do PostgREST que o app usa. */
 function query(rows: Row[], params: URLSearchParams): Row[] {
   let result = [...rows]
   params.forEach((value, key) => {
     if (value.startsWith('eq.')) result = result.filter((row) => String(row[key]) === value.slice(3))
     if (value.startsWith('gt.')) result = result.filter((row) => Number(row[key]) > Number(value.slice(3)))
+    // Datas ISO comparam como texto.
+    if (value.startsWith('lt.')) result = result.filter((row) => String(row[key]) < value.slice(3))
     if (value.startsWith('in.(')) {
       const allowed = value.slice(4, -1).split(',').map((item) => item.replace(/"/g, ''))
       result = result.filter((row) => allowed.includes(String(row[key])))

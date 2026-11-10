@@ -17,6 +17,10 @@ interface GenerationsState {
   readonly error: string | null
   readonly upsert: (generation: Generation) => void
   readonly reload: () => Promise<void>
+  /** Há criações mais antigas no banco além das carregadas. */
+  readonly hasMore: boolean
+  readonly loadingMore: boolean
+  readonly loadMore: () => Promise<void>
 }
 
 const GenerationsContext = createContext<GenerationsState | null>(null)
@@ -37,6 +41,8 @@ export function GenerationsProvider({ children }: { readonly children: ReactNode
   const [generations, setGenerations] = useState<readonly Generation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const generationsRef = useRef(generations)
   generationsRef.current = generations
 
@@ -53,7 +59,36 @@ export function GenerationsProvider({ children }: { readonly children: ReactNode
       return
     }
     setError(null)
-    setGenerations(z.array(generationSchema).parse(data))
+    const page = z.array(generationSchema).parse(data)
+    // A conferência periódica recarrega só a primeira página: as mais antigas já abertas ficam.
+    const cutoff = page.length === PAGE_SIZE ? page.at(-1)?.created_at : undefined
+    const tail = cutoff ? generationsRef.current.filter((item) => item.created_at < cutoff) : []
+    if (tail.length === 0) setHasMore(page.length === PAGE_SIZE)
+    setGenerations([...page, ...tail])
+  }, [])
+
+  const loadMore = useCallback(async () => {
+    const oldest = generationsRef.current.at(-1)
+    if (!oldest) return
+    setLoadingMore(true)
+    const { data, error: queryError } = await supabase
+      .from('generations')
+      .select(GENERATION_COLUMNS)
+      .in('kind', MEDIA_KINDS)
+      .lt('created_at', oldest.created_at)
+      .order('created_at', { ascending: false })
+      .limit(PAGE_SIZE)
+    setLoadingMore(false)
+    if (queryError) {
+      setError('Não deu para carregar as criações mais antigas.')
+      return
+    }
+    const page = z.array(generationSchema).parse(data)
+    setHasMore(page.length === PAGE_SIZE)
+    setGenerations((list) => {
+      const known = new Set(list.map((item) => item.id))
+      return [...list, ...page.filter((item) => !known.has(item.id))]
+    })
   }, [])
 
   const upsert = useCallback((generation: Generation) => {
@@ -96,7 +131,7 @@ export function GenerationsProvider({ children }: { readonly children: ReactNode
   }, [reload, refreshBalance])
 
   return (
-    <GenerationsContext.Provider value={{ generations, loading, error, upsert, reload }}>
+    <GenerationsContext.Provider value={{ generations, loading, error, upsert, reload, hasMore, loadingMore, loadMore }}>
       {children}
     </GenerationsContext.Provider>
   )
