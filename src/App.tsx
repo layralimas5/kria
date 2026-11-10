@@ -26,6 +26,7 @@ const GalleryPage = page(() => import('@/pages/GalleryPage'), 'GalleryPage')
 const PersonasPage = page(() => import('@/pages/PersonasPage'), 'PersonasPage')
 const CreditsPage = page(() => import('@/pages/CreditsPage'), 'CreditsPage')
 const SubscriptionPage = page(() => import('@/pages/SubscriptionPage'), 'SubscriptionPage')
+const SupportPage = page(() => import('@/pages/SupportPage'), 'SupportPage')
 const AccountPage = page(() => import('@/pages/AccountPage'), 'AccountPage')
 const AccountSettingsPage = page(() => import('@/pages/AccountSettingsPage'), 'AccountSettingsPage')
 const OnboardingPage = page(() => import('@/pages/OnboardingPage'), 'OnboardingPage')
@@ -136,6 +137,7 @@ export function App() {
                 <Route path="resultados" element={<ResultsPage />} />
                 <Route path="creditos" element={<CreditsPage />} />
                 <Route path="assinatura" element={<SubscriptionPage />} />
+                <Route path="suporte" element={<SupportPage />} />
                 <Route path="conta" element={<AccountPage />} />
                 <Route path="conta/configuracoes" element={<AccountSettingsPage />} />
               </Route>

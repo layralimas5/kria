@@ -10,6 +10,7 @@ import {
   ImageIcon,
   Images,
   KanbanSquare,
+  LifeBuoy,
   LayoutTemplate,
   Lightbulb,
   Megaphone,
@@ -83,6 +84,7 @@ export const BRANDS_TAB: NavItem = { label: 'Marcas', to: '/marcas', icon: Store
 export const PROJECTS_TAB: NavItem = { label: 'Projetos', to: '/projetos', icon: FolderKanban, tool: 'projects', isActive: isPath('/projetos') }
 export const CREDITS_TAB: NavItem = { label: 'Créditos e consumo', to: '/creditos', icon: Coins, isActive: isPath('/creditos') }
 export const SUBSCRIPTION_TAB: NavItem = { label: 'Assinatura', to: '/assinatura', icon: CreditCard, isActive: isPath('/assinatura') }
+export const SUPPORT_TAB: NavItem = { label: 'Suporte', to: '/suporte', icon: LifeBuoy, isActive: isPath('/suporte') }
 export const SETTINGS_TAB: NavItem = { label: 'Configurações', to: '/conta/configuracoes', icon: Settings, isActive: isPath('/conta/configuracoes') }
 
 
@@ -93,7 +95,7 @@ const NAV_GROUPS: readonly NavGroup[] = [
   { title: 'Inteligência', items: [IDEAS_TAB, SCRIPT_TAB, COPY_TAB, PLANNING_TAB] },
   { title: 'Conteúdo', items: [CONTENT_TAB, CALENDAR_TAB, GALLERY_TAB] },
   { title: 'Resultados', items: [RESULTS_TAB] },
-  { title: 'Gerenciamento', items: [BRANDS_TAB, PROJECTS_TAB, CREDITS_TAB, SUBSCRIPTION_TAB, SETTINGS_TAB] },
+  { title: 'Gerenciamento', items: [BRANDS_TAB, PROJECTS_TAB, CREDITS_TAB, SUBSCRIPTION_TAB, SUPPORT_TAB, SETTINGS_TAB] },
 ]
 
 /** O menu do plano em vigor: ferramenta ou tipo de criação que o plano não inclui não aparece. */

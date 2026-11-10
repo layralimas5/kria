@@ -139,6 +139,26 @@ function settleOpenGenerations() {
   persist()
 }
 
+// Suporte (0028) no demo: mesmo canal por plano do banco.
+let demoSupport: Row = { email: 'vynkio.suporte@gmail.com', whatsapp: null, community_url: null, updated_at: new Date().toISOString() }
+const SUPPORT_BY_PLAN: Readonly<Record<string, string>> = {
+  'creator-start': 'email', starter: 'email', 'creator-pro': 'whatsapp', pro: 'whatsapp', 'creator-max': 'whatsapp_priority', studio: 'whatsapp_priority',
+}
+
+function demoMySupport(plan: Row): Row {
+  const channel = SUPPORT_BY_PLAN[String(plan.slug)] ?? 'none'
+  const whatsapp = channel.startsWith('whatsapp') ? (demoSupport.whatsapp ?? null) : null
+  return {
+    plan_name: plan.name,
+    channel,
+    email: channel === 'email' || (channel.startsWith('whatsapp') && !whatsapp) ? demoSupport.email : null,
+    whatsapp,
+    priority: channel === 'whatsapp_priority',
+    community: channel.startsWith('whatsapp'),
+    community_url: channel.startsWith('whatsapp') ? (demoSupport.community_url ?? null) : null,
+  }
+}
+
 function currentPlan(): Row {
   const live = state.subscriptions.find(
     (item) => (item.status === 'active' || item.status === 'past_due' || item.status === 'canceled') && String(item.current_period_end) > new Date().toISOString(),
@@ -873,6 +893,19 @@ function adminRpc(name: string, body: Row): Response | null {
       return json(state.pricing)
     case 'storefront_plans':
       return json(storefront(state))
+    case 'admin_support_settings':
+      return json(demoSupport)
+    case 'admin_set_support_settings': {
+      if (String(body.p_reason ?? '').trim().length < 5) return rpcFail('reason_required')
+      demoSupport = {
+        email: String(body.p_email ?? '').trim() || null,
+        whatsapp: String(body.p_whatsapp ?? '').replace(/\D/g, '') || null,
+        community_url: String(body.p_community_url ?? '').trim() || null,
+        updated_at: new Date().toISOString(),
+      }
+      audit('support.settings', null, null)
+      return json(demoSupport)
+    }
     case 'admin_update_pricing':
       state.pricing = { ...state.pricing, usd_brl: body.p_usd_brl, fx_buffer: body.p_fx_buffer, markup: body.p_markup, credit_value_brl: body.p_credit_value_brl }
       audit('pricing.update', null, null)
@@ -920,6 +953,7 @@ function rpc(name: string, body: Row): Response {
   if (name === 'register_upload') return registerUpload(body)
   if (name === 'import_analytics') return importAnalytics(body)
   if (name === 'my_usage') return json({ ...demoUsage(state, currentPlan()), ...exportUsage(state, currentPlan()) })
+  if (name === 'my_support') return json(demoMySupport(currentPlan()))
   if (name === 'start_multiplier_export') {
     const result = startExport(state, currentPlan(), body)
     if (isRefusal(result)) return rpcFail(result.code)
