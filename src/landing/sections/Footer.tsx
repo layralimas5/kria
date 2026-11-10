@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
-import { PRIVACY_ANCHOR, SIGNUP_PATH } from '../content'
+import { LOGIN_PATH, PRIVACY_ANCHOR, SIGNUP_PATH } from '../content'
 
 const LINK = 'rounded text-zinc-400 transition-colors hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
@@ -23,7 +23,7 @@ const COLUMNS: readonly { readonly title: string; readonly links: readonly Foote
     title: 'Conta',
     links: [
       { label: 'Criar conta grátis', to: SIGNUP_PATH },
-      { label: 'Entrar', to: SIGNUP_PATH },
+      { label: 'Entrar', to: LOGIN_PATH },
       { label: 'Dúvidas frequentes', href: '#faq' },
     ],
   },

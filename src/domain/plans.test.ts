@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canUseModel, currentSubscription, planIncludes, planYield, pricePerCredit, WELCOME_CREDITS } from './plans'
+import { canUseModel, currentSubscription, planIncludes, planYield, pricePerCredit } from './plans'
 import type { Subscription } from './types'
 
 const NOW = new Date('2026-10-18T12:00:00Z').getTime()
@@ -61,7 +61,7 @@ describe('planYield', () => {
   })
 
   it('deixa de fora o modelo que o plano não libera e o que não cabe nenhuma vez', () => {
-    expect(planYield({ slug: 'gratis', monthly_credits: 0 }, models, WELCOME_CREDITS)).toEqual([{ model: 'Nano Banana 2', count: 4 }])
+    expect(planYield({ slug: 'gratis', monthly_credits: 0 }, models, 20)).toEqual([{ model: 'Nano Banana 2', count: 4 }])
   })
 })
 

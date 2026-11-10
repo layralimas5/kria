@@ -11,8 +11,6 @@ interface ImportMetaEnv {
   readonly VITE_CONTACT_EMAIL?: string
   /** 'true' mostra os preços v2 (Creator e Business) na landing. Só junto com a virada no admin. */
   readonly VITE_PRICING_V2?: string
-  /** 'true' reabre o cadastro público na tela de login. Sem ele, só entra quem já tem conta. */
-  readonly VITE_SIGNUP_OPEN?: string
 }
 
 interface ImportMeta {

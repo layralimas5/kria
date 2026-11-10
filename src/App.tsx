@@ -92,7 +92,8 @@ export function App() {
           <Routes>
             <Route index element={<LandingPage />} />
             <Route path="/termos" element={<TermsPage />} />
-            <Route path="/entrar" element={<LoginPage />} />
+            <Route path="/entrar" element={<LoginPage key="signin" initialMode="signin" />} />
+            <Route path="/criar-conta" element={<LoginPage key="signup" initialMode="signup" />} />
             <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
             <Route path="/nova-senha" element={<ResetPasswordPage />} />
             <Route element={<SignedIn />}>

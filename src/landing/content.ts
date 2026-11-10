@@ -5,7 +5,8 @@ import generatedMedia from './avatars.generated.json'
 import { PRICING_V2 } from './pricing/flags'
 import { WELCOME_CREDITS_V3 } from './pricing/storefront'
 
-export const SIGNUP_PATH = '/entrar'
+export const SIGNUP_PATH = '/criar-conta'
+export const LOGIN_PATH = '/entrar'
 /** Boas-vindas da conta nova: 20 na escala atual; com a vitrine nova, o da proposta v3 (conferido contra a 0019). */
 export const WELCOME_CREDITS = PRICING_V2 ? WELCOME_CREDITS_V3 : 20
 

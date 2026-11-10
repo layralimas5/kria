@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/Field'
 import { Notice } from '@/components/ui/Notice'
 import { useSession } from '@/hooks/useSession'
+import { WELCOME_CREDITS } from '@/domain/plans'
 import { track } from '@/lib/analytics'
-import { ACCESS_EMAIL, SIGNUP_OPEN } from '@/lib/signup'
 import { isConfigured, supabase } from '@/lib/supabase'
 import type { ResetCodeState } from './ForgotPasswordPage'
 
@@ -21,7 +21,7 @@ const AUTH_ERRORS: Record<string, string> = {
 }
 
 const COPY: Record<Mode, { title: string; description: string }> = {
-  signup: { title: 'Crie sua conta', description: 'Ganhe 20 créditos para testar.' },
+  signup: { title: 'Crie sua conta', description: `Ganhe ${WELCOME_CREDITS} créditos para testar.` },
   signin: { title: 'Entrar', description: 'Bom te ver de novo.' },
   code: { title: 'Digite o código', description: 'Enviamos um código de 6 dígitos para' },
 }
@@ -44,12 +44,13 @@ function useResetEmail(): string | null {
   return typeof email === 'string' && email.length > 0 ? email : null
 }
 
-export function LoginPage() {
+/** `/entrar` abre no login e `/criar-conta` na ficha de cadastro; dá para trocar na própria tela. */
+export function LoginPage({ initialMode }: { readonly initialMode: 'signin' | 'signup' }) {
   const { session } = useSession()
   const navigate = useNavigate()
   const target = useRedirectTarget()
   const resetEmail = useResetEmail()
-  const [mode, setMode] = useState<Mode>(resetEmail ? 'code' : SIGNUP_OPEN ? 'signup' : 'signin')
+  const [mode, setMode] = useState<Mode>(resetEmail ? 'code' : initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -162,21 +163,12 @@ export function LoginPage() {
         </>
       )}
 
-      {SIGNUP_OPEN ? (
-        <p className="mt-6 text-center text-sm text-zinc-400">
-          {mode === 'signup' ? 'Já tem conta?' : 'Ainda não tem conta?'}{' '}
-          <button type="button" onClick={() => switchMode(mode === 'signup' ? 'signin' : 'signup')} className={`${LINK} text-accent-soft`}>
-            {mode === 'signup' ? 'Entrar' : 'Criar conta'}
-          </button>
-        </p>
-      ) : (
-        <p className="mt-6 text-center text-sm text-zinc-400">
-          Novos cadastros estão pausados. Quer acesso?{' '}
-          <a href={`mailto:${ACCESS_EMAIL}?subject=${encodeURIComponent('Pedido de acesso ao Vynkio')}`} className={`${LINK} text-accent-soft`}>
-            Fale com a gente
-          </a>
-        </p>
-      )}
+      <p className="mt-6 text-center text-sm text-zinc-400">
+        {mode === 'signup' ? 'Já tem conta?' : 'Ainda não tem conta?'}{' '}
+        <button type="button" onClick={() => switchMode(mode === 'signup' ? 'signin' : 'signup')} className={`${LINK} text-accent-soft`}>
+          {mode === 'signup' ? 'Entrar' : 'Criar conta'}
+        </button>
+      </p>
     </AuthCard>
   )
 }

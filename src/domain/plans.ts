@@ -31,8 +31,8 @@ export function pricePerCredit(plan: Pick<Plan, 'price_cents' | 'monthly_credits
   return plan.monthly_credits > 0 ? plan.price_cents / plan.monthly_credits / 100 : null
 }
 
-/** Créditos que toda conta nova ganha. Espelha `signup_bonus` (0001). */
-export const WELCOME_CREDITS = 20
+/** Créditos que toda conta nova ganha desde a virada (0027, `welcome_credits` em vigor). */
+export const WELCOME_CREDITS = 100
 
 /** O plano sem mensalidade: não tem checkout, é o que vale para quem não assinou. */
 export function isFreePlan(plan: Pick<Plan, 'price_cents'>): boolean {

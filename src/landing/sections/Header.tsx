@@ -5,7 +5,7 @@ import { useCallback, useEffect, useId, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
 import { CtaLink } from '../components/CtaLink'
-import { SIGNUP_PATH } from '../content'
+import { LOGIN_PATH } from '../content'
 import { useScrolled } from '../hooks/useScrolled'
 
 const NAV: readonly { href: string; label: string }[] = [
@@ -48,7 +48,7 @@ function MobileMenu({ id, onClose }: { readonly id: string; readonly onClose: ()
       </ul>
       <div className="mt-5 grid gap-3">
         <CtaLink cta="header_mobile" size="lg" className="w-full" />
-        <Link to={SIGNUP_PATH} onClick={onClose} className="inline-flex min-h-12 items-center justify-center rounded-xl text-sm font-semibold text-zinc-200 ring-1 ring-white/[0.1]">
+        <Link to={LOGIN_PATH} onClick={onClose} className="inline-flex min-h-12 items-center justify-center rounded-xl text-sm font-semibold text-zinc-200 ring-1 ring-white/[0.1]">
           Já tenho conta
         </Link>
       </div>
@@ -82,7 +82,7 @@ export function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-1.5 justify-self-end">
-          <Link to={SIGNUP_PATH} className={`${LINK} hidden text-zinc-300 hover:text-zinc-50 sm:inline-flex`}>
+          <Link to={LOGIN_PATH} className={`${LINK} hidden text-zinc-300 hover:text-zinc-50 sm:inline-flex`}>
             Entrar
           </Link>
           <CtaLink cta="header" size="sm" className="rounded-lg" />
