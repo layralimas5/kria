@@ -2277,4 +2277,40 @@ await test('virada pelo console: troca o checkout sem exigir tarifa conferida, m
   assert.equal((await db.query(`select status from subscription_plans where slug = 'pro'`)).rows[0].status, 'live')
 })
 
+// ------------------------------------------------- benefícios e suporte (0028)
+
+await test('suporte: cada plano recebe só o contato do seu canal, e o admin troca os contatos com motivo', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const support = (who) => as(db, 'authenticated', who, async () => (await db.query(`select my_support() as s`)).rows[0].s)
+  await as(db, 'authenticated', dona, () =>
+    db.query(`select admin_set_support_settings('Vynkio.Suporte@gmail.com', '+55 (11) 99999-0000', '', 'número do suporte')`))
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_set_support_settings('a@b.co', '', '', 'x')`)), 'reason_required')
+  await expectError(as(db, 'authenticated', dona, () => db.query(`select admin_set_support_settings('a@b.co', '123', '', 'número errado')`)), 'whatsapp_check')
+
+  const free = await newUser(db, 'free@x.com')
+  assert.deepEqual(await support(free), { plan_name: 'Grátis', channel: 'none', email: null, whatsapp: null, priority: false, community: false, community_url: null })
+
+  const switchPlans = () => db.query(`select pricing_switch_from_console('Virada para testar os benefícios')`)
+  await switchPlans()
+  const starter = await newUser(db, 'starter@x.com')
+  await activate(db, await newSubscription(db, starter, 'creator-start'), 'pay_support_1')
+  const starterView = await support(starter)
+  assert.deepEqual([starterView.channel, starterView.email, starterView.whatsapp], ['email', 'vynkio.suporte@gmail.com', null])
+
+  const max = await newUser(db, 'max@x.com')
+  await activate(db, await newSubscription(db, max, 'creator-max'), 'pay_support_2')
+  const maxView = await support(max)
+  assert.deepEqual([maxView.channel, maxView.email, maxView.whatsapp, maxView.priority, maxView.community], ['whatsapp_priority', null, '5511999990000', true, true])
+  await expectError(as(db, 'authenticated', max, () => db.query(`select admin_support_settings()`)), 'forbidden')
+  await as(db, 'authenticated', dona, () => db.query(`select admin_set_support_settings('vynkio.suporte@gmail.com', '', '', 'número trocando')`))
+  assert.deepEqual([(await support(max)).whatsapp, (await support(max)).email], [null, 'vynkio.suporte@gmail.com'], 'sem WhatsApp, o e-mail entra no lugar')
+
+  const vitrine = (await db.query(`select storefront_plans() as s`)).rows[0].s.plans
+  const pro = vitrine.find((plan) => plan.slug === 'creator-pro')
+  assert.equal(pro.usage_hint, 'Equivale a até 96 fotos ou 12 vídeos')
+  assert.ok(pro.features.includes('Suporte por WhatsApp'))
+  assert.ok(vitrine.every((plan) => plan.features.every((feature) => !feature.includes('Veo'))), 'Veo fora da vitrine até ter substituto')
+})
+
 console.log(`\n${passed} testes do banco passaram`)
