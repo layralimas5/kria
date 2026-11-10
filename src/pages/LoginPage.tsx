@@ -7,6 +7,7 @@ import { TextField } from '@/components/ui/Field'
 import { Notice } from '@/components/ui/Notice'
 import { useSession } from '@/hooks/useSession'
 import { WELCOME_CREDITS } from '@/domain/plans'
+import { FULL_NAME_MAX, normalizeFullName, PASSWORD_MIN, signupError } from '@/domain/signup'
 import { track } from '@/lib/analytics'
 import { isConfigured, supabase } from '@/lib/supabase'
 import type { ResetCodeState } from './ForgotPasswordPage'
@@ -51,8 +52,10 @@ export function LoginPage({ initialMode }: { readonly initialMode: 'signin' | 's
   const target = useRedirectTarget()
   const resetEmail = useResetEmail()
   const [mode, setMode] = useState<Mode>(resetEmail ? 'code' : initialMode)
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -62,13 +65,22 @@ export function LoginPage({ initialMode }: { readonly initialMode: 'signin' | 's
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    setLoading(true)
     setError(null)
     setNotice(null)
+    const invalid = mode === 'signup' ? signupError({ fullName, password, confirmPassword }) : null
+    if (invalid) {
+      setError(invalid)
+      return
+    }
+    setLoading(true)
     const result =
       mode === 'signin'
         ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}${target}` } })
+        : await supabase.auth.signUp({
+            email,
+            password,
+            options: { emailRedirectTo: `${window.location.origin}${target}`, data: { display_name: normalizeFullName(fullName) } },
+          })
     setLoading(false)
     if (result.error) {
       setError(AUTH_ERRORS[result.error.message] ?? 'Não deu para continuar. Confira os dados e tente de novo.')
@@ -127,6 +139,17 @@ export function LoginPage({ initialMode }: { readonly initialMode: 'signin' | 's
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {mode === 'signup' && (
+          <TextField
+            label="Nome completo"
+            autoComplete="name"
+            autoCapitalize="words"
+            value={fullName}
+            onChange={(event) => setFullName(event.target.value)}
+            maxLength={FULL_NAME_MAX}
+            required
+          />
+        )}
         <TextField label="E-mail" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
         <TextField
           label="Senha"
@@ -134,10 +157,21 @@ export function LoginPage({ initialMode }: { readonly initialMode: 'signin' | 's
           autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          minLength={8}
+          minLength={PASSWORD_MIN}
           required
-          hint={mode === 'signup' ? 'Mínimo de 8 caracteres.' : undefined}
+          hint={mode === 'signup' ? `Mínimo de ${PASSWORD_MIN} caracteres.` : undefined}
         />
+        {mode === 'signup' && (
+          <TextField
+            label="Repita a senha"
+            type="password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            minLength={PASSWORD_MIN}
+            required
+          />
+        )}
         {mode === 'signin' && (
           <p className="-mt-1 text-right text-sm">
             <Link to="/recuperar-senha" state={{ resetEmail: email.trim() }} className={`${LINK} text-zinc-400 hover:text-zinc-100`}>
