@@ -6,6 +6,7 @@ import { aiCostsSchema, priceHistorySchema, type CostFilters } from '@/domain/ai
 import { analyticsSchema } from '@/domain/adminAnalytics'
 import { businessSchema, type ExpenseCategory } from '@/domain/business'
 import { centerSchema } from '@/domain/commandCenter'
+import { explorerSchema, savedFilterSchema } from '@/domain/financeExplorer'
 import { USERS_PAGE_SIZE, userPageSchema, userProfileSchema, type UserFilters } from '@/domain/adminUsers'
 import { generationPageSchema, PAGE_SIZE, subscriptionPageSchema } from '@/domain/adminLists'
 import { adminMeSchema, adminRoleSchema, dashboardSchema, type AdminMe, type AdminRole, type Period } from '@/domain/adminDashboard'
@@ -29,6 +30,8 @@ const ADMIN_ERRORS: Record<string, string> = {
   account_not_found: 'Conta não encontrada.',
   mfa_required: 'Confirme o segundo fator para continuar.',
   invalid_period: 'Período inválido. Escolha até um ano.',
+  invalid_filter: 'Algum filtro está inválido. Limpe os filtros e tente de novo.',
+  too_many_filters: 'Você já tem 30 filtros salvos. Apague um para salvar outro.',
   user_not_found: 'Nenhuma conta com esse e-mail.',
   cannot_change_self: 'Você não pode mudar o próprio acesso.',
   last_super_admin: 'Precisa sobrar pelo menos um super admin.',
@@ -525,3 +528,33 @@ export const setSupportSettings = (settings: { email: string; whatsapp: string; 
     { p_email: settings.email, p_whatsapp: settings.whatsapp, p_community_url: settings.communityUrl, p_reason: settings.reason },
     supportSettingsSchema,
   )
+
+export interface ExplorerQuery {
+  readonly filters: Record<string, unknown>
+  readonly page: number
+  readonly pageSize: number
+  readonly sort: 'occurred_at' | 'amount_cents' | 'type' | 'status' | 'email' | 'plan_slug'
+  readonly dir: 'asc' | 'desc'
+  readonly search: string
+}
+
+export const fetchFinanceExplorer = (query: ExplorerQuery) =>
+  rpc(
+    'admin_finance_explorer',
+    {
+      p_filters: query.filters,
+      p_page: query.page,
+      p_page_size: query.pageSize,
+      p_sort: query.sort,
+      p_dir: query.dir,
+      p_search: query.search.trim() || null,
+    },
+    explorerSchema,
+  )
+
+export const fetchSavedFilters = () => rpc('admin_saved_filters_list', { p_scope: 'finance' }, z.array(savedFilterSchema))
+
+export const saveFilter = (name: string, filters: Record<string, string>) =>
+  rpc('admin_save_filter', { p_scope: 'finance', p_name: name, p_filters: filters }, z.string())
+
+export const deleteSavedFilter = (id: string) => rpc('admin_delete_saved_filter', { p_id: id }, z.unknown())

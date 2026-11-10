@@ -72,6 +72,9 @@ são telas reais do modo demo (`npm run landing:screens`).
 - Central de comando (`/admin`, 0026, `docs/central-de-comando.md`): toda definição de número fica em
   `src/domain/commandCenter.ts`; a tela só desenha. Sem base, o valor é nulo e aparece "Dados insuficientes";
   projeção e simulação levam selo. Indicador novo entra numa das sete seções da central, não em página nova.
+- Central financeira (Financeiro > Central financeira, 0029, `docs/central-financeira.md`): toda movimentação
+  sai de `finance_movements`; filtro novo entra em `finance_row_passes` e vale ao mesmo tempo para indicador,
+  gráfico e tabela. Receita só de pagamento confirmado; lucro fica "Provisório" enquanto faltar custo registrado.
 - Ferramenta que ainda não existe aparece como "Breve", sem link nem botão.
 - Persona nasce só de imagem gerada aqui (`create_persona`). Sem upload de foto:
   é o que impede deepfake de pessoa real. Não abrir upload sem moderação de rosto.

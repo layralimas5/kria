@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { AlertsList } from '@/components/admin/dashboard/DashboardSections'
 import { PeriodFilter } from '@/components/admin/dashboard/PeriodFilter'
 import { CreditPolicyPanel } from '@/components/admin/finance/CreditPolicyPanel'
+import { FinanceCentral } from '@/components/admin/finance/explorer/FinanceCentral'
 import { FinanceSettingsForm } from '@/components/admin/finance/FinanceSettingsForm'
 import { ModelProfitTable, MultiplierSection, PlanRevenueTable, ProviderCostTable, StatementSection, UserProfitTable } from '@/components/admin/finance/FinanceOverview'
 import { PlanCalculator } from '@/components/admin/finance/PlanCalculator'
@@ -18,6 +19,7 @@ import { useQuery } from '@/hooks/useQuery'
 import { fetchFinance, fetchFinanceSettings, fetchModelQuotes, fetchPlanEconomics, fetchPricing } from '@/lib/adminApi'
 
 const TABS = [
+  { id: 'central', label: 'Central financeira' },
   { id: 'resultado', label: 'Resultado' },
   { id: 'rentabilidade', label: 'Rentabilidade' },
   { id: 'calculadora', label: 'Calculadora de planos' },
@@ -31,7 +33,7 @@ const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:rin
 function useTab(): [TabId, (tab: TabId) => void] {
   const [params, setParams] = useSearchParams()
   const raw = params.get('aba')
-  const tab = TABS.find((item) => item.id === raw)?.id ?? 'resultado'
+  const tab = TABS.find((item) => item.id === raw)?.id ?? 'central'
   const setTab = (next: TabId) => {
     const merged = new URLSearchParams(params)
     merged.set('aba', next)
@@ -87,6 +89,11 @@ function PeriodTabs({ tab }: { readonly tab: 'resultado' | 'rentabilidade' }) {
   )
 }
 
+function CentralTab() {
+  const settings = useQuery(fetchFinanceSettings, 'Não deu para carregar a meta de margem.')
+  return <FinanceCentral minMarginRate={settings.data?.min_margin_rate} />
+}
+
 function SimulatorTab() {
   const settings = useQuery(fetchFinanceSettings, 'Não deu para carregar as premissas.')
   const pricing = useQuery(fetchPricing, 'Não deu para carregar a taxa do gateway.')
@@ -122,7 +129,7 @@ export function AdminFinancePage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-headline text-3xl text-zinc-50 md:text-4xl">Financeiro e rentabilidade</h1>
-        <p className="mt-2 text-sm text-zinc-400">Receita real do Asaas, custo de IA por geração e premissas suas para o resto. O que é estimativa está marcado.</p>
+        <p className="mt-2 text-sm text-zinc-400">Receita real do Asaas, custo de IA por geração e despesas lançadas. Filtre, compare e exporte; o que é estimativa está marcado.</p>
       </div>
       <div role="tablist" aria-label="Seções do financeiro" className="flex flex-wrap gap-1 rounded-xl bg-surface p-1 ring-1 ring-white/[0.06] sm:w-fit">
         {TABS.map((item) => (
@@ -141,7 +148,9 @@ export function AdminFinancePage() {
         ))}
       </div>
       <div id="finance-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
-        {tab === 'resultado' || tab === 'rentabilidade' ? (
+        {tab === 'central' ? (
+          <CentralTab />
+        ) : tab === 'resultado' || tab === 'rentabilidade' ? (
           <PeriodTabs tab={tab} />
         ) : tab === 'calculadora' ? (
           <CalculatorTab />

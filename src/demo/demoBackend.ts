@@ -10,6 +10,7 @@ import { buildDemoDashboard } from './demoAdmin'
 import { buildDemoAnalytics } from './demoAnalytics'
 import { buildDemoAiCosts, buildDemoBusiness, buildDemoCommandCenter, demoExpenses, demoUserProfile, demoUsersPage } from './demoIntelligence'
 import { demoGenerations, demoSubscriptions } from './demoLists'
+import { buildDemoFinanceExplorer } from './demoFinanceExplorer'
 import { demoAssistantOutput } from './demoAssistant'
 import { createDemoState, DEMO_USER_ID, nextLedgerId, uuid, type DemoState, type Row } from './demoData'
 import { DEMO_VIDEO, demoImageAt, demoMediaType } from './demoMedia'
@@ -626,6 +627,26 @@ function adminRpc(name: string, body: Row): Response | null {
       if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from >= to) return rpcFail('invalid_period')
       return json(buildDemoBusiness(state, from, to, body))
     }
+    case 'admin_finance_explorer': {
+      const result = buildDemoFinanceExplorer(state, body)
+      return 'error' in result && typeof result.error === 'string' ? rpcFail(result.error) : json(result)
+    }
+    case 'admin_saved_filters_list':
+      return json(demoSavedFilters)
+    case 'admin_save_filter': {
+      const name = String(body.p_name ?? '').trim()
+      if (name.length < 2) return rpcFail('invalid_filter')
+      const existing = demoSavedFilters.find((item) => item.name === name)
+      const filters = (body.p_filters ?? {}) as Row
+      if (existing) existing.filters = filters
+      else demoSavedFilters.push({ id: uuid(), name, filters, updated_at: new Date().toISOString() })
+      return json(existing?.id ?? demoSavedFilters.at(-1)?.id)
+    }
+    case 'admin_delete_saved_filter': {
+      const index = demoSavedFilters.findIndex((item) => item.id === body.p_id)
+      if (index >= 0) demoSavedFilters.splice(index, 1)
+      return json(null)
+    }
     case 'admin_command_center': {
       const from = new Date(String(body.p_from))
       const to = new Date(String(body.p_to))
@@ -978,6 +999,9 @@ async function readBody(init?: RequestInit): Promise<Row> {
     return {}
   }
 }
+
+/** Filtros salvos do modo demo: só na memória da aba. */
+const demoSavedFilters: { id: string; name: string; filters: Row; updated_at: string }[] = []
 
 export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const url = new URL(input instanceof Request ? input.url : String(input))

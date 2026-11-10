@@ -2313,4 +2313,125 @@ await test('suporte: cada plano recebe só o contato do seu canal, e o admin tro
   assert.ok(vitrine.every((plan) => plan.features.every((feature) => !feature.includes('Veo'))), 'Veo fora da vitrine até ter substituto')
 })
 
+// ---------------------------------------------------- central financeira (0029)
+
+await test('central financeira: receita só do que foi pago, taxas conciliadas, filtros combinados, tabela e filtros salvos', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const caio = await newUser(db, 'caio@x.com')
+  const dani = await newUser(db, 'dani@x.com')
+  const eva = await newUser(db, 'eva@x.com')
+  const event = (id, name, payment) =>
+    db.query(`insert into billing_events (id, event, payload) values ($1, $2, $3)`, [id, name, JSON.stringify({ event: name, payment })])
+
+  // Ana assina o Starter e sobe para o Pro: a segunda mensalidade é upgrade.
+  await activate(db, await newSubscription(db, ana, 'starter'), 'pay_a1')
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_a2')
+  await event('ev_a2', 'PAYMENT_CONFIRMED', { id: 'pay_a2', billingType: 'CREDIT_CARD', value: 79.9, netValue: 77 })
+  // Bia compra pacote no Pix.
+  await db.query(
+    `insert into purchases (user_id, pack_slug, credits, price_cents, status, provider_payment_id, paid_at) values ($1, 'criador', 300, 4990, 'paid', 'pay_pix', now())`,
+    [bia],
+  )
+  await event('ev_pix', 'PAYMENT_RECEIVED', { id: 'pay_pix', billingType: 'PIX', value: 49.9, netValue: 48.5 })
+  // Caio abriu o checkout e não pagou; Dani pagou e foi estornada; Eva está com a renovação vencida.
+  await newSubscription(db, caio, 'pro')
+  await activate(db, await newSubscription(db, dani, 'pro'), 'pay_ref')
+  await db.query(`update subscription_payments set status = 'refunded' where provider_payment_id = 'pay_ref'`)
+  await event('ev_ref', 'PAYMENT_REFUNDED', { id: 'pay_ref', billingType: 'CREDIT_CARD' })
+  const evaSub = await newSubscription(db, eva, 'studio')
+  await activate(db, evaSub, 'pay_eva')
+  await db.query(`update subscriptions set status = 'past_due', current_period_end = now() - interval '1 hour' where id = $1`, [evaSub])
+  // Custo de IA, despesa lançada e ajuste de créditos.
+  await succeed(db, (await create(db, ana, 'foto')).rows[0].id)
+  await db.query(`insert into operating_expenses (incurred_on, category, description, amount_cents) values (current_date, 'infra', 'Supabase Pro', 13000)`)
+  await as(db, 'authenticated', dona, () => db.query(`select admin_adjust_credits($1, 50, 'bônus de teste')`, [bia]))
+
+  const fee = Number((await db.query(`select payment_fee_rate from pricing_settings`)).rows[0].payment_fee_rate)
+  const priceOf = async (slug) => (await db.query(`select price_cents from subscription_plans where slug = $1`, [slug])).rows[0].price_cents
+  const filters = (extra = {}) => JSON.stringify({ from: new Date(Date.now() - 86400000).toISOString(), to: new Date(Date.now() + 86400000).toISOString(), ...extra })
+  const explore = (extra = {}, who = dona, args = '') =>
+    as(db, 'authenticated', who, async () => (await db.query(`select admin_finance_explorer($1::jsonb${args}) as f`, [filters(extra)])).rows[0].f)
+  const tableCall = (page, size, sort, dir, search) =>
+    as(db, 'authenticated', dona, async () =>
+      (await db.query(`select admin_finance_explorer($1::jsonb, $2, $3, $4, $5, $6) as f`, [filters(), page, size, sort, dir, search])).rows[0].f)
+
+  const data = await explore()
+  const t = data.totals
+  assert.equal(Number(t.gross_cents), 7990 * 4 + 4990, 'quatro mensalidades pagas (uma estornada depois) e o pacote')
+  assert.equal(Number(t.refunds_cents), 7990)
+  assert.equal(Number(t.pending_cents), await priceOf('pro'), 'checkout aberto do Caio é pendente, não receita')
+  assert.equal(Number(t.overdue_cents), await priceOf('studio'))
+  assert.equal(Number(t.reconciled_net_cents), 7700 + 4850)
+  const estimatedFees = 3 * Math.round(7990 * fee)
+  assert.equal(Number(t.fees_cents), 290 + 140 + estimatedFees)
+  assert.equal(Number(t.fees_estimated_cents), estimatedFees)
+  assert.equal(Number(t.other_expenses_cents), 13000)
+  assert.equal(Number(t.expenses_cents), Number(t.fees_cents) + Number(t.ai_cents) + 13000)
+  assert.equal(data.coverage.months_without_expenses, 0)
+  const sources = Object.fromEntries(data.by_source.map((row) => [row.source, row.count]))
+  assert.deepEqual([sources.subscription_new, sources.upgrade, sources.credit_pack], [3, 1, 1])
+  assert.equal(Number(data.by_method.find((row) => row.method === 'pix').cents), 4990)
+  assert.ok(Number(data.mrr.now_cents) >= (await priceOf('pro')) + (await priceOf('studio')))
+  assert.equal(data.series.reduce((sum, row) => sum + Number(row.gross_cents), 0), Number(t.gross_cents))
+  assert.ok(data.monthly.length >= 6)
+  assert.ok(data.ai_by_model.length >= 1)
+  assert.equal(data.table.total, Number(data.totals.rows))
+  const adjustment = data.table.rows.find((row) => row.type === 'adjustment')
+  assert.deepEqual([Number(adjustment.amount_cents), adjustment.credits, adjustment.email], [0, 50, 'bia@x.com'])
+  const refund = data.table.rows.find((row) => row.type === 'refund')
+  assert.equal(refund.details.refund_date_known, true)
+
+  // Filtros combinados valem para indicadores, gráficos e tabela.
+  const pix = await explore({ methods: ['pix'] })
+  assert.equal(Number(pix.totals.gross_cents), 4990)
+  assert.equal(Number(pix.totals.fees_cents), 140)
+  assert.ok(pix.table.rows.every((row) => row.method === 'pix'))
+  const onlyExpenses = await explore({ types: ['expense'], categories: ['infra'] })
+  assert.deepEqual([Number(onlyExpenses.totals.gross_cents), Number(onlyExpenses.totals.expenses_cents), onlyExpenses.table.total], [0, 13000, 1])
+  const pro = await explore({ plans: ['pro'], statuses: ['paid', 'refunded'] })
+  assert.ok(pro.table.rows.every((row) => row.plan_slug === 'pro'))
+  assert.equal(Number(pro.totals.gross_cents), 7990 * 2, 'upgrade da Ana e a mensalidade da Dani')
+  const byUser = await explore({ user: 'bia@' })
+  assert.ok(byUser.table.rows.length > 0 && byUser.table.rows.every((row) => row.email === 'bia@x.com'))
+  const big = await explore({ min_cents: 5000, types: ['revenue'] })
+  assert.ok(big.table.rows.every((row) => Number(row.amount_cents) >= 5000))
+  const monthly = await explore({ granularity: 'month' })
+  assert.equal(monthly.series[0].key.length, 7)
+
+  // Tabela: página, ordem e busca.
+  const first = await tableCall(1, 3, 'amount_cents', 'desc', null)
+  const second = await tableCall(2, 3, 'amount_cents', 'desc', null)
+  assert.equal(second.table.rows.length, 3)
+  assert.ok(Number(first.table.rows[2].amount_cents) >= Number(second.table.rows[0].amount_cents))
+  assert.equal((await tableCall(1, 25, 'occurred_at', 'desc', 'Pacote')).table.total, 1)
+
+  // Validação e acesso.
+  await expectError(explore({ types: ['saque'] }), 'invalid_filter')
+  await expectError(explore({ from: '2024-01-01T00:00:00Z' }), 'invalid_period')
+  const analyst = await newUser(db, 'analista@x.com')
+  await makeAdmin(db, analyst, 'analyst')
+  await expectError(explore({}, analyst), 'forbidden')
+  await expectError(explore({}, ana), 'forbidden')
+  const finance = await newUser(db, 'fin@x.com')
+  await makeAdmin(db, finance, 'finance')
+  assert.equal((await explore({}, finance)).table.total, data.table.total)
+
+  // Filtros salvos são de cada admin.
+  const save = (who, name, value) =>
+    as(db, 'authenticated', who, async () => (await db.query(`select admin_save_filter('finance', $1, $2::jsonb) as id`, [name, JSON.stringify(value)])).rows[0].id)
+  const listOf = (who) => as(db, 'authenticated', who, async () => (await db.query(`select admin_saved_filters_list('finance') as l`)).rows[0].l)
+  const saved = await save(dona, 'Só Pix', { methods: ['pix'] })
+  await save(dona, 'Só Pix', { methods: ['pix', 'card'] })
+  const list = await listOf(dona)
+  assert.deepEqual([list.length, list[0].filters.methods.length], [1, 2])
+  assert.equal((await listOf(finance)).length, 0)
+  await as(db, 'authenticated', finance, () => db.query(`select admin_delete_saved_filter($1)`, [saved]))
+  assert.equal((await listOf(dona)).length, 1, 'outro admin não apaga')
+  await expectError(save(dona, 'x', {}), 'invalid_filter')
+})
+
+
 console.log(`\n${passed} testes do banco passaram`)
