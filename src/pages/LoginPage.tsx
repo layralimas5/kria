@@ -7,6 +7,7 @@ import { TextField } from '@/components/ui/Field'
 import { Notice } from '@/components/ui/Notice'
 import { useSession } from '@/hooks/useSession'
 import { track } from '@/lib/analytics'
+import { ACCESS_EMAIL, SIGNUP_OPEN } from '@/lib/signup'
 import { isConfigured, supabase } from '@/lib/supabase'
 import type { ResetCodeState } from './ForgotPasswordPage'
 
@@ -16,6 +17,7 @@ const AUTH_ERRORS: Record<string, string> = {
   'Invalid login credentials': 'E-mail ou senha incorretos.',
   'User already registered': 'Já existe conta com esse e-mail. Entre com sua senha.',
   'Email not confirmed': 'Confirme seu e-mail pelo link que enviamos antes de entrar.',
+  'Signups not allowed for this instance': 'Novos cadastros estão pausados no momento.',
 }
 
 const COPY: Record<Mode, { title: string; description: string }> = {
@@ -47,7 +49,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const target = useRedirectTarget()
   const resetEmail = useResetEmail()
-  const [mode, setMode] = useState<Mode>(resetEmail ? 'code' : 'signup')
+  const [mode, setMode] = useState<Mode>(resetEmail ? 'code' : SIGNUP_OPEN ? 'signup' : 'signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -160,12 +162,21 @@ export function LoginPage() {
         </>
       )}
 
-      <p className="mt-6 text-center text-sm text-zinc-400">
-        {mode === 'signup' ? 'Já tem conta?' : 'Ainda não tem conta?'}{' '}
-        <button type="button" onClick={() => switchMode(mode === 'signup' ? 'signin' : 'signup')} className={`${LINK} text-accent-soft`}>
-          {mode === 'signup' ? 'Entrar' : 'Criar conta'}
-        </button>
-      </p>
+      {SIGNUP_OPEN ? (
+        <p className="mt-6 text-center text-sm text-zinc-400">
+          {mode === 'signup' ? 'Já tem conta?' : 'Ainda não tem conta?'}{' '}
+          <button type="button" onClick={() => switchMode(mode === 'signup' ? 'signin' : 'signup')} className={`${LINK} text-accent-soft`}>
+            {mode === 'signup' ? 'Entrar' : 'Criar conta'}
+          </button>
+        </p>
+      ) : (
+        <p className="mt-6 text-center text-sm text-zinc-400">
+          Novos cadastros estão pausados. Quer acesso?{' '}
+          <a href={`mailto:${ACCESS_EMAIL}?subject=${encodeURIComponent('Pedido de acesso ao Vynkio')}`} className={`${LINK} text-accent-soft`}>
+            Fale com a gente
+          </a>
+        </p>
+      )}
     </AuthCard>
   )
 }
