@@ -229,7 +229,8 @@ begin
   set credit_scale = 2, scale_activated_at = now(), welcome_credits = settings.next_welcome_credits, require_trusted_cost = true,
       credit_value_brl = coalesce((select min(price_cents / 100.0 / monthly_credits) from public.subscription_plans
         where status = 'live' and public and monthly_credits > 0), credit_value_brl),
-      updated_at = now();
+      updated_at = now()
+  where true;
 
   perform public.admin_log(admin_id, 'pricing.activate_v2', null, null, jsonb_build_object(
     'factor', round(factor, 4), 'wallets', converted, 'welcome_credits', settings.next_welcome_credits,

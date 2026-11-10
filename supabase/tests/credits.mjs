@@ -2441,7 +2441,16 @@ await test('nenhuma função faz UPDATE ou DELETE sem WHERE (o Supabase barra is
     `select p.proname, p.prosrc from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prolang <> 12`,
   )
   // Tira textos entre aspas e comentários: um ";" dentro de string não termina o comando.
-  const clean = (source) => source.replace(/'(?:[^']|'')*'/g, "''").replace(/--[^\n]*/g, '')
+  // Depois tira o que está entre parênteses: o WHERE de uma subconsulta não vale para o UPDATE de fora.
+  const withoutParens = (text) => {
+    let previous
+    do {
+      previous = text
+      text = text.replace(/\([^()]*\)/g, '()')
+    } while (text !== previous)
+    return text
+  }
+  const clean = (source) => withoutParens(source.replace(/'(?:[^']|'')*'/g, "''").replace(/--[^\n]*/g, ''))
   // A virada pelo console só roda no SQL Editor, fora do papel do app.
   const consoleOnly = new Set(['pricing_switch_from_console'])
   const offenders = []
