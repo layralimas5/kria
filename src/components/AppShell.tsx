@@ -3,6 +3,7 @@ import { Suspense, useCallback, useMemo } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAccount } from '@/hooks/useAccount'
 import { CommandProvider } from '@/hooks/useCommandPalette'
+import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { usePlanModels } from '@/hooks/usePlanModels'
 import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed'
 import { supabase } from '@/lib/supabase'
@@ -24,6 +25,7 @@ export function AppShell() {
   const [collapsed, toggleCollapsed] = useSidebarCollapsed()
   const { plan } = useAccount()
   const { kinds } = usePlanModels()
+  const isAdmin = useIsAdmin()
   const navigate = useNavigate()
 
   const signOut = useCallback(() => {
@@ -32,7 +34,7 @@ export function AppShell() {
       navigate('/entrar', { replace: true })
     })
   }, [navigate])
-  const commands = useMemo(() => appCommands(plan, kinds, { toggleSidebar: toggleCollapsed, signOut }), [plan, kinds, toggleCollapsed, signOut])
+  const commands = useMemo(() => appCommands(plan, kinds, { toggleSidebar: toggleCollapsed, signOut }, isAdmin), [plan, kinds, toggleCollapsed, signOut, isAdmin])
 
   return (
     <CommandProvider scope="app" commands={commands} goShortcuts={APP_GO_SHORTCUTS}>

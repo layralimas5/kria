@@ -8,6 +8,7 @@ import { UserMenu } from '../account/UserMenu'
 import { BrandSwitcher } from '../workspace/BrandSwitcher'
 import { SearchTrigger } from '../command/SearchTrigger'
 import { Logo } from '../Logo'
+import { AdminShortcut } from './AdminShortcut'
 import { NotificationsMenu } from './NotificationsMenu'
 import { Popover } from '../ui/Popover'
 import { MOBILE_TABS, navGroupsFor } from './nav'
@@ -49,6 +50,9 @@ function FullMenu({ onNavigate }: { readonly onNavigate: () => void }) {
   const { kinds } = usePlanModels()
   return (
     <nav aria-label="Todas as áreas" className="max-h-[70dvh] w-[min(88vw,20rem)] space-y-3 overflow-y-auto p-1">
+      <div onClickCapture={onNavigate}>
+        <AdminShortcut collapsed={false} />
+      </div>
       {navGroupsFor(plan, kinds).map((group) => (
         <div key={group.title}>
           <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500">{group.title}</p>

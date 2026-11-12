@@ -8,6 +8,7 @@ import { useBalance } from '@/hooks/useBalance'
 import { Logo, LogoMark } from '../Logo'
 import { Badge } from '../ui/Badge'
 import { navGroupsFor, type NavItem } from './nav'
+import { AdminShortcut } from './AdminShortcut'
 import { SidebarToggle } from './SidebarToggle'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
@@ -150,6 +151,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </nav>
 
       <div className="space-y-2 p-3">
+        <AdminShortcut collapsed={collapsed} />
         <CreditsCard collapsed={collapsed} />
         <SidebarToggle collapsed={collapsed} onToggle={onToggle} />
       </div>

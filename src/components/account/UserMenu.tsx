@@ -9,6 +9,7 @@ import {
   LogOut,
   ReceiptText,
   Settings,
+  ShieldCheck,
   Store,
   UserRound,
   type LucideIcon,
@@ -17,6 +18,7 @@ import { Link } from 'react-router-dom'
 import { planIncludes } from '@/domain/plans'
 import { useAccount } from '@/hooks/useAccount'
 import { useBalance } from '@/hooks/useBalance'
+import { useIsAdmin } from '@/hooks/useIsAdmin'
 import { displayNameOf, useProfile } from '@/hooks/useProfile'
 import { supabase } from '@/lib/supabase'
 import { Popover } from '../ui/Popover'
@@ -62,6 +64,7 @@ export function UserMenu() {
   const { profile, stats, refreshStats } = useProfile()
   const { balance } = useBalance()
   const { plan } = useAccount()
+  const isAdmin = useIsAdmin()
   const name = displayNameOf(profile)
 
   return (
@@ -129,6 +132,7 @@ export function UserMenu() {
           </div>
 
           <nav aria-label="Conta" className="mt-1.5 space-y-0.5">
+            {isAdmin && <MenuLink to="/admin" icon={ShieldCheck} label="Painel admin" onSelect={close} />}
             <MenuLink to="/conta" icon={UserRound} label="Ver perfil" onSelect={close} />
             <MenuLink to="/conta/configuracoes" icon={Settings} label="Gerenciar conta" onSelect={close} />
             <MenuLink to="/marcas" icon={Store} label="Marcas" onSelect={close} />

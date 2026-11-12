@@ -55,7 +55,7 @@ interface AppActions {
 }
 
 /** Comandos do app: o menu do plano em vigor e as ações do dia a dia. */
-export function appCommands(plan: Plan | null, kinds: readonly MediaKind[] | null, actions: AppActions): Command[] {
+export function appCommands(plan: Plan | null, kinds: readonly MediaKind[] | null, actions: AppActions, isAdmin = false): Command[] {
   const nav = navGroupsFor(plan, kinds).flatMap((group) =>
     group.items
       .filter((item) => !item.soon)
@@ -76,6 +76,7 @@ export function appCommands(plan: Plan | null, kinds: readonly MediaKind[] | nul
     { id: 'act:persona', label: 'Criar um personagem', group: 'Ações', to: '/personas', keywords: ['persona', 'rosto'] },
     { id: 'act:buy', label: 'Comprar créditos', group: 'Ações', to: '/creditos', keywords: ['saldo', 'pacote', 'pix'] },
     { id: 'act:plans', label: 'Ver planos e fazer upgrade', group: 'Ações', to: '/assinatura', keywords: ['assinar', 'plano'] },
+    ...(isAdmin ? [{ id: 'act:admin', label: 'Abrir o painel admin', group: 'Ações' as const, to: '/admin', keywords: ['admin', 'operacao', 'painel'] }] : []),
     { id: 'act:support', label: 'Falar com o suporte', group: 'Ações', to: '/suporte', keywords: ['ajuda', 'whatsapp'] },
     { id: 'act:sidebar', label: 'Recolher ou abrir o menu lateral', group: 'Ações', run: actions.toggleSidebar, keywords: ['sidebar', 'menu'] },
     { id: 'act:signout', label: 'Sair da conta', group: 'Ações', run: actions.signOut, keywords: ['logout', 'deslogar'] },
