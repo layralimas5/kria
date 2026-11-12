@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { ArrowLeft, Eye, ImageOff, Loader2, RefreshCw, ShieldCheck } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { UserMenuPreview } from '@/components/admin/users/UserMenuPreview'
 import { ActivityFeed } from '@/components/home/ActivityFeed'
 import { HomeStats } from '@/components/home/HomeStats'
 import { Notice } from '@/components/ui/Notice'
@@ -247,7 +248,7 @@ export function AdminUserViewPage() {
               </p>
               <p className="mt-1 text-xs text-zinc-500">Conta criada em {formatDateTime(data.profile.created_at)}</p>
             </header>
-            <div role="tablist" aria-label="Telas da pessoa" className="flex w-fit gap-1 rounded-xl bg-black/30 p-1 ring-1 ring-white/[0.06]">
+            <div role="tablist" aria-label="Telas da pessoa" className="flex w-fit gap-1 rounded-xl bg-black/30 p-1 ring-1 ring-white/[0.06] lg:hidden">
               {TABS.map((item) => (
                 <button
                   key={item.id}
@@ -261,10 +262,18 @@ export function AdminUserViewPage() {
                 </button>
               ))}
             </div>
-            <div role="tabpanel" aria-label={TABS.find((item) => item.id === tab)?.label}>
-              {tab === 'dashboard' && <DashboardTab view={data} now={now} />}
-              {tab === 'criacoes' && <CreationsTab view={data} now={now} />}
-              {tab === 'plano' && <PlanTab view={data} />}
+            <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+              <div className="hidden lg:block">
+                <UserMenuPreview view={data} current={tab} onOpen={setTab} />
+              </div>
+              <div role="tabpanel" aria-label={TABS.find((item) => item.id === tab)?.label} className="min-w-0">
+                {tab === 'dashboard' && <DashboardTab view={data} now={now} />}
+                {tab === 'criacoes' && <CreationsTab view={data} now={now} />}
+                {tab === 'plano' && <PlanTab view={data} />}
+              </div>
+            </div>
+            <div className="lg:hidden">
+              <UserMenuPreview view={data} current={tab} onOpen={setTab} />
             </div>
           </div>
         </div>

@@ -202,7 +202,13 @@ export const userViewSchema = z.object({
     max_concurrent: num,
     daily_credit_limit: nullableNum,
     monthly_credit_limit: nullableNum,
+    /** Ferramentas e limites do plano (0032); nulos enquanto ela não roda no banco. */
+    tools: z.array(z.string()).nullable().default(null),
+    max_personas: nullableNum.default(null),
+    max_brands: nullableNum.default(null),
   }),
+  /** Tipos de mídia do Studio da pessoa (0032). */
+  kinds: z.array(z.enum(['image', 'video'])).nullable().default(null),
   wallet: z.object({ balance: num, subscription_balance: num, purchased_balance: num }),
   subscription: z
     .object({

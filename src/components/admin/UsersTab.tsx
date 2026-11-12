@@ -1,7 +1,7 @@
 import clsx from 'clsx'
-import { ChevronRight, Search, SlidersHorizontal, UserPlus, Users } from 'lucide-react'
+import { ChevronRight, Eye, Search, SlidersHorizontal, UserPlus, Users } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   activeFilterCount,
   displayName,
@@ -158,6 +158,16 @@ function UsersTable({ rows, showCost, onOpen }: { readonly rows: readonly UserRo
                   <StatusBadge user={user} />
                 </td>
                 <td className="px-2 py-2.5">
+                  <div className="flex items-center justify-end gap-1">
+                  <Link
+                    to={`/admin/usuarios/${user.id}/visao`}
+                    aria-label={`Ver como ${name} vê o Vynkio`}
+                    title="Ver como esta pessoa vê o Vynkio"
+                    className="inline-flex min-h-8 items-center gap-1.5 whitespace-nowrap rounded-lg bg-accent/10 px-2.5 text-[12px] font-semibold text-accent-soft ring-1 ring-accent/25 transition-colors hover:bg-accent/20 hover:text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  >
+                    <Eye className="size-3.5" aria-hidden="true" />
+                    Ver como
+                  </Link>
                   <button
                     type="button"
                     onClick={() => onOpen(user.id)}
@@ -166,6 +176,7 @@ function UsersTable({ rows, showCost, onOpen }: { readonly rows: readonly UserRo
                   >
                     <ChevronRight className="size-4" aria-hidden="true" />
                   </button>
+                  </div>
                 </td>
               </tr>
             )

@@ -59,8 +59,9 @@ são telas reais do modo demo (`npm run landing:screens`).
   (`welcome_grants`). A vitrine lê `storefront_plans`: nenhum preço mora no front. Margem por plano = `plan_full_use_margin`
   (mesma conta de `src/domain/planEconomics.ts`); calculadora em `/admin/financeiro?aba=calculadora` só salva rascunho.
   Virada abaixo da meta exige `finance.override`; `admin_rollback_pricing_v2` desfaz enquanto ninguém assinar plano novo.
-- O painel do usuário não tem nada de admin (nem link no menu). A operação fica em `/admin`, com moldura
-  própria, fora do `AppShell`; só abre para quem está em `admin_users`. Cada função `admin_*` chama
+- O painel do usuário não tem nada de admin, exceto o atalho "Painel admin" (barra lateral, menu da conta,
+  menu do celular e Ctrl+K), que só aparece para quem está em `admin_users` (`useIsAdmin` → `is_admin()`; desde 12/11,
+  pedido da Lay). A operação fica em `/admin`, com moldura própria, fora do `AppShell`; só abre para quem está em `admin_users`. Cada função `admin_*` chama
   `assert_admin_permission('x')` (papel + sessão aal2, 0014) e grava `admin_audit_logs`, que é imutável.
   Permissão nova entra em `admin_role_permissions`, nunca só no front. Diagnóstico e etapas em `docs/admin.md`.
 - Central de inteligência (0025, `docs/admin-inteligencia.md`): custo de IA vem de `ai_usage_events` (uma linha por
@@ -78,7 +79,8 @@ são telas reais do modo demo (`npm run landing:screens`).
 - Controles da conta no admin (0031, function `admin-users`): excluir, trocar senha e mandar código de
   redefinição passam por `admin_check_user_action` (segundo fator, `users.manage`, motivo, nunca a própria
   conta nem a de admin) e vão para a auditoria sem a senha. "Ver como usuário" é só leitura
-  (`admin_user_view`, auditado como `user.view_as`); nunca abrir a sessão da pessoa.
+  (`admin_user_view`, auditado como `user.view_as`); nunca abrir a sessão da pessoa. Desde a 0032 a tela desenha o menu
+  dela (`navGroupsFor` com `plan.tools` e `kinds`) e lista o que fica escondido; o botão "Ver como" está em cada linha de Usuários.
 - Ferramenta que ainda não existe aparece como "Breve", sem link nem botão.
 - Persona nasce só de imagem gerada aqui (`create_persona`). Sem upload de foto:
   é o que impede deepfake de pessoa real. Não abrir upload sem moderação de rosto.

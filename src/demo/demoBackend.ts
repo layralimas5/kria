@@ -1011,7 +1011,8 @@ function demoUserView(): Row {
   return {
     profile: { id: DEMO_USER_ID, display_name: state.profile.display_name, username: state.profile.username ?? 'demo', avatar_path: null, email: 'demo@kria.ia', created_at: state.profile.created_at },
     goal: 'influencers',
-    plan: { slug: plan.slug, name: plan.name, price_cents: plan.price_cents, monthly_credits: plan.monthly_credits, max_concurrent: plan.max_concurrent, daily_credit_limit: plan.daily_credit_limit ?? null, monthly_credit_limit: plan.monthly_credit_limit ?? null },
+    plan: { slug: plan.slug, name: plan.name, price_cents: plan.price_cents, monthly_credits: plan.monthly_credits, max_concurrent: plan.max_concurrent, daily_credit_limit: plan.daily_credit_limit ?? null, monthly_credit_limit: plan.monthly_credit_limit ?? null, tools: plan.tools ?? [], max_personas: plan.max_personas ?? null, max_brands: plan.max_brands ?? null },
+    kinds: ['image', 'video'],
     wallet: { balance: balanceOf(), subscription_balance: state.subscriptionBalance, purchased_balance: state.purchasedBalance },
     subscription,
     usage: { used_today: 12, used_month: 67, daily_limit: plan.daily_credit_limit ?? null, monthly_limit: plan.monthly_credit_limit ?? null },

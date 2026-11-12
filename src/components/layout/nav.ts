@@ -99,13 +99,19 @@ const NAV_GROUPS: readonly NavGroup[] = [
 ]
 
 /** O menu do plano em vigor: ferramenta ou tipo de criação que o plano não inclui não aparece. */
-export function navGroupsFor(plan: Plan | null, kinds: readonly MediaKind[] | null): readonly NavGroup[] {
+export function navGroupsFor(plan: Pick<Plan, 'tools'> | null, kinds: readonly MediaKind[] | null): readonly NavGroup[] {
   const allowed = (item: NavItem) =>
     (item.tool === undefined || planIncludes(plan, item.tool)) && (item.mediaKind === undefined || (kinds ?? []).includes(item.mediaKind))
   return NAV_GROUPS.map((group) => ({
     ...group,
     items: group.items.filter(allowed),
   })).filter((group) => group.items.length > 0)
+}
+
+/** Itens que existem no app mas ficam fora do menu desse plano (para o "Ver como" do admin). */
+export function hiddenNavItems(plan: Pick<Plan, 'tools'> | null, kinds: readonly MediaKind[] | null): readonly NavItem[] {
+  const visible = new Set(navGroupsFor(plan, kinds).flatMap((group) => group.items.map((item) => item.to)))
+  return NAV_GROUPS.flatMap((group) => group.items).filter((item) => !item.soon && !visible.has(item.to))
 }
 
 /** A barra de baixo do celular: o que se usa todo dia. O resto fica no botão Menu. */
