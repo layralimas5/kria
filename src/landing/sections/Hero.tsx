@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowDown, Gift } from 'lucide-react'
 import { AnchorButton, CtaLink } from '../components/CtaLink'
+import { PromptDemo } from '../components/PromptDemo'
 import { WELCOME_CREDITS } from '../content'
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const
@@ -63,6 +64,9 @@ export function Hero() {
             </li>
           ))}
         </motion.ul>
+        <motion.div {...enter(0.42)} className="w-full">
+          <PromptDemo />
+        </motion.div>
       </div>
     </section>
   )
