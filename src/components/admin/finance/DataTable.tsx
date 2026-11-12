@@ -20,14 +20,14 @@ interface DataTableProps<T> {
 /** Tabela com rolagem horizontal própria no celular (a página não rola para o lado). */
 export function DataTable<T>({ caption, rows, columns, rowKey, empty, rowTone }: DataTableProps<T>) {
   const captionId = useId()
-  if (rows.length === 0) return <p className="rounded-2xl bg-surface px-4 py-6 text-sm text-zinc-500 ring-1 ring-white/[0.06]">{empty}</p>
+  if (rows.length === 0) return <p className="card-premium rounded-2xl px-4 py-6 text-sm text-zinc-500">{empty}</p>
   return (
-    <div role="region" aria-labelledby={captionId} tabIndex={0} className="relative overflow-x-auto rounded-2xl ring-1 ring-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+    <div role="region" aria-labelledby={captionId} tabIndex={0} className="card-premium relative overflow-x-auto rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
       <table className="w-full min-w-[640px] text-left text-sm">
         <caption id={captionId} className="sr-only">
           {caption}
         </caption>
-        <thead className="bg-surface-2 text-[12px] text-zinc-400">
+        <thead className="border-b border-white/[0.06] bg-white/[0.025] text-[11px] uppercase tracking-wider text-zinc-500">
           <tr>
             {columns.map((column) => (
               <th key={column.key} scope="col" className={clsx('px-3 py-2.5 font-semibold', column.align === 'right' && 'text-right')}>
@@ -36,9 +36,9 @@ export function DataTable<T>({ caption, rows, columns, rowKey, empty, rowTone }:
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/[0.05] bg-surface">
+        <tbody className="divide-y divide-white/[0.05]">
           {rows.map((row) => (
-            <tr key={rowKey(row)} className={clsx(rowTone?.(row) === 'bad' && 'bg-red-500/[0.06]')}>
+            <tr key={rowKey(row)} className={clsx('transition-colors hover:bg-white/[0.025]', rowTone?.(row) === 'bad' && 'bg-red-500/[0.06]')}>
               {columns.map((column) => (
                 <td key={column.key} className={clsx('px-3 py-2.5 text-zinc-300', column.align === 'right' && 'text-right tabular-nums')}>
                   {column.render(row)}

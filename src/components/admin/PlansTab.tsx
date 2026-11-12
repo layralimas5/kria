@@ -72,7 +72,7 @@ function PlanRow({ plan, canEdit, onSaved }: { readonly plan: AdminPlan; readonl
   }
 
   return (
-    <article className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+    <article className="space-y-4 card-premium rounded-3xl p-5">
       <header className="flex items-baseline justify-between gap-3">
         <h3 className="font-headline text-xl text-zinc-100">{plan.name}</h3>
         <span className="text-xs text-zinc-500">
@@ -167,7 +167,7 @@ export function PlansTab() {
 
       {legacy.length > 0 && (
         <Section title="Planos antigos" description="Fora de venda desde a virada. Quem já assina continua com o preço contratado e os créditos convertidos para a régua nova.">
-          <ul className="divide-y divide-white/[0.05] rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+          <ul className="divide-y divide-white/[0.05] card-premium rounded-2xl">
             {legacy.map((plan) => (
               <li key={plan.slug} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                 <span className="font-semibold text-zinc-100">{plan.name}</span>

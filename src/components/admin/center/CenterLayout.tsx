@@ -156,7 +156,7 @@ export function CenterSkeleton() {
 /** Bloco vazio honesto: diz o que falta para o número existir. */
 export function Insufficient({ title, children }: { readonly title: string; readonly children: ReactNode }) {
   return (
-    <div className="grid min-h-40 place-items-center rounded-2xl bg-surface p-6 text-center ring-1 ring-white/[0.06]">
+    <div className="grid min-h-40 place-items-center card-premium rounded-2xl p-6 text-center">
       <div className="max-w-sm">
         <p className="text-sm font-bold text-zinc-200">{title}</p>
         <p className="mt-1 text-xs text-zinc-500">{children}</p>

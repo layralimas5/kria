@@ -104,7 +104,7 @@ export function ExpensesPanel({ expenses, totalCents, onChanged }: { readonly ex
   const { can } = useAdminAccess()
   const manage = can('expenses.manage')
   return (
-    <section aria-labelledby="expenses-title" className="space-y-4 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06] sm:p-5">
+    <section aria-labelledby="expenses-title" className="space-y-4 card-premium rounded-2xl p-4 sm:p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="expenses-title" className="text-sm font-bold text-zinc-200">
           Despesas registradas no período

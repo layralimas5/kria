@@ -23,7 +23,7 @@ export function AuditTab() {
   return (
     <div className="space-y-3">
       {log.error && <Notice tone="error">{log.error}</Notice>}
-      <ul className="divide-y divide-white/[0.05] overflow-hidden rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+      <ul className="divide-y divide-white/[0.05] overflow-hidden card-premium rounded-2xl">
         {log.data?.map((entry) => (
           <li key={entry.id} className="px-4 py-3 text-sm">
             <p className="font-semibold text-zinc-200">

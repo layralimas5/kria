@@ -16,13 +16,13 @@ export function InsightsList({ insights }: { readonly insights: readonly Insight
         Sinais do período
       </h3>
       {insights.length === 0 ? (
-        <p className="rounded-2xl bg-surface p-4 text-sm text-zinc-400 ring-1 ring-white/[0.06]">
+        <p className="card-premium rounded-2xl p-4 text-sm text-zinc-400">
           Nada fora da curva. Os sinais aparecem quando custo, conversão ou margem mudam com volume suficiente.
         </p>
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
           {insights.map((insight) => (
-            <li key={insight.id} className="flex gap-3 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+            <li key={insight.id} className="flex gap-3 card-premium rounded-2xl p-4">
               <span className="mt-0.5">{ICONS[insight.tone]}</span>
               <div className="min-w-0">
                 <p className="text-sm font-bold text-zinc-100">{insight.title}</p>

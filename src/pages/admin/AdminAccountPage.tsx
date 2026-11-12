@@ -8,7 +8,7 @@ import { useAdminAccess } from '@/hooks/useAdminAccess'
 
 function Card({ id, icon, title, description, children }: { id?: string; icon: ReactNode; title: string; description: string; children: ReactNode }) {
   return (
-    <section id={id} aria-labelledby={`${id ?? title}-title`} className="scroll-mt-24 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06] sm:p-6">
+    <section id={id} aria-labelledby={`${id ?? title}-title`} className="scroll-mt-24 card-premium rounded-3xl p-5 sm:p-6">
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-3 text-accent-soft">{icon}</span>
         <div>

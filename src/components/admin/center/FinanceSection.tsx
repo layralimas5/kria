@@ -134,7 +134,7 @@ function Statement({ summary }: { readonly summary: FinancialSummary }) {
     { label: '= Lucro operacional estimado', cents: summary.profitCents, strong: true, hint: pct(summary.profitMargin) ?? undefined },
   ]
   return (
-    <section aria-labelledby="statement-title" className="rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+    <section aria-labelledby="statement-title" className="card-premium rounded-2xl p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 id="statement-title" className="text-sm font-bold text-zinc-200">
           Demonstrativo do período

@@ -3,7 +3,7 @@ import { formatBRL } from '@/domain/format'
 import type { ModelYield, UnitEconomics } from '@/domain/planEconomics'
 import { formatNumber, formatPercent, formatPoints } from './format'
 
-const CARD = 'rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]'
+const CARD = 'card-premium rounded-3xl p-5'
 
 interface ResultsProps {
   readonly expected: UnitEconomics
@@ -137,7 +137,7 @@ export function YieldsTable({ yields, saved }: YieldsProps) {
       {yields.map((item) => {
         const delta = item.count - (before.get(item.slug) ?? item.count)
         return (
-          <li key={item.slug} className="rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+          <li key={item.slug} className="card-premium rounded-2xl p-4">
             <p className="text-[13px] font-semibold text-zinc-300">{item.name}</p>
             <p className="mt-1 text-2xl font-semibold tabular-nums text-zinc-50">{formatNumber(item.count)}</p>
             <p className="text-xs text-zinc-500">

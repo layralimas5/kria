@@ -44,7 +44,7 @@ export function SupportContactsForm({ settings, canEdit, onSaved }: { readonly s
   }
 
   return (
-    <form onSubmit={save} className="space-y-4 rounded-2xl bg-surface p-5 ring-1 ring-white/[0.06]">
+    <form onSubmit={save} className="space-y-4 card-premium rounded-2xl p-5">
       <div className="grid gap-4 md:grid-cols-3">
         <TextField label="E-mail (Starter)" type="email" value={email} onChange={(event) => setEmail(event.target.value)} disabled={!canEdit} hint="Pro e Max também veem enquanto não houver WhatsApp." />
         <TextField label="WhatsApp (Pro e Max)" inputMode="tel" placeholder="+55 11 99999-0000" value={whatsapp} onChange={(event) => setWhatsapp(event.target.value)} disabled={!canEdit} hint="Vazio = o app mostra o e-mail." />

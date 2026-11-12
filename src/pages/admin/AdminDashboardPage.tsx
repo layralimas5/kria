@@ -1,3 +1,4 @@
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import clsx from 'clsx'
 import { Download, Printer, RefreshCw } from 'lucide-react'
 import { AiSection } from '@/components/admin/center/AiSection'
@@ -41,29 +42,27 @@ export function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-soft">Vynkio · {PERIOD_LABELS[preset]}</p>
-          <h1 className="mt-1 font-headline text-3xl text-zinc-50 md:text-4xl">Dashboard</h1>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-400">
-            Receita, custos de IA, lucro, base e operação com dados reais do banco. Onde não há registro suficiente, a tela diz o que falta em vez de estimar.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2 print:hidden">
-          <button type="button" onClick={() => void center.reload()} disabled={center.loading} className={ACTION}>
-            <RefreshCw className={clsx('size-4', center.loading && 'animate-spin motion-reduce:animate-none')} aria-hidden="true" />
-            Atualizar
-          </button>
-          <button type="button" onClick={() => data && exportCsv(data)} disabled={!data} className={ACTION}>
-            <Download className="size-4" aria-hidden="true" />
-            CSV
-          </button>
-          <button type="button" onClick={() => window.print()} disabled={!data} className={ACTION}>
-            <Printer className="size-4" aria-hidden="true" />
-            PDF
-          </button>
-        </div>
-      </header>
+      <AdminPageHeader
+        eyebrow={`Vynkio · ${PERIOD_LABELS[preset]}`}
+        title="Dashboard"
+        description="Receita, custos de IA, lucro, base e operação com dados reais do banco. Onde não há registro suficiente, a tela diz o que falta em vez de estimar."
+        actions={
+          <>
+            <button type="button" onClick={() => void center.reload()} disabled={center.loading} className={ACTION}>
+              <RefreshCw className={clsx('size-4', center.loading && 'animate-spin motion-reduce:animate-none')} aria-hidden="true" />
+              Atualizar
+            </button>
+            <button type="button" onClick={() => data && exportCsv(data)} disabled={!data} className={ACTION}>
+              <Download className="size-4" aria-hidden="true" />
+              CSV
+            </button>
+            <button type="button" onClick={() => window.print()} disabled={!data} className={ACTION}>
+              <Printer className="size-4" aria-hidden="true" />
+              PDF
+            </button>
+          </>
+        }
+      />
 
       {data && <PulseHero data={data} name={firstName} />}
 

@@ -125,10 +125,10 @@ function FeatureTable({ data }: { readonly data: CenterData }) {
       <h3 id="feature-table" className="text-sm font-bold text-zinc-200">
         Margem por funcionalidade
       </h3>
-      <div className="relative overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+      <div className="relative overflow-x-auto card-premium rounded-2xl">
         <table className="w-full min-w-[44rem] text-left text-sm">
           <caption className="sr-only">Gerações, créditos, custo real, receita estimada e margem de cada funcionalidade</caption>
-          <thead className="text-[11px] uppercase tracking-wider text-zinc-500">
+          <thead className="border-b border-white/[0.06] bg-white/[0.025] text-[11px] uppercase tracking-wider text-zinc-500">
             <tr>
               <th scope="col" className={TH}>Funcionalidade</th>
               <th scope="col" className={clsx(TH, 'text-right')}>Gerações</th>
@@ -177,10 +177,10 @@ function TopUsers({ data }: { readonly data: CenterData }) {
       <h3 id="top-users" className="text-sm font-bold text-zinc-200">
         Top 10 usuários com maior custo de IA
       </h3>
-      <div className="relative overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+      <div className="relative overflow-x-auto card-premium rounded-2xl">
         <table className="w-full min-w-[46rem] text-left text-sm">
           <caption className="sr-only">Usuários que mais custaram em IA no período</caption>
-          <thead className="text-[11px] uppercase tracking-wider text-zinc-500">
+          <thead className="border-b border-white/[0.06] bg-white/[0.025] text-[11px] uppercase tracking-wider text-zinc-500">
             <tr>
               <th scope="col" className={TH}>Usuário</th>
               <th scope="col" className={TH}>Plano</th>
@@ -195,7 +195,7 @@ function TopUsers({ data }: { readonly data: CenterData }) {
             {rows.map((row, index) => {
               const marginBrl = row.credits * value - row.cost_brl
               return (
-                <tr key={row.user_id} className="hover:bg-white/[0.02]">
+                <tr key={row.user_id} className="transition-colors hover:bg-white/[0.025]">
                   <th scope="row" className="max-w-64 truncate px-3 py-2.5 font-medium text-zinc-100">
                     <span className="mr-2 text-xs tabular-nums text-zinc-500">{index + 1}</span>
                     {row.email ?? 'Conta (sem acesso ao e-mail)'}

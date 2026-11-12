@@ -13,10 +13,10 @@ export function ModelCostTable({ data, onOpen }: { readonly data: AiCosts; reado
       <h2 id="model-table" className="font-headline text-xl text-zinc-50">
         Custo por modelo
       </h2>
-      <div className="relative overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+      <div className="relative overflow-x-auto card-premium rounded-2xl">
         <table className="w-full min-w-[64rem] text-left text-sm">
           <caption className="sr-only">Modelos de IA com custo, créditos, utilizações e situação</caption>
-          <thead className="text-[11px] uppercase tracking-wider text-zinc-500">
+          <thead className="border-b border-white/[0.06] bg-white/[0.025] text-[11px] uppercase tracking-wider text-zinc-500">
             <tr>
               <th scope="col" className={TH}>Provedor</th>
               <th scope="col" className={TH}>Modelo</th>
@@ -37,7 +37,7 @@ export function ModelCostTable({ data, onOpen }: { readonly data: AiCosts; reado
               const target = model.target_margin_rate ?? data.min_margin_rate
               const low = model.unit_margin !== null && model.unit_margin < target
               return (
-                <tr key={model.slug} className="hover:bg-white/[0.02]">
+                <tr key={model.slug} className="transition-colors hover:bg-white/[0.025]">
                   <td className="px-3 py-3 text-zinc-300">{providerLabel(model.provider)}</td>
                   <td className="px-3 py-3">
                     <span className="block font-semibold text-zinc-100">{model.name}</span>

@@ -17,7 +17,7 @@ export function StatTile({ label, value, hint, change, upIsGood = true, tone }: 
   const hasChange = change !== undefined && change !== null && Number.isFinite(change) && change !== 0
   const good = hasChange && (change > 0) === upIsGood
   return (
-    <div className="min-w-0 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+    <div className="min-w-0 card-premium rounded-2xl p-4">
       <p className="text-[12px] font-semibold text-zinc-400">{label}</p>
       <p className={clsx('mt-1.5 truncate text-2xl font-semibold', tone === 'bad' ? 'text-red-300' : tone === 'good' ? 'text-accent-soft' : 'text-zinc-50')}>
         {value}

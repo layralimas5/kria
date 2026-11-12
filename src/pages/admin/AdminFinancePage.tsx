@@ -17,6 +17,7 @@ import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { useAdminPeriod } from '@/hooks/useAdminPeriod'
 import { useQuery } from '@/hooks/useQuery'
 import { fetchFinance, fetchFinanceSettings, fetchModelQuotes, fetchPlanEconomics, fetchPricing } from '@/lib/adminApi'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 
 const TABS = [
   { id: 'central', label: 'Central financeira' },
@@ -127,10 +128,11 @@ export function AdminFinancePage() {
   const [tab, setTab] = useTab()
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-headline text-3xl text-zinc-50 md:text-4xl">Financeiro e rentabilidade</h1>
-        <p className="mt-2 text-sm text-zinc-400">Receita real do Asaas, custo de IA por geração e despesas lançadas. Filtre, compare e exporte; o que é estimativa está marcado.</p>
-      </div>
+      <AdminPageHeader
+        eyebrow="Comercial"
+        title="Financeiro e rentabilidade"
+        description="Receita real do Asaas, custo de IA por geração e despesas lançadas. Filtre, compare e exporte; o que é estimativa está marcado."
+      />
       <div role="tablist" aria-label="Seções do financeiro" className="flex flex-wrap gap-1 rounded-xl bg-surface p-1 ring-1 ring-white/[0.06] sm:w-fit">
         {TABS.map((item) => (
           <button

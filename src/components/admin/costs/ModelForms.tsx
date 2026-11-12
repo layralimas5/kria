@@ -47,7 +47,7 @@ export function PricingForm({ settings, onSaved }: { readonly settings: PricingS
   }
 
   return (
-    <form onSubmit={review} className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+    <form onSubmit={review} className="space-y-4 card-premium rounded-3xl p-5">
       <h3 className="text-sm font-bold text-zinc-200">Como o custo vira crédito</h3>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <TextField label="Dólar (R$)" inputMode="decimal" value={usdBrl} onChange={(event) => setUsdBrl(event.target.value)} />
@@ -120,7 +120,7 @@ export function ModelRow({ model, plans, settings, canEdit, onSaved }: ModelRowP
   }
 
   return (
-    <article className="min-w-0 space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+    <article className="min-w-0 space-y-4 card-premium rounded-3xl p-5">
       <header className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-base font-bold text-zinc-100">{model.name}</h3>
         <code className="max-w-full truncate text-xs text-zinc-500">

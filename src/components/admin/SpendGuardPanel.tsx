@@ -98,7 +98,7 @@ export function SpendGuardPanel() {
   const alerts = spendAlerts(data)
 
   return (
-    <section aria-labelledby="guard-title" className="space-y-5 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+    <section aria-labelledby="guard-title" className="space-y-5 card-premium rounded-3xl p-5">
       <div>
         <h3 id="guard-title" className="text-sm font-bold text-zinc-200">
           Guarda de gasto

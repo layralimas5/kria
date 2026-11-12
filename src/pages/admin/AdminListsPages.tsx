@@ -11,19 +11,24 @@ import { formatBRL } from '@/domain/format'
 import { STATUS_LABELS } from '@/domain/plans'
 import { useQuery } from '@/hooks/useQuery'
 import { fetchAdminModels, fetchGenerations, fetchSubscriptions } from '@/lib/adminApi'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 
 const ALL = 'all'
 const dateTime = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
 const date = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'America/Sao_Paulo' })
 const when = (iso: string | null, format = dateTime) => (iso ? format.format(new Date(iso)) : '–')
 
-function Page({ title, description, children }: { readonly title: string; readonly description: string; readonly children: ReactNode }) {
+interface PageProps {
+  readonly eyebrow: string
+  readonly title: string
+  readonly description: string
+  readonly children: ReactNode
+}
+
+function Page({ eyebrow, title, description, children }: PageProps) {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-headline text-3xl text-zinc-50 md:text-4xl">{title}</h1>
-        <p className="mt-2 text-sm text-zinc-400">{description}</p>
-      </div>
+      <AdminPageHeader eyebrow={eyebrow} title={title} description={description} />
       {children}
     </div>
   )
@@ -96,12 +101,11 @@ export function AdminGenerationsPage() {
   const reset = () => setPage(0)
 
   return (
-    <Page title="Gerações" description="Tudo o que foi pedido às IAs, da mais nova para a mais antiga. Falha mostra o motivo que o fornecedor devolveu.">
-      <div className="grid gap-3 sm:grid-cols-2">
+    <Page eyebrow="Operação" title="Gerações" description="Tudo o que foi pedido às IAs, da mais nova para a mais antiga. Falha mostra o motivo que o fornecedor devolveu.">
+      <EmailSearch onSearch={(value) => { setEmail(value); reset() }}>
         <SelectField label="Status" value={status} options={statusOptions} onChange={(value) => { setStatus(value); reset() }} />
         <SelectField label="Ferramenta" value={model} options={modelOptions} onChange={(value) => { setModel(value); reset() }} />
-      </div>
-      <EmailSearch onSearch={(value) => { setEmail(value); reset() }} />
+      </EmailSearch>
       {list.error && <Notice tone="error">{list.error}</Notice>}
       {!list.data && list.loading && <Loading />}
       {list.data && (
@@ -146,10 +150,10 @@ export function AdminSubscriptionsPage() {
   const counts = list.data?.counts ?? {}
 
   return (
-    <Page title="Assinaturas" description="Quem assina, em que plano, quando vence e o que já pagou. Os números vêm do Asaas pelo webhook.">
+    <Page eyebrow="Comercial" title="Assinaturas" description="Quem assina, em que plano, quando vence e o que já pagou. Os números vêm do Asaas pelo webhook.">
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         {Object.entries(STATUS_LABELS).map(([key, label]) => (
-          <li key={key} className="rounded-2xl bg-surface p-3 ring-1 ring-white/[0.06]">
+          <li key={key} className="card-premium rounded-2xl p-3">
             <p className="text-[12px] font-semibold text-zinc-400">{label}</p>
             <p className="mt-1 text-xl font-semibold text-zinc-50">{formatNumber(counts[key] ?? 0)}</p>
           </li>

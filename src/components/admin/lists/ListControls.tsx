@@ -12,9 +12,12 @@ export function EmailSearch({ onSearch, children }: { readonly onSearch: (email:
     onSearch(email.trim())
   }
   return (
-    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
-      <TextField label="E-mail" type="search" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Parte do e-mail" />
-      {children}
+    <form onSubmit={submit} className="card-premium flex flex-col gap-3 rounded-2xl p-4 lg:flex-row lg:items-end">
+      <div className="min-w-0 flex-1">
+        <TextField label="E-mail" type="search" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Parte do e-mail" />
+      </div>
+      {/* Filtros extras (selects) entram na mesma linha no computador. */}
+      {children && <div className="grid gap-3 sm:grid-cols-2 lg:flex lg:[&>*]:w-48">{children}</div>}
       <Button type="submit" variant="secondary" className="min-h-11">
         <Search className="size-4" aria-hidden="true" /> Buscar
       </Button>

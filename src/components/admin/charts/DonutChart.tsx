@@ -38,7 +38,7 @@ export function DonutChart({ title, slices, format, emptyText, centerLabel }: Do
   }))
 
   return (
-    <section aria-label={title} className="min-w-0 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+    <section aria-label={title} className="min-w-0 card-premium rounded-2xl p-4">
       <h3 className="text-sm font-bold text-zinc-200">{title}</h3>
       {total === 0 ? (
         <p className="grid min-h-40 place-items-center text-xs text-zinc-500">{emptyText}</p>

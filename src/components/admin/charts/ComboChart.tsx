@@ -56,7 +56,7 @@ export function ComboChart({ title, bars, lines, points, format, stale = false }
   }
 
   return (
-    <figure className="min-w-0 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+    <figure className="min-w-0 card-premium rounded-2xl p-4">
       <figcaption id={titleId} className="text-sm font-bold text-zinc-200">
         {title}
       </figcaption>

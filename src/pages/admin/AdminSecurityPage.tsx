@@ -10,6 +10,7 @@ import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { useQuery } from '@/hooks/useQuery'
 import { errorMessage } from '@/lib/api'
 import { listTotpFactors, signOutEverywhere } from '@/lib/adminMfa'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 
 function SignOutEverywhere() {
   const navigate = useNavigate()
@@ -51,13 +52,10 @@ export function AdminSecurityPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-headline text-3xl text-zinc-50 md:text-4xl">Segurança</h1>
-        <p className="mt-2 text-sm text-zinc-400">A sessão da operação cai sozinha depois de 30 minutos sem uso.</p>
-      </div>
+      <AdminPageHeader eyebrow="Sistema" title="Segurança" description="A sessão da operação cai sozinha depois de 30 minutos sem uso." />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <section aria-labelledby="role-title" className="space-y-3 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+        <section aria-labelledby="role-title" className="space-y-3 card-premium rounded-3xl p-5">
           <h2 id="role-title" className="text-sm font-bold text-zinc-200">
             Seu papel: {ADMIN_ROLE_LABELS[me.role]}
           </h2>
@@ -72,7 +70,7 @@ export function AdminSecurityPage() {
           </ul>
         </section>
 
-        <section aria-labelledby="mfa-title" className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+        <section aria-labelledby="mfa-title" className="space-y-4 card-premium rounded-3xl p-5">
           <h2 id="mfa-title" className="text-sm font-bold text-zinc-200">
             Segundo fator e sessões
           </h2>

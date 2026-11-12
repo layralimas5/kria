@@ -15,7 +15,7 @@ import { Recommendation, ResultsTable, YieldsTable } from './CalculatorResults'
 import { formatNumber, formatPercent, formatPoints } from './format'
 
 const STATUS = { draft: 'rascunho', live: 'à venda', legacy: 'antigo' } as const
-const CARD = 'space-y-3 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]'
+const CARD = 'space-y-3 card-premium rounded-3xl p-5'
 
 type FieldSpec = readonly [keyof CalculatorDraft, string, 'decimal' | 'numeric', string?]
 

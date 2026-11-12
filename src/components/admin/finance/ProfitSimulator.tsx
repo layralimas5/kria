@@ -129,7 +129,7 @@ export function ProfitSimulator({ settings, paymentFeeRate, plans: startingPlans
     <div className="space-y-5">
       <Notice>Simulação, não previsão. Uso médio de hoje não garante o consumo de amanhã. Assinantes, uso e custos são premissas suas até haver dados reais. Nada daqui é salvo.</Notice>
 
-      <section aria-labelledby="sim-plans" className="space-y-3 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+      <section aria-labelledby="sim-plans" className="space-y-3 card-premium rounded-3xl p-5">
         <h3 id="sim-plans" className="text-sm font-bold text-zinc-200">
           Planos (começa pela proposta em rascunho)
         </h3>
@@ -145,7 +145,7 @@ export function ProfitSimulator({ settings, paymentFeeRate, plans: startingPlans
         ))}
       </section>
 
-      <section aria-labelledby="sim-costs" className="space-y-3 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+      <section aria-labelledby="sim-costs" className="space-y-3 card-premium rounded-3xl p-5">
         <h3 id="sim-costs" className="text-sm font-bold text-zinc-200">
           Perfil, uso e custos
         </h3>
@@ -178,7 +178,7 @@ export function ProfitSimulator({ settings, paymentFeeRate, plans: startingPlans
       ) : (
         <div className="grid gap-3 lg:grid-cols-3">
           {scenarios.map((scenario) => (
-            <section key={scenario.utilization} aria-labelledby={`sc-${scenario.utilization}`} className="rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+            <section key={scenario.utilization} aria-labelledby={`sc-${scenario.utilization}`} className="card-premium rounded-3xl p-5">
               <h3 id={`sc-${scenario.utilization}`} className="font-headline text-lg text-zinc-100">
                 {scenario.label}
               </h3>

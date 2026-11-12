@@ -73,7 +73,7 @@ export function OperationsSection({ data }: { readonly data: CenterData }) {
           {ops.providers.map((provider) => {
             const health = providerHealth(provider.total_24h, provider.failed_24h)
             return (
-              <li key={provider.provider} className="rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+              <li key={provider.provider} className="card-premium rounded-2xl p-4">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-semibold text-zinc-100">{providerLabel(provider.provider)}</p>
                   <span className={clsx('rounded-md px-2 py-0.5 text-[11px] font-bold', HEALTH_STYLES[health])}>{PROVIDER_HEALTH_LABELS[health]}</span>
@@ -116,9 +116,9 @@ export function OperationsSection({ data }: { readonly data: CenterData }) {
           Erros recentes
         </h3>
         {ops.errors.length === 0 ? (
-          <p className="rounded-2xl bg-surface px-4 py-6 text-center text-sm text-zinc-500 ring-1 ring-white/[0.06]">Nenhuma falha no período.</p>
+          <p className="card-premium rounded-2xl px-4 py-6 text-center text-sm text-zinc-500">Nenhuma falha no período.</p>
         ) : (
-          <ol className="divide-y divide-white/[0.05] rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+          <ol className="divide-y divide-white/[0.05] card-premium rounded-2xl">
             {ops.errors.map((error) => (
               <li key={error.id} className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-start sm:gap-4">
                 <time dateTime={error.at} className="shrink-0 text-xs tabular-nums text-zinc-500 sm:w-32">

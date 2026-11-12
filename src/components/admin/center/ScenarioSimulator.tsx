@@ -63,7 +63,7 @@ export function ScenarioSimulator({ data }: { readonly data: CenterData }) {
   }
 
   return (
-    <section aria-labelledby="scenario-title" className="space-y-4 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+    <section aria-labelledby="scenario-title" className="space-y-4 card-premium rounded-2xl p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h3 id="scenario-title" className="text-sm font-bold text-zinc-200">
@@ -122,7 +122,7 @@ export function ScenarioSimulator({ data }: { readonly data: CenterData }) {
         <div className="relative overflow-x-auto">
           <table className="w-full min-w-[40rem] text-left text-sm">
             <caption className="sr-only">Resultado mensal por número de assinantes</caption>
-            <thead className="text-[11px] uppercase tracking-wider text-zinc-500">
+            <thead className="border-b border-white/[0.06] bg-white/[0.025] text-[11px] uppercase tracking-wider text-zinc-500">
               <tr>
                 <th scope="col" className="py-2 pr-3 font-bold">Assinantes</th>
                 <th scope="col" className="py-2 pr-3 text-right font-bold">Receita</th>

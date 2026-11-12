@@ -104,7 +104,7 @@ export function MfaStep({ onVerified }: { readonly onVerified: () => void }) {
 
   const enrolled = typeof factorId === 'string'
   return (
-    <div className="mx-auto max-w-sm space-y-6 rounded-3xl bg-surface p-6 ring-1 ring-white/[0.06]">
+    <div className="mx-auto max-w-sm space-y-6 card-premium rounded-3xl p-6">
       <div className="space-y-2 text-center">
         <span className="mx-auto grid size-11 place-items-center rounded-xl bg-surface-3 text-accent-soft">
           {enrolled ? <KeyRound className="size-5" aria-hidden="true" /> : <ShieldCheck className="size-5" aria-hidden="true" />}

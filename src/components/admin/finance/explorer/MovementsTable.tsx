@@ -208,7 +208,7 @@ export function MovementsTable({ data, table, onTable, loading, loadAll }: Movem
       </div>
 
       {rows.length === 0 ? (
-        <p className="rounded-2xl bg-surface px-4 py-8 text-center text-sm text-zinc-500 ring-1 ring-white/[0.06]">
+        <p className="card-premium rounded-2xl px-4 py-8 text-center text-sm text-zinc-500">
           {table.search ? 'Nenhuma movimentação com essa busca.' : 'Nenhuma movimentação no recorte. Amplie o período ou limpe os filtros.'}
         </p>
       ) : (
@@ -222,7 +222,7 @@ export function MovementsTable({ data, table, onTable, loading, loadAll }: Movem
             <caption id={captionId} className="sr-only">
               Movimentações do recorte, página {table.page} de {pages}
             </caption>
-            <thead className="bg-surface-2 text-[12px] text-zinc-400">
+            <thead className="border-b border-white/[0.06] bg-white/[0.025] text-[11px] uppercase tracking-wider text-zinc-500">
               <tr>
                 {visible.map((column) => {
                   const key = SORTABLE[column.id]
@@ -247,7 +247,7 @@ export function MovementsTable({ data, table, onTable, loading, loadAll }: Movem
                 })}
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.05] bg-surface">
+            <tbody className="divide-y divide-white/[0.05]">
               {rows.map((row) => (
                 <tr
                   key={row.id}

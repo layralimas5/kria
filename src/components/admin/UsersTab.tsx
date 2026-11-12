@@ -35,7 +35,7 @@ const TH = 'px-3 py-3 font-bold whitespace-nowrap'
 function FilterPanel({ filters, plans, onChange }: { readonly filters: UserFilters; readonly plans: readonly { slug: string; name: string }[]; readonly onChange: (next: UserFilters) => void }) {
   const set = <K extends keyof UserFilters>(key: K, value: UserFilters[K]) => onChange({ ...filters, [key]: value })
   return (
-    <div className="grid gap-3 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 card-premium rounded-2xl p-4 sm:grid-cols-2 lg:grid-cols-4">
       <ScopeSelect
         label="Plano"
         value={filters.plan ?? ANY}
@@ -110,10 +110,10 @@ function StatusBadge({ user }: { readonly user: UserRow }) {
 
 function UsersTable({ rows, showCost, onOpen }: { readonly rows: readonly UserRow[]; readonly showCost: boolean; readonly onOpen: (id: string) => void }) {
   return (
-    <div className="relative overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+    <div className="relative overflow-x-auto card-premium rounded-2xl">
       <table className="w-full min-w-[60rem] text-left text-sm">
         <caption className="sr-only">Usuários</caption>
-        <thead className="text-[11px] uppercase tracking-wider text-zinc-500">
+        <thead className="border-b border-white/[0.06] bg-white/[0.025] text-[11px] uppercase tracking-wider text-zinc-500">
           <tr>
             <th scope="col" className={TH}>Usuário</th>
             <th scope="col" className={TH}>Plano</th>
@@ -131,7 +131,7 @@ function UsersTable({ rows, showCost, onOpen }: { readonly rows: readonly UserRo
           {rows.map((user) => {
             const name = displayName(user)
             return (
-              <tr key={user.id} className="hover:bg-white/[0.02]">
+              <tr key={user.id} className="transition-colors hover:bg-white/[0.025]">
                 <td className="px-3 py-2.5">
                   <div className="flex items-center gap-3">
                     <AdminAvatar name={name} path={user.avatar_path} className="size-8" />
@@ -178,7 +178,7 @@ function UsersTable({ rows, showCost, onOpen }: { readonly rows: readonly UserRo
 
 function TableSkeleton() {
   return (
-    <div className="space-y-2 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]" role="status" aria-label="Carregando usuários">
+    <div className="space-y-2 card-premium rounded-2xl p-4" role="status" aria-label="Carregando usuários">
       {Array.from({ length: 6 }, (_, index) => (
         <div key={index} className="h-11 animate-pulse rounded-xl bg-surface-2" />
       ))}

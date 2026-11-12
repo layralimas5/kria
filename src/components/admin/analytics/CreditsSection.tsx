@@ -53,7 +53,7 @@ function tokenUserColumns(showCost: boolean): Column<TokenUser>[] {
 }
 
 function Restricted() {
-  return <p className="rounded-2xl bg-surface px-4 py-6 text-sm text-zinc-500 ring-1 ring-white/[0.06]">Sua permissão não mostra contas individuais.</p>
+  return <p className="card-premium rounded-2xl px-4 py-6 text-sm text-zinc-500">Sua permissão não mostra contas individuais.</p>
 }
 
 /** Créditos (o que entrou, saiu e está em carteira) e tokens das ferramentas de texto. */

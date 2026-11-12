@@ -33,10 +33,10 @@ function CostsSkeleton() {
     <div className="space-y-4" role="status" aria-label="Carregando custos">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         {Array.from({ length: 10 }, (_, index) => (
-          <div key={index} className="h-[5.5rem] animate-pulse rounded-2xl bg-surface ring-1 ring-white/[0.06]" />
+          <div key={index} className="h-[5.5rem] animate-pulse card-premium rounded-2xl" />
         ))}
       </div>
-      <div className="h-64 animate-pulse rounded-2xl bg-surface ring-1 ring-white/[0.06]" />
+      <div className="h-64 animate-pulse card-premium rounded-2xl" />
     </div>
   )
 }

@@ -92,7 +92,7 @@ export function FinanceSettingsForm({ settings, canEdit, onSaved }: { readonly s
   }
 
   return (
-    <form onSubmit={save} className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+    <form onSubmit={save} className="space-y-4 card-premium rounded-3xl p-5">
       <div>
         <h3 className="text-sm font-bold text-zinc-200">Premissas do resultado</h3>
         <p className="mt-1 text-sm text-zinc-400">Estimativas até existir fatura e contabilidade reais. Valores mensais.</p>

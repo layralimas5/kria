@@ -11,7 +11,7 @@ export interface CohortRow {
 export function CohortGrid({ rows }: { readonly rows: readonly CohortRow[] }) {
   const weeks = Math.max(0, ...rows.map((row) => row.active.length))
   return (
-    <section aria-labelledby="cohort-title" className="min-w-0 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+    <section aria-labelledby="cohort-title" className="min-w-0 card-premium rounded-2xl p-4">
       <h3 id="cohort-title" className="text-sm font-bold text-zinc-200">
         Retenção por coorte semanal
       </h3>

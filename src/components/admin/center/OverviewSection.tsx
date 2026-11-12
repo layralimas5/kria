@@ -71,7 +71,7 @@ export function OverviewSection({ data }: { readonly data: CenterData }) {
           />
         </MetricGrid>
       ) : (
-        <p className="rounded-2xl bg-surface px-4 py-3 text-sm text-zinc-400 ring-1 ring-white/[0.06]">
+        <p className="card-premium rounded-2xl px-4 py-3 text-sm text-zinc-400">
           Os números de dinheiro aparecem para quem tem acesso ao financeiro.
         </p>
       )}

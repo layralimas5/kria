@@ -65,7 +65,7 @@ export function BusinessSection({ data }: { readonly data: CenterData }) {
         <Insufficient title="Inteligência de negócio restrita">Unidade econômica, rentabilidade e simulação aparecem para quem tem acesso ao financeiro.</Insufficient>
       ) : (
         <>
-          <section aria-labelledby="answers-title" className="rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+          <section aria-labelledby="answers-title" className="card-premium rounded-2xl p-4">
             <h3 id="answers-title" className="text-sm font-bold text-zinc-200">
               Inteligência financeira
             </h3>
@@ -127,10 +127,10 @@ export function BusinessSection({ data }: { readonly data: CenterData }) {
               <h3 id="plan-profit" className="text-sm font-bold text-zinc-200">
                 Rentabilidade por plano no período
               </h3>
-              <div className="relative overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+              <div className="relative overflow-x-auto card-premium rounded-2xl">
                 <table className="w-full min-w-[42rem] text-left text-sm">
                   <caption className="sr-only">Recebido, taxas, custo de IA e margem de cada plano</caption>
-                  <thead className="text-[11px] uppercase tracking-wider text-zinc-500">
+                  <thead className="border-b border-white/[0.06] bg-white/[0.025] text-[11px] uppercase tracking-wider text-zinc-500">
                     <tr>
                       <th scope="col" className="px-3 py-2.5 font-bold">Plano</th>
                       <th scope="col" className="px-3 py-2.5 text-right font-bold">Contas</th>

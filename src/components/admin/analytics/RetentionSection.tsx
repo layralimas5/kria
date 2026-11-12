@@ -12,12 +12,12 @@ const dateTime = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-di
 const WEEKS = 8
 
 function CohortTable({ cohorts }: { readonly cohorts: readonly Cohort[] }) {
-  if (cohorts.length === 0) return <p className="rounded-2xl bg-surface px-4 py-6 text-sm text-zinc-500 ring-1 ring-white/[0.06]">Sem cadastros nas últimas oito semanas.</p>
+  if (cohorts.length === 0) return <p className="card-premium rounded-2xl px-4 py-6 text-sm text-zinc-500">Sem cadastros nas últimas oito semanas.</p>
   return (
     <div role="region" aria-label="Coortes semanais" tabIndex={0} className="relative overflow-x-auto rounded-2xl ring-1 ring-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
       <table className="w-full min-w-[720px] text-sm">
         <caption className="sr-only">Porcentagem de cada turma de cadastro que usou o Vynkio em cada semana seguinte</caption>
-        <thead className="bg-surface-2 text-[12px] text-zinc-400">
+        <thead className="border-b border-white/[0.06] bg-white/[0.025] text-[11px] uppercase tracking-wider text-zinc-500">
           <tr>
             <th scope="col" className="px-3 py-2.5 text-left font-semibold">Semana do cadastro</th>
             <th scope="col" className="px-3 py-2.5 text-right font-semibold">Pessoas</th>
@@ -28,7 +28,7 @@ function CohortTable({ cohorts }: { readonly cohorts: readonly Cohort[] }) {
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/[0.05] bg-surface">
+        <tbody className="divide-y divide-white/[0.05]">
           {cohorts.map((cohort) => (
             <tr key={cohort.week_start}>
               <th scope="row" className="px-3 py-2 text-left font-semibold text-zinc-200">
@@ -117,7 +117,7 @@ export function RetentionSection({ data, stale }: { readonly data: Analytics; re
         />
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
           {retention.subscriptions.map((month) => (
-            <li key={month.month} className="rounded-2xl bg-surface p-3 text-sm ring-1 ring-white/[0.06]">
+            <li key={month.month} className="card-premium rounded-2xl p-3 text-sm">
               <p className="text-[12px] font-semibold text-zinc-400">{month.month}</p>
               <p className="mt-1 font-semibold text-zinc-100">Churn {formatPercent(monthlyChurn(month))}</p>
               <p className="text-xs text-zinc-500">{formatNumber(month.live_at_start)} vivas no dia 1</p>
@@ -128,7 +128,7 @@ export function RetentionSection({ data, stale }: { readonly data: Analytics; re
 
       <Section title={`Pararam de usar (${formatNumber(retention.dormant_count)})`} description="Já usaram, mas nada nos últimos 14 dias. Pagantes primeiro: é quem dá para recuperar.">
         {retention.dormant === null ? (
-          <p className="rounded-2xl bg-surface px-4 py-6 text-sm text-zinc-500 ring-1 ring-white/[0.06]">Sua permissão não mostra contas individuais.</p>
+          <p className="card-premium rounded-2xl px-4 py-6 text-sm text-zinc-500">Sua permissão não mostra contas individuais.</p>
         ) : (
           <DataTable caption="Contas paradas" rows={retention.dormant} columns={DORMANT_COLUMNS} rowKey={(row) => row.user_id} empty="Ninguém parado: todo mundo que usou voltou nos últimos 14 dias." />
         )}

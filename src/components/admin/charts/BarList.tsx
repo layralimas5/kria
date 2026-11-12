@@ -20,7 +20,7 @@ interface BarListProps {
 export function BarList({ title, rows, color, emptyText }: BarListProps) {
   const max = Math.max(0, ...rows.map((row) => row.value))
   return (
-    <section aria-label={title} className="min-w-0 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+    <section aria-label={title} className="min-w-0 card-premium rounded-2xl p-4">
       <h3 className="text-sm font-bold text-zinc-200">{title}</h3>
       {rows.length === 0 || max === 0 ? (
         <p className="py-8 text-center text-xs text-zinc-500">{emptyText}</p>

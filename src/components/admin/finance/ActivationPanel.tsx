@@ -64,7 +64,7 @@ function PreflightReport({ preflight, legacyCost }: { readonly preflight: Prefli
         Poder de compra: quanto um crédito de hoje passa a comprar a mais (ou a menos) nesse modelo depois da conversão pelo custo médio. Negativo = quem tem saldo perde nesse modelo.
       </p>
       <div className="grid gap-3 lg:grid-cols-2">
-        <div className="rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+        <div className="card-premium rounded-2xl p-4">
           <p className="text-[13px] font-semibold text-zinc-300">Assinaturas atuais</p>
           <ul className="mt-2 space-y-1 text-sm text-zinc-400">
             {preflight.subscriptions.length === 0 && <li>Nenhuma.</li>}
@@ -75,7 +75,7 @@ function PreflightReport({ preflight, legacyCost }: { readonly preflight: Prefli
             ))}
           </ul>
         </div>
-        <div className="rounded-2xl bg-surface p-4 ring-1 ring-white/[0.06]">
+        <div className="card-premium rounded-2xl p-4">
           <p className="text-[13px] font-semibold text-zinc-300">Pacotes avulsos (preço não muda)</p>
           <ul className="mt-2 space-y-1 text-sm text-zinc-400">
             {preflight.packs.map((pack) => (

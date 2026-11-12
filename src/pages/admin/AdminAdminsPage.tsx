@@ -10,6 +10,7 @@ import { useSession } from '@/hooks/useSession'
 import { useToast } from '@/hooks/useToast'
 import { fetchAdmins, removeAdmin, setAdminRole, type AdminMember } from '@/lib/adminApi'
 import { errorMessage } from '@/lib/api'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 
 const ROLES = adminRoleSchema.options
 const MIN_REASON = 5
@@ -47,7 +48,7 @@ function RoleForm({ initialEmail, onSaved }: { readonly initialEmail: string; re
   }
 
   return (
-    <form onSubmit={review} className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.06]">
+    <form onSubmit={review} className="space-y-4 card-premium rounded-3xl p-5">
       <h2 className="text-sm font-bold text-zinc-200">Dar ou trocar acesso</h2>
       <div className="grid gap-3 md:grid-cols-[1fr_12rem]">
         <TextField label="E-mail da conta no Vynkio" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="off" />
@@ -140,19 +141,18 @@ export function AdminAdminsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-headline text-3xl text-zinc-50 md:text-4xl">Administradores</h1>
-        <p className="mt-2 text-sm text-zinc-400">
-          Papel muda só aqui e fica na auditoria. Ninguém altera o próprio acesso, e sempre sobra pelo menos um super admin.
-        </p>
-      </div>
+      <AdminPageHeader
+        eyebrow="Sistema"
+        title="Administradores"
+        description="Papel muda só aqui e fica na auditoria. Ninguém altera o próprio acesso, e sempre sobra pelo menos um super admin."
+      />
 
       <RoleForm key={editing} initialEmail={editing} onSaved={() => void admins.reload()} />
 
       {admins.error && <Notice tone="error">{admins.error}</Notice>}
-      <div className="relative overflow-x-auto rounded-2xl bg-surface ring-1 ring-white/[0.06]">
+      <div className="relative overflow-x-auto card-premium rounded-2xl">
         <table className="w-full min-w-[40rem] text-left text-sm">
-          <thead className="text-[11px] uppercase tracking-wider text-zinc-500">
+          <thead className="border-b border-white/[0.06] bg-white/[0.025] text-[11px] uppercase tracking-wider text-zinc-500">
             <tr>
               <th scope="col" className="px-4 py-3 font-bold">Conta</th>
               <th scope="col" className="px-4 py-3 font-bold">Papel</th>
