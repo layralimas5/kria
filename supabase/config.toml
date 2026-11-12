@@ -2,7 +2,7 @@
 project_id = "kria"
 
 [auth]
-site_url = "http://localhost:5231"
+site_url = "https://vynkio-ia.com.br"
 additional_redirect_urls = ["http://localhost:5231/**", "https://vynkio-ia.com.br/**", "https://www.vynkio-ia.com.br/**"]
 enable_signup = true
 minimum_password_length = 8
@@ -23,6 +23,31 @@ content_path = "./supabase/templates/recovery.html"
 [auth.email.template.invite]
 subject = "Seu convite para o Vynkio"
 content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.confirmation]
+subject = "Confirme seu e-mail no Vynkio"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.email_change]
+subject = "Confirme seu novo e-mail no Vynkio"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.magic_link]
+subject = "Seu link de acesso ao Vynkio"
+content_path = "./supabase/templates/magic_link.html"
+
+# Remetente próprio pelo Gmail do Vynkio (limite de 500 envios por dia). Sem SMTP próprio, o plano
+# free não aceita template nem remetente. A senha é uma senha de app do Google, em
+# SUPABASE_AUTH_SMTP_PASS (nunca no repositório). O Gmail reescreve o remetente para o
+# endereço autenticado: o nome é nosso, o endereço é obrigatoriamente esse.
+[auth.email.smtp]
+enabled = true
+host = "smtp.gmail.com"
+port = 465
+user = "vynkio.suporte@gmail.com"
+pass = "env(SUPABASE_AUTH_SMTP_PASS)"
+admin_email = "vynkio.suporte@gmail.com"
+sender_name = "Vynkio"
 
 # Segundo fator por app autenticador. O painel /admin só responde com a sessão em aal2 (0014).
 [auth.mfa]
