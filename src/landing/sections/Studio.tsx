@@ -28,7 +28,7 @@ interface Tool {
 
 // Só ferramentas que funcionam hoje no app. Mudou o produto, muda aqui.
 const TOOLS: readonly Tool[] = [
-  { icon: Clapperboard, title: 'Vídeos com IA', text: 'A imagem ganha movimento, som ou fala com Kling e Veo, sem baixar e subir arquivo em outro site.', wide: true },
+  { icon: Clapperboard, title: 'Vídeos com IA', text: 'A imagem ganha movimento, som ou fala com Kling e Seedance, sem baixar e subir arquivo em outro site.', wide: true },
   { icon: ImageIcon, title: 'Imagens com IA', text: 'Descreva a cena em português e receba a foto pronta para o feed.' },
   { icon: UserRound, title: 'Personagens', text: 'O mesmo rosto em todas as fotos e vídeos.' },
   { icon: CopyPlus, title: 'Multiplicador de vídeos', text: 'Um vídeo seu vira várias versões, com roteiro e montagem diferentes, montadas no seu navegador.', wide: true },

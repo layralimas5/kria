@@ -142,9 +142,9 @@ export const FEATURES: readonly Feature[] = [
     name: 'Vídeos com IA',
     benefit: 'Sua imagem ganha movimento e som',
     description:
-      'Nada de baixar a foto e subir em outro site. Escolha a criação ou o personagem e diga o que acontece: Kling 3.0 faz 5 segundos com áudio, Veo 3.1 faz 8 segundos com fala.',
+      'Nada de baixar a foto e subir em outro site. Escolha a criação ou o personagem e diga o que acontece: Kling 3.0 faz 5 segundos com áudio, Seedance 2.0 faz 8 segundos com fala.',
     screen: 'video',
-    screenAlt: 'Tela de vídeo do Studio do Vynkio com a escolha entre Kling 3.0 e Veo 3.1 e as criações recentes',
+    screenAlt: 'Tela de vídeo do Studio do Vynkio com a escolha entre os modelos de vídeo e as criações recentes',
   },
   {
     id: 'roteiros',
@@ -193,12 +193,11 @@ export const AI_MODELS: readonly AiModel[] = [
   { name: 'Nano Banana 2', kind: 'Imagem', logo: 'nanobanana-color' },
   { name: 'Nano Banana 2 Edit', kind: 'Edição', logo: 'nanobanana-color' },
   { name: 'Kling 3.0', kind: 'Vídeo', logo: 'kling-color' },
-  { name: 'Veo 3.1', kind: 'Vídeo', logo: 'deepmind-color' },
   { name: 'Claude', kind: 'Texto', logo: 'claude-color' },
   { name: 'ChatGPT', kind: 'Texto', logo: 'openai', soon: true },
   { name: 'Gemini', kind: 'Texto', logo: 'gemini-color', soon: true },
   { name: 'Sora 2', kind: 'Vídeo', logo: 'sora-color', soon: true },
-  { name: 'Seedance', kind: 'Vídeo', logo: 'bytedance-color', soon: true },
+  { name: 'Seedance 2.0', kind: 'Vídeo', logo: 'bytedance-color' },
   { name: 'Hailuo', kind: 'Vídeo', logo: 'hailuo-color', soon: true },
   { name: 'Wan', kind: 'Vídeo', logo: 'alibaba-color', soon: true },
   { name: 'FLUX', kind: 'Imagem', logo: 'flux', soon: true },
@@ -211,7 +210,7 @@ export const PIPELINE = [
   { step: 'Roteiro', tool: 'Vynkio AI · Roteiro', text: 'Gancho, 4 cenas cronometradas e CTA' },
   { step: 'Legenda e copy', tool: 'Vynkio AI · Copy', text: 'Três versões de legenda com a mesma marca' },
   { step: 'Imagem', tool: 'Studio · Nano Banana 2', text: 'Cada cena do roteiro vira foto com um clique' },
-  { step: 'Vídeo', tool: 'Studio · Kling ou Veo', text: 'A foto ganha movimento, áudio ou fala' },
+  { step: 'Vídeo', tool: 'Studio · Kling ou Seedance', text: 'A foto ganha movimento, áudio ou fala' },
 ] as const
 
 export type FaqIcon = 'beginner' | 'price' | 'time' | 'commercial' | 'cancel' | 'security' | 'notfor' | 'renew' | 'video' | 'extra' | 'empty' | 'switch' | 'tools' | 'business'
@@ -249,7 +248,7 @@ export const FAQ: readonly FaqItem[] = [
     icon: 'video',
     question: 'Qual a diferença entre geração e edição de vídeos?',
     answer:
-      'Geração é quando um modelo de IA cria o vídeo, como Kling ou Veo: usa créditos. Edição é o Multiplicador montando os seus próprios vídeos, com cortes, textos e trilha: roda no seu navegador, não usa créditos e conta nas exportações do mês do seu plano. Só os roteiros do Multiplicador, escritos pela IA, usam créditos.',
+      'Geração é quando um modelo de IA cria o vídeo, como Kling ou Seedance: usa créditos. Edição é o Multiplicador montando os seus próprios vídeos, com cortes, textos e trilha: roda no seu navegador, não usa créditos e conta nas exportações do mês do seu plano. Só os roteiros do Multiplicador, escritos pela IA, usam créditos.',
   },
   {
     icon: 'extra',

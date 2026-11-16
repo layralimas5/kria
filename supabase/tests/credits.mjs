@@ -534,19 +534,22 @@ await test('o limite de personagens vem do plano (grátis 1, starter 2, pro 5, s
   await expectError(savePersona(db, ana, await finishedImage(db, ana)), 'too_many_personas')
 })
 
-await test('Veo 3.1 gera em qualquer plano pago, não no Grátis', async (db) => {
+await test('vídeo com fala (Seedance 2.0, no lugar do Veo 3.1) gera em qualquer plano pago, não no Grátis', async (db) => {
   const ana = await newUser(db, 'ana@x.com')
   const { rows } = await create(db, ana, 'foto')
   await db.query(`select complete_generation($1, $2, 'image/png')`, [rows[0].id, `${ana}/${rows[0].id}.png`])
   await setWallet(db, ana, 0, 1000)
 
-  await expectError(create(db, ana, 'video-veo', 'ela acena', null, rows[0].id), 'plan_required')
+  await expectError(create(db, ana, 'video-seedance', 'ela acena', null, rows[0].id), 'plan_required')
+  await expectError(create(db, ana, 'video-veo', 'ela acena', null, rows[0].id), 'model_unavailable')
   const kling = await create(db, ana, 'video-kling', 'ela acena', null, rows[0].id)
   assert.equal(kling.rows[0].status, 'queued')
 
   await activate(db, await newSubscription(db, ana, 'starter'), 'pay_1')
-  const veo = await create(db, ana, 'video-veo', 'ela acena', null, rows[0].id)
-  assert.equal(veo.rows[0].status, 'queued')
+  const speech = await create(db, ana, 'video-seedance', 'ela acena', null, rows[0].id)
+  assert.equal(speech.rows[0].status, 'queued')
+  const model = (await db.query(`select endpoint, image_input, provider_cost_usd::float as cost from models where slug = 'video-seedance'`)).rows[0]
+  assert.deepEqual(model, { endpoint: 'bytedance/seedance-2.0/image-to-video', image_input: 'image_url', cost: 2.4192 })
 })
 
 await test('ferramentas do menu por plano', async (db) => {
@@ -1727,8 +1730,8 @@ await test('preços v3: trava bloqueia modelo sem custo confiável, acima do tet
   await create(db, ana, 'foto')
 
   // Teto por operação vale sempre, com ou sem trava.
-  await db.query(`update pricing_settings set require_trusted_cost = false, max_operation_cost_usd = 3`)
-  await expectError(create(db, ana, 'video-veo', 'ela acena', null, source), 'operation_cost_above_cap')
+  await db.query(`update pricing_settings set require_trusted_cost = false, max_operation_cost_usd = 2`)
+  await expectError(create(db, ana, 'video-seedance', 'ela acena', null, source), 'operation_cost_above_cap')
 })
 
 await test('preços v3: custo real do texto entra no gasto sem mudar os créditos cobrados', async (db) => {

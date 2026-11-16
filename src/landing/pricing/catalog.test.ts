@@ -28,9 +28,9 @@ function finalValue(slug: string, column: 'price_cents' | 'monthly_credits' | 'm
   return value
 }
 
-/** Planos que podem gerar com o Veo 3.1, pelo último `update` da tabela `models`. */
-function veoPlans(): string[] {
-  const updates = [...sql.matchAll(/set allowed_plans = array\[([^\]]*)\][^;]*where slug = 'video-veo'/g)]
+/** Planos que podem gerar o vídeo com fala (Seedance 2.0 desde a 0033), pelo último `update` da tabela `models`. */
+function speechVideoPlans(): string[] {
+  const updates = [...sql.matchAll(/set allowed_plans = array\[([^\]]*)\][^;]*where slug = 'video-seedance'/g)]
   const last = updates.at(-1)?.[1] ?? ''
   return [...last.matchAll(/'([a-z0-9-]+)'/g)].map((match) => match[1] ?? '')
 }
@@ -49,7 +49,7 @@ describe('vitrine de planos', () => {
     expect(plan.max_brands).toBe(finalValue(plan.slug, 'max_brands'))
   })
 
-  it.each([FREE_PLAN, ...PLAN_CATALOG])('$slug só promete Veo 3.1 se o app libera', (plan) => {
-    expect(plan.comparison.veo === 'yes').toBe(veoPlans().includes(plan.slug))
+  it.each([FREE_PLAN, ...PLAN_CATALOG])('$slug só promete vídeo com fala se o app libera', (plan) => {
+    expect(plan.comparison.veo === 'yes').toBe(speechVideoPlans().includes(plan.slug))
   })
 })
