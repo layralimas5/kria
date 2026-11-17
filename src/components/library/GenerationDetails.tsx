@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { Check, Copy, Download, Film, RotateCcw, UserRoundPlus } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { formatCredits, formatDateTime } from '@/domain/format'
+import { formatCredits, formatDateTime, generationRatio } from '@/domain/format'
 import { reuseLink } from '@/domain/library'
 import { isOpen, type Generation } from '@/domain/types'
 import { useCanCreate } from '@/hooks/useCanCreate'
@@ -23,7 +23,7 @@ const STATUS: Record<Generation['status'], { label: string; tone: string }> = {
 
 /** "9:16" vira "9 / 16" para o aspect-ratio do CSS; o resto cai no retrato 4:5. */
 function aspectOf(generation: Pick<Generation, 'options'>): string {
-  const ratio = generation.options.aspect_ratio
+  const ratio = generationRatio(generation.options)
   return ratio && /^\d+:\d+$/.test(ratio) ? ratio.replace(':', ' / ') : '4 / 5'
 }
 
@@ -102,7 +102,7 @@ export function GenerationDetails({ generation, modelName, onClose, onMakePerson
               <Fact label="Modelo">{modelName(generation.model_slug)}</Fact>
               <Fact label="Créditos">{generation.status === 'failed' ? 'Devolvidos' : formatCredits(generation.credits)}</Fact>
               <Fact label="Criada em">{formatDateTime(generation.created_at)}</Fact>
-              <Fact label="Proporção">{generation.options.aspect_ratio ?? 'Padrão'}</Fact>
+              <Fact label="Proporção">{generationRatio(generation.options) ?? 'Padrão'}</Fact>
             </dl>
 
             <div className="mt-auto grid gap-2">

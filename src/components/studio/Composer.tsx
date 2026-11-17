@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { Check, Clapperboard, ImageIcon, Plus, RectangleHorizontal, X } from 'lucide-react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { ASPECT_LABELS, fixedDefaults, modelSpecs } from '@/domain/format'
+import { ASPECT_LABELS, aspectOptionOf, fixedDefaults, modelSpecs, ratioLabel } from '@/domain/format'
 import { useBalance } from '@/hooks/useBalance'
 import type { Generation, MediaKind, Persona } from '@/domain/types'
 import { PROMPT_MAX, type Studio } from '@/hooks/useStudio'
@@ -112,9 +112,11 @@ function SourceSlot({ studio, personas, images }: ComposerProps) {
 
 /** Proporção da imagem ou do vídeo, quando o modelo aceita escolher. O primeiro valor é o padrão. */
 function AspectMenu({ studio }: { readonly studio: Studio }) {
-  const values = studio.model?.options.aspect_ratio
-  if (!values || values.length < 2) return null
-  const current = studio.options.aspect_ratio ?? values[0] ?? ''
+  const option = studio.model ? aspectOptionOf(studio.model.options) : null
+  const values = option ? studio.model?.options[option] : undefined
+  if (!option || !values || values.length < 2) return null
+  const current = studio.options[option] ?? values[0] ?? ''
+  const currentLabel = ratioLabel(option, current)
   return (
     <Popover
       label="Proporção"
@@ -125,11 +127,11 @@ function AspectMenu({ studio }: { readonly studio: Studio }) {
           aria-expanded={open}
           aria-controls={controls}
           aria-haspopup="dialog"
-          aria-label={`Proporção ${current}. Trocar`}
+          aria-label={`Proporção ${currentLabel}. Trocar`}
           className={CHIP}
         >
           <RectangleHorizontal className="size-3.5 text-accent-soft" aria-hidden="true" />
-          {current}
+          {currentLabel}
         </button>
       )}
     >
@@ -141,7 +143,7 @@ function AspectMenu({ studio }: { readonly studio: Studio }) {
                 type="button"
                 aria-pressed={value === current}
                 onClick={() => {
-                  studio.setOption('aspect_ratio', value)
+                  studio.setOption(option, value)
                   close()
                 }}
                 className={clsx(
@@ -149,8 +151,8 @@ function AspectMenu({ studio }: { readonly studio: Studio }) {
                   value === current ? 'bg-white/[0.07] text-zinc-50' : 'text-zinc-300 hover:bg-white/[0.04]',
                 )}
               >
-                <span className="w-11 tabular-nums">{value}</span>
-                <span className="flex-1 font-normal text-zinc-400">{ASPECT_LABELS[value] ?? ''}</span>
+                <span className="w-11 tabular-nums">{ratioLabel(option, value)}</span>
+                <span className="flex-1 font-normal text-zinc-400">{ASPECT_LABELS[ratioLabel(option, value)] ?? ''}</span>
                 {value === current && <Check className="size-4 text-accent-soft" aria-hidden="true" />}
               </button>
             </li>

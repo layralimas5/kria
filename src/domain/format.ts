@@ -36,6 +36,36 @@ export const ASPECT_LABELS: Readonly<Record<string, string>> = {
   '1:1': 'Quadrado',
   '9:16': 'Stories e Reels',
   '16:9': 'YouTube',
+  '3:4': 'Retrato',
+}
+
+/** FLUX e Ideogram escolhem o formato por `image_size` (enum do fal), não por `aspect_ratio`. */
+export const IMAGE_SIZE_RATIOS: Readonly<Record<string, string>> = {
+  portrait_4_3: '3:4',
+  portrait_16_9: '9:16',
+  square_hd: '1:1',
+  square: '1:1',
+  landscape_4_3: '4:3',
+  landscape_16_9: '16:9',
+}
+
+export type AspectOption = 'aspect_ratio' | 'image_size'
+
+/** Qual campo do modelo escolhe o formato, se algum. */
+export function aspectOptionOf(options: Readonly<Record<string, readonly string[]>>): AspectOption | null {
+  if (options.aspect_ratio) return 'aspect_ratio'
+  if (options.image_size) return 'image_size'
+  return null
+}
+
+/** O valor do fal em proporção legível ("portrait_16_9" vira "9:16"). */
+export function ratioLabel(option: AspectOption, value: string): string {
+  return option === 'image_size' ? (IMAGE_SIZE_RATIOS[value] ?? value) : value
+}
+
+/** Proporção de uma geração pronta, venha ela de `aspect_ratio` ou de `image_size`. */
+export function generationRatio(options: Readonly<Record<string, string | undefined>>): string | null {
+  return options.aspect_ratio ?? (options.image_size ? (IMAGE_SIZE_RATIOS[options.image_size] ?? null) : null)
 }
 
 /** Os defaults que viram chip fixo: o que a pessoa pode escolher (`options`) sai daqui e ganha seletor. */
@@ -46,6 +76,7 @@ export function fixedDefaults(defaults: Record<string, unknown>, options: Readon
 export function modelSpecs(defaults: Record<string, unknown>): string[] {
   const specs: string[] = []
   if (typeof defaults.aspect_ratio === 'string' && defaults.aspect_ratio !== 'auto') specs.push(defaults.aspect_ratio)
+  if (typeof defaults.image_size === 'string' && IMAGE_SIZE_RATIOS[defaults.image_size]) specs.push(IMAGE_SIZE_RATIOS[defaults.image_size]!)
   if (typeof defaults.duration === 'string' || typeof defaults.duration === 'number') {
     specs.push(`${String(defaults.duration).replace(/s$/, '')}s`)
   }

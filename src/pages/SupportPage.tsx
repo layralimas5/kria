@@ -84,10 +84,7 @@ export function SupportPage() {
                   Entrar na comunidade
                 </a>
               ) : (
-                <p>
-                  <span className="mr-2 rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-semibold text-zinc-400">em breve</span>
-                  Seu plano já inclui. Quando abrir, o acesso aparece aqui.
-                </p>
+                <p>Seu plano já inclui. O link de entrada aparece aqui assim que for liberado para a sua conta.</p>
               )}
             </Card>
           )}

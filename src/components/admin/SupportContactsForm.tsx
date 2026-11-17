@@ -48,7 +48,7 @@ export function SupportContactsForm({ settings, canEdit, onSaved }: { readonly s
       <div className="grid gap-4 md:grid-cols-3">
         <TextField label="E-mail (Starter)" type="email" value={email} onChange={(event) => setEmail(event.target.value)} disabled={!canEdit} hint="Pro e Max também veem enquanto não houver WhatsApp." />
         <TextField label="WhatsApp (Pro e Max)" inputMode="tel" placeholder="+55 11 99999-0000" value={whatsapp} onChange={(event) => setWhatsapp(event.target.value)} disabled={!canEdit} hint="Vazio = o app mostra o e-mail." />
-        <TextField label="Link da comunidade" type="url" placeholder="https://" value={community} onChange={(event) => setCommunity(event.target.value)} disabled={!canEdit} hint="Vazio = aparece como “em breve”." />
+        <TextField label="Link da comunidade" type="url" placeholder="https://" value={community} onChange={(event) => setCommunity(event.target.value)} disabled={!canEdit} hint="Vazio = o cliente vê que o plano inclui, sem botão de entrada." />
       </div>
       {canEdit && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

@@ -28,8 +28,7 @@ function ModelList({ hidden = false }: { readonly hidden?: boolean }) {
       {AI_MODELS.map((model) => (
         <li key={model.name} className="flex shrink-0 items-center gap-2.5">
           <ModelLogo {...model} />
-          <span className={`whitespace-nowrap text-[15px] font-semibold ${model.soon ? 'text-zinc-400' : 'text-zinc-100'}`}>{model.name}</span>
-          {model.soon && <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-400">Breve</span>}
+          <span className="whitespace-nowrap text-[15px] font-semibold text-zinc-100">{model.name}</span>
         </li>
       ))}
     </ul>
@@ -44,7 +43,7 @@ export function ModelGrid() {
         <h2 className="font-landing text-xl font-bold uppercase tracking-[-0.02em] text-zinc-50 md:text-2xl">
           As melhores IAs <span className="text-accent-soft">num lugar só</span>
         </h2>
-        <p className="text-[13px] text-zinc-400">Você escolhe o modelo, o Vynkio cuida do resto. Os marcados com Breve estão a caminho.</p>
+        <p className="text-[13px] text-zinc-400">Você escolhe o modelo, o Vynkio cuida do resto. Todos já geram hoje.</p>
       </div>
       <div className={`group mt-6 flex overflow-hidden ${EDGE_FADE}`}>
         <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused] motion-reduce:w-full motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center">

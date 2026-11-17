@@ -183,25 +183,20 @@ export interface AiModel {
   readonly kind: ModelKind
   /** Logo em `public/ai-logos`. Sem logo, a faixa usa o ícone do tipo. */
   readonly logo?: string
-  /** Ainda não integrado: aparece com o selo "Breve" (regra do projeto, nada de prometer o que não existe). */
-  readonly soon?: true
 }
 
-// Catálogo de IAs liberadas no Vynkio. Antes de publicar, cada uma precisa estar
-// ativa na tabela `models` do app; senão a página promete o que o app não gera.
+// Catálogo de IAs liberadas no Vynkio. Só entra o que está ativo na tabela `models` do app:
+// a página nunca promete o que o app não gera (nada de "em breve").
 export const AI_MODELS: readonly AiModel[] = [
   { name: 'Nano Banana 2', kind: 'Imagem', logo: 'nanobanana-color' },
   { name: 'Nano Banana 2 Edit', kind: 'Edição', logo: 'nanobanana-color' },
+  { name: 'FLUX.2 Pro', kind: 'Imagem', logo: 'flux' },
+  { name: 'Ideogram 3.0', kind: 'Imagem', logo: 'ideogram' },
   { name: 'Kling 3.0', kind: 'Vídeo', logo: 'kling-color' },
-  { name: 'Claude', kind: 'Texto', logo: 'claude-color' },
-  { name: 'ChatGPT', kind: 'Texto', logo: 'openai', soon: true },
-  { name: 'Gemini', kind: 'Texto', logo: 'gemini-color', soon: true },
-  { name: 'Sora 2', kind: 'Vídeo', logo: 'sora-color', soon: true },
   { name: 'Seedance 2.0', kind: 'Vídeo', logo: 'bytedance-color' },
-  { name: 'Hailuo', kind: 'Vídeo', logo: 'hailuo-color', soon: true },
-  { name: 'Wan', kind: 'Vídeo', logo: 'alibaba-color', soon: true },
-  { name: 'FLUX', kind: 'Imagem', logo: 'flux', soon: true },
-  { name: 'Ideogram', kind: 'Imagem', logo: 'ideogram', soon: true },
+  { name: 'Hailuo 2.3', kind: 'Vídeo', logo: 'hailuo-color' },
+  { name: 'Wan 2.6', kind: 'Vídeo', logo: 'alibaba-color' },
+  { name: 'Claude', kind: 'Texto', logo: 'claude-color' },
 ]
 
 /** Uma ideia, os entregáveis que saem dela no Vynkio. Cada etapa é uma ferramenta que existe hoje. */
@@ -271,7 +266,7 @@ export const FAQ: readonly FaqItem[] = [
     icon: 'tools',
     question: 'Quais ferramentas estão disponíveis?',
     answer:
-      'Hoje: Multiplicador de vídeos, imagens e vídeos com IA, personagens com o mesmo rosto, UGC, roteiros, ideias, copys, planejamento editorial, formatos prontos por nicho, marcas e projetos. O que aparece como em breve ainda não existe e não tem data prometida.',
+      'Hoje: Multiplicador de vídeos, imagens e vídeos com IA, personagens com o mesmo rosto, UGC, roteiros, ideias, copys, planejamento editorial, formatos prontos por nicho, marcas e projetos.',
   },
   {
     icon: 'business',

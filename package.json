@@ -17,6 +17,7 @@
     "landing:screens": "node scripts/landing-screens.mjs",
     "demo:assets": "node scripts/demo-assets.mjs",
     "demo:photos": "node scripts/demo-photos.mjs",
+    "traits:images": "node scripts/trait-images.mjs",
     "landing:assets": "node scripts/landing-assets.mjs",
     "landing:avatars": "node scripts/landing-avatars.mjs",
     "landing:showcase": "node scripts/landing-showcase.mjs",

@@ -94,8 +94,12 @@ export function HomePage() {
         initial={reduceMotion ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-wrap items-end justify-between gap-6"
+        className="relative isolate flex flex-wrap items-end justify-between gap-6"
       >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -left-24 -top-24 -z-10 h-72 w-[36rem] rounded-full bg-[radial-gradient(closest-side,rgb(124_58_237/0.28),transparent)] blur-2xl"
+        />
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">{today.format(now)}</p>
           {name && (
@@ -148,7 +152,7 @@ export function HomePage() {
                 }
               />
             ) : (
-              <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+              <ul className="grid grid-flow-dense grid-cols-2 gap-2.5 sm:grid-cols-4">
                 {open.slice(0, 2).map((generation) => (
                   <li key={generation.id}>
                     <Link
@@ -167,29 +171,40 @@ export function HomePage() {
                     </Link>
                   </li>
                 ))}
-                {recent.map((generation) => (
-                  <li key={generation.id}>
+                {recent.map((generation, index) => {
+                  const featured = index === 0 && open.length === 0
+                  return (
+                  <li key={generation.id} className={clsx(featured && 'col-span-2 row-span-2')}>
                     <Link
                       to="/galeria"
-                      className={clsx('group relative block overflow-hidden rounded-2xl ring-1 ring-white/[0.06]', FOCUS)}
+                      className={clsx('group relative block h-full overflow-hidden rounded-2xl ring-1 ring-white/[0.06] transition-shadow hover:ring-accent/40', FOCUS)}
                       aria-label={`Abrir na biblioteca: ${generation.prompt}`}
                     >
                       <MediaView
                         path={generation.output_path}
                         kind={generation.kind}
                         alt={generation.prompt}
-                        className="aspect-[4/5] w-full transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                        className="aspect-[4/5] h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                       />
                       <span
                         aria-hidden="true"
-                        className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-2.5 pb-2 pt-8 text-[11px] font-semibold text-zinc-100 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
+                        className={clsx(
+                          'absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/85 via-black/30 to-transparent font-semibold text-zinc-100 transition-opacity duration-200',
+                          featured
+                            ? 'px-4 pb-4 pt-16 text-sm'
+                            : 'px-2.5 pb-2 pt-8 text-[11px] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100',
+                        )}
                       >
-                        <span className="truncate">{modelName(generation.model_slug)}</span>
+                        <span className="min-w-0">
+                          {featured && <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-accent-soft">Mais recente</span>}
+                          <span className="block truncate">{modelName(generation.model_slug)}</span>
+                        </span>
                         <span className="shrink-0 text-zinc-300">{relativeTime(generation.completed_at ?? generation.created_at, now)}</span>
                       </span>
                     </Link>
                   </li>
-                ))}
+                  )
+                })}
               </ul>
             )}
           </section>
@@ -204,12 +219,13 @@ export function HomePage() {
             ) : (
               <ul className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
                 {personas.data?.map((persona) => (
-                  <li key={persona.id} className="w-28 shrink-0">
-                    <Link to={`/estudio?modo=imagem&persona=${persona.id}`} className={clsx('group block rounded-2xl', FOCUS)}>
-                      <span className="block overflow-hidden rounded-2xl ring-1 ring-white/[0.08] transition-shadow group-hover:ring-accent/50">
-                        <MediaView path={persona.image_path} kind="image" alt="" className="aspect-[4/5] w-full transition-transform duration-500 group-hover:scale-[1.04]" />
+                  <li key={persona.id} className="w-36 shrink-0 sm:w-40">
+                    <Link to={`/estudio?modo=imagem&persona=${persona.id}`} className={clsx('group relative block overflow-hidden rounded-2xl ring-1 ring-white/[0.08] transition-shadow hover:ring-accent/50', FOCUS)}>
+                      <MediaView path={persona.image_path} kind="image" alt="" className="aspect-[4/5] w-full transition-transform duration-500 group-hover:scale-[1.04]" />
+                      <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent px-3 pb-2.5 pt-10">
+                        <span className="font-headline block truncate text-base text-zinc-50">{persona.name}</span>
+                        <span className="block text-[11px] font-semibold text-zinc-300">Criar com esse rosto</span>
                       </span>
-                      <span className="mt-1.5 block truncate text-sm font-semibold text-zinc-200">{persona.name}</span>
                     </Link>
                   </li>
                 ))}

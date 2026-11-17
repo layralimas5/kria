@@ -235,8 +235,8 @@ await test('RLS: cada pessoa só enxerga o que é dela', async (db) => {
   assert.deepEqual(seen.generations, [{ user_id: ana }])
   assert.deepEqual(seen.balances, [{ user_id: ana }])
   assert.deepEqual(seen.ledger, [{ user_id: ana }])
-  // 10 até a 0016 + o Multiplicador (0017).
-  assert.equal(seen.models, 11)
+  // Ativos: 10 até a 0016 + Multiplicador (0017); Seedance (0033) entra no lugar do Veo; FLUX, Ideogram, Hailuo e Wan (0035).
+  assert.equal(seen.models, 15)
   await as(db, 'authenticated', ana, () =>
     expectError(db.query(`select provider_cost_usd from models`), 'permission denied'),
   )
