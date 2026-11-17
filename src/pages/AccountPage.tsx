@@ -11,6 +11,7 @@ import { Notice } from '@/components/ui/Notice'
 import { Spinner } from '@/components/ui/Spinner'
 import type { Generation, Persona } from '@/domain/types'
 import { useBalance } from '@/hooks/useBalance'
+import { useCanCreate } from '@/hooks/useCanCreate'
 import { useModels, usePersonas } from '@/hooks/useCatalog'
 import { useGenerations } from '@/hooks/useGenerations'
 import { useProfile } from '@/hooks/useProfile'
@@ -57,6 +58,7 @@ export function AccountPage() {
   const done = useMemo(() => generations.filter((item) => item.status === 'succeeded'), [generations])
   const images = useMemo(() => done.filter((item) => item.kind === 'image'), [done])
   const videos = useMemo(() => done.filter((item) => item.kind === 'video'), [done])
+  const canVideo = useCanCreate('video')
   const personaList = personas.data ?? []
   const modelNames = useMemo(() => new Map((models.data ?? []).map((model) => [model.slug, model.name])), [models.data])
 
@@ -159,7 +161,7 @@ export function AccountPage() {
             </WorkSection>
           )}
 
-          {show('videos') && (
+          {show('videos') && (canVideo || videos.length > 0) && (
             <WorkSection
               title="Vídeos"
               count={videos.length}

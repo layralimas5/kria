@@ -291,7 +291,7 @@ export async function signOutEverywhere(): Promise<void> {
 const WORKSPACE_ERRORS: Record<string, string> = {
   too_many_brands: 'Você chegou ao limite de marcas do seu plano. Remova uma ou veja os planos em Assinatura.',
   too_many_projects: 'Você chegou ao limite de projetos.',
-  plan_required: 'Projetos fazem parte do plano Studio. Veja os planos em Assinatura.',
+  plan_required: 'Projetos fazem parte dos planos pagos. Veja os planos em Assinatura.',
   brand_not_found: 'Essa marca não existe mais. Escolha outra.',
 }
 

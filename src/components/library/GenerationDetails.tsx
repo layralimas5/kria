@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { formatCredits, formatDateTime } from '@/domain/format'
 import { reuseLink } from '@/domain/library'
 import { isOpen, type Generation } from '@/domain/types'
+import { useCanCreate } from '@/hooks/useCanCreate'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { MediaView } from '../MediaView'
 import { Drawer } from '../ui/Drawer'
@@ -67,6 +68,7 @@ interface GenerationDetailsProps {
 /** Painel lateral com a criação em tamanho grande, o pedido, os dados e as ações. */
 export function GenerationDetails({ generation, modelName, onClose, onMakePersona, onReuse }: GenerationDetailsProps) {
   const url = useSignedUrl(generation?.status === 'succeeded' ? generation.output_path : null)
+  const canAnimate = useCanCreate('video')
   const kindLabel = generation?.kind === 'video' ? 'Vídeo' : 'Imagem'
 
   return (
@@ -118,7 +120,7 @@ export function GenerationDetails({ generation, modelName, onClose, onMakePerson
                   <RotateCcw className="size-4" aria-hidden="true" /> Usar este pedido de novo
                 </Link>
               )}
-              {generation.kind === 'image' && generation.status === 'succeeded' && (
+              {canAnimate && generation.kind === 'image' && generation.status === 'succeeded' && (
                 <Link to={`/estudio?modo=video&origem=${generation.id}`} className={clsx(ACTION, SECONDARY)}>
                   <Film className="size-4" aria-hidden="true" /> Animar em vídeo
                 </Link>

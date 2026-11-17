@@ -35,6 +35,11 @@ export const APP_GO_SHORTCUTS: readonly GoShortcut[] = [
   { key: 's', to: '/suporte', label: 'Suporte' },
 ]
 
+/** Atalhos do app sem o que o plano não libera (sem vídeo, sem `g v`). */
+export function appGoShortcuts(kinds: readonly MediaKind[] | null): readonly GoShortcut[] {
+  return APP_GO_SHORTCUTS.filter((shortcut) => shortcut.to !== '/estudio?modo=video' || (kinds ?? []).includes('video'))
+}
+
 export const ADMIN_GO_SHORTCUTS: readonly GoShortcut[] = [
   { key: 'a', to: '/admin', label: 'Dashboard' },
   { key: 'u', to: '/admin/usuarios', label: 'Usuários' },

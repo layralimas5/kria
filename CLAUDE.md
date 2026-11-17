@@ -94,6 +94,9 @@ são telas reais do modo demo (`npm run landing:screens`).
 - O Vynkio AI não promete resultado, não inventa depoimento nem número (regras no `SYSTEM_PROMPT`).
 - O que cada plano libera vem de `subscription_plans` (0005): `max_personas`, `tools` (abas do menu: quem não tem
   não vê a aba) e `models.allowed_plans`. Segue a tabela de planos da landing; mudar = `update`, sem deploy.
+  Escada em vigor (0034): Grátis e Starter só imagem e texto; Kling a partir do Pro; Seedance (fala) só no Max;
+  UGC no Pro e Max; Projetos em todo plano pago. Atalho para o que o plano não libera também some
+  ("Animar em vídeo", `g v`, "Criar vídeo"): `useCanCreate` lê os tipos do plano carregados uma vez no `AppShell`.
 
 ## Comandos
 

@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { Clapperboard, History, Sparkles, Trash2, UsersRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { Brand, Generation, Persona } from '@/domain/types'
+import { useCanCreate } from '@/hooks/useCanCreate'
 import { GenerationCard } from '../GenerationCard'
 import { MediaView } from '../MediaView'
 import { Notice } from '../ui/Notice'
@@ -21,6 +22,7 @@ interface PersonaCardProps {
 }
 
 function PersonaCard({ persona, brands, onDelete, onLinkBrand }: PersonaCardProps) {
+  const canAnimate = useCanCreate('video')
   return (
     <article className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-surface-2 ring-1 ring-white/[0.06] transition-shadow hover:ring-white/15">
       <MediaView
@@ -58,14 +60,16 @@ function PersonaCard({ persona, brands, onDelete, onLinkBrand }: PersonaCardProp
           >
             <Sparkles className="size-3.5" aria-hidden="true" /> Criar
           </Link>
-          <Link
-            to={`/estudio?modo=video&persona=${persona.id}`}
-            aria-label={`Animar ${persona.name}`}
-            title="Animar em vídeo"
-            className={clsx('grid size-9 place-items-center rounded-lg bg-black/55 text-zinc-100 backdrop-blur hover:bg-white/20', FOCUS)}
-          >
-            <Clapperboard className="size-4" aria-hidden="true" />
-          </Link>
+          {canAnimate && (
+            <Link
+              to={`/estudio?modo=video&persona=${persona.id}`}
+              aria-label={`Animar ${persona.name}`}
+              title="Animar em vídeo"
+              className={clsx('grid size-9 place-items-center rounded-lg bg-black/55 text-zinc-100 backdrop-blur hover:bg-white/20', FOCUS)}
+            >
+              <Clapperboard className="size-4" aria-hidden="true" />
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => onDelete(persona)}

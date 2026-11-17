@@ -163,7 +163,7 @@ export const FEATURES: readonly Feature[] = [
     description: 'O roteiro UGC sai dividido em cenas, com fala e descrição visual. Cada cena vai para o Studio com um clique.',
     screen: 'ugc',
     screenAlt: 'Roteiro UGC gerado no Vynkio, dividido em cenas com fala, descrição da cena e o botão Criar a cena no Studio',
-    plans: 'Planos Pro e Studio',
+    plans: 'Planos Pro e Max',
   },
   {
     id: 'ideias',

@@ -4,6 +4,7 @@ import { AlertCircle, Download, Film, UserRoundPlus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { formatCredits } from '@/domain/format'
 import { isOpen, type Generation } from '@/domain/types'
+import { useCanCreate } from '@/hooks/useCanCreate'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { MediaView } from './MediaView'
 
@@ -45,6 +46,7 @@ const ACTION =
 function Actions({ generation, onMakePersona }: Pick<GenerationCardProps, 'generation' | 'onMakePersona'>) {
   const url = useSignedUrl(generation.output_path)
   const isImage = generation.kind === 'image'
+  const canAnimate = useCanCreate('video') && isImage
   return (
     <div className="pointer-events-auto flex items-center gap-1.5">
       {url && (
@@ -52,7 +54,7 @@ function Actions({ generation, onMakePersona }: Pick<GenerationCardProps, 'gener
           <Download className="size-4" aria-hidden="true" />
         </a>
       )}
-      {isImage && (
+      {canAnimate && (
         <Link to={`/estudio?modo=video&origem=${generation.id}`} className={ACTION} aria-label="Animar em vídeo" title="Animar em vídeo">
           <Film className="size-4" aria-hidden="true" />
         </Link>

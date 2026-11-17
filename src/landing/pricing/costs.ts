@@ -17,7 +17,7 @@ export const GENERATION_COSTS: readonly GenerationCost[] = [
   { slug: 'foto-persona', label: 'Foto com personagem', credits: 6, output: 'Imagem 4:5 com o rosto salvo' },
   { slug: 'video-kling', label: 'Vídeo Kling 3.0', credits: 40, output: '5 s com áudio, na proporção da imagem' },
   { slug: 'copy', label: 'Ideias, copy ou roteiro', credits: 3, output: 'Texto por pedido' },
-  { slug: 'ugc-roteiro', label: 'Roteiro UGC', credits: 3, output: 'Cenas com fala e descrição visual', restriction: 'Pro e Studio' },
+  { slug: 'ugc-roteiro', label: 'Roteiro UGC', credits: 3, output: 'Cenas com fala e descrição visual', restriction: 'Pro e Max' },
 ]
 
 /** Pacotes avulsos (`credit_packs`, 0001 e 0006). Não vencem. */

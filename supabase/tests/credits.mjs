@@ -139,6 +139,8 @@ await test('o limite de gerações abertas vem do plano (grátis: 2, pro: 4)', a
 })
 
 await test('modelo que pede imagem exige persona ou imagem de origem da própria pessoa', async (db) => {
+  // Acesso por plano tem teste próprio; aqui o Kling fica aberto para testar a origem da imagem.
+  await db.query(`update models set allowed_plans = null where slug = 'video-kling'`)
   const ana = await newUser(db, 'ana@x.com')
   const bia = await newUser(db, 'bia@x.com')
   await setWallet(db, ana, 500)
@@ -534,7 +536,7 @@ await test('o limite de personagens vem do plano (grátis 1, starter 2, pro 5, s
   await expectError(savePersona(db, ana, await finishedImage(db, ana)), 'too_many_personas')
 })
 
-await test('vídeo com fala (Seedance 2.0, no lugar do Veo 3.1) gera em qualquer plano pago, não no Grátis', async (db) => {
+await test('o Grátis não gera vídeo; vídeo com fala (Seedance 2.0, no lugar do Veo 3.1) gera no plano pago', async (db) => {
   const ana = await newUser(db, 'ana@x.com')
   const { rows } = await create(db, ana, 'foto')
   await db.query(`select complete_generation($1, $2, 'image/png')`, [rows[0].id, `${ana}/${rows[0].id}.png`])
@@ -542,8 +544,7 @@ await test('vídeo com fala (Seedance 2.0, no lugar do Veo 3.1) gera em qualquer
 
   await expectError(create(db, ana, 'video-seedance', 'ela acena', null, rows[0].id), 'plan_required')
   await expectError(create(db, ana, 'video-veo', 'ela acena', null, rows[0].id), 'model_unavailable')
-  const kling = await create(db, ana, 'video-kling', 'ela acena', null, rows[0].id)
-  assert.equal(kling.rows[0].status, 'queued')
+  await expectError(create(db, ana, 'video-kling', 'ela acena', null, rows[0].id), 'plan_required')
 
   await activate(db, await newSubscription(db, ana, 'starter'), 'pay_1')
   const speech = await create(db, ana, 'video-seedance', 'ela acena', null, rows[0].id)
@@ -1053,6 +1054,8 @@ await test('foto enviada: só com confirmação, só na própria pasta e só se 
 })
 
 await test('formato: foto enviada como partida, só de quem enviou', async (db) => {
+  // Acesso por plano tem teste próprio; aqui o Kling fica aberto para testar a origem da imagem.
+  await db.query(`update models set allowed_plans = null where slug = 'video-kling'`)
   const ana = await newUser(db, 'ana@x.com')
   const bia = await newUser(db, 'bia@x.com')
   await setWallet(db, ana, 200)
@@ -1071,6 +1074,8 @@ await test('formato: foto enviada como partida, só de quem enviou', async (db) 
 })
 
 await test('antes e depois: o quadro final é uma imagem pronta da própria pessoa', async (db) => {
+  // Acesso por plano tem teste próprio; aqui o Kling fica aberto para testar o quadro final.
+  await db.query(`update models set allowed_plans = null where slug = 'video-kling'`)
   const ana = await newUser(db, 'ana@x.com')
   const bia = await newUser(db, 'bia@x.com')
   await setWallet(db, ana, 200)

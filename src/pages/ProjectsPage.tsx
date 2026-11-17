@@ -92,7 +92,7 @@ export function ProjectsPage() {
       <div className="mx-auto max-w-3xl space-y-6">
         <PageHeader title="Meus projetos" description="Organize roteiros e criações por campanha ou cliente." />
         <Notice>
-          Projetos fazem parte do plano Studio.{' '}
+          Projetos fazem parte dos planos pagos.{' '}
           <Link to="/assinatura" className="font-semibold text-accent-soft hover:underline">
             Ver planos
           </Link>

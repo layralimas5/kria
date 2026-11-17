@@ -122,7 +122,7 @@ export function AssistantPage() {
       <ToolTabs tools={tools} />
       {models.error && <Notice tone="error">{models.error}</Notice>}
       {plan && !planIncludes(plan, info.planTool) && (
-        <Notice>O {info.label} faz parte dos planos Pro e Studio. Veja os planos em Assinatura.</Notice>
+        <Notice>O {info.label} faz parte dos planos Pro e Max. Veja os planos em Assinatura.</Notice>
       )}
       <ToolWorkspace key={info.tool} info={info} credits={credits} hasProjects={planIncludes(plan, 'projects')} />
     </div>
