@@ -17,7 +17,7 @@ interface Tool {
 
 const TOOLS: readonly Tool[] = [
   { icon: Clapperboard, name: 'Studio', detail: 'Foto e vídeo com Nano Banana, Kling e Seedance' },
-  { icon: UserRound, name: 'Personagens', detail: 'O mesmo rosto em toda geração' },
+  { icon: UserRound, name: 'Personagens', detail: 'Apresentador fixo para a marca' },
   { icon: LayoutTemplate, name: 'Formatos', detail: 'Imóvel, produto e prato prontos', isNew: true },
   { icon: Sparkles, name: 'Vynkio AI', detail: 'Ideia, roteiro e copy em português' },
   { icon: CalendarDays, name: 'Conteúdos', detail: 'Quadro e calendário dos posts' },

@@ -42,16 +42,16 @@ export function Hero() {
           id="hero-title"
           className="mt-7 text-balance font-landing text-[2.5rem] font-bold leading-[0.95] tracking-[-0.045em] text-zinc-50 sm:text-[3.6rem] lg:text-[5rem]"
         >
-          Seu influenciador de IA,{' '}
-          <span className="bg-gradient-to-r from-accent-soft via-[#c4b5fd] to-[#60a5fa] bg-clip-text text-transparent">com o mesmo rosto em cada foto e vídeo.</span>
+          Da ideia ao vídeo pronto para postar.{' '}
+          <span className="bg-gradient-to-r from-accent-soft via-[#c4b5fd] to-[#60a5fa] bg-clip-text text-transparent">Tudo com IA, num lugar só.</span>
         </motion.h1>
         <motion.p {...enter(0.16)} className="mt-7 max-w-2xl text-pretty text-[17px] text-zinc-400 md:text-lg">
-          Monte o personagem uma vez e crie fotos, vídeos e roteiros com ele usando Nano Banana, Kling, Seedance e Claude. Tudo em português, num saldo só e com o
-          custo mostrado antes de gerar.
+          Para quem vende no TikTok, faz conteúdo de afiliado ou cuida das redes de uma marca: ideia, roteiro, imagem, vídeo e legenda com Nano Banana, Kling,
+          Seedance e Claude. Em português e com o custo mostrado antes de gerar.
         </motion.p>
         <motion.div {...enter(0.24)} className="mt-10 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
           <CtaLink cta="hero_primary" size="lg" className="w-full sm:w-auto" />
-          <AnchorButton href="#ferramentas" size="lg" tone="ghost" className="w-full sm:w-auto">
+          <AnchorButton href="#como-funciona" size="lg" tone="ghost" className="w-full sm:w-auto">
             Ver como funciona
             <ArrowDown className="size-4" aria-hidden="true" />
           </AnchorButton>

@@ -1,8 +1,8 @@
-import { Clapperboard, Copy, ImageIcon, Lightbulb, PenLine, UserRound, Wand2, type LucideIcon } from 'lucide-react'
+import { Clapperboard, Copy, ImageIcon, Lightbulb, PenLine, Wand2, type LucideIcon } from 'lucide-react'
 
 const IDEAS: readonly { readonly icon: LucideIcon; readonly text: string }[] = [
-  { icon: UserRound, text: 'Influenciadora tomando café em Lisboa' },
-  { icon: Clapperboard, text: 'Ela olha para a câmera e diz "bom dia"' },
+  { icon: Clapperboard, text: 'Vídeo UGC mostrando o sérum na pia do banheiro' },
+  { icon: PenLine, text: 'Gancho de 3 segundos para vídeo do TikTok Shop' },
   { icon: Wand2, text: 'Antes e depois da reforma da sala' },
   { icon: PenLine, text: 'Roteiro de Reels de 30 segundos' },
   { icon: ImageIcon, text: 'Tênis branco sobre pedra molhada, luz neon' },

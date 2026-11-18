@@ -15,7 +15,7 @@ export function FinalCta() {
             Sua próxima ideia <span className="bg-gradient-to-r from-accent-soft to-[#60a5fa] bg-clip-text text-transparent">já tem onde nascer.</span>
           </h2>
           <p className="mt-6 max-w-xl text-pretty text-[17px] font-medium text-zinc-300">
-            Roteiro, imagem, personagem e vídeo no mesmo estúdio, em português e num saldo só. Crie a conta, use os créditos de boas-vindas e só escolha um plano
+            Ideia, roteiro, imagem, vídeo e legenda no mesmo estúdio, em português e num saldo só. Crie a conta, use os créditos de boas-vindas e só escolha um plano
             quando fizer sentido para você.
           </p>
           <div className="mt-9 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">

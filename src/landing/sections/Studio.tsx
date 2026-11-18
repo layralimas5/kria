@@ -29,11 +29,11 @@ interface Tool {
 // Só ferramentas que funcionam hoje no app. Mudou o produto, muda aqui.
 const TOOLS: readonly Tool[] = [
   { icon: Clapperboard, title: 'Vídeos com IA', text: 'A imagem ganha movimento, som ou fala com Kling e Seedance, sem baixar e subir arquivo em outro site.', wide: true },
-  { icon: ImageIcon, title: 'Imagens com IA', text: 'Descreva a cena em português e receba a foto pronta para o feed.' },
-  { icon: UserRound, title: 'Personagens', text: 'O mesmo rosto em todas as fotos e vídeos.' },
-  { icon: CopyPlus, title: 'Multiplicador de vídeos', text: 'Um vídeo seu vira várias versões, com roteiro e montagem diferentes, montadas no seu navegador.', wide: true },
+  { icon: Megaphone, title: 'UGC', text: 'Vídeo com cara de cliente real apresentando o produto, cena por cena.' },
+  { icon: ImageIcon, title: 'Imagens com IA', text: 'Foto de produto, cenário ou post descrita em português, pronta para o feed.' },
+  { icon: CopyPlus, title: 'Multiplicador de vídeos', text: 'Um vídeo seu vira várias versões para testar, com roteiro e montagem diferentes, montadas no seu navegador.', wide: true },
   { icon: PenLine, title: 'Roteiros e copys', text: 'Gancho, cenas, CTA e legenda no tom da sua marca.' },
-  { icon: Megaphone, title: 'UGC', text: 'Roteiro em cenas, cada uma vai para o Studio com um clique.' },
+  { icon: UserRound, title: 'Personagens', text: 'Um apresentador fixo, com o mesmo rosto em todas as fotos e vídeos.' },
   { icon: LayoutTemplate, title: 'Formatos prontos', text: 'Pontos de partida por nicho: imóvel, produto, prato e mais.', wide: true },
   { icon: FolderKanban, title: 'Marcas e projetos', text: 'Público e tom salvos, criações separadas por cliente ou campanha.', wide: true },
 ]
@@ -45,8 +45,8 @@ interface Audience {
 }
 
 const AUDIENCES: readonly Audience[] = [
-  { icon: Sparkles, title: 'Criadores', text: 'Pauta da semana, roteiro com gancho e as cenas geradas em vídeo vertical, sem sessão de fotos.' },
-  { icon: ShoppingBag, title: 'Afiliados', text: 'Vídeo estilo UGC apresentando o produto, com a legenda escrita junto e versões para testar.' },
+  { icon: ShoppingBag, title: 'Quem vende no TikTok', text: 'Vídeo estilo UGC apresentando o produto, gancho, legenda pronta e versões para testar, seja loja própria ou afiliado.' },
+  { icon: Sparkles, title: 'Criadores de conteúdo', text: 'Pauta da semana, roteiro e as cenas em vídeo vertical para TikTok, Reels e Shorts, sem gravar tudo.' },
   { icon: Building2, title: 'Negócios', text: 'Post da loja com foto do cenário, legenda no tom da marca e uma marca por cliente para agências.' },
 ]
 

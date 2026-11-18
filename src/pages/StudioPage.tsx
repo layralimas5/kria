@@ -35,7 +35,10 @@ const IDEAS: Record<MediaKind, readonly string[]> = {
   ],
 }
 
-const KIND_TITLE: Record<MediaKind, string> = { image: 'imagem', video: 'vídeo' }
+const KIND_TITLE: Record<MediaKind, { readonly article: string; readonly noun: string }> = {
+  image: { article: 'Nova', noun: 'imagem' },
+  video: { article: 'Novo', noun: 'vídeo' },
+}
 
 function EmptyHero({ kind, onIdea }: { readonly kind: MediaKind; readonly onIdea: (idea: string) => void }) {
   return (
@@ -97,7 +100,7 @@ function StudioHeader({ kind, running }: { readonly kind: MediaKind; readonly ru
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Estúdio</p>
         <h1 className="font-headline mt-1.5 text-3xl text-zinc-50 md:text-4xl">
-          Nova <span className="bg-gradient-to-r from-accent-soft via-violet-300 to-galaxy bg-clip-text text-transparent">{KIND_TITLE[kind]}</span>
+          {KIND_TITLE[kind].article} <span className="bg-gradient-to-r from-accent-soft via-violet-300 to-galaxy bg-clip-text text-transparent">{KIND_TITLE[kind].noun}</span>
         </h1>
       </div>
       <div className="flex flex-wrap items-center gap-2">

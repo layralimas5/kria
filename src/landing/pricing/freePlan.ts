@@ -6,7 +6,7 @@ import { WELCOME_CREDITS } from '../content'
 export const FREE_PLAN: MarketingPlan = {
   slug: 'gratis',
   name: 'Vynkio Grátis',
-  tagline: 'Teste com seus personagens antes de assinar.',
+  tagline: 'Teste o Vynkio antes de assinar.',
   price_cents: 0,
   monthly_credits: WELCOME_CREDITS,
   max_personas: 1,

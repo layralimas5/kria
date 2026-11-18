@@ -14,7 +14,7 @@ const COLUMNS: readonly { readonly title: string; readonly links: readonly Foote
     title: 'Produto',
     links: [
       { label: 'Estúdio', href: '#estudio' },
-      { label: 'Ferramentas', href: '#ferramentas' },
+      { label: 'Como funciona', href: '#como-funciona' },
       { label: 'Segurança', href: '#seguranca' },
       { label: 'Planos', href: '#precos' },
     ],
@@ -58,7 +58,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
             <Logo />
-            <p className="mt-4 max-w-xs text-pretty text-zinc-400">Estúdio de criação com IA em português: vídeos, imagens, personagens e roteiros num só lugar.</p>
+            <p className="mt-4 max-w-xs text-pretty text-zinc-400">Estúdio de criação com IA em português: vídeos, imagens, roteiros e legendas para quem cria e vende nas redes.</p>
             {CONTACT_EMAIL && (
               <a href={`mailto:${CONTACT_EMAIL}`} className={`${LINK} mt-4 inline-block`}>
                 {CONTACT_EMAIL}

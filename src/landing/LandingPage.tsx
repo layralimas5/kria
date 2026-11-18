@@ -7,10 +7,10 @@ import { PRICING_V2 } from './pricing/flags'
 import { TOUR_VIDEO } from './content'
 import { Examples } from './sections/Examples'
 import { Faq } from './sections/Faq'
-import { Features } from './sections/Features'
 import { FinalCta } from './sections/FinalCta'
 import { Footer } from './sections/Footer'
 import { Header } from './sections/Header'
+import { HowItWorks } from './sections/HowItWorks'
 import { Hero } from './sections/Hero'
 import { Pricing } from './sections/Pricing'
 import { PricingV2 } from './sections/PricingV2'
@@ -71,7 +71,7 @@ export function LandingPage() {
         <ProductDemo />
         <Studio />
         <IdeasMarquee />
-        <Features />
+        <HowItWorks />
         {TOUR_VIDEO && <VideoTour />}
         <Workflow />
         <Examples />
