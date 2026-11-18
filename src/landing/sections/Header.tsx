@@ -11,7 +11,7 @@ import { useScrolled } from '../hooks/useScrolled'
 const NAV: readonly { href: string; label: string }[] = [
   { href: '#estudio', label: 'Estúdio' },
   { href: '#ferramentas', label: 'Ferramentas' },
-  { href: '#video', label: 'Por dentro' },
+  { href: '#seguranca', label: 'Segurança' },
   { href: '#precos', label: 'Planos' },
   { href: '#faq', label: 'Dúvidas' },
 ]

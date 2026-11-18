@@ -4,6 +4,7 @@ import { track } from '@/lib/analytics'
 import { captureUtmFromLocation } from '@/lib/utm'
 import { IdeasMarquee } from './components/IdeasMarquee'
 import { PRICING_V2 } from './pricing/flags'
+import { TOUR_VIDEO } from './content'
 import { Examples } from './sections/Examples'
 import { Faq } from './sections/Faq'
 import { Features } from './sections/Features'
@@ -15,11 +16,13 @@ import { Pricing } from './sections/Pricing'
 import { PricingV2 } from './sections/PricingV2'
 import { ProductDemo } from './sections/ProductDemo'
 import { Studio } from './sections/Studio'
+import { Trust } from './sections/Trust'
 import { VideoTour } from './sections/VideoTour'
 import { Workflow } from './sections/Workflow'
 
 // Ordem: topo, demonstração do painel, o estúdio e para quem, showcase das ferramentas, vídeo,
-// comparação de fluxos, exemplos reais (só com mídia gerada), planos, dúvidas, chamada final e rodapé.
+// comparação de fluxos, exemplos reais (só com mídia gerada), garantias, planos, dúvidas, chamada final e rodapé.
+// O vídeo do tour só entra quando existe (`TOUR_VIDEO`): aviso de "em produção" passa a ideia de produto inacabado.
 // Preços v2 ligados desde a virada (0027); `VITE_PRICING_V2=false` volta a vitrine antiga.
 /** Barra fina no topo que acompanha a leitura da página. */
 function ScrollProgress() {
@@ -69,9 +72,10 @@ export function LandingPage() {
         <Studio />
         <IdeasMarquee />
         <Features />
-        <VideoTour />
+        {TOUR_VIDEO && <VideoTour />}
         <Workflow />
         <Examples />
+        <Trust />
         {PRICING_V2 ? <PricingV2 /> : <Pricing />}
         <Faq />
         <FinalCta />

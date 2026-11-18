@@ -14,7 +14,7 @@ export const WELCOME_CREDITS = PRICING_V2 ? WELCOME_CREDITS_V3 : 20
 export const PRIVACY_ANCHOR = 'seus-dados'
 
 /** O modelo de LP pede a mesma ação, com o mesmo texto, em todos os botões da página. */
-export const CTA_LABEL = 'Começar a criar'
+export const CTA_LABEL = 'Começar grátis'
 
 /** Linha de segurança que acompanha os botões de decisão (planos e chamada final). */
 export const SAFETY_LINE = `${WELCOME_CREDITS} créditos grátis, sem cartão · Cancele quando quiser, sem multa · Falhou, o crédito volta`

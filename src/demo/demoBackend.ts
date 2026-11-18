@@ -610,11 +610,21 @@ function setRole(body: Row): Response {
   return json({ user_id: user.id, role: role.data })
 }
 
+/** Marcado por `scripts/landing-screens.mjs` antes de abrir o app. */
+function isShowcaseMode(): boolean {
+  try {
+    return localStorage.getItem('kria-demo-showcase') === '1'
+  } catch {
+    return false
+  }
+}
+
 /** As funções `admin_*` do banco (0004 e 0014), com as mesmas recusas. No demo a conta é super admin com segundo fator. */
 function adminRpc(name: string, body: Row): Response | null {
   switch (name) {
     case 'is_admin':
-      return json(true)
+      // Os prints da landing (`landing:screens`) ligam a vitrine: lá o atalho "Painel admin" não pode aparecer.
+      return json(!isShowcaseMode())
     case 'admin_me':
       return json({ role: 'super_admin', permissions: SUPER_ADMIN_PERMISSIONS, aal: 'aal2', email: 'demo@kria.ia', display_name: state.profile.display_name, avatar_path: null })
     case 'admin_ai_costs': {

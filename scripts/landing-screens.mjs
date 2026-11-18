@@ -65,6 +65,7 @@ async function shot(page, name, clip) {
 
 async function desktop(browser) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1.5 })
+  await page.addInitScript(() => localStorage.setItem('kria-demo-showcase', '1'))
   await finishOnboarding(page)
   await shot(page, 'dashboard')
 
@@ -86,6 +87,7 @@ async function desktop(browser) {
 
 async function mobile(browser) {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true })
+  await page.addInitScript(() => localStorage.setItem('kria-demo-showcase', '1'))
   await finishOnboarding(page)
   await page.evaluate(() => window.scrollTo(0, 0))
   await page.waitForTimeout(400)

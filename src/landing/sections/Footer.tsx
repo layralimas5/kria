@@ -15,7 +15,7 @@ const COLUMNS: readonly { readonly title: string; readonly links: readonly Foote
     links: [
       { label: 'Estúdio', href: '#estudio' },
       { label: 'Ferramentas', href: '#ferramentas' },
-      { label: 'Vídeo do produto', href: '#video' },
+      { label: 'Segurança', href: '#seguranca' },
       { label: 'Planos', href: '#precos' },
     ],
   },

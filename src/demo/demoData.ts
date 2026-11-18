@@ -163,8 +163,8 @@ export function createDemoState(): DemoState {
     ],
     profile: {
       id: DEMO_USER_ID,
-      display_name: 'Lay',
-      username: 'lay.cria',
+      display_name: 'Marina',
+      username: 'marina.cria',
       bio: '',
       location: '',
       instagram: '',
