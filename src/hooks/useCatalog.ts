@@ -17,7 +17,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { useQuery, type QueryState } from './useQuery'
 
-async function fetchModels(): Promise<Model[]> {
+export async function fetchModels(): Promise<Model[]> {
   const { data, error } = await supabase
     .from('models')
     .select('slug, name, description, kind, requires_image, credits, position, badge, defaults, options, allowed_plans, studio')
