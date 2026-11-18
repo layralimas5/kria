@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion'
-import { ArrowRight, Play, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, Play, Sparkles } from 'lucide-react'
 import { AnchorButton, CtaLink } from '../components/CtaLink'
 import { HeroShowcase } from '../components/HeroShowcase'
 import { WELCOME_CREDITS } from '../content'
@@ -30,7 +30,7 @@ export function Hero() {
   return (
     <section id="topo" aria-labelledby="hero-title" className="relative isolate overflow-hidden pt-16">
       <Backdrop />
-      <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pt-12 text-center sm:px-6 sm:pt-16 lg:pt-20">
+      <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pt-10 text-center sm:px-6 sm:pt-12 lg:pt-10">
         <motion.p
           {...enter(0)}
           className="inline-flex items-center gap-2 rounded-full bg-white/[0.04] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-300 ring-1 ring-white/[0.1] backdrop-blur sm:text-xs"
@@ -42,21 +42,18 @@ export function Hero() {
         <motion.h1
           {...enter(0.1)}
           id="hero-title"
-          className="mt-7 max-w-[15ch] text-balance font-landing text-[2.35rem] font-bold leading-[1] tracking-[-0.045em] text-zinc-50 sm:max-w-[18ch] sm:text-[3.5rem] lg:max-w-none lg:text-[4.25rem] xl:text-[4.6rem]"
+          className="mt-6 max-w-[14ch] text-balance font-landing text-[2.4rem] font-bold leading-[1] tracking-[-0.045em] text-zinc-50 sm:max-w-[20ch] sm:text-[3.5rem] lg:text-[3.75rem] xl:text-[4.1rem]"
         >
-          <span className="block">Sua criatividade não tem limites.</span>{' '}
-          <span className="block text-zinc-300">
-            Suas ferramentas também{' '}
-            <span className="bg-gradient-to-r from-accent-soft lg:block via-[#c4b5fd] to-galaxy bg-clip-text text-transparent">não deveriam ter.</span>
-          </span>
+          <span className="block text-balance">Tudo o que você precisa para criar com IA.</span>{' '}
+          <span className="mt-1 block bg-gradient-to-r from-accent-soft via-[#c4b5fd] to-galaxy bg-clip-text pb-[0.08em] text-transparent">Em um só lugar.</span>
         </motion.h1>
 
-        <motion.p {...enter(0.2)} className="mt-6 max-w-[34rem] text-pretty text-base leading-relaxed text-zinc-400 sm:mt-7 sm:text-lg">
-          Crie imagens, vídeos e conteúdos com inteligência artificial em um só lugar. Menos ferramentas, mais possibilidades para transformar suas ideias em
-          conteúdo.
+        <motion.p {...enter(0.2)} className="mt-5 max-w-[38rem] text-pretty text-base leading-relaxed text-zinc-300/80 sm:text-[17px] lg:text-lg">
+          Crie vídeos incríveis, imagens profissionais e conteúdos que chamam atenção usando inteligência artificial. Explore ferramentas poderosas sem
+          precisar alternar entre várias plataformas.
         </motion.p>
 
-        <motion.div {...enter(0.3)} className="mt-9 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
+        <motion.div {...enter(0.3)} className="mt-8 flex w-full flex-col lg:mt-7 justify-center gap-3 sm:w-auto sm:flex-row">
           <CtaLink
             cta="hero_primary"
             size="lg"
@@ -72,10 +69,16 @@ export function Hero() {
           </AnchorButton>
         </motion.div>
 
-        <motion.ul {...enter(0.38)} aria-label="Garantias" className="mt-7 flex flex-wrap justify-center gap-x-5 gap-y-2 text-[13px] text-zinc-500">
+        <motion.ul
+          {...enter(0.38)}
+          aria-label="Garantias"
+          className="mt-6 flex flex-col items-center gap-2 text-sm lg:mt-5 text-zinc-300 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-7"
+        >
           {TRUST.map((item) => (
             <li key={item} className="flex items-center gap-2">
-              <span aria-hidden="true" className="size-1 rounded-full bg-accent-soft" />
+              <span aria-hidden="true" className="grid size-4 place-items-center rounded-full bg-accent/20 text-accent-soft ring-1 ring-accent/30">
+                <Check className="size-2.5" strokeWidth={3} />
+              </span>
               {item}
             </li>
           ))}

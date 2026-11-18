@@ -14,10 +14,10 @@ interface Capability {
 
 // Cada cartão é uma ferramenta que existe hoje no app, com o modelo que ela usa de verdade.
 const CAPABILITIES: readonly Capability[] = [
-  { icon: ImageIcon, label: 'Imagem', detail: 'Nano Banana 2 e FLUX.2', anchor: 'left-[-3%] top-[14%]', floatDelay: 0 },
-  { icon: Clapperboard, label: 'Vídeo', detail: 'Kling 3.0 e Seedance 2.0', anchor: 'right-[-3%] top-[6%]', floatDelay: 1.2 },
-  { icon: PenLine, label: 'Roteiro e legenda', detail: 'Vynkio AI com Claude', anchor: 'left-[2%] bottom-[10%]', floatDelay: 2.4 },
-  { icon: UserRound, label: 'Personagem', detail: 'O mesmo rosto em tudo', anchor: 'right-[2%] bottom-[18%]', floatDelay: 3.6 },
+  { icon: ImageIcon, label: 'Imagem', detail: 'Nano Banana 2 e FLUX.2', anchor: 'left-[-3%] top-[20%] xl:left-[-9%]', floatDelay: 0 },
+  { icon: Clapperboard, label: 'Vídeo', detail: 'Kling 3.0 e Seedance 2.0', anchor: 'right-[-3%] top-[8%] xl:right-[-9%]', floatDelay: 1.2 },
+  { icon: PenLine, label: 'Roteiro e legenda', detail: 'Vynkio AI com Claude', anchor: 'left-[0%] bottom-[12%] xl:left-[-6%]', floatDelay: 2.4 },
+  { icon: UserRound, label: 'Personagem', detail: 'O mesmo rosto em tudo', anchor: 'right-[0%] bottom-[22%] xl:right-[-6%]', floatDelay: 3.6 },
 ]
 
 function CapabilityCard({ capability, className }: { readonly capability: Capability; readonly className?: string }) {
@@ -25,12 +25,15 @@ function CapabilityCard({ capability, className }: { readonly capability: Capabi
   return (
     <div
       className={clsx(
-        'flex items-center gap-3 rounded-2xl bg-[#0d0c18]/80 px-3.5 py-2.5 text-left ring-1 ring-white/[0.1] backdrop-blur-xl',
-        'shadow-[0_18px_50px_-18px_rgba(124,58,237,0.55)]',
+        'relative flex items-center gap-3 overflow-hidden rounded-2xl px-3.5 py-2.5 text-left backdrop-blur-xl backdrop-saturate-150',
+        'bg-gradient-to-b from-[#1a1730]/90 to-[#0c0b16]/90 ring-1 ring-white/[0.12]',
+        'shadow-[inset_0_1px_0_0_rgb(255_255_255/0.08),0_12px_40px_-16px_rgb(124_58_237/0.45),0_2px_8px_-2px_rgb(0_0_0/0.5)]',
+        'transition-[box-shadow,background-color] duration-500',
         className,
       )}
     >
-      <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-accent/15 text-accent-soft ring-1 ring-accent/30">
+      <span aria-hidden="true" className="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-accent-soft/50 to-transparent" />
+      <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent/30 to-galaxy/20 text-accent-soft ring-1 ring-accent/30 shadow-[0_0_18px_-4px_rgb(124_58_237/0.6)]">
         <Icon className="size-4" aria-hidden="true" />
       </span>
       <span className="leading-tight">
@@ -50,7 +53,7 @@ export function HeroShowcase() {
   const still = reduceMotion ?? false
 
   return (
-    <div className="relative mx-auto mt-14 w-full max-w-5xl sm:mt-16">
+    <div className="relative mx-auto mt-9 w-full max-w-5xl sm:mt-10 lg:mt-7">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-[8%] top-[6%] -z-10 h-[80%] rounded-full bg-[radial-gradient(closest-side,rgba(124,58,237,0.45),rgba(59,130,246,0.12)_60%,transparent)] blur-3xl"
@@ -58,7 +61,7 @@ export function HeroShowcase() {
       <div className="[perspective:1800px]">
         <motion.div
           initial={still ? false : { opacity: 0, y: 48, rotateX: 22, scale: 0.94 }}
-          animate={{ opacity: 1, y: 0, rotateX: 8, scale: 1 }}
+          animate={{ opacity: 1, y: 0, rotateX: 6, scale: 1 }}
           transition={{ duration: 1.3, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="relative origin-bottom lg:mx-[7%]"
         >
@@ -89,13 +92,13 @@ export function HeroShowcase() {
             key={capability.label}
             className={clsx('absolute', capability.anchor)}
             initial={still ? false : { opacity: 0 }}
-            animate={still ? { opacity: 1 } : { opacity: 1, y: [0, -8, 0] }}
+            animate={still ? { opacity: 1 } : { opacity: 1, y: [0, -5, 0] }}
             transition={
               still
                 ? undefined
                 : {
-                    opacity: { duration: 0.7, delay: 1.1 + position * 0.12 },
-                    y: { duration: 7, delay: 1.1 + capability.floatDelay, repeat: Infinity, ease: 'easeInOut' },
+                    opacity: { duration: 0.9, delay: 1.1 + position * 0.12 },
+                    y: { duration: 9, delay: 1.1 + capability.floatDelay, repeat: Infinity, ease: 'easeInOut' },
                   }
             }
           >
