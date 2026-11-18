@@ -67,7 +67,10 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-[1.6fr_repeat(4,1fr)] lg:gap-8">
           <div className="col-span-2 lg:col-span-1">
             <Logo />
-            <p className="mt-4 max-w-xs text-pretty leading-relaxed text-zinc-400">Inteligência artificial para transformar ideias em novas possibilidades.</p>
+            <p className="mt-4 max-w-xs text-pretty leading-relaxed text-zinc-400">
+              Sua criatividade, potencializada pela inteligência artificial. Uma plataforma que reúne ferramentas para criar imagens, vídeos e conteúdos digitais em
+              um só lugar.
+            </p>
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
               className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-full bg-white/[0.03] px-4 text-[13px] text-zinc-300 ring-1 ring-white/[0.08] transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
@@ -91,7 +94,8 @@ export function Footer() {
         </div>
         <div className="mt-12 flex flex-col gap-3 border-t border-white/[0.06] pt-6 text-[13px] text-zinc-500 md:flex-row md:items-center md:justify-between">
           <p className="max-w-2xl text-pretty">
-            Todo conteúdo criado na Vynkio, incluindo os exemplos desta página, é gerado por inteligência artificial. As pessoas mostradas não existem.
+            <span className="font-semibold text-zinc-300">Transparência em cada criação.</span> As imagens, vídeos e personagens apresentados nesta página podem ter sido
+            criados com inteligência artificial. Pessoas e personagens sintéticos exibidos nos exemplos são fictícios e não representam indivíduos reais.
           </p>
           <p className="shrink-0">© {new Date().getFullYear()} Vynkio</p>
         </div>
