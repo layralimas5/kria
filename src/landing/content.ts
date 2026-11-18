@@ -81,7 +81,19 @@ export function avatar(id: string): Clip {
 export const REAL_GALLERY = AVATARS.every((clip) => clip.generated)
 
 /** Prints do app em modo demo (`npm run landing:screens`), em `public/landing/app`. */
-export type Screen = 'dashboard' | 'dashboard-mobile' | 'imagem' | 'video' | 'personagem' | 'ideias' | 'roteiro' | 'copy' | 'ugc'
+export type Screen =
+  | 'dashboard'
+  | 'dashboard-mobile'
+  | 'imagem'
+  | 'video'
+  | 'personagem'
+  | 'personagem-movimento'
+  | 'estudio-imagem'
+  | 'estudio-video'
+  | 'ideias'
+  | 'roteiro'
+  | 'copy'
+  | 'ugc'
 
 export function screenSrc(screen: Screen): string {
   return `/landing/app/${screen}.jpg`

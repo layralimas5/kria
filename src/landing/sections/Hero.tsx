@@ -63,7 +63,7 @@ export function Hero() {
             Começar a criar
             <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
           </CtaLink>
-          <AnchorButton href="#demo" size="lg" tone="ghost" className="group w-full backdrop-blur sm:w-auto">
+          <AnchorButton href="#como-funciona" size="lg" tone="ghost" className="group w-full backdrop-blur sm:w-auto">
             <Play className="size-4 fill-current text-accent-soft transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />
             Conhecer a plataforma
           </AnchorButton>
