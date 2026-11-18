@@ -49,7 +49,7 @@
     }
   }
 
-  /* Brilho do topo da landing: deriva lenta, só transform. */
+  /* Luz do CTA final: respira devagar, só transform e opacidade. */
   @keyframes cta-breathe {
     from {
       transform: translateX(-50%) scale(1);
@@ -61,24 +61,7 @@
     }
   }
 
-  @keyframes flow-line {
-    from {
-      transform: translateX(-100%);
-    }
-    to {
-      transform: translateX(300%);
-    }
-  }
-
-  @keyframes gradient-pan {
-    from {
-      background-position: 0% 50%;
-    }
-    to {
-      background-position: 100% 50%;
-    }
-  }
-
+  /* Reflexo que passa pela peça da vitrine enquanto a mídia não existe. */
   @keyframes tile-sheen {
     0%,
     55% {
@@ -89,6 +72,7 @@
     }
   }
 
+  /* Brilho do topo da landing: deriva lenta, só transform. */
   @keyframes hero-drift {
     from {
       transform: translate3d(-50%, 0, 0) scale(1);

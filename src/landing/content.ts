@@ -136,15 +136,6 @@ export const AI_MODELS: readonly AiModel[] = [
   { name: 'Claude', kind: 'Texto', logo: 'claude-color' },
 ]
 
-/** Uma ideia, os entregáveis que saem dela no Vynkio. Cada etapa é uma ferramenta que existe hoje. */
-export const PIPELINE = [
-  { step: 'Ideia', tool: 'Vynkio AI · Ideias', text: '"Rotina de pele de 3 passos antes do café"' },
-  { step: 'Roteiro', tool: 'Vynkio AI · Roteiro', text: 'Gancho, 4 cenas cronometradas e CTA' },
-  { step: 'Legenda e copy', tool: 'Vynkio AI · Copy', text: 'Três versões de legenda com a mesma marca' },
-  { step: 'Imagem', tool: 'Studio · Nano Banana 2', text: 'Cada cena do roteiro vira foto com um clique' },
-  { step: 'Vídeo', tool: 'Studio · Kling ou Seedance', text: 'A foto ganha movimento, áudio ou fala' },
-] as const
-
 export const FAQ_TOPICS = ['Plataforma', 'Créditos', 'Assinatura e pagamento'] as const
 export type FaqTopic = (typeof FAQ_TOPICS)[number]
 
