@@ -1,4 +1,4 @@
-// Peças da vitrine de criações (topo e "Como funciona"). Cada uma aponta para um prompt de
+// Peças da vitrine de criações de "Como funciona". Cada uma aponta para um prompt de
 // `showcase.json` (foto, gerada por `landing:showcase`) ou de `avatars.json` (vídeo, `landing:avatars`).
 // O modelo é o que o script usa para gerar a peça: foto com referência sai do Nano Banana 2 Edição.
 import type { Creation } from './components/CreationTile'
@@ -15,11 +15,6 @@ function video(id: string, label = 'Vídeo com IA'): Creation {
   const clip = avatar(id)
   return { kind: 'video', clip, label, title: clip.title }
 }
-
-export const HERO_CREATIONS = {
-  main: photo('hero-produto', 'Imagem publicitária', 'Perfume em alta velocidade'),
-  side: [video('vovo-gamer'), photo('g-cafe', 'Fotografia realista'), photo('g-tenis', 'Criativo para redes')],
-} as const
 
 export const TAB_CREATIONS = {
   imagens: [photo('g-hamburguer', 'Publicitária'), photo('g-moqueca', 'Gastronomia'), photo('g-quarto', 'Interiores')],

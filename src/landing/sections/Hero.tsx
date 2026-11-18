@@ -1,7 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight, Check, Play, Sparkles } from 'lucide-react'
 import { AnchorButton, CtaLink } from '../components/CtaLink'
-import { HeroShowcase } from '../components/HeroShowcase'
 import { WELCOME_CREDITS } from '../content'
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const
@@ -30,7 +29,7 @@ export function Hero() {
   return (
     <section id="topo" aria-labelledby="hero-title" className="relative isolate overflow-hidden pt-16">
       <Backdrop />
-      <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pt-10 text-center sm:px-6 sm:pt-12 lg:pt-10">
+      <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-4 pt-10 text-center sm:px-6 sm:pb-6 sm:pt-12 lg:pt-10">
         <motion.p
           {...enter(0)}
           className="inline-flex items-center gap-2 rounded-full bg-white/[0.04] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-300 ring-1 ring-white/[0.1] backdrop-blur sm:text-xs"
@@ -84,7 +83,6 @@ export function Hero() {
           ))}
         </motion.ul>
 
-        <HeroShowcase />
       </div>
     </section>
   )

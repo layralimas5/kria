@@ -20,9 +20,6 @@ interface CreationTileProps {
   readonly tone?: Tone
   /** Peça pequena: só o selo e o título, sem o prompt. */
   readonly compact?: boolean
-  /** Peça muito pequena: esconde o prompt, que não caberia. */
-  readonly hidePrompt?: boolean
-  readonly eager?: boolean
   readonly className?: string
 }
 
@@ -40,9 +37,9 @@ function details(creation: Creation) {
   return { prompt: creation.clip.prompt, model: creation.clip.model, ready: creation.clip.generated }
 }
 
-function Media({ creation, eager }: { readonly creation: Creation; readonly eager: boolean }) {
+function Media({ creation }: { readonly creation: Creation }) {
   if (creation.kind === 'video') {
-    return <LoopVideo clip={creation.clip} eager={eager} className="absolute inset-0 size-full object-cover" />
+    return <LoopVideo clip={creation.clip} className="absolute inset-0 size-full object-cover" />
   }
   const { media } = creation.image
   if (!media) return null
@@ -52,8 +49,7 @@ function Media({ creation, eager }: { readonly creation: Creation; readonly eage
       width={media.width}
       height={media.height}
       alt={creation.title}
-      loading={eager ? 'eager' : 'lazy'}
-      fetchPriority={eager ? 'high' : 'auto'}
+      loading="lazy"
       decoding="async"
       className="absolute inset-0 size-full object-cover"
     />
@@ -64,7 +60,7 @@ function Media({ creation, eager }: { readonly creation: Creation; readonly eage
  * Peça feita no Vynkio. Com a mídia gerada, mostra o resultado e o modelo que gerou. Sem ela, mostra o
  * prompt de verdade que vai gerá-la, sobre um fundo abstrato: nunca imagem de outra plataforma no lugar.
  */
-export function CreationTile({ creation, tone = 'violet', compact = false, hidePrompt = false, eager = false, className }: CreationTileProps) {
+export function CreationTile({ creation, tone = 'violet', compact = false, className }: CreationTileProps) {
   const { label, title } = creation
   const { prompt, model, ready } = details(creation)
   const KindIcon = creation.kind === 'video' ? Clapperboard : ImageIcon
@@ -72,7 +68,7 @@ export function CreationTile({ creation, tone = 'violet', compact = false, hideP
   return (
     <figure className={clsx('group/tile relative isolate overflow-hidden bg-[#0b0a14]', className)}>
       {ready ? (
-        <Media creation={creation} eager={eager} />
+        <Media creation={creation} />
       ) : (
         <div aria-hidden="true" className={clsx('absolute inset-0 transition-transform duration-[1.2s] ease-out group-hover/tile:scale-[1.04] motion-reduce:transition-none', TONES[tone])}>
           <div className="absolute inset-0 opacity-[0.18] [background-image:radial-gradient(rgba(255,255,255,0.5)_0.5px,transparent_0.5px)] [background-size:3px_3px]" />
@@ -86,7 +82,7 @@ export function CreationTile({ creation, tone = 'violet', compact = false, hideP
         <span className={clsx('min-w-0 truncate', compact && 'sr-only sm:not-sr-only')}>{label}</span>
       </span>
 
-      {!ready && !hidePrompt && (
+      {!ready && (
         <blockquote
           className={clsx(
             'absolute inset-x-0 text-left font-landing text-zinc-100/90',
