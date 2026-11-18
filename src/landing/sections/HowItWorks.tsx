@@ -5,17 +5,11 @@ import { useRef, useState, type KeyboardEvent } from 'react'
 import { CtaLink } from '../components/CtaLink'
 import { Reveal } from '../components/Reveal'
 import { BrowserFrame, ScreenImage } from '../components/ScreenFrame'
+import { CreationTile, type Creation } from '../components/CreationTile'
 import { ShowcaseVideo } from '../components/ShowcaseVideo'
-import { AVATARS } from '../content'
-import { SHOWCASE } from '../showcase'
 import { TOOL_TABS, type ToolTab, type ToolTabId } from '../toolTabs'
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const
-
-// Resultado real feito no Vynkio entra no lugar da tela assim que for gerado (`landing:avatars`, `landing:showcase`).
-// Até lá, a aba mostra a tela real da ferramenta: nada de mídia de outra plataforma.
-const REAL_CLIP = AVATARS.find((clip) => clip.generated)
-const REAL_PHOTOS = SHOWCASE.filter((image) => image.media !== null).slice(0, 3)
 
 const panelId = (id: ToolTabId) => `ferramenta-${id}`
 const tabId = (id: ToolTabId) => `aba-${id}`
@@ -81,34 +75,51 @@ function ToolTabs({ active, onSelect }: { readonly active: ToolTabId; readonly o
   )
 }
 
-/** Mídia real da ferramenta quando existe; senão, a tela real dela. */
+const TONES = ['violet', 'blue', 'amber', 'rose'] as const
+// Layout de cada aba de mídia; `conteudo` mostra o roteiro, sem grade.
+const GRID: Record<ToolTabId, string> = {
+  conteudo: '',
+  imagens: 'grid-cols-3',
+  videos: 'mx-auto max-w-[34rem] grid-cols-3',
+  personagens: 'grid-cols-2 sm:grid-cols-4',
+}
+const TILE_ASPECT: Record<ToolTabId, string> = {
+  conteudo: '',
+  imagens: 'aspect-[3/4]',
+  videos: 'aspect-[9/16]',
+  personagens: 'aspect-[3/4]',
+}
+const TILE_FRAME = 'rounded-2xl ring-1 ring-white/[0.1] shadow-[0_24px_60px_-30px_rgb(124_58_237/0.6)]'
+
+function CreationItem({ creation, index, aspect }: { readonly creation: Creation; readonly index: number; readonly aspect: string }) {
+  if (creation.kind === 'video' && creation.clip.generated) {
+    const { clip } = creation
+    return <ShowcaseVideo src={clip.src} poster={clip.poster} label={`${clip.title}, feito no Vynkio com ${clip.model}`} />
+  }
+  return <CreationTile creation={creation} tone={TONES[index % TONES.length]} compact className={clsx(aspect, TILE_FRAME)} />
+}
+
+/** Resultados da ferramenta; no Vynkio AI, o roteiro que ele escreve. */
 function ToolVisual({ tab }: { readonly tab: ToolTab }) {
-  if (tab.id === 'videos' && REAL_CLIP) {
-    return (
-      <ShowcaseVideo src={REAL_CLIP.src} poster={REAL_CLIP.poster} label={`${REAL_CLIP.title}, feito com ${REAL_CLIP.model}`} className="mx-auto w-full max-w-[19rem]" />
-    )
-  }
-  if (tab.id === 'imagens' && REAL_PHOTOS.length === 3) {
-    return (
-      <ul className="grid grid-cols-3 gap-2.5">
-        {REAL_PHOTOS.map((photo) =>
-          photo.media ? (
-            <li key={photo.id} className="overflow-hidden rounded-2xl ring-1 ring-white/[0.08]">
-              <img src={photo.media.src} width={photo.media.width} height={photo.media.height} alt={photo.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-            </li>
-          ) : null,
-        )}
-      </ul>
-    )
-  }
   const { visual } = tab
+  if (visual.kind === 'screen') {
+    return (
+      <>
+        <BrowserFrame label={visual.label} className="ring-1 ring-accent/15">
+          <ScreenImage screen={visual.screen} width={visual.width} height={visual.height} alt={visual.alt} />
+        </BrowserFrame>
+        <p className="mt-3 text-center text-xs text-zinc-500">Roteiro de exemplo, escrito pelo Vynkio AI no modo demonstração.</p>
+      </>
+    )
+  }
   return (
-    <>
-      <BrowserFrame label={visual.label} className="ring-1 ring-accent/15">
-        <ScreenImage screen={visual.screen} width={visual.width} height={visual.height} alt={visual.alt} />
-      </BrowserFrame>
-      <p className="mt-3 text-center text-xs text-zinc-500">Tela real do app, no modo demonstração.</p>
-    </>
+    <ul aria-label={`Criações de ${tab.label}`} className={clsx('grid gap-2.5 sm:gap-3', GRID[tab.id])}>
+      {visual.items.map((creation, index) => (
+        <li key={index} className={clsx(index % 2 === 1 && 'sm:translate-y-4')}>
+          <CreationItem creation={creation} index={index} aspect={TILE_ASPECT[tab.id]} />
+        </li>
+      ))}
+    </ul>
   )
 }
 
