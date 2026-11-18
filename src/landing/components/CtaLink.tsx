@@ -17,7 +17,9 @@ const SIZES = {
 /** Botão "com degrau": a sombra sólida embaixo some ao apertar. */
 const PRESSABLE = {
   accent: 'bg-accent text-accent-ink shadow-[0_3px_0_0_var(--color-accent-deep)] hover:bg-accent-strong active:shadow-none',
-  light: 'bg-zinc-50 text-zinc-950 shadow-[0_3px_0_0_#a1a1aa] hover:bg-white active:shadow-none',
+  /** O mesmo roxo com halo, para o botão principal do topo. */
+  glow: 'bg-accent text-accent-ink shadow-[0_3px_0_0_var(--color-accent-deep),0_18px_50px_-12px_rgb(124_58_237/0.7)] hover:bg-accent-strong hover:shadow-[0_3px_0_0_var(--color-accent-deep),0_22px_60px_-10px_rgb(139_92_246/0.85)] active:shadow-none',
+  light:'bg-zinc-50 text-zinc-950 shadow-[0_3px_0_0_#a1a1aa] hover:bg-white active:shadow-none',
   ghost: 'bg-white/[0.06] text-zinc-100 ring-1 ring-white/[0.1] hover:bg-white/[0.1]',
 } as const
 
