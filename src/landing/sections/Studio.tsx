@@ -50,12 +50,6 @@ const AUDIENCES: readonly Audience[] = [
   { icon: Building2, title: 'Negócios', text: 'Post da loja com foto do cenário, legenda no tom da marca e uma marca por cliente para agências.' },
 ]
 
-const BENEFITS = [
-  { title: 'Tudo num lugar', text: 'Texto, imagem, vídeo e edição na mesma conta e no mesmo saldo.' },
-  { title: 'Menos retrabalho', text: 'O que sai de uma ferramenta entra na próxima, sem copiar e colar.' },
-  { title: 'Sem curva técnica', text: 'Em português, sem prompt em inglês e com o custo no botão antes de gerar.' },
-] as const
-
 function ToolCard({ tool, index }: { readonly tool: Tool; readonly index: number }) {
   const reduceMotion = useReducedMotion()
   const Icon = tool.icon
@@ -100,16 +94,8 @@ export function Studio() {
           lead="Pare de pular entre o chat do roteiro, o site da imagem e o app do vídeo. No Vynkio, cada etapa conversa com a próxima."
         />
 
-        <ul className="mt-10 grid gap-3 sm:grid-cols-3">
-          {BENEFITS.map(({ title, text }, index) => (
-            <Reveal key={title} as="li" delay={index * 0.06} className="rounded-2xl bg-white/[0.02] p-5 ring-1 ring-white/[0.06]">
-              <p className="text-[15px] font-semibold text-zinc-50">{title}</p>
-              <p className="mt-1 text-sm text-zinc-400">{text}</p>
-            </Reveal>
-          ))}
-        </ul>
 
-        <ul aria-label="Ferramentas disponíveis" className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <ul aria-label="Ferramentas disponíveis" className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {TOOLS.map((tool, index) => (
             <ToolCard key={tool.title} tool={tool} index={index} />
           ))}
