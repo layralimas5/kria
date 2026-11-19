@@ -19,10 +19,9 @@ import { Studio } from './sections/Studio'
 import { Trust } from './sections/Trust'
 import { VideoTour } from './sections/VideoTour'
 import { WhyVynkio } from './sections/WhyVynkio'
-import { Workflow } from './sections/Workflow'
 
-// Ordem: topo com a vitrine de criações, modelos, o estúdio e para quem, showcase das ferramentas, por que Vynkio, vídeo,
-// comparação de fluxos, exemplos reais (só com mídia gerada), garantias, planos, dúvidas, chamada final e rodapé.
+// Ordem: topo, modelos, o estúdio e para quem, showcase das ferramentas, por que Vynkio, vídeo,
+// exemplos reais (só com mídia gerada), garantias, planos, dúvidas, chamada final e rodapé.
 // O vídeo do tour só entra quando existe (`TOUR_VIDEO`): aviso de "em produção" passa a ideia de produto inacabado.
 // Preços v2 ligados desde a virada (0027); `VITE_PRICING_V2=false` volta a vitrine antiga.
 /** Barra fina no topo que acompanha a leitura da página. */
@@ -75,7 +74,6 @@ export function LandingPage() {
         <HowItWorks />
         <WhyVynkio />
         {TOUR_VIDEO && <VideoTour />}
-        <Workflow />
         <Examples />
         <Trust />
         {PRICING_V2 ? <PricingV2 /> : <Pricing />}
