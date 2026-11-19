@@ -8,15 +8,17 @@ interface ShowcaseVideoProps {
   /** Descreve o vídeo para quem não vê (título e modelo que gerou). */
   readonly label: string
   readonly className?: string
+  /** Proporção do vídeo (classe `aspect-*`). */
+  readonly aspect?: string
 }
 
 type PlayerState = 'idle' | 'loading' | 'playing' | 'paused'
 
 /**
- * Player de um vídeo gerado no Vynkio. Nada baixa antes do clique (`preload="none"`, só o pôster) e só
+ * Player de vídeo da landing. Nada baixa antes do clique (`preload="none"`, só o pôster) e só
  * toca quando a pessoa pede, então nunca há dois vídeos tocando juntos na página.
  */
-export function ShowcaseVideo({ src, poster, label, className }: ShowcaseVideoProps) {
+export function ShowcaseVideo({ src, poster, label, className, aspect = 'aspect-video' }: ShowcaseVideoProps) {
   const video = useRef<HTMLVideoElement>(null)
   const [state, setState] = useState<PlayerState>('idle')
   const playing = state === 'playing' || state === 'loading'
@@ -49,7 +51,7 @@ export function ShowcaseVideo({ src, poster, label, className }: ShowcaseVideoPr
         onWaiting={() => setState('loading')}
         onPlaying={() => setState('playing')}
         onPause={() => setState('paused')}
-        className="block aspect-[9/16] h-full max-h-[34rem] w-full object-contain"
+        className={clsx('block h-full w-full object-cover', aspect)}
       />
       <button
         type="button"

@@ -113,6 +113,19 @@ export type TourVideo =
 
 export const TOUR_VIDEO: TourVideo | null = null
 
+/**
+ * Vídeo de "Conheça o poder da Vynkio" (`#como-funciona`). Enquanto for null, a seção mostra o quadro vazio
+ * no tamanho do vídeo. Arquivo em `public/landing/`, com pôster tirado do próprio vídeo.
+ */
+export interface PlatformVideo {
+  readonly src: string
+  readonly poster: string
+  /** Descreve o vídeo para quem não vê. */
+  readonly label: string
+}
+
+export const PLATFORM_VIDEO: PlatformVideo | null = null
+
 export type ModelKind = 'Imagem' | 'Vídeo' | 'Texto' | 'Edição' | 'Voz'
 
 export interface AiModel {

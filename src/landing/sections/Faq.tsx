@@ -1,9 +1,9 @@
 import clsx from 'clsx'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { Mail, MessageCircleQuestion, Plus } from 'lucide-react'
+import { MessageCircleQuestion, Plus } from 'lucide-react'
 import { useId, useState } from 'react'
 import { Reveal } from '../components/Reveal'
-import { FAQ, FAQ_TOPICS, SUPPORT_EMAIL, type FaqItem } from '../content'
+import { FAQ, FAQ_TOPICS, type FaqItem } from '../content'
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const
 
@@ -137,16 +137,6 @@ export function Faq() {
           ))}
         </div>
 
-        <Reveal className="mt-10 flex flex-col items-center gap-1 text-center text-sm text-zinc-400 sm:flex-row sm:justify-center sm:gap-2">
-          <span>Não encontrou sua resposta?</span>
-          <a
-            href={`mailto:${SUPPORT_EMAIL}`}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-1 font-semibold text-accent-soft underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            <Mail className="size-4" aria-hidden="true" />
-            {SUPPORT_EMAIL}
-          </a>
-        </Reveal>
       </div>
     </section>
   )

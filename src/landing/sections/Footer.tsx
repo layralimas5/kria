@@ -1,13 +1,12 @@
-import { ArrowUpRight, Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
-import { BILLING_ANCHOR, LOGIN_PATH, PRIVACY_ANCHOR, SIGNUP_PATH, SUPPORT_EMAIL } from '../content'
+import { BILLING_ANCHOR, LOGIN_PATH, PRIVACY_ANCHOR, SIGNUP_PATH } from '../content'
 
 const LINK =
   'group inline-flex min-h-8 items-center gap-1 rounded text-zinc-400 transition-colors duration-200 hover:text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 
 // Os links da landing apontam para a home (`/#...`) para funcionarem também no rodapé dos termos.
-type FooterLink = { readonly label: string } & ({ readonly href: string; readonly external?: true } | { readonly to: string })
+type FooterLink = { readonly label: string } & ({ readonly href: string } | { readonly to: string })
 
 const COLUMNS: readonly { readonly title: string; readonly links: readonly FooterLink[] }[] = [
   {
@@ -30,7 +29,6 @@ const COLUMNS: readonly { readonly title: string; readonly links: readonly Foote
     title: 'Suporte',
     links: [
       { label: 'Perguntas frequentes', href: '/#faq' },
-      { label: 'Contato por e-mail', href: `mailto:${SUPPORT_EMAIL}`, external: true },
     ],
   },
   {
@@ -54,7 +52,6 @@ function FooterAnchor({ link }: { readonly link: FooterLink }) {
   return (
     <a href={link.href} className={LINK}>
       {link.label}
-      {link.external && <ArrowUpRight className="size-3.5 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" />}
     </a>
   )
 }
@@ -71,13 +68,6 @@ export function Footer() {
               Sua criatividade, potencializada pela inteligência artificial. Uma plataforma que reúne ferramentas para criar imagens, vídeos e conteúdos digitais em
               um só lugar.
             </p>
-            <a
-              href={`mailto:${SUPPORT_EMAIL}`}
-              className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-full bg-white/[0.03] px-4 text-[13px] text-zinc-300 ring-1 ring-white/[0.08] transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              <Mail className="size-4 text-accent-soft" aria-hidden="true" />
-              {SUPPORT_EMAIL}
-            </a>
           </div>
           {COLUMNS.map((column) => (
             <nav key={column.title} aria-label={column.title}>
