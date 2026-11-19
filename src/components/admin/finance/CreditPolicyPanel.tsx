@@ -10,7 +10,7 @@ import { Notice } from '../../ui/Notice'
 import { SelectField } from '../../ui/SelectField'
 import { Section } from '../dashboard/DashboardSections'
 import { ActivationPanel } from './ActivationPanel'
-import { CostGuardForm, PriceCheckCard } from './CostGuard'
+import { CostGuardForm, CostPolicyToggle, PriceCheckCard } from './CostGuard'
 import { DataTable, type Column } from './DataTable'
 import { formatBrlValue, formatNumber, formatUsd } from './format'
 import { parseDecimal } from './inputs'
@@ -198,6 +198,9 @@ export function CreditPolicyPanel({ quotes, canManage, onChanged }: { readonly q
           </Section>
           <Section title="Preço no fornecedor">
             <PriceCheckCard onChecked={onChanged} />
+          </Section>
+          <Section title="Trava de custo" description="Ligada, só gera o modelo com tarifa conferida nos últimos dias e sem mudança de preço no fornecedor.">
+            <CostPolicyToggle key={JSON.stringify(settings)} quotes={quotes} onSaved={onChanged} />
           </Section>
           <Section title="Proteções">
             <CostGuardForm key={JSON.stringify(settings)} quotes={quotes} onSaved={onChanged} />
