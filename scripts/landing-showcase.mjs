@@ -11,7 +11,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { chromium } from 'playwright'
-import { MANIFEST, OUT, ROOT, SPECS_FILE, saveJpeg, sizeFor } from './lib/showcase-image.mjs'
+import { MANIFEST, OUT, ROOT, SPECS_FILE, promptFor, saveJpeg, sizeFor } from './lib/showcase-image.mjs'
 
 const SPECS = JSON.parse(fs.readFileSync(SPECS_FILE, 'utf8'))
 
@@ -61,7 +61,7 @@ function asDataUri(file) {
 }
 
 async function generate(browser, spec) {
-  const base = { prompt: spec.prompt, num_images: 1, aspect_ratio: spec.aspect, safety_tolerance: '2' }
+  const base = { prompt: promptFor(spec), num_images: 1, aspect_ratio: spec.aspect, safety_tolerance: '2' }
   const input = spec.ref ? { ...base, image_urls: [asDataUri(path.join(OUT, `${spec.ref}.jpg`))] } : base
   console.log(`  ${spec.id}: gerando${spec.ref ? ` a partir de ${spec.ref}` : ''}...`)
   const result = await run(spec.ref ? EDIT_ENDPOINT : IMAGE_ENDPOINT, input, spec.id)
