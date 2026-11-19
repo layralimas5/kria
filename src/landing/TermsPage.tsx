@@ -5,7 +5,7 @@ import { Logo } from '@/components/Logo'
 import { BILLING_ANCHOR, PRIVACY_ANCHOR, SUPPORT_EMAIL, WELCOME_CREDITS } from './content'
 import { Footer } from './sections/Footer'
 
-const UPDATED_AT = '12 de novembro de 2026'
+const UPDATED_AT = '18 de novembro de 2026'
 
 /** `anchor` deixa a seção acessível por link, como o "Privacidade" do rodapé. */
 const SECTIONS: readonly { title: string; anchor?: string; paragraphs: readonly string[] }[] = [
@@ -30,7 +30,7 @@ const SECTIONS: readonly { title: string; anchor?: string; paragraphs: readonly 
     anchor: BILLING_ANCHOR,
     paragraphs: [
       'O Vynkio funciona por créditos. Cada geração consome uma quantidade de créditos que aparece antes de você confirmar. Se uma geração falhar, os créditos usados nela voltam automaticamente para o seu saldo.',
-      'Os planos (Starter, Pro e Max) são assinaturas mensais cobradas no cartão de crédito pelo Asaas, com renovação automática a cada mês. Cada cobrança paga adiciona os créditos do plano à sua conta. O plano e os créditos só são liberados depois que o Asaas confirma o pagamento.',
+      'Os planos (Starter, Pro e Max) são assinaturas mensais pagas por Pix ou cartão de crédito pelo Asaas. No cartão, a renovação é automática a cada mês; no Pix, o Asaas envia uma cobrança nova a cada mês, e o plano fica em atraso se ela não for paga. Cada cobrança paga adiciona os créditos do plano à sua conta. O plano e os créditos só são liberados depois que o Asaas confirma o pagamento.',
       'Os créditos do plano valem para o período pago e não acumulam: a cada renovação, o saldo do plano é substituído pelos créditos do novo período. A geração usa primeiro os créditos do plano. Também é possível comprar pacotes avulsos, pagos uma vez por Pix ou cartão; esses créditos, assim como os de boas-vindas, não vencem.',
       'Para proteger a sua conta de gasto fora do normal, cada plano tem um limite de consumo por dia e por mês, além de um número máximo de gerações ao mesmo tempo e de exportações do Multiplicador por mês. Os limites aparecem na página Créditos e consumo. Em caso de instabilidade de um provedor, as gerações podem ser pausadas por um tempo, sem consumir créditos.',
       'Você pode trocar de plano a qualquer momento. A troca vale quando o pagamento do novo plano é confirmado: o plano anterior é encerrado e os créditos do plano passam a ser os do novo.',

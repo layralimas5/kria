@@ -1,5 +1,5 @@
 // Cliente mínimo do Asaas: checkout avulso de créditos (Pix e cartão) e
-// checkout de assinatura mensal (cartão, recorrente), mesmo padrão do Momentumm.
+// checkout de assinatura mensal (Pix ou cartão, recorrente), mesmo padrão do Momentumm.
 //   ASAAS_API_KEY   chave da conta (sandbox ou produção)
 //   ASAAS_ENV       'sandbox' (padrão) ou 'production'
 
@@ -103,10 +103,14 @@ export interface SubscriptionCheckoutInput extends CheckoutUrls {
   readonly priceCents: number
 }
 
-/** Assinatura recorrente: o Asaas guarda o cartão e cobra todo mês a partir de hoje. */
+/**
+ * Assinatura recorrente, a partir de hoje. No cartão, o Asaas guarda o cartão e cobra sozinho todo mês.
+ * No Pix, gera uma cobrança nova a cada ciclo e a pessoa paga; o webhook trata `PAYMENT_RECEIVED` como
+ * pago e `PAYMENT_OVERDUE` como atraso, igual ao cartão.
+ */
 export function createSubscriptionCheckout(input: SubscriptionCheckoutInput): Promise<AsaasCheckout> {
   return call<AsaasCheckout>('POST', '/checkouts', {
-    billingTypes: ['CREDIT_CARD'],
+    billingTypes: ['PIX', 'CREDIT_CARD'],
     chargeTypes: ['RECURRENT'],
     minutesToExpire: 60,
     externalReference: input.subscriptionId,

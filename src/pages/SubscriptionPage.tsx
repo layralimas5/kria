@@ -95,7 +95,7 @@ function CheckoutReturn({ subscriptionId, subscriptions }: { readonly subscripti
   return (
     <Notice>
       <span className="flex items-center gap-2">
-        <Spinner className="size-4" /> Esperando a confirmação do pagamento. No cartão costuma levar alguns segundos.
+        <Spinner className="size-4" /> Esperando a confirmação do pagamento. No cartão e no Pix costuma levar alguns segundos.
       </span>
     </Notice>
   )
@@ -145,7 +145,7 @@ export function SubscriptionPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 pb-10 pt-4">
-      <PageHeader title="Assinatura" description="Créditos todo mês, cobrados no cartão pelo Asaas. Cancele quando quiser." />
+      <PageHeader title="Assinatura" description="Créditos todo mês, pagos no Pix ou no cartão pelo Asaas. Cancele quando quiser." />
 
       {returning && <CheckoutReturn subscriptionId={returning} subscriptions={subscriptions} />}
       {accountError && <Notice tone="error">{accountError}</Notice>}

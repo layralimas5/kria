@@ -70,7 +70,7 @@ export function Pricing() {
             </Reveal>
           ))}
         </ul>
-        <p className="mx-auto mt-6 max-w-6xl text-center text-[13px] text-zinc-400">Cobrança mensal no cartão, pelo Asaas · {SAFETY_LINE}</p>
+        <p className="mx-auto mt-6 max-w-6xl text-center text-[13px] text-zinc-400">Cobrança mensal no Pix ou no cartão, pelo Asaas · {SAFETY_LINE}</p>
         <FreeTrial />
         <div className="mx-auto max-w-7xl">
           <CreditsExplainer />
