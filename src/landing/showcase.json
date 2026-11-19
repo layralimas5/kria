@@ -4,7 +4,7 @@
     "title": "Marina, a personagem",
     "category": "Personagem",
     "aspect": "4:5",
-    "prompt": "Retrato editorial de moda, close de rosto e ombros: mulher brasileira de 27 anos, cabelo cacheado castanho volumoso na altura do ombro, sardas marcadas, olhar firme para a câmera, argolas douradas, blazer preto sem nada por baixo, flash direto de estúdio, fundo roxo profundo liso, pele com textura real e poros visíveis, granulação de filme 35mm, estética de capa de revista"
+    "prompt": "Retrato editorial de moda em close de rosto e ombros, enquadramento vertical. Mulher brasileira de 27 anos, pele morena clara, cabelo cacheado castanho volumoso na altura dos ombros, sardas bem marcadas no nariz e nas bochechas, sobrancelhas naturais, olhar firme direto para a câmera, boca relaxada, quase sem maquiagem. Argolas douradas médias e blazer preto estruturado sem nada por baixo. Flash direto de estúdio levemente acima da lente, sombra curta e dura atrás, fundo liso roxo profundo. Lente 85mm, f/4, foco cravado nos olhos. Pele com textura real, poros e pequenas imperfeições visíveis, sem retoque plástico. Granulação de filme 35mm, cores ricas, estética de capa de revista de moda. Esta foto é a referência de rosto das outras cenas: rosto inteiro visível, sem óculos, sem mão no rosto e sem cabelo cobrindo os olhos. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "marina-praia",
@@ -12,7 +12,7 @@
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, em editorial de moda na orla de Copacabana no pôr do sol, vestido de cetim cor de vinho esvoaçando com o vento, ângulo baixo com lente 24mm, céu laranja e roxo, flash direto misturado com a luz do sol, granulação de filme, fotografia de campanha"
+    "prompt": "Usando a foto de referência, mantenha exatamente a mesma mulher: mesmo rosto, mesmas sardas, mesmo tom de pele e o mesmo cabelo cacheado castanho. Editorial de moda na orla de Copacabana no pôr do sol, enquadramento vertical de corpo até os joelhos. Ela veste um vestido longo de cetim cor de vinho que esvoaça com o vento, pés descalços na areia, olhar para o horizonte. Ângulo baixo com lente 24mm, céu em gradiente de laranja para roxo, calçadão de ondas preto e branco e mar ao fundo, sem outras pessoas em destaque. Flash direto misturado com a luz quente do sol batendo de lado. Granulação de filme, cores de campanha de moda. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "marina-cafe",
@@ -20,7 +20,7 @@
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, fotografada através do vidro de um café em São Paulo à noite, estilo paparazzi, reflexos de luzes da rua no vidro, óculos escuros na cabeça, xícara na mão, rindo, cores quentes e verdes de cinema, granulação de filme 35mm"
+    "prompt": "Usando a foto de referência, mantenha exatamente a mesma mulher: mesmo rosto, mesmas sardas e o mesmo cabelo cacheado castanho. Ela está sentada dentro de um café em São Paulo à noite, fotografada de fora através do vidro, estilo flagra de paparazzi com lente 85mm. Rindo de algo fora do quadro, óculos escuros apoiados na cabeça, xícara de café na mão, suéter bege. Reflexos das luzes da rua e de faróis no vidro em primeiro plano, sem cobrir os olhos. Interior com luz quente amarela, exterior em verdes e azuis de cinema. Granulação de filme 35mm, foco nela e o vidro levemente desfocado. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "marina-academia",
@@ -28,7 +28,7 @@
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado preso num rabo alto, em campanha de roupa esportiva, conjunto preto, pele suada brilhando, luz dura de cima com sombras fortes, fundo de concreto escuro, ângulo baixo heroico, alto contraste, fotografia publicitária de marca de esporte"
+    "prompt": "Usando a foto de referência, mantenha exatamente a mesma mulher: mesmo rosto, mesmas sardas e o mesmo cabelo cacheado castanho, agora preso num rabo de cavalo alto. Campanha de roupa esportiva: top e legging pretos lisos, sem marca. Pele suada e brilhando, braços em tensão depois do treino, olhar determinado para a câmera. Luz dura vindo de cima, sombras fortes e bem desenhadas no rosto e no corpo, fundo de concreto escuro com textura. Ângulo baixo heroico com lente 35mm, alto contraste, cores frias com pretos profundos. Fotografia publicitária de marca de esporte. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "marina-cozinha",
@@ -36,7 +36,7 @@
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, numa cozinha retrô dos anos 70 de azulejo verde, mordendo uma laranja, camisa branca larga, sol forte da tarde entrando pela persiana e desenhando listras de sombra no rosto, cores saturadas, estética de filme Kodak Portra"
+    "prompt": "Usando a foto de referência, mantenha exatamente a mesma mulher: mesmo rosto, mesmas sardas e o mesmo cabelo cacheado castanho. Cozinha retrô dos anos 70 com azulejos verdes, armários de madeira e geladeira antiga. Ela está encostada na bancada, mordendo uma laranja, com uma camisa branca larga de linho e mangas dobradas. Sol forte da tarde entrando por uma persiana e desenhando listras de luz e sombra no rosto e na parede. Enquadramento vertical da cintura para cima, lente 50mm. Cores saturadas e quentes, estética de filme Kodak Portra 400, grão visível. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "marina-noite",
@@ -44,7 +44,7 @@
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, no banco de trás de um táxi à noite, jaqueta de couro preta, luzes de neon roxo e azul da cidade passando borradas pela janela, flash direto de celular, olhar por cima do ombro, estética de foto de festa dos anos 2000"
+    "prompt": "Usando a foto de referência, mantenha exatamente a mesma mulher: mesmo rosto, mesmas sardas e o mesmo cabelo cacheado castanho. Ela está no banco de trás de um táxi à noite, de jaqueta de couro preta, olhando por cima do ombro para a câmera com um meio sorriso. Pela janela passam luzes de neon roxo e azul da cidade, borradas em rastros de movimento. Flash direto de celular iluminando o rosto e deixando o fundo escuro. Enquadramento vertical do peito para cima. Estética de foto de festa dos anos 2000: contraste alto, leve desfoque de movimento no fundo, cores saturadas. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "marina-escritorio",
@@ -52,133 +52,97 @@
     "category": "Personagem",
     "aspect": "3:4",
     "ref": "marina",
-    "prompt": "A mesma mulher da foto de referência, com o mesmo rosto, sardas e cabelo cacheado, de terno oversized azul-marinho no terraço de um prédio em São Paulo, braços cruzados, ângulo baixo com lente grande angular, skyline e céu azul de fim de tarde atrás, vento no cabelo, editorial de moda corporativa, cores de cinema"
-  },
-  {
-    "id": "hero-criadora",
-    "title": "Personagens",
-    "category": "Hero",
-    "aspect": "16:9",
-    "prompt": "Frame de cinema ultrarrealista: mulher brasileira de 25 anos com trança longa e jaqueta prateada em cima de um carro antigo no meio de uma estrada de terra vermelha no sertão, pôr do sol atrás, poeira no ar iluminada pelo sol, ângulo baixo, lente anamórfica com reflexo de luz, cores laranja e azul-petróleo, granulação de filme"
-  },
-  {
-    "id": "hero-imovel",
-    "title": "Formatos",
-    "category": "Hero",
-    "aspect": "16:9",
-    "prompt": "Fotografia de arquitetura cinematográfica: casa moderna de concreto e vidro na serra, piscina de borda infinita refletindo o céu, hora azul logo depois do pôr do sol, todas as luzes internas acesas em tom quente, neblina nas montanhas ao fundo, composição simétrica, ultrarrealista"
-  },
-  {
-    "id": "hero-produto",
-    "title": "Vídeo",
-    "category": "Hero",
-    "aspect": "16:9",
-    "prompt": "Fotografia publicitária de alta velocidade: frasco de perfume de vidro roxo explodindo em uma onda de líquido violeta congelada no ar, gotas e pétalas suspensas, luz de contorno azul e rosa, fundo preto, reflexos nítidos no vidro, ultrarrealista, estética de comercial de luxo"
+    "prompt": "Usando a foto de referência, mantenha exatamente a mesma mulher: mesmo rosto, mesmas sardas e o mesmo cabelo cacheado castanho, com vento no cabelo. Editorial de moda corporativa no terraço de um prédio em São Paulo no fim da tarde. Ela usa um terno oversized azul-marinho com camiseta branca, braços cruzados, postura confiante, olhar direto para a câmera. Ângulo baixo com lente grande angular 24mm, skyline de prédios e céu azul limpo atrás, sol baixo marcando o contorno do rosto. Enquadramento vertical de corpo até a coxa. Cores de cinema, contraste equilibrado, grão de filme leve. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "bento-cidade",
     "title": "São Paulo à noite",
     "category": "Bento",
     "aspect": "16:9",
-    "prompt": "Foto aérea de helicóptero sobre São Paulo na hora azul, avenidas com rastros de luz vermelha e branca em longa exposição, prédios iluminados até o horizonte, nuvens baixas roxas refletindo a cidade, cores de cinema, ultrarrealista, sem pessoas"
+    "prompt": "Fotografia aérea feita de helicóptero sobre São Paulo na hora azul, enquadramento horizontal panorâmico. Avenidas largas cortando a cidade em diagonal, com rastros de luz vermelha e branca dos carros em longa exposição. Prédios iluminados até o horizonte, janelas acesas, algumas antenas com luz vermelha no topo. Nuvens baixas em tom roxo refletindo a luz da cidade, céu azul profundo com um resto de claridade. Lente 35mm, nitidez alta em toda a cena, cores de cinema puxadas para roxo e azul com toques quentes das ruas. Ultrarrealista, nenhuma pessoa visível. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-ugc-hidratante",
     "title": "Selfie com flash",
     "category": "UGC",
     "aspect": "9:16",
-    "prompt": "Selfie no espelho com flash direto, estética anos 2000: mulher brasileira de 24 anos de cabelo platinado preso com piranha, top branco, segurando um pote de hidratante cor-de-rosa perto do rosto, banheiro de azulejo azul, brilho estourado do flash no espelho, unhas cromadas, foto de celular ultrarrealista"
+    "prompt": "Selfie vertical no espelho com flash direto, estética de foto de celular dos anos 2000. Mulher brasileira de 24 anos, cabelo platinado preso com uma piranha, top branco simples, unhas cromadas prateadas, segurando perto do rosto um pote de hidratante cor-de-rosa sem rótulo legível, com cara de quem está recomendando o produto. Banheiro com azulejos azul-claro, pia branca e alguns produtos desfocados no fundo. O flash estoura num ponto de luz no espelho e deixa a pele levemente brilhante. Celular aparecendo na mão, enquadramento do peito para cima. Ultrarrealista, cara de post espontâneo de rede social. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-moqueca",
     "title": "Moqueca",
     "category": "Prato",
     "aspect": "4:5",
-    "prompt": "Fotografia gastronômica escura e dramática: moqueca baiana borbulhando em panela de barro, vapor subindo iluminado por um feixe de luz lateral, fundo preto, dendê brilhando, pimenta e coentro frescos, contraste de pintura barroca, ultrarrealista"
+    "prompt": "Fotografia gastronômica escura e dramática, enquadramento vertical. Moqueca baiana borbulhando numa panela de barro escura sobre uma mesa de madeira rústica: postas de peixe, camarões, pimentões vermelhos e amarelos, leite de coco e dendê formando um caldo laranja brilhante. Vapor subindo e iluminado por um feixe de luz lateral estreito, fundo totalmente preto. Coentro fresco e pimenta-de-cheiro por cima, uma colher de pau ao lado. Lente 100mm, ângulo de 45 graus, contraste de pintura barroca (claro-escuro), texturas nítidas. Ultrarrealista. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-casa-praia",
     "title": "Casa de praia",
     "category": "Imóvel",
     "aspect": "4:5",
-    "prompt": "Foto de drone totalmente de cima: casa de praia branca com piscina retangular turquesa, coqueiros projetando sombras longas no fim de tarde, faixa de areia e ondas de espuma branca entrando no quadro, composição gráfica e simétrica, cores saturadas, ultrarrealista"
+    "prompt": "Foto de drone feita totalmente de cima (vista zenital), enquadramento vertical. Casa de praia branca e moderna com telhado plano, deck de madeira e piscina retangular turquesa. Coqueiros projetando sombras longas e finas no fim da tarde. Na parte de baixo do quadro, a faixa de areia clara e as ondas com espuma branca entrando em linhas paralelas. Composição gráfica e simétrica, cores saturadas (turquesa, branco, verde e areia), nitidez alta. Ultrarrealista, sem pessoas. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-tenis",
     "title": "Tênis em cena",
     "category": "Produto",
     "aspect": "1:1",
-    "prompt": "Fotografia publicitária: tênis de corrida branco e roxo flutuando no ar sobre asfalto rachado, pedaços de asfalto e poeira congelados subindo junto, luz de contorno roxa e azul, fundo escuro com fumaça, ângulo baixo, ultrarrealista, estética de campanha esportiva"
+    "prompt": "Fotografia publicitária quadrada. Um tênis de corrida branco com detalhes roxos, sem marca, flutuando no ar logo acima de um asfalto rachado. Pedaços de asfalto, pedrinhas e poeira congelados no ar subindo junto com ele, como se tivesse acabado de pisar com força. Luz de contorno roxa de um lado e azul do outro, fundo escuro com fumaça leve. Ângulo baixo com lente 50mm, foco total no tênis, movimento congelado. Ultrarrealista, estética de campanha esportiva premium. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-podcast",
     "title": "Retrato de cinema",
     "category": "Personagem",
     "aspect": "3:4",
-    "prompt": "Retrato de cinema: homem brasileiro de 34 anos de barba e cabelo raspado, camisa de seda preta, metade do rosto em luz vermelha e metade em luz azul, fumaça leve no ar, olhar sério para a câmera, fundo escuro, granulação de filme, ultrarrealista"
+    "prompt": "Retrato de cinema em enquadramento vertical. Homem brasileiro de 34 anos, pele negra, barba bem aparada e cabelo raspado, camisa de seda preta com o primeiro botão aberto. Metade do rosto iluminada por luz vermelha e a outra metade por luz azul, com a divisão passando pelo nariz. Fumaça leve no ar captando as cores, fundo escuro. Olhar sério e direto para a câmera. Lente 85mm, f/2, granulação de filme, pele com textura real. Ultrarrealista. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-perfume",
     "title": "Perfume",
     "category": "Produto",
     "aspect": "3:4",
-    "prompt": "Fotografia publicitária: frasco de perfume dourado mergulhando em água cristalina com flores de laranjeira, bolhas subindo, cáusticas de luz dançando no vidro, raios de sol atravessando a água, tons dourados e azul-turquesa, ultrarrealista, estética de comercial de luxo"
+    "prompt": "Fotografia publicitária vertical de comercial de luxo. Um frasco de perfume de vidro com tampa dourada, sem rótulo, mergulhando em água cristalina e criando uma explosão de bolhas. Flores de laranjeira brancas boiando e afundando ao redor. Cáusticas de luz dançando sobre o vidro e raios de sol atravessando a água de cima para baixo. Paleta de dourado e azul-turquesa, fundo em gradiente de azul. Lente macro 100mm, alta velocidade, nitidez total no frasco. Ultrarrealista. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-cafe",
     "title": "Espresso",
     "category": "Prato",
     "aspect": "4:5",
-    "prompt": "Macro em alta velocidade: espresso caindo da cafeteira numa xícara de vidro, fio de café e crema congelados no ar, gotas espirrando, grãos de café voando em volta, luz de contorno quente, fundo marrom-escuro, ultrarrealista"
+    "prompt": "Macro vertical em alta velocidade. Um fio de espresso caindo da saída de uma cafeteira dentro de uma xícara de vidro transparente com pires. O fio de café e a crema estão congelados no ar, com gotas espirrando para fora da xícara. Grãos de café torrados voando em volta, alguns desfocados em primeiro plano. Luz de contorno quente vinda de trás, destacando o vapor e o brilho do café, fundo marrom-escuro liso. Lente 100mm macro. Ultrarrealista. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-personal",
     "title": "Treino na chuva",
     "category": "Personagem",
     "aspect": "9:16",
-    "prompt": "Foto de campanha esportiva: atleta brasileira de 28 anos correndo na chuva à noite numa rua vazia, gotas congeladas pelo flash, rastro de luz da cidade em movimento atrás, roupa preta refletiva, expressão de esforço, ângulo baixo, ultrarrealista"
+    "prompt": "Foto vertical de campanha esportiva à noite. Atleta brasileira de 28 anos, pele negra, tranças presas, correndo em direção à câmera numa rua vazia e molhada pela chuva. Roupa preta com faixas refletivas que brilham com o flash. Gotas de chuva congeladas no ar pelo flash, poças refletindo as luzes. Atrás dela, rastros de luz da cidade em movimento (postes e faróis) em longa exposição. Expressão de esforço e foco, ângulo baixo com lente 35mm. Ultrarrealista, cores frias com pontos de luz quente. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-quarto",
     "title": "Suíte",
     "category": "Imóvel",
     "aspect": "4:5",
-    "prompt": "Fotografia de interiores cinematográfica: suíte de hotel boutique de frente para o mar, cortina de linho branca voando com o vento, cama desarrumada com lençóis claros, luz dourada do pôr do sol cortando o quarto em diagonal, poeira no ar, ultrarrealista"
+    "prompt": "Fotografia de interiores cinematográfica, enquadramento vertical. Suíte de hotel boutique de frente para o mar, com uma janela grande aberta para a praia. Cortina de linho branca voando para dentro com o vento. Cama de casal desarrumada com lençóis claros de algodão, piso de madeira clara, uma poltrona de palha no canto. Luz dourada do pôr do sol cortando o quarto em diagonal, com partículas de poeira visíveis no feixe. Lente 24mm, altura de olho, cores quentes e suaves. Ultrarrealista, sem pessoas. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-hamburguer",
     "title": "Hambúrguer",
     "category": "Prato",
     "aspect": "1:1",
-    "prompt": "Fotografia publicitária: hambúrguer artesanal desmontado no ar, pão brioche, carne, queijo derretendo em fios, bacon, alface e tomate flutuando em camadas, gotas de molho suspensas, fundo preto, luz de estúdio recortada, ultrarrealista"
+    "prompt": "Fotografia publicitária quadrada com ingredientes flutuando. Hambúrguer artesanal desmontado no ar em camadas bem espaçadas, de baixo para cima: pão brioche, carne grelhada suculenta, queijo cheddar derretendo em fios, bacon crocante, alface, rodelas de tomate e a tampa do pão com gergelim. Gotas de molho e migalhas suspensas no ar. Fundo totalmente preto, luz de estúdio recortada vinda dos dois lados destacando texturas e brilho. Lente 85mm, foco em todas as camadas. Ultrarrealista. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-boutique",
     "title": "Street style",
     "category": "Moda",
     "aspect": "3:4",
-    "prompt": "Editorial de street style no centro de São Paulo: mulher brasileira de 40 anos de cabelo curto grisalho, blazer vermelho oversized, óculos escuros, atravessando a rua em movimento, ângulo baixo com lente 24mm, prédios antigos e céu azul forte, sol duro, cores saturadas, granulação de filme"
+    "prompt": "Editorial vertical de street style no centro de São Paulo. Mulher brasileira de 40 anos, cabelo curto grisalho, óculos escuros, blazer vermelho oversized sobre camiseta branca e calça preta, atravessando a faixa de pedestres em movimento, com o blazer abrindo no passo. Ângulo baixo com lente 24mm, prédios antigos de arquitetura art déco ao fundo e céu azul forte. Sol duro do meio-dia criando sombras marcadas. Cores saturadas, granulação de filme, energia de revista de moda. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   },
   {
     "id": "g-brigadeiro",
     "title": "Brigadeiro",
     "category": "Prato",
     "aspect": "4:5",
-    "prompt": "Macro publicitário: brigadeiro gourmet sendo coberto por uma calda de chocolate escorrendo devagar, granulado belga caindo no ar, folha de ouro por cima, fundo marrom-escuro, luz lateral marcando o brilho do chocolate, ultrarrealista"
-  },
-  {
-    "id": "formato-antes",
-    "title": "Foto enviada",
-    "category": "Formato",
-    "aspect": "4:3",
-    "prompt": "Foto de celular comum, sem tratamento: sala de apartamento vazia, paredes brancas, piso de madeira clara, janela grande com cortina simples, sem móveis, luz do dia, tirada por corretor em pé na porta"
-  },
-  {
-    "id": "formato-depois",
-    "title": "Formato pronto",
-    "category": "Formato",
-    "aspect": "4:3",
-    "ref": "formato-antes",
-    "prompt": "Decore esta mesma sala mantendo exatamente a janela, o piso, as paredes e o enquadramento: sofá curvo de bouclê off-white, tapete de lã, mesa de centro de mármore, oliveira num vaso de barro, luminária escultural e arte abstrata grande na parede, luz dourada do pôr do sol entrando pela janela e desenhando sombras longas, fotografia de interiores de revista, ultrarrealista"
+    "prompt": "Macro publicitário vertical. Um brigadeiro gourmet sobre uma base escura, sendo coberto por uma calda de chocolate que escorre devagar pelas laterais. Granulado belga caindo no ar e uma pequena folha de ouro comestível por cima. Fundo marrom-escuro liso, luz lateral marcando o brilho do chocolate e as texturas do granulado. Lente macro 100mm, profundidade de campo curta, com o brigadeiro em foco total. Ultrarrealista. Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
   }
 ]
