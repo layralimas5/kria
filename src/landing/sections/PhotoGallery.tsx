@@ -12,8 +12,8 @@ export function PhotoGallery() {
       <div className="mx-auto max-w-[1440px]">
         <SectionHeading
           id="fotos-title"
-          title="Fotos feitas no Vynkio"
-          lead="Personagem, produto, imóvel e prato. Passe o mouse (ou toque) para ver a frase que gerou cada uma."
+          title="Fotos feitas com IA"
+          lead="Pessoa, produto, imóvel e prato, com o Nano Banana, o modelo de imagem que você usa no Vynkio. Passe o mouse (ou toque) para ver a frase que gerou cada uma."
           actions={<CtaLink cta="photo_gallery" />}
         />
         <ul className="mt-8 columns-2 gap-3 md:columns-3 xl:columns-4 [&>li]:mb-3">

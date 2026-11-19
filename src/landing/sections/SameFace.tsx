@@ -26,7 +26,7 @@ export function SameFace() {
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {SCENES.map((scene, index) => (
               <Reveal key={scene.id} as="li" delay={index * 0.04} className={`relative overflow-hidden rounded-2xl ${CARD_HOVER}`}>
-                <ShowcasePhoto image={scene} alt={`A mesma personagem ${scene.title.toLowerCase()}, foto gerada no Vynkio`} className="w-full" />
+                <ShowcasePhoto image={scene} alt={`A mesma personagem: ${scene.title.toLowerCase()}, foto gerada por IA`} className="w-full" />
                 <span className="absolute bottom-3 left-3 rounded-md bg-black/55 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur-md">{scene.title}</span>
               </Reveal>
             ))}
