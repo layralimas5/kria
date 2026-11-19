@@ -2,11 +2,10 @@ import { ArrowLeft } from 'lucide-react'
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
-import { PRIVACY_ANCHOR, WELCOME_CREDITS } from './content'
+import { BILLING_ANCHOR, PRIVACY_ANCHOR, SUPPORT_EMAIL, WELCOME_CREDITS } from './content'
 import { Footer } from './sections/Footer'
 
 const UPDATED_AT = '12 de novembro de 2026'
-const SUPPORT_EMAIL = 'vynkio.suporte@gmail.com'
 
 /** `anchor` deixa a seção acessível por link, como o "Privacidade" do rodapé. */
 const SECTIONS: readonly { title: string; anchor?: string; paragraphs: readonly string[] }[] = [
@@ -28,6 +27,7 @@ const SECTIONS: readonly { title: string; anchor?: string; paragraphs: readonly 
   },
   {
     title: 'Planos, créditos e pagamento',
+    anchor: BILLING_ANCHOR,
     paragraphs: [
       'O Vynkio funciona por créditos. Cada geração consome uma quantidade de créditos que aparece antes de você confirmar. Se uma geração falhar, os créditos usados nela voltam automaticamente para o seu saldo.',
       'Os planos (Starter, Pro e Max) são assinaturas mensais cobradas no cartão de crédito pelo Asaas, com renovação automática a cada mês. Cada cobrança paga adiciona os créditos do plano à sua conta. O plano e os créditos só são liberados depois que o Asaas confirma o pagamento.',

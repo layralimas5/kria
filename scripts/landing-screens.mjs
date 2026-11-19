@@ -33,6 +33,13 @@ async function navigate(page, route) {
   await page.waitForTimeout(1200)
 }
 
+/** Espera os nomes dos modelos e as miniaturas das criações: sem isso o print sai com o slug e o vídeo preto. */
+async function settle(page) {
+  await page.getByText('Nano Banana 2 Persona').first().waitFor({ timeout: 15000 })
+  await page.waitForLoadState('networkidle')
+  await page.waitForTimeout(1500)
+}
+
 async function finishOnboarding(page) {
   await page.goto(`${BASE}/inicio`, { waitUntil: 'networkidle' })
   await page.getByText('Utilizar várias ferramentas').click()
@@ -57,7 +64,11 @@ async function resultClip(page) {
   return { x: 264, y: box.y + scrollY - 24, ...RESULT_SIZE }
 }
 
+/** `ONLY=estudio-imagem,estudio-video` refaz só esses prints; sem ONLY, refaz todos. */
+const ONLY = process.env.ONLY ? new Set(process.env.ONLY.split(',')) : null
+
 async function shot(page, name, clip) {
+  if (ONLY && !ONLY.has(name)) return
   const file = path.join(OUT, `${name}.jpg`)
   await page.screenshot({ path: file, type: 'jpeg', quality: QUALITY, clip, fullPage: clip !== undefined })
   console.log('ok', path.relative(process.cwd(), file))
@@ -70,15 +81,23 @@ async function desktop(browser) {
   await shot(page, 'dashboard')
 
   await navigate(page, '/estudio?modo=imagem')
+  await settle(page)
   await shot(page, 'imagem', COMPOSER)
+  await shot(page, 'estudio-imagem', MAIN)
 
   await navigate(page, '/estudio?modo=video')
+  await settle(page)
   await shot(page, 'video', VIDEO_MODELS)
+  await shot(page, 'estudio-video', MAIN)
 
   await navigate(page, '/personas')
   await shot(page, 'personagem', MAIN)
+  await page.getByRole('button', { name: 'Movimento' }).or(page.getByRole('tab', { name: 'Movimento' })).first().click()
+  await page.waitForTimeout(800)
+  await shot(page, 'personagem-movimento', MAIN)
 
-  for (const tool of ['ideias', 'roteiro', 'copy', 'ugc']) {
+  const textShots = ['ideias', 'roteiro', 'copy', 'ugc'].filter((tool) => !ONLY || ONLY.has(tool))
+  for (const tool of textShots) {
     await generateText(page, tool)
     await shot(page, tool, await resultClip(page))
   }
@@ -99,7 +118,7 @@ await mkdir(OUT, { recursive: true })
 const browser = await chromium.launch()
 try {
   await desktop(browser)
-  await mobile(browser)
+  if (!ONLY || ONLY.has('dashboard-mobile')) await mobile(browser)
 } finally {
   await browser.close()
 }

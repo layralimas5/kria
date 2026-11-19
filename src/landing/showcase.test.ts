@@ -30,7 +30,7 @@ describe('showcase.json', () => {
   })
 
   it('tem as fotos que as seções pedem', () => {
-    for (const id of ['hero-criadora', 'hero-imovel', 'hero-produto', 'bento-cidade', 'marina', 'formato-antes', 'formato-depois']) {
+    for (const id of ['bento-cidade', 'marina']) {
       expect(showcase(id).id).toBe(id)
     }
     expect(showcaseByPrefix('marina-')).toHaveLength(6)

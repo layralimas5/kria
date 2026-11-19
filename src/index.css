@@ -49,6 +49,18 @@
     }
   }
 
+  /* Luz do CTA final: respira devagar, só transform e opacidade. */
+  @keyframes cta-breathe {
+    from {
+      transform: translateX(-50%) scale(1);
+      opacity: 0.75;
+    }
+    to {
+      transform: translateX(-50%) scale(1.08);
+      opacity: 1;
+    }
+  }
+
   /* Brilho do topo da landing: deriva lenta, só transform. */
   @keyframes hero-drift {
     from {

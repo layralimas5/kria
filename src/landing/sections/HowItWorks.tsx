@@ -1,111 +1,53 @@
-import { Check, Clapperboard, Download, ImageIcon, PenLine, Sparkles, type LucideIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { CtaLink } from '../components/CtaLink'
+import { Sparkles } from 'lucide-react'
 import { Reveal } from '../components/Reveal'
-import { SectionHeading } from '../components/SectionHeading'
-import { CARD_HOVER } from '../styles'
+import { ShowcaseVideo } from '../components/ShowcaseVideo'
+import { PLATFORM_VIDEO } from '../content'
 
-interface Step {
-  readonly number: string
-  readonly title: string
-  readonly text: string
-  readonly preview: ReactNode
-}
-
-function PreviewBox({ children }: { readonly children: ReactNode }) {
-  return <div className="mt-6 rounded-xl border border-white/[0.06] bg-black/40 p-4 text-[13px]">{children}</div>
-}
-
-function OutputRow({ icon: Icon, label, detail }: { readonly icon: LucideIcon; readonly label: string; readonly detail: string }) {
+/** Quadro do vídeo: o player quando `PLATFORM_VIDEO` existe; até lá, o espaço reservado no mesmo tamanho. */
+function VideoSlot() {
+  if (PLATFORM_VIDEO) {
+    return <ShowcaseVideo src={PLATFORM_VIDEO.src} poster={PLATFORM_VIDEO.poster} label={PLATFORM_VIDEO.label} className="rounded-[calc(1.75rem-1px)]" />
+  }
   return (
-    <li className="flex items-center gap-3 rounded-lg bg-white/[0.03] px-3 py-2.5 ring-1 ring-white/[0.05]">
-      <Icon className="size-4 shrink-0 text-accent-soft" aria-hidden="true" />
-      <span className="font-medium text-zinc-100">{label}</span>
-      <span className="ml-auto truncate text-zinc-500">{detail}</span>
-    </li>
+    <div aria-hidden="true" className="aspect-video rounded-[calc(1.75rem-1px)] bg-[#08070f] bg-[radial-gradient(80%_70%_at_50%_0%,rgba(124,58,237,0.16),transparent_70%)]" />
   )
 }
 
-// Cada passo usa só o que o app faz hoje: briefing em português, Vynkio AI (Claude) para o texto,
-// Studio para imagem e vídeo, download do arquivo pronto. Nada de postagem automática.
-const STEPS: readonly Step[] = [
-  {
-    number: '01',
-    title: 'Conte o que você quer vender',
-    text: 'Produto, público e rede, em português, do jeito que você explicaria para alguém. A marca fica salva para os próximos pedidos.',
-    preview: (
-      <PreviewBox>
-        <p className="text-zinc-500">Seu pedido</p>
-        <p className="mt-1.5 text-pretty leading-relaxed text-zinc-100">
-          “Vídeo para o TikTok Shop do sérum de vitamina C, para mulheres de 25 a 35 anos que não têm tempo de cuidar da pele.”
-        </p>
-      </PreviewBox>
-    ),
-  },
-  {
-    number: '02',
-    title: 'A IA monta o conteúdo',
-    text: 'O roteiro sai com gancho, cenas e CTA. Cada cena vira imagem, e a imagem ganha movimento, som ou fala com Kling e Seedance.',
-    preview: (
-      <PreviewBox>
-        <ul className="space-y-2">
-          <OutputRow icon={PenLine} label="Roteiro" detail="Gancho + 4 cenas + CTA" />
-          <OutputRow icon={ImageIcon} label="Imagens" detail="Uma por cena, 9:16" />
-          <OutputRow icon={Clapperboard} label="Vídeo" detail="Com áudio ou fala" />
-        </ul>
-      </PreviewBox>
-    ),
-  },
-  {
-    number: '03',
-    title: 'Baixe e poste',
-    text: 'Vídeo vertical, legenda e versões para testar qual chama mais atenção. Tudo fica salvo em Minhas criações.',
-    preview: (
-      <PreviewBox>
-        <ul className="space-y-2.5 text-zinc-300">
-          {['Vídeo vertical para TikTok, Reels e Shorts', 'Legenda pronta no tom da marca', 'Variações para testar no anúncio'].map((item) => (
-            <li key={item} className="flex items-center gap-2.5">
-              <Check className="size-4 shrink-0 text-emerald-400" aria-hidden="true" />
-              {item}
-            </li>
-          ))}
-        </ul>
-        <span className="mt-4 inline-flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-[13px] font-semibold text-accent-ink">
-          <Download className="size-4" aria-hidden="true" />
-          Baixar
-        </span>
-      </PreviewBox>
-    ),
-  },
-]
-
-/** Da ideia ao arquivo pronto em três passos: o lugar da antiga vitrine de prints por ferramenta. */
+/** "Como funciona": título da seção e o vídeo da plataforma. */
 export function HowItWorks() {
   return (
-    <section id="como-funciona" aria-labelledby="como-funciona-title" className="scroll-mt-20 px-4 pt-24 md:pt-32">
+    <section id="como-funciona" aria-labelledby="como-funciona-title" className="relative scroll-mt-20 px-4 pt-24 md:pt-32">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-24 -z-10 h-[40rem] bg-[radial-gradient(50%_40%_at_50%_30%,rgba(124,58,237,0.14),transparent)]" />
       <div className="mx-auto max-w-6xl">
-        <SectionHeading
-          id="como-funciona-title"
-          align="center"
-          title="Como funciona"
-          lead="Você não precisa entender de IA nem escrever prompt em inglês. Três passos e o conteúdo está pronto para postar."
-        />
-        <ol className="mt-12 grid gap-3 lg:grid-cols-3">
-          {STEPS.map((step, index) => (
-            <Reveal key={step.number} as="li" delay={index * 0.06} className={`flex flex-col rounded-2xl border border-white/[0.06] bg-panel/60 p-6 ${CARD_HOVER}`}>
-              <span className="font-landing text-sm font-bold tracking-[0.2em] text-accent-soft">PASSO {step.number}</span>
-              <h3 className="mt-3 text-xl font-semibold text-zinc-50">{step.title}</h3>
-              <p className="mt-2 text-pretty text-sm leading-relaxed text-zinc-400">{step.text}</p>
-              <div className="mt-auto">{step.preview}</div>
-            </Reveal>
-          ))}
-        </ol>
-        <div className="mt-10 flex flex-col items-center gap-3">
-          <CtaLink cta="how_it_works" size="lg" />
-          <p className="flex items-center gap-1.5 text-[13px] text-zinc-500">
-            <Sparkles className="size-3.5 text-accent-soft" aria-hidden="true" />O custo em créditos aparece antes de cada geração.
-          </p>
+        <div className="flex flex-col items-center text-center">
+          <Reveal>
+            <p className="inline-flex items-center gap-2 rounded-full bg-white/[0.04] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-300 ring-1 ring-white/[0.1] sm:text-xs">
+              <Sparkles className="size-3.5 text-accent-soft" aria-hidden="true" />
+              Conheça o poder da Vynkio
+            </p>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <h2
+              id="como-funciona-title"
+              className="mt-6 text-balance font-landing text-[2.1rem] font-bold leading-[1.02] tracking-[-0.04em] text-zinc-50 sm:text-[2.75rem] lg:text-[3.4rem]"
+            >
+              <span className="block">Da sua ideia à criação.</span>{' '}
+              <span className="block bg-gradient-to-r from-accent-soft via-[#c4b5fd] to-galaxy bg-clip-text pb-[0.08em] text-transparent">Tudo acontece aqui.</span>
+            </h2>
+          </Reveal>
+          <Reveal delay={0.16}>
+            <p className="mt-5 max-w-[40rem] text-pretty text-base leading-relaxed text-zinc-400 md:text-lg">
+              Descubra como transformar suas ideias em imagens, vídeos e conteúdos com inteligência artificial, utilizando ferramentas poderosas em uma única
+              plataforma.
+            </p>
+          </Reveal>
         </div>
+
+        <Reveal delay={0.24} className="mx-auto mt-10 max-w-5xl md:mt-12">
+          <div className="rounded-[1.75rem] bg-gradient-to-b from-white/[0.14] to-white/[0.04] p-px shadow-[0_40px_100px_-50px_rgb(124_58_237/0.7)]">
+            <VideoSlot />
+          </div>
+        </Reveal>
       </div>
     </section>
   )
