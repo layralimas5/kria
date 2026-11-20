@@ -29,7 +29,10 @@ são telas reais do modo demo (`npm run landing:screens`).
 - Edge functions (Deno): `supabase/functions`
 - IA: fal.ai para foto e vídeo (fila assíncrona + webhook); Anthropic (Claude, SDK `@anthropic-ai/sdk` fixo
   em 0.131.0) para texto, na function `assistant`. Catálogo de modelos na tabela `models` (`kind` image, video, text)
-- Pagamento: Asaas, checkout avulso Pix + cartão (mesmo padrão do Momentumm)
+- Pagamento: Asaas. Pacote avulso: checkout Pix + cartão. Assinatura: cartão no checkout recorrente; Pix pela API
+  de assinaturas (`createPixSubscription`, pede nome e CPF, o CPF não é guardado), porque o checkout do Asaas recusa
+  Pix em `RECURRENT` (testado no sandbox em 19/11). Pix pendente sem pagar é cancelado no Asaas (nova tentativa ou
+  `PAYMENT_OVERDUE`), senão geraria cobrança todo mês
 
 ## Regras do domínio
 

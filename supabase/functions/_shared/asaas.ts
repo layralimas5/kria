@@ -1,5 +1,6 @@
 // Cliente mínimo do Asaas: checkout avulso de créditos (Pix e cartão) e
-// checkout de assinatura mensal (Pix ou cartão, recorrente), mesmo padrão do Momentumm.
+// assinatura mensal no cartão (checkout recorrente) ou no Pix (API de assinaturas: o checkout
+// do Asaas só aceita cartão em cobrança recorrente).
 //   ASAAS_API_KEY   chave da conta (sandbox ou produção)
 //   ASAAS_ENV       'sandbox' (padrão) ou 'production'
 
@@ -103,14 +104,10 @@ export interface SubscriptionCheckoutInput extends CheckoutUrls {
   readonly priceCents: number
 }
 
-/**
- * Assinatura recorrente, a partir de hoje. No cartão, o Asaas guarda o cartão e cobra sozinho todo mês.
- * No Pix, gera uma cobrança nova a cada ciclo e a pessoa paga; o webhook trata `PAYMENT_RECEIVED` como
- * pago e `PAYMENT_OVERDUE` como atraso, igual ao cartão.
- */
+/** Assinatura no cartão, a partir de hoje: o Asaas guarda o cartão e cobra sozinho todo mês. */
 export function createSubscriptionCheckout(input: SubscriptionCheckoutInput): Promise<AsaasCheckout> {
   return call<AsaasCheckout>('POST', '/checkouts', {
-    billingTypes: ['PIX', 'CREDIT_CARD'],
+    billingTypes: ['CREDIT_CARD'],
     chargeTypes: ['RECURRENT'],
     minutesToExpire: 60,
     externalReference: input.subscriptionId,
@@ -126,6 +123,76 @@ export function createSubscriptionCheckout(input: SubscriptionCheckoutInput): Pr
     ],
     subscription: { cycle: 'MONTHLY', nextDueDate: todayInBrazil() },
   })
+}
+
+export interface PixPayer {
+  readonly name: string
+  readonly cpf: string
+  readonly email: string | null
+  readonly userId: string
+}
+
+interface AsaasCustomer {
+  readonly id: string
+}
+
+interface AsaasPayment {
+  readonly id: string
+  readonly invoiceUrl: string
+}
+
+/** Cliente do Asaas pelo CPF: reaproveita o que já existe para não duplicar cadastro a cada tentativa. */
+async function findOrCreateCustomer(payer: PixPayer): Promise<string> {
+  const found = await call<{ data: AsaasCustomer[] }>('GET', `/customers?cpfCnpj=${payer.cpf}&limit=1`)
+  if (found.data[0]) return found.data[0].id
+  const created = await call<AsaasCustomer>('POST', '/customers', {
+    name: payer.name,
+    cpfCnpj: payer.cpf,
+    ...(payer.email ? { email: payer.email } : {}),
+    externalReference: payer.userId,
+  })
+  return created.id
+}
+
+export interface PixSubscriptionInput {
+  readonly subscriptionId: string
+  readonly planName: string
+  readonly monthlyCredits: number
+  readonly priceCents: number
+  readonly payer: PixPayer
+}
+
+export interface PixSubscription {
+  readonly providerSubscriptionId: string
+  readonly customerId: string
+  readonly invoiceUrl: string
+}
+
+/**
+ * Assinatura no Pix, a partir de hoje. O Asaas gera uma cobrança Pix por mês e avisa a pessoa por
+ * e-mail; o webhook trata `PAYMENT_RECEIVED` como pago e `PAYMENT_OVERDUE` como atraso, igual ao cartão.
+ * Devolve a fatura da primeira cobrança, onde fica o QR Code.
+ */
+export async function createPixSubscription(input: PixSubscriptionInput): Promise<PixSubscription> {
+  const customerId = await findOrCreateCustomer(input.payer)
+  const subscription = await call<{ id: string }>('POST', '/subscriptions', {
+    customer: customerId,
+    billingType: 'PIX',
+    cycle: 'MONTHLY',
+    value: input.priceCents / 100,
+    nextDueDate: todayInBrazil(),
+    description: `Vynkio ${input.planName}: plano mensal com ${input.monthlyCredits} créditos`.slice(0, 500),
+    externalReference: input.subscriptionId,
+  })
+  try {
+    const payments = await call<{ data: AsaasPayment[] }>('GET', `/subscriptions/${encodeURIComponent(subscription.id)}/payments`)
+    const first = payments.data[0]
+    if (!first?.invoiceUrl) throw new Error('assinatura Pix sem primeira cobrança')
+    return { providerSubscriptionId: subscription.id, customerId, invoiceUrl: first.invoiceUrl }
+  } catch (error) {
+    await deleteSubscription(subscription.id).catch(() => undefined)
+    throw error
+  }
 }
 
 export function getSubscription(id: string): Promise<AsaasSubscription> {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { asaasEventSchema, decideBillingEvent, toCents } from './billing.ts'
+import { asaasEventSchema, decideBillingEvent, isValidCpf, toCents } from './billing.ts'
 
 const parse = (payload: unknown) => asaasEventSchema.parse(payload)
 
@@ -84,5 +84,19 @@ describe('toCents', () => {
   it('arredonda sem erro de ponto flutuante', () => {
     expect(toCents(59.9)).toBe(5990)
     expect(toCents(149.9)).toBe(14990)
+  })
+})
+
+describe('isValidCpf', () => {
+  it('aceita CPF com dígitos verificadores certos', () => {
+    expect(isValidCpf('52998224725')).toBe(true)
+    expect(isValidCpf('11144477735')).toBe(true)
+  })
+
+  it('recusa dígito errado, repetição e formato fora de 11 números', () => {
+    expect(isValidCpf('52998224724')).toBe(false)
+    expect(isValidCpf('11111111111')).toBe(false)
+    expect(isValidCpf('529.982.247-25')).toBe(false)
+    expect(isValidCpf('5299822472')).toBe(false)
   })
 })

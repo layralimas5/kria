@@ -132,8 +132,11 @@ export async function startCheckout(pack: string): Promise<string> {
   return z.object({ url: z.string().url() }).parse(data).url
 }
 
-export async function startSubscription(plan: string): Promise<string> {
-  const data = await invoke('subscribe', { plan })
+export type SubscriptionPayment = { readonly method: 'card' } | { readonly method: 'pix'; readonly name: string; readonly cpf: string }
+
+/** Devolve o link de pagamento: checkout do cartão ou a fatura Pix da primeira cobrança. */
+export async function startSubscription(plan: string, payment: SubscriptionPayment): Promise<string> {
+  const data = await invoke('subscribe', { plan, ...payment })
   return z.object({ url: z.string().url() }).parse(data).url
 }
 

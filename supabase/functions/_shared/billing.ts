@@ -111,3 +111,15 @@ export function decideBillingEvent(event: AsaasEvent): BillingAction {
   }
   return { kind: 'ignore', reason: `ignorado: ${event.event}` }
 }
+
+/** CPF com os dois dígitos verificadores certos. Recebe só os 11 números. */
+export function isValidCpf(cpf: string): boolean {
+  if (!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) return false
+  const digits = [...cpf].map(Number)
+  for (const length of [9, 10]) {
+    const sum = digits.slice(0, length).reduce((total, digit, index) => total + digit * (length + 1 - index), 0)
+    const check = ((sum * 10) % 11) % 10
+    if (check !== digits[length]) return false
+  }
+  return true
+}

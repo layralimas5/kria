@@ -1,13 +1,25 @@
-// POST { plan }
-// Cria a assinatura pendente e o checkout recorrente do Asaas; devolve o link.
+// POST { plan, method?: 'card' | 'pix', name?, cpf? }
+// Cria a assinatura pendente e devolve o link de pagamento:
+//   cartão  checkout recorrente do Asaas (guarda o cartão e cobra todo mês)
+//   Pix     assinatura pela API do Asaas (uma cobrança Pix por mês); o link é a
+//           fatura da primeira cobrança, com o QR Code. O checkout do Asaas não
+//           aceita Pix em cobrança recorrente, por isso o Pix pede nome e CPF aqui.
 // O plano e os créditos só entram quando o asaas-webhook confirma a cobrança.
 // Assinar outro plano com um ativo é troca: o antigo acaba quando o novo pagar.
+// O CPF vai só para o Asaas; não é guardado no banco do Vynkio.
 
+import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
-import { AsaasError, createSubscriptionCheckout } from '../_shared/asaas.ts'
+import { AsaasError, createPixSubscription, createSubscriptionCheckout, deleteSubscription } from '../_shared/asaas.ts'
+import { isValidCpf } from '../_shared/billing.ts'
 import { adminClient, authenticatedUserId, errorResponse, handle, isSuspended, json, readJson, requireEnv } from '../_shared/http.ts'
 
-const bodySchema = z.object({ plan: z.string().regex(/^[a-z0-9-]{2,40}$/) })
+const bodySchema = z.object({
+  plan: z.string().regex(/^[a-z0-9-]{2,40}$/),
+  method: z.enum(['card', 'pix']).default('card'),
+  name: z.string().trim().min(3).max(100).optional(),
+  cpf: z.string().max(20).optional(),
+})
 
 const MAX_PENDING_PER_HOUR = 5
 
@@ -19,6 +31,29 @@ interface PlanRow {
   readonly version: number
 }
 
+/**
+ * Pix pendente que ficou para trás (a pessoa tentou de novo) continuaria gerando cobrança todo mês
+ * no Asaas. Antes de abrir outra, as antigas são canceladas lá e expiram aqui.
+ */
+async function closeStalePixAttempts(admin: SupabaseClient, userId: string): Promise<void> {
+  const { data: stale } = await admin
+    .from('subscriptions')
+    .select('id, provider_subscription_id')
+    .eq('user_id', userId)
+    .eq('status', 'pending')
+    .not('provider_subscription_id', 'is', null)
+  for (const row of stale ?? []) {
+    await deleteSubscription(row.provider_subscription_id as string)
+    await admin.from('subscriptions').update({ status: 'expired', ended_at: new Date().toISOString() })
+      .eq('id', row.id).eq('status', 'pending')
+  }
+}
+
+async function userEmail(admin: SupabaseClient, userId: string): Promise<string | null> {
+  const { data } = await admin.auth.admin.getUserById(userId)
+  return data.user?.email ?? null
+}
+
 Deno.serve(
   handle(async (request) => {
     const admin = adminClient()
@@ -27,12 +62,18 @@ Deno.serve(
 
     const parsed = bodySchema.safeParse(await readJson(request))
     if (!parsed.success) return errorResponse(400, 'invalid_body', 'Pedido inválido.')
+    const body = parsed.data
+    const cpf = body.cpf?.replace(/\D/g, '') ?? ''
+    if (body.method === 'pix') {
+      if (!body.name) return errorResponse(400, 'invalid_name', 'Informe o nome completo.')
+      if (!isValidCpf(cpf)) return errorResponse(400, 'invalid_cpf', 'CPF inválido. Confira os números.')
+    }
     if (await isSuspended(admin, userId)) return errorResponse(403, 'account_suspended', 'Sua conta está suspensa. Fale com o suporte.')
 
     const { data: plan } = await admin
       .from('subscription_plans')
       .select('slug, name, price_cents, monthly_credits, version')
-      .eq('slug', parsed.data.plan)
+      .eq('slug', body.plan)
       .eq('active', true)
       .eq('public', true)
       .maybeSingle<PlanRow>()
@@ -70,8 +111,29 @@ Deno.serve(
       .single<{ id: string }>()
     if (error || !subscription) throw new Error(`insert subscription: ${error?.message}`)
 
-    const appUrl = requireEnv('APP_URL')
     try {
+      if (body.method === 'pix') {
+        await closeStalePixAttempts(admin, userId)
+        const pix = await createPixSubscription({
+          subscriptionId: subscription.id,
+          planName: plan.name,
+          monthlyCredits: plan.monthly_credits,
+          priceCents: plan.price_cents,
+          payer: { name: body.name ?? '', cpf, email: await userEmail(admin, userId), userId },
+        })
+        await admin
+          .from('subscriptions')
+          .update({
+            provider_subscription_id: pix.providerSubscriptionId,
+            provider_customer_id: pix.customerId,
+            checkout_url: pix.invoiceUrl,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', subscription.id)
+        return json({ url: pix.invoiceUrl }, 201)
+      }
+
+      const appUrl = requireEnv('APP_URL')
       const checkout = await createSubscriptionCheckout({
         subscriptionId: subscription.id,
         planName: plan.name,
@@ -86,7 +148,7 @@ Deno.serve(
         .eq('id', subscription.id)
       return json({ url: checkout.link }, 201)
     } catch (checkoutError) {
-      console.error('subscription checkout failed', checkoutError instanceof AsaasError ? checkoutError.body : checkoutError)
+      console.error('subscription checkout failed', body.method, checkoutError instanceof AsaasError ? checkoutError.body : checkoutError)
       await admin.from('subscriptions').update({ status: 'expired', ended_at: new Date().toISOString() }).eq('id', subscription.id)
       return errorResponse(502, 'payment_unavailable', 'O pagamento não abriu agora. Tente de novo em instantes.')
     }

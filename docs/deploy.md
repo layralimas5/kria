@@ -105,7 +105,10 @@ npx supabase functions deploy generate                 # de novo: agora grava ma
 6. Comprar o pacote Inicial no sandbox com Pix e ver os 100 créditos entrarem.
 7. Assinar o Starter no sandbox (cartão de teste do Asaas) e ver 300 créditos do plano entrarem e o
    plano aparecer em Assinatura. Trocar para o Pro e conferir que o Starter foi cancelado no painel do Asaas.
-8. Cancelar a assinatura: o plano segue até a data de renovação.
-9. Pedir "Esqueci minha senha", receber o código, digitar na tela de login e trocar a senha.
-10. Exportar os dados em Configurações; excluir uma conta de teste e conferir que sumiu do Auth e do Storage.
+8. Assinar no Pix (nome e CPF de teste): abre a fatura com QR Code. Pagar pelo painel do sandbox
+   (Cobranças > Confirmar recebimento) e ver o plano ativar. Tentar Pix duas vezes sem pagar e conferir
+   que a primeira assinatura some do Asaas.
+9. Cancelar a assinatura: o plano segue até a data de renovação.
+10. Pedir "Esqueci minha senha", receber o código, digitar na tela de login e trocar a senha.
+11. Exportar os dados em Configurações; excluir uma conta de teste e conferir que sumiu do Auth e do Storage.
 11. Trocar `ASAAS_ENV=production` e a chave de produção; repetir os passos 6 e 7 com dinheiro real.
