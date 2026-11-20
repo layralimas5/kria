@@ -8,6 +8,8 @@ type AnalyticsEvent =
   | { name: 'login'; params: { method: 'email' } }
   | { name: 'begin_checkout'; params: { plan: string } }
   | { name: 'purchase'; params: { plan: string; value: number; currency: 'BRL'; transaction_id: string } }
+  | { name: 'begin_checkout'; params: { product: string } }
+  | { name: 'purchase'; params: { product: string; value: number; currency: 'BRL'; transaction_id: string } }
 
 type Gtag = (...args: unknown[]) => void
 

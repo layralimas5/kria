@@ -1,0 +1,125 @@
+import { CheckCircle2, Download } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { StoreFrame } from '@/components/store/StoreFrame'
+import { Button } from '@/components/ui/Button'
+import { Notice } from '@/components/ui/Notice'
+import { Spinner } from '@/components/ui/Spinner'
+import { useStoreOrder } from '@/hooks/useStoreOrder'
+import { track } from '@/lib/analytics'
+import { errorMessage, storeDownloadUrl, type StoreOrder } from '@/lib/api'
+
+const TOKEN = /^[0-9a-f]{64}$/
+
+/** Conversão conta uma vez por pedido, mesmo recarregando a página. */
+function trackPurchaseOnce(token: string, order: StoreOrder) {
+  const key = `kria-store-purchase:${token.slice(0, 16)}`
+  try {
+    if (window.localStorage.getItem(key)) return
+    window.localStorage.setItem(key, '1')
+  } catch {
+    // Sem armazenamento (aba anônima): conta mesmo assim, no máximo repete numa recarga.
+  }
+  track({
+    name: 'purchase',
+    params: { product: order.product, value: order.priceCents / 100, currency: 'BRL', transaction_id: token.slice(0, 16) },
+  })
+}
+
+function PaidOrder({ token, order }: { readonly token: string; readonly order: StoreOrder }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => trackPurchaseOnce(token, order), [token, order])
+
+  async function download() {
+    setBusy(true)
+    setError(null)
+    try {
+      window.location.assign(await storeDownloadUrl(token))
+    } catch (downloadError) {
+      setError(errorMessage(downloadError))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <>
+      <CheckCircle2 className="mx-auto size-10 text-emerald-400" aria-hidden="true" />
+      <h1 className="text-xl font-semibold text-zinc-50">Pagamento confirmado</h1>
+      <p className="text-sm text-zinc-400">
+        Seu <strong className="text-zinc-200">{order.product}</strong> está liberado. O mesmo link vai para o e-mail que você usou no pagamento.
+      </p>
+      {error && <Notice tone="error">{error}</Notice>}
+      <Button onClick={() => void download()} loading={busy} className="w-full">
+        <Download className="size-4" aria-hidden="true" /> Baixar agora
+      </Button>
+      <p className="text-xs text-zinc-500">Guarde esta página: o link continua valendo para baixar de novo.</p>
+    </>
+  )
+}
+
+function OrderStatus({ token, order, gaveUp }: { readonly token: string; readonly order: StoreOrder; readonly gaveUp: boolean }) {
+  switch (order.status) {
+    case 'paid':
+      return <PaidOrder token={token} order={order} />
+    case 'pending':
+      return (
+        <div className="flex flex-col items-center gap-4" role="status">
+          {!gaveUp && <Spinner className="size-7 text-accent-soft" />}
+          <h1 className="text-lg font-semibold text-zinc-50">{gaveUp ? 'Ainda sem confirmação' : 'Esperando a confirmação do pagamento'}</h1>
+          <p className="text-sm text-zinc-400">
+            {gaveUp
+              ? 'Se você já pagou, o link chega no seu e-mail assim que o Asaas confirmar. Pode recarregar esta página depois.'
+              : 'No Pix e no cartão costuma levar alguns segundos. Não precisa fechar esta página.'}
+          </p>
+        </div>
+      )
+    case 'expired':
+      return (
+        <>
+          <h1 className="text-lg font-semibold text-zinc-50">O pagamento não foi concluído</h1>
+          <p className="text-sm text-zinc-400">Nada foi cobrado. Se quiser, comece de novo pela página do {order.product}.</p>
+          <a href={order.salesUrl} className="inline-flex min-h-10 w-full items-center justify-center rounded-xl btn-accent px-4 text-sm font-semibold">
+            Voltar para a página
+          </a>
+        </>
+      )
+    case 'refunded':
+      return (
+        <>
+          <h1 className="text-lg font-semibold text-zinc-50">Pedido estornado</h1>
+          <p className="text-sm text-zinc-400">O valor do {order.product} foi devolvido e o download foi encerrado.</p>
+        </>
+      )
+  }
+}
+
+/** `/pedido/:token`: volta do checkout e link do e-mail. Mostra o status e libera o download. */
+export function OrderPage() {
+  const { token = '' } = useParams()
+  const valid = TOKEN.test(token)
+  const state = useStoreOrder(valid ? token : '')
+
+  if (!valid) {
+    return (
+      <StoreFrame>
+        <Notice tone="error">Pedido não encontrado. Confira o link do e-mail.</Notice>
+      </StoreFrame>
+    )
+  }
+
+  return (
+    <StoreFrame>
+      {state.kind === 'loading' && (
+        <div className="flex justify-center" role="status">
+          <Spinner className="size-7 text-accent-soft" />
+          <span className="sr-only">Carregando o pedido</span>
+        </div>
+      )}
+      {state.kind === 'error' && <Notice tone="error">{state.message}</Notice>}
+      {state.kind === 'ready' && <OrderStatus token={token} order={state.order} gaveUp={state.gaveUp} />}
+    </StoreFrame>
+  )
+}

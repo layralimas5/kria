@@ -2553,4 +2553,20 @@ await test('trava de custo: liga pelo admin só com todo modelo ativo conferido,
   assert.deepEqual(logs.map((log) => log.details.require_trusted_cost), [true, false])
 })
 
+await test('loja: produto e pedido só pelas functions, com token de 64 caracteres', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await db.query(`insert into store_products (slug, name, price_cents, file_path, file_name, sales_url, active)
+    values ('kit', 'Kit de teste', 2990, 'kit/kit.zip', 'kit.zip', 'https://exemplo.com.br', true)`)
+  const order = (await db.query(`insert into store_orders (product_slug, price_cents) values ('kit', 2990) returning access_token, status`)).rows[0]
+  assert.match(order.access_token, /^[0-9a-f]{64}$/)
+  assert.equal(order.status, 'pending')
+
+  for (const [role, user] of [['anon', null], ['authenticated', ana]]) {
+    await as(db, role, user, () => expectError(db.query(`select * from store_orders`), 'permission denied'))
+    await as(db, role, user, () => expectError(db.query(`select * from store_products`), 'permission denied'))
+  }
+  await expectError(db.query(`insert into store_products (slug, name, price_cents, file_path, file_name, sales_url)
+    values ('caro', 'Sem página segura', 2990, 'x/x.zip', 'x.zip', 'http://exemplo.com.br')`), 'check')
+})
+
 console.log(`\n${passed} testes do banco passaram`)

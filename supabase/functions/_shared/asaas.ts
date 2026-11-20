@@ -97,6 +97,42 @@ export function createCreditCheckout(input: CreditCheckoutInput): Promise<AsaasC
   })
 }
 
+export interface StoreCheckoutInput extends CheckoutUrls {
+  readonly orderId: string
+  readonly productName: string
+  readonly priceCents: number
+}
+
+/** Infoproduto da loja: pagamento único, Pix ou cartão. O Asaas pede nome, e-mail e CPF no checkout. */
+export function createStoreCheckout(input: StoreCheckoutInput): Promise<AsaasCheckout> {
+  return call<AsaasCheckout>('POST', '/checkouts', {
+    billingTypes: ['PIX', 'CREDIT_CARD'],
+    chargeTypes: ['DETACHED'],
+    minutesToExpire: 60,
+    externalReference: input.orderId,
+    callback: { successUrl: input.successUrl, cancelUrl: input.cancelUrl, expiredUrl: input.cancelUrl },
+    items: [
+      {
+        name: input.productName.slice(0, 30),
+        description: `${input.productName}: acesso imediato depois do pagamento`.slice(0, 150),
+        quantity: 1,
+        value: input.priceCents / 100,
+        imageBase64: PRODUCT_IMAGE_BASE64,
+      },
+    ],
+  })
+}
+
+export interface AsaasCustomerContact {
+  readonly name: string | null
+  readonly email: string | null
+}
+
+export async function getCustomerContact(id: string): Promise<AsaasCustomerContact> {
+  const customer = await call<{ name?: string | null; email?: string | null }>('GET', `/customers/${encodeURIComponent(id)}`)
+  return { name: customer.name ?? null, email: customer.email ?? null }
+}
+
 export interface SubscriptionCheckoutInput extends CheckoutUrls {
   readonly subscriptionId: string
   readonly planName: string

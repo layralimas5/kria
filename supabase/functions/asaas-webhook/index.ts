@@ -1,5 +1,5 @@
 // Webhook do Asaas. Confere o token, registra o evento (repetido para aqui)
-// e aplica: pacote pago credita, ciclo de assinatura pago renova os créditos
+// e aplica: pacote pago credita, pedido da loja pago libera o download (./store.ts), ciclo de assinatura pago renova os créditos
 // do plano, atraso e cancelamento mudam o status da assinatura.
 //
 // Deploy sem verificação de JWT (quem chama é o Asaas):
@@ -19,10 +19,11 @@ import { deleteSubscription, getSubscription } from '../_shared/asaas.ts'
 import { asaasEventSchema, decideBillingEvent, type BillingAction, type Lookup } from '../_shared/billing.ts'
 import { adminClient, errorResponse, handle, json, readJson, requireEnv } from '../_shared/http.ts'
 import { timingSafeEqual } from '../_shared/signature.ts'
+import { expireStoreOrder, markStoreOrderPaid, refundStoreOrder } from './store.ts'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-type Table = 'purchases' | 'subscriptions'
+type Table = 'purchases' | 'subscriptions' | 'store_orders'
 
 /** Acha a nossa linha pelo checkout ou pela referência externa (o id que mandamos ao Asaas). */
 async function findRow(admin: SupabaseClient, table: Table, lookup: Lookup): Promise<string | null> {
@@ -118,6 +119,8 @@ async function apply(admin: SupabaseClient, action: BillingAction): Promise<stri
     case 'checkout_paid': {
       const purchaseId = await findRow(admin, 'purchases', action.lookup)
       if (purchaseId) return grantPack(admin, purchaseId, null)
+      const orderId = await findRow(admin, 'store_orders', action.lookup)
+      if (orderId) return markStoreOrderPaid(admin, orderId, null, null)
       // Assinatura: o crédito entra com o PAYMENT_CONFIRMED do ciclo, não aqui.
       const subscriptionId = await findRow(admin, 'subscriptions', action.lookup)
       return subscriptionId ? 'assinatura: aguardando a cobrança' : 'checkout não encontrado'
@@ -129,6 +132,8 @@ async function apply(admin: SupabaseClient, action: BillingAction): Promise<stri
         await admin.from('purchases').update({ status: 'expired' }).eq('id', purchaseId).eq('status', 'pending')
         return 'compra expirada'
       }
+      const orderId = await findRow(admin, 'store_orders', action.lookup)
+      if (orderId) return expireStoreOrder(admin, orderId)
       const subscriptionId = await findRow(admin, 'subscriptions', action.lookup)
       if (!subscriptionId) return 'checkout não encontrado'
       await admin.from('subscriptions').update({ status: 'expired', ended_at: new Date().toISOString() })
@@ -138,12 +143,17 @@ async function apply(admin: SupabaseClient, action: BillingAction): Promise<stri
 
     case 'pack_paid': {
       const purchaseId = await findRow(admin, 'purchases', action.lookup)
-      return purchaseId ? grantPack(admin, purchaseId, action.paymentId) : 'compra não encontrada'
+      if (purchaseId) return grantPack(admin, purchaseId, action.paymentId)
+      const orderId = await findRow(admin, 'store_orders', action.lookup)
+      return orderId ? markStoreOrderPaid(admin, orderId, action.paymentId, action.customerId) : 'compra não encontrada'
     }
 
     case 'pack_refunded': {
       const purchaseId = await findRow(admin, 'purchases', action.lookup)
-      if (!purchaseId) return 'compra não encontrada'
+      if (!purchaseId) {
+        const orderId = await findRow(admin, 'store_orders', action.lookup)
+        return orderId ? refundStoreOrder(admin, orderId) : 'compra não encontrada'
+      }
       // Estorno não tira crédito automaticamente: o saldo pode já ter sido gasto.
       await admin.from('purchases').update({ status: 'refunded' }).eq('id', purchaseId)
       return 'estornado: revisar saldo manualmente'

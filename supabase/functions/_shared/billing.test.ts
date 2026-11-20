@@ -8,7 +8,7 @@ describe('decideBillingEvent', () => {
     const action = decideBillingEvent(
       parse({ id: 'evt_1', event: 'PAYMENT_CONFIRMED', payment: { id: 'pay_1', checkoutSession: 'chk_1', value: 49.9 } }),
     )
-    expect(action).toEqual({ kind: 'pack_paid', lookup: { checkoutId: 'chk_1', externalReference: null }, paymentId: 'pay_1' })
+    expect(action).toEqual({ kind: 'pack_paid', lookup: { checkoutId: 'chk_1', externalReference: null }, paymentId: 'pay_1', customerId: null })
   })
 
   it('cobrança paga de assinatura vira ciclo do plano, com valor em centavos', () => {

@@ -140,6 +140,31 @@ export async function startSubscription(plan: string, payment: SubscriptionPayme
   return z.object({ url: z.string().url() }).parse(data).url
 }
 
+/** Loja de infoprodutos: abre o checkout avulso do Asaas, sem conta no Vynkio. */
+export async function startStoreCheckout(product: string): Promise<string> {
+  const data = await invoke('store-checkout', { product })
+  return z.object({ url: z.string().url() }).parse(data).url
+}
+
+const storeOrderSchema = z.object({
+  status: z.enum(['pending', 'paid', 'refunded', 'expired']),
+  product: z.string(),
+  priceCents: z.number().int(),
+  salesUrl: z.string().url(),
+})
+
+export type StoreOrder = z.infer<typeof storeOrderSchema>
+
+export async function getStoreOrder(token: string): Promise<StoreOrder> {
+  return storeOrderSchema.parse(await invoke('store-order', { token, action: 'status' }))
+}
+
+/** URL assinada de 10 minutos para o arquivo do pedido pago. */
+export async function storeDownloadUrl(token: string): Promise<string> {
+  const data = await invoke('store-order', { token, action: 'download' })
+  return z.object({ url: z.string().url() }).parse(data).url
+}
+
 export async function cancelSubscription(): Promise<void> {
   await invoke('cancel-subscription', {})
 }

@@ -33,6 +33,9 @@ são telas reais do modo demo (`npm run landing:screens`).
   de assinaturas (`createPixSubscription`, pede nome e CPF, o CPF não é guardado), porque o checkout do Asaas recusa
   Pix em `RECURRENT` (testado no sandbox em 19/11). Pix pendente sem pagar é cancelado no Asaas (nova tentativa ou
   `PAYMENT_OVERDUE`), senão geraria cobrança todo mês
+- Loja de infoprodutos (0039, `docs/loja.md`): `/comprar/:product` e `/pedido/:token`, sem conta no Vynkio. Pedido em
+  `store_orders` (sem policy, só functions), checkout avulso do Asaas, entrega por URL assinada do bucket `store` e e-mail
+  pelo Resend (`asaas-webhook/store.ts`). Produto novo = arquivo no bucket + `insert` em `store_products`, sem deploy
 
 ## Regras do domínio
 

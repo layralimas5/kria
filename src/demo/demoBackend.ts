@@ -256,6 +256,9 @@ function buyCredits(body: Row): Response {
   return json({ url: `${window.location.origin}/creditos?compra=${purchase.id}` }, 201)
 }
 
+/** Loja no demo: o checkout volta direto para um pedido já pago. */
+const DEMO_STORE_TOKEN = 'd'.repeat(64)
+
 /** No demo a assinatura confirma na hora: mesmo efeito do webhook do Asaas no ar. */
 function subscribe(body: Row): Response {
   const plan = state.plans.find((item) => item.slug === body.plan && item.public)
@@ -1060,6 +1063,11 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
       return fail(503, 'demo_only', 'No modo demo nada muda em contas. Nenhuma conta foi criada, excluída ou alterada.')
     }
     if (name === 'pricing-check') return fail(503, 'demo_only', 'No modo demo a consulta ao fal não roda. Nada foi alterado.')
+    if (name === 'store-checkout') return json({ url: `${window.location.origin}/pedido/${DEMO_STORE_TOKEN}` }, 201)
+    if (name === 'store-order') {
+      const order = { status: 'paid', product: 'Produto de demonstração', priceCents: 4700, salesUrl: window.location.origin }
+      return json(body.action === 'download' ? { ...order, url: `${window.location.origin}/icon.png` } : order)
+    }
     return fail(404, 'not_found', 'Função desconhecida.')
   }
 

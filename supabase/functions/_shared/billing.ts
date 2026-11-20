@@ -1,7 +1,7 @@
 // Regras puras do webhook do Asaas: sem rede, sem banco. Testadas em billing.test.ts.
 //
-// O Asaas manda eventos de checkout (pacote avulso ou assinatura) e de
-// cobrança. Cobrança com `subscription` é ciclo de plano; sem, é pacote.
+// O Asaas manda eventos de checkout (pacote avulso, pedido da loja ou assinatura) e de
+// cobrança. Cobrança com `subscription` é ciclo de plano; sem, é pacote ou pedido da loja.
 
 import { z } from 'npm:zod@3'
 
@@ -36,7 +36,7 @@ export interface Lookup {
 export type BillingAction =
   | { readonly kind: 'checkout_paid'; readonly lookup: Lookup }
   | { readonly kind: 'checkout_closed'; readonly lookup: Lookup }
-  | { readonly kind: 'pack_paid'; readonly lookup: Lookup; readonly paymentId: string }
+  | { readonly kind: 'pack_paid'; readonly lookup: Lookup; readonly paymentId: string; readonly customerId: string | null }
   | { readonly kind: 'pack_refunded'; readonly lookup: Lookup }
   | {
       readonly kind: 'subscription_paid'
@@ -88,7 +88,7 @@ export function decideBillingEvent(event: AsaasEvent): BillingAction {
   const subscriptionId = payment.subscription ?? null
 
   if (PAID.has(event.event)) {
-    if (!subscriptionId) return { kind: 'pack_paid', lookup: paymentLookup(payment), paymentId: payment.id }
+    if (!subscriptionId) return { kind: 'pack_paid', lookup: paymentLookup(payment), paymentId: payment.id, customerId: payment.customer ?? null }
     if (typeof payment.value !== 'number') return { kind: 'ignore', reason: 'cobrança de assinatura sem valor' }
     return {
       kind: 'subscription_paid',
