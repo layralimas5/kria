@@ -33,6 +33,17 @@
   --animate-card-pulse: card-pulse 1s ease-in-out infinite;
   --animate-marquee: marquee 45s linear infinite;
   --animate-drawer-in: drawer-in 200ms ease-out;
+  --animate-ken-burns: ken-burns 22s ease-in-out infinite alternate;
+
+  /* Foto de referência da landing: aproximação lenta, só transform. */
+  @keyframes ken-burns {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.08) translate3d(-1.5%, 1%, 0);
+    }
+  }
 
   /* Painel lateral do admin entra pela direita. */
   @keyframes drawer-in {

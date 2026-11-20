@@ -7,6 +7,21 @@ export const SPECS_FILE = path.join(ROOT, 'src/landing/showcase.json')
 export const MANIFEST = path.join(ROOT, 'src/landing/showcase.generated.json')
 export const OUT = path.join(ROOT, 'public/landing/showcase')
 
+// Receita contra a cara de IA. Fica fora do showcase.json porque a galeria mostra o prompt ao visitante.
+const PEOPLE =
+  ' Aparência de pessoa comum, não de modelo: rosto levemente assimétrico, pele com poros, pequenas manchas e' +
+  ' marcas de expressão, fios de cabelo soltos e fora do lugar, corpo de proporção normal.'
+const REAL =
+  ' Precisa parecer uma foto real tirada por uma pessoa, não uma imagem gerada: luz natural do próprio lugar,' +
+  ' sem brilho dourado contornando o cabelo, sem pele lisa de retoque, sem cores saturadas, sem efeito HDR,' +
+  ' exposição um pouco imperfeita, leve ruído de câmera e foco natural.' +
+  " Sem texto, sem letreiro legível, sem logotipo, sem marca d'água e sem moldura."
+
+/** Prompt completo que vai para o modelo: a cena do showcase.json mais a receita de foto real. */
+export function promptFor(spec) {
+  return `${spec.prompt}${spec.people ? PEOPLE : ''}${REAL}`
+}
+
 /** Paisagem larga ocupa a tela inteira; o resto aparece em coluna ou card. */
 const WIDE_WIDTH = 1600
 const DEFAULT_WIDTH = 900

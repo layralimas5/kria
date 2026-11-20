@@ -2,37 +2,45 @@ import clsx from 'clsx'
 
 type LogoSize = 'md' | 'lg'
 
-const MARK_SIZE: Record<LogoSize, { box: string; icon: string }> = {
-  md: { box: 'size-8 rounded-[9px]', icon: 'size-[18px]' },
-  lg: { box: 'size-12 rounded-[13px]', icon: 'size-7' },
+/** Símbolo e texto em `public/logo-mark.svg`: a mesma arte do favicon e do checkout (`npm run billing:image`). */
+const MARK_SRC = '/logo-mark.svg'
+
+const MARK_SIZE: Record<LogoSize, string> = {
+  md: 'h-[22px]',
+  lg: 'h-9',
 }
 
 const WORD_SIZE: Record<LogoSize, string> = {
-  md: 'text-[19px]',
-  lg: 'text-[30px]',
+  md: 'text-[21px]',
+  lg: 'text-[34px]',
 }
 
-/** Só o símbolo: o V do Vynkio no gradiente roxo e azul da Nivora, com o ponto dourado. */
+/** Só o símbolo: o V em duas peças, roxo descendo para o lilás e a lâmina indo para o azul. */
 export function LogoMark({ size = 'md' }: { readonly size?: LogoSize }) {
+  return <img src={MARK_SRC} alt="" aria-hidden="true" width={216} height={144} className={clsx('w-auto shrink-0', MARK_SIZE[size])} />
+}
+
+/** "vynkio" em minúsculas; o pingo do i é um quadrado lilás, como na marca. */
+function Wordmark({ size }: { readonly size: LogoSize }) {
   return (
-    <span
-      className={clsx('grid place-items-center bg-[linear-gradient(135deg,var(--color-accent),var(--color-galaxy))]', MARK_SIZE[size].box)}
-      aria-hidden="true"
-    >
-      <svg viewBox="0 0 24 24" className={MARK_SIZE[size].icon} fill="none" stroke="#ffffff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M5 6.5 12 19l7-12.5" />
-        <circle cx="12" cy="5.2" r="1.9" fill="var(--color-hot)" stroke="none" />
-      </svg>
+    <span aria-hidden="true" className={clsx('font-display font-semibold leading-none tracking-[-0.045em] text-zinc-50', WORD_SIZE[size])}>
+      vynk
+      <span className="relative">
+        ı
+        <span className="absolute left-1/2 top-[0.21em] size-[0.16em] -translate-x-1/2 bg-accent-soft" />
+      </span>
+      o
     </span>
   )
 }
 
-/** Marca escrita "Vynkio". */
+/** Marca completa. Leitor de tela ouve "Vynkio". */
 export function Logo({ size = 'md' }: { readonly size?: LogoSize }) {
   return (
-    <span className={clsx('flex items-center', size === 'lg' ? 'gap-3' : 'gap-2.5')}>
+    <span className={clsx('flex items-center', size === 'lg' ? 'gap-3' : 'gap-2')}>
       <LogoMark size={size} />
-      <span className={clsx('font-display font-bold leading-none tracking-[-0.03em] text-zinc-50', WORD_SIZE[size])}>Vynkio</span>
+      <Wordmark size={size} />
+      <span className="sr-only">Vynkio</span>
     </span>
   )
 }

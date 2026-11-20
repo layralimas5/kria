@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216 144" fill="none">
+  <defs>
+    <linearGradient id="vynkio-arm" x1="20" y1="0" x2="130" y2="144" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6d28d9"/>
+      <stop offset="0.55" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="vynkio-blade" x1="120" y1="62" x2="214" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#vynkio-arm)" d="M14 0h46c9 0 16 4 21 12l39 65c4 7 10 10 18 10h24l-26 45c-5 8-12 12-21 12h-12c-9 0-16-4-21-12L4 21C-2 11 3 0 14 0Z"/>
+  <path fill="url(#vynkio-blade)" d="M163 0h43c8 0 12 8 8 15l-24 40c-4 6-9 9-16 9h-55l29-49c4-10 8-15 15-15Z"/>
+</svg>

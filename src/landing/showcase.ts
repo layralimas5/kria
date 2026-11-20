@@ -13,6 +13,8 @@ interface ShowcaseSpec {
   readonly aspect: string
   readonly prompt: string
   readonly ref?: string
+  /** Tem pessoa na cena: a geração pede aparência comum (`promptFor` nos scripts). */
+  readonly people?: boolean
 }
 
 interface GeneratedImage {
