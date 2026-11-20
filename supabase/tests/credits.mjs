@@ -1730,6 +1730,15 @@ await test('preços v3: trava bloqueia modelo sem custo confiável, acima do tet
   await expectError(create(db, ana, 'foto'), 'model_cost_unverified')
   const same = await priceCheck([{ endpoint_id: 'fal-ai/kling-video/v3/standard/image-to-video', unit_price: 0.084, unit: 'second', currency: 'USD' }])
   assert.equal(same[0].matches, true)
+  // O preço de tabela que a API devolve (TURBO, base do Kling, por token no Seedance) não é alarme; mudar ele é.
+  const listed = await priceCheck([
+    { endpoint_id: 'fal-ai/ideogram/v3', unit_price: 0.03, unit: 'images', currency: 'USD' },
+    { endpoint_id: 'fal-ai/kling-video/v3/standard/image-to-video', unit_price: 0.14, unit: 'seconds', currency: 'USD' },
+    { endpoint_id: 'bytedance/seedance-2.0/image-to-video', unit_price: 0.014, unit: '1000 tokens', currency: 'USD' },
+  ])
+  assert.deepEqual(listed.map((row) => [row.slug, row.matches]), [['foto-ideogram', true], ['video-kling', true], ['video-seedance', true]])
+  const raised = await priceCheck([{ endpoint_id: 'fal-ai/ideogram/v3', unit_price: 0.04, unit: 'images', currency: 'USD' }])
+  assert.equal(raised[0].matches, false)
   await as(db, 'authenticated', dona, () =>
     db.query(`select admin_set_model_tariff('foto', '{"unit":"image","usd":0.1}', 'https://fal.ai/models/fal-ai/nano-banana-2 (novo preço)')`))
   await create(db, ana, 'foto')
