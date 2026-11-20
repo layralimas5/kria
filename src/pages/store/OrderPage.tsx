@@ -1,6 +1,7 @@
 import { CheckCircle2, Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { PixPanel } from '@/components/checkout/PixPanel'
 import { StoreFrame } from '@/components/store/StoreFrame'
 import { Button } from '@/components/ui/Button'
 import { Notice } from '@/components/ui/Notice'
@@ -26,17 +27,15 @@ function trackPurchaseOnce(token: string, order: StoreOrder) {
   })
 }
 
-function PaidOrder({ token, order }: { readonly token: string; readonly order: StoreOrder }) {
+function DownloadButton({ token, item }: { readonly token: string; readonly item: StoreOrder['items'][number] }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => trackPurchaseOnce(token, order), [token, order])
 
   async function download() {
     setBusy(true)
     setError(null)
     try {
-      window.location.assign(await storeDownloadUrl(token))
+      window.location.assign(await storeDownloadUrl(token, item.slug))
     } catch (downloadError) {
       setError(errorMessage(downloadError))
     } finally {
@@ -45,18 +44,48 @@ function PaidOrder({ token, order }: { readonly token: string; readonly order: S
   }
 
   return (
+    <li className="space-y-2 rounded-xl border border-white/[0.08] bg-surface p-3 text-left">
+      <div className="flex items-center gap-3">
+        {item.coverUrl && <img src={item.coverUrl} alt="" width={48} height={48} className="size-12 shrink-0 rounded-lg object-cover" />}
+        <p className="min-w-0 flex-1 text-sm font-semibold text-zinc-100">{item.name}</p>
+        <Button onClick={() => void download()} loading={busy} aria-label={`Baixar ${item.name}`}>
+          <Download className="size-4" aria-hidden="true" /> Baixar
+        </Button>
+      </div>
+      {error && <Notice tone="error">{error}</Notice>}
+    </li>
+  )
+}
+
+function PaidOrder({ token, order }: { readonly token: string; readonly order: StoreOrder }) {
+  useEffect(() => trackPurchaseOnce(token, order), [token, order])
+  return (
     <>
       <CheckCircle2 className="mx-auto size-10 text-emerald-400" aria-hidden="true" />
       <h1 className="text-xl font-semibold text-zinc-50">Pagamento confirmado</h1>
-      <p className="text-sm text-zinc-400">
-        Seu <strong className="text-zinc-200">{order.product}</strong> está liberado. O mesmo link vai para o e-mail que você usou no pagamento.
-      </p>
-      {error && <Notice tone="error">{error}</Notice>}
-      <Button onClick={() => void download()} loading={busy} className="w-full">
-        <Download className="size-4" aria-hidden="true" /> Baixar agora
-      </Button>
+      <p className="text-sm text-zinc-400">Seu acesso está liberado. O mesmo link vai para o e-mail que você usou na compra.</p>
+      <ul className="space-y-2">
+        {order.items.map((item) => (
+          <DownloadButton key={item.slug} token={token} item={item} />
+        ))}
+      </ul>
       <p className="text-xs text-zinc-500">Guarde esta página: o link continua valendo para baixar de novo.</p>
     </>
+  )
+}
+
+function Waiting({ order, gaveUp }: { readonly order: StoreOrder; readonly gaveUp: boolean }) {
+  if (order.pix && !gaveUp) return <PixPanel pix={order.pix} totalCents={order.priceCents} />
+  return (
+    <div className="flex flex-col items-center gap-4" role="status">
+      {!gaveUp && <Spinner className="size-7 text-accent-soft" />}
+      <h1 className="text-lg font-semibold text-zinc-50">{gaveUp ? 'Ainda sem confirmação' : 'Confirmando o pagamento'}</h1>
+      <p className="text-sm text-zinc-400">
+        {gaveUp
+          ? 'Se você já pagou, o link chega no seu e-mail assim que a confirmação cair. Pode recarregar esta página depois.'
+          : 'No cartão costuma levar alguns segundos. Não precisa fechar esta página.'}
+      </p>
+    </div>
   )
 }
 
@@ -65,22 +94,17 @@ function OrderStatus({ token, order, gaveUp }: { readonly token: string; readonl
     case 'paid':
       return <PaidOrder token={token} order={order} />
     case 'pending':
-      return (
-        <div className="flex flex-col items-center gap-4" role="status">
-          {!gaveUp && <Spinner className="size-7 text-accent-soft" />}
-          <h1 className="text-lg font-semibold text-zinc-50">{gaveUp ? 'Ainda sem confirmação' : 'Esperando a confirmação do pagamento'}</h1>
-          <p className="text-sm text-zinc-400">
-            {gaveUp
-              ? 'Se você já pagou, o link chega no seu e-mail assim que o Asaas confirmar. Pode recarregar esta página depois.'
-              : 'No Pix e no cartão costuma levar alguns segundos. Não precisa fechar esta página.'}
-          </p>
-        </div>
-      )
+      return <Waiting order={order} gaveUp={gaveUp} />
     case 'expired':
+    case 'failed':
       return (
         <>
           <h1 className="text-lg font-semibold text-zinc-50">O pagamento não foi concluído</h1>
-          <p className="text-sm text-zinc-400">Nada foi cobrado. Se quiser, comece de novo pela página do {order.product}.</p>
+          <p className="text-sm text-zinc-400">
+            {order.method === 'card'
+              ? 'O cartão não foi aprovado e nada foi cobrado. Tente outro cartão ou pague com Pix.'
+              : 'Nada foi cobrado. Se quiser, comece de novo.'}
+          </p>
           <a href={order.salesUrl} className="inline-flex min-h-10 w-full items-center justify-center rounded-xl btn-accent px-4 text-sm font-semibold">
             Voltar para a página
           </a>
@@ -96,7 +120,7 @@ function OrderStatus({ token, order, gaveUp }: { readonly token: string; readonl
   }
 }
 
-/** `/pedido/:token`: volta do checkout e link do e-mail. Mostra o status e libera o download. */
+/** `/pedido/:token`: depois do checkout e no link do e-mail. Mostra o Pix, o status e libera o download. */
 export function OrderPage() {
   const { token = '' } = useParams()
   const valid = TOKEN.test(token)

@@ -6,6 +6,7 @@
 //   npx supabase functions deploy asaas-webhook --no-verify-jwt
 // No painel do Asaas: eventos CHECKOUT_PAID, CHECKOUT_EXPIRED, CHECKOUT_CANCELED,
 // PAYMENT_CONFIRMED, PAYMENT_RECEIVED, PAYMENT_OVERDUE, PAYMENT_REFUNDED,
+// PAYMENT_CREDIT_CARD_CAPTURE_REFUSED, PAYMENT_REPROVED_BY_RISK_ANALYSIS,
 // SUBSCRIPTION_DELETED e SUBSCRIPTION_INACTIVATED, com o ASAAS_WEBHOOK_TOKEN.
 //
 // Plano e crédito só mudam aqui, por evento autenticado do Asaas. Nada que
@@ -19,7 +20,7 @@ import { deleteSubscription, getSubscription } from '../_shared/asaas.ts'
 import { asaasEventSchema, decideBillingEvent, type BillingAction, type Lookup } from '../_shared/billing.ts'
 import { adminClient, errorResponse, handle, json, readJson, requireEnv } from '../_shared/http.ts'
 import { timingSafeEqual } from '../_shared/signature.ts'
-import { expireStoreOrder, markStoreOrderPaid, refundStoreOrder } from './store.ts'
+import { expireStoreOrder, failStoreOrder, markStoreOrderPaid, refundStoreOrder } from './store.ts'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -34,6 +35,14 @@ async function findRow(admin: SupabaseClient, table: Table, lookup: Lookup): Pro
   if (lookup.externalReference && UUID.test(lookup.externalReference)) {
     const { data } = await admin.from(table).select('id').eq('id', lookup.externalReference).maybeSingle()
     if (data?.id) return data.id as string
+  }
+  // Checkout próprio da loja: as outras parcelas podem chegar sem a referência; o parcelamento é nosso.
+  if (table === 'store_orders') {
+    for (const [column, value] of [['provider_payment_id', lookup.paymentId], ['provider_installment_id', lookup.installmentId]] as const) {
+      if (!value) continue
+      const { data } = await admin.from(table).select('id').eq(column, value).limit(1).maybeSingle()
+      if (data?.id) return data.id as string
+    }
   }
   return null
 }
@@ -157,6 +166,11 @@ async function apply(admin: SupabaseClient, action: BillingAction): Promise<stri
       // Estorno não tira crédito automaticamente: o saldo pode já ter sido gasto.
       await admin.from('purchases').update({ status: 'refunded' }).eq('id', purchaseId)
       return 'estornado: revisar saldo manualmente'
+    }
+
+    case 'pack_failed': {
+      const orderId = await findRow(admin, 'store_orders', action.lookup)
+      return orderId ? failStoreOrder(admin, orderId, action.reason) : `sem pedido da loja: ${action.reason}`
     }
 
     case 'subscription_paid':

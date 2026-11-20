@@ -33,7 +33,7 @@ const OnboardingPage = page(() => import('@/pages/OnboardingPage'), 'OnboardingP
 const ForgotPasswordPage = page(() => import('@/pages/ForgotPasswordPage'), 'ForgotPasswordPage')
 const ResetPasswordPage = page(() => import('@/pages/ResetPasswordPage'), 'ResetPasswordPage')
 const SubscribePage = page(() => import('@/pages/SubscribePage'), 'SubscribePage')
-const BuyPage = page(() => import('@/pages/store/BuyPage'), 'BuyPage')
+const CheckoutPage = page(() => import('@/pages/store/CheckoutPage'), 'CheckoutPage')
 const OrderPage = page(() => import('@/pages/store/OrderPage'), 'OrderPage')
 const AssistantPage = page(() => import('@/pages/AssistantPage'), 'AssistantPage')
 const BrandsPage = page(() => import('@/pages/BrandsPage'), 'BrandsPage')
@@ -96,7 +96,7 @@ export function App() {
             <Route index element={<LandingPage />} />
             <Route path="/termos" element={<TermsPage />} />
             {/* Loja de infoprodutos: sem conta no Vynkio (docs/loja.md). */}
-            <Route path="/comprar/:product" element={<BuyPage />} />
+            <Route path="/comprar/:product" element={<CheckoutPage />} />
             <Route path="/pedido/:token" element={<OrderPage />} />
             <Route path="/entrar" element={<LoginPage key="signin" initialMode="signin" />} />
             <Route path="/criar-conta" element={<LoginPage key="signup" initialMode="signup" />} />

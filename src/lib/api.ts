@@ -140,17 +140,98 @@ export async function startSubscription(plan: string, payment: SubscriptionPayme
   return z.object({ url: z.string().url() }).parse(data).url
 }
 
-/** Loja de infoprodutos: abre o checkout avulso do Asaas, sem conta no Vynkio. */
-export async function startStoreCheckout(product: string): Promise<string> {
-  const data = await invoke('store-checkout', { product })
-  return z.object({ url: z.string().url() }).parse(data).url
+const storeOfferSchema = z.object({
+  product: z.object({
+    slug: z.string(),
+    name: z.string(),
+    tagline: z.string().nullable(),
+    coverUrl: z.string().url().nullable(),
+    priceCents: z.number().int(),
+  }),
+  bumps: z.array(
+    z.object({
+      slug: z.string(),
+      name: z.string(),
+      pitch: z.string().nullable(),
+      coverUrl: z.string().url().nullable(),
+      priceCents: z.number().int(),
+      fullPriceCents: z.number().int(),
+    }),
+  ),
+  maxInstallments: z.number().int().min(1).max(12),
+  interestMonthly: z.number().min(0),
+  salesUrl: z.string().url(),
+})
+
+export type StoreOffer = z.infer<typeof storeOfferSchema>
+export type StoreBump = StoreOffer['bumps'][number]
+
+/** Loja de infoprodutos: o que o checkout próprio mostra (capa, preço, "leve junto", parcelas). */
+export async function getStoreOffer(product: string): Promise<StoreOffer> {
+  return storeOfferSchema.parse(await invoke('store-checkout', { action: 'offer', product }))
+}
+
+const pixSchema = z.object({ payload: z.string().min(10), qrBase64: z.string().min(10), expiresAt: z.string().nullable() })
+
+export type StorePix = z.infer<typeof pixSchema>
+
+export interface StoreBuyer {
+  readonly name: string
+  readonly email: string
+  readonly cpf: string
+  readonly phone: string
+}
+
+export interface StoreCard {
+  readonly holderName: string
+  readonly number: string
+  readonly expiryMonth: string
+  readonly expiryYear: string
+  readonly ccv: string
+  readonly postalCode: string
+  readonly addressNumber: string
+  readonly installments: number
+}
+
+export type StorePayment =
+  | { readonly method: 'pix' }
+  | { readonly method: 'card'; readonly card: StoreCard }
+
+export interface StorePayInput {
+  readonly product: string
+  readonly bumps: readonly string[]
+  readonly buyer: StoreBuyer
+  readonly payment: StorePayment
+  /** O total que a pessoa viu: se o servidor calcular outro, nada é cobrado. */
+  readonly expectedTotalCents: number
+}
+
+const payResultSchema = z.object({ token: z.string().regex(/^[0-9a-f]{64}$/), pix: pixSchema.optional() })
+
+export type StorePayResult = z.infer<typeof payResultSchema>
+
+export async function payStoreOrder(input: StorePayInput): Promise<StorePayResult> {
+  const data = await invoke('store-checkout', {
+    action: 'pay',
+    method: input.payment.method,
+    product: input.product,
+    bumps: input.bumps,
+    buyer: input.buyer,
+    ...(input.payment.method === 'card' ? { card: input.payment.card } : {}),
+    expectedTotalCents: input.expectedTotalCents,
+  })
+  return payResultSchema.parse(data)
 }
 
 const storeOrderSchema = z.object({
-  status: z.enum(['pending', 'paid', 'refunded', 'expired']),
+  status: z.enum(['pending', 'paid', 'refunded', 'expired', 'failed']),
   product: z.string(),
   priceCents: z.number().int(),
+  installments: z.number().int().default(1),
+  method: z.enum(['pix', 'card']).nullable().default(null),
   salesUrl: z.string().url(),
+  items: z.array(z.object({ slug: z.string(), name: z.string(), coverUrl: z.string().url().nullable() })).default([]),
+  pix: pixSchema.nullable().default(null),
 })
 
 export type StoreOrder = z.infer<typeof storeOrderSchema>
@@ -159,9 +240,9 @@ export async function getStoreOrder(token: string): Promise<StoreOrder> {
   return storeOrderSchema.parse(await invoke('store-order', { token, action: 'status' }))
 }
 
-/** URL assinada de 10 minutos para o arquivo do pedido pago. */
-export async function storeDownloadUrl(token: string): Promise<string> {
-  const data = await invoke('store-order', { token, action: 'download' })
+/** URL assinada de 10 minutos para o arquivo de um produto do pedido pago. */
+export async function storeDownloadUrl(token: string, item: string): Promise<string> {
+  const data = await invoke('store-order', { token, action: 'download', item })
   return z.object({ url: z.string().url() }).parse(data).url
 }
 

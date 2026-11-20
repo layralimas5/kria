@@ -14,6 +14,7 @@ export const asaasEventSchema = z.object({
       id: z.string(),
       customer: z.string().nullish(),
       subscription: z.string().nullish(),
+      installment: z.string().nullish(),
       checkoutSession: z.string().nullish(),
       externalReference: z.string().nullish(),
       value: z.number().nullish(),
@@ -31,6 +32,9 @@ export type AsaasEvent = z.infer<typeof asaasEventSchema>
 export interface Lookup {
   readonly checkoutId: string | null
   readonly externalReference: string | null
+  /** Cobrança direta da loja (checkout próprio): a cobrança ou o parcelamento que criamos. */
+  readonly paymentId?: string | null
+  readonly installmentId?: string | null
 }
 
 export type BillingAction =
@@ -38,6 +42,7 @@ export type BillingAction =
   | { readonly kind: 'checkout_closed'; readonly lookup: Lookup }
   | { readonly kind: 'pack_paid'; readonly lookup: Lookup; readonly paymentId: string; readonly customerId: string | null }
   | { readonly kind: 'pack_refunded'; readonly lookup: Lookup }
+  | { readonly kind: 'pack_failed'; readonly lookup: Lookup; readonly reason: string }
   | {
       readonly kind: 'subscription_paid'
       readonly lookup: Lookup
@@ -56,6 +61,8 @@ export type BillingAction =
 const PAID = new Set(['PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED'])
 const REFUNDED = new Set(['PAYMENT_REFUNDED', 'PAYMENT_CHARGEBACK_REQUESTED'])
 const CHECKOUT_CLOSED = new Set(['CHECKOUT_EXPIRED', 'CHECKOUT_CANCELED'])
+/** Cartão recusado depois de criado (captura ou análise de risco): nada foi cobrado. */
+const CARD_FAILED = new Set(['PAYMENT_CREDIT_CARD_CAPTURE_REFUSED', 'PAYMENT_REPROVED_BY_RISK_ANALYSIS'])
 const SUBSCRIPTION_ENDED = new Set(['SUBSCRIPTION_DELETED', 'SUBSCRIPTION_INACTIVATED'])
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -65,7 +72,12 @@ export function toCents(value: number): number {
 }
 
 function paymentLookup(payment: NonNullable<AsaasEvent['payment']>): Lookup {
-  return { checkoutId: payment.checkoutSession ?? null, externalReference: payment.externalReference ?? null }
+  return {
+    checkoutId: payment.checkoutSession ?? null,
+    externalReference: payment.externalReference ?? null,
+    paymentId: payment.id,
+    installmentId: payment.installment ?? null,
+  }
 }
 
 export function decideBillingEvent(event: AsaasEvent): BillingAction {
@@ -103,6 +115,9 @@ export function decideBillingEvent(event: AsaasEvent): BillingAction {
   }
   if (event.event === 'PAYMENT_OVERDUE' && subscriptionId) {
     return { kind: 'subscription_overdue', providerSubscriptionId: subscriptionId }
+  }
+  if (!subscriptionId && (CARD_FAILED.has(event.event) || event.event === 'PAYMENT_OVERDUE')) {
+    return { kind: 'pack_failed', lookup: paymentLookup(payment), reason: event.event === 'PAYMENT_OVERDUE' ? 'pix vencido' : 'cartão recusado' }
   }
   if (REFUNDED.has(event.event)) {
     return subscriptionId

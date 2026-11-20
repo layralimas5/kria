@@ -2569,4 +2569,28 @@ await test('loja: produto e pedido só pelas functions, com token de 64 caracter
     values ('caro', 'Sem página segura', 2990, 'x/x.zip', 'x.zip', 'http://exemplo.com.br')`), 'check')
 })
 
+await test('loja: checkout próprio com itens, parcelas e "leve junto"', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await db.query(`insert into store_products (slug, name, price_cents, file_path, file_name, sales_url, active, bump_slugs, max_installments)
+    values ('kit', 'Kit', 4700, 'kit/kit.zip', 'kit.zip', 'https://exemplo.com.br', true, '{pack}', 6),
+           ('pack', 'Pack', 3700, 'pack/pack.zip', 'pack.zip', 'https://exemplo.com.br', true, '{}', 12)`)
+  const product = (await db.query(`select interest_monthly, bump_price_cents from store_products where slug = 'kit'`)).rows[0]
+  assert.equal(Number(product.interest_monthly), 0.0299)
+  assert.equal(product.bump_price_cents, null)
+
+  const order = (await db.query(`insert into store_orders (product_slug, price_cents, total_cents, installments, payment_method)
+    values ('kit', 6690, 7100, 3, 'card') returning id`)).rows[0]
+  await db.query(`insert into store_order_items (order_id, product_slug, price_cents, is_bump) values ($1, 'kit', 4700, false), ($1, 'pack', 1990, true)`, [order.id])
+  assert.equal((await db.query(`select count(*)::int as n from store_order_items where order_id = $1`, [order.id])).rows[0].n, 2)
+  await db.query(`update store_orders set status = 'failed' where id = $1`, [order.id])
+
+  for (const [role, user] of [['anon', null], ['authenticated', ana]]) {
+    await as(db, role, user, () => expectError(db.query(`select * from store_order_items`), 'permission denied'))
+  }
+  await expectError(db.query(`update store_products set max_installments = 13 where slug = 'kit'`), 'check')
+  await expectError(db.query(`update store_products set bump_slugs = '{a,b,c,d}' where slug = 'kit'`), 'check')
+  await expectError(db.query(`update store_products set cover_url = 'http://x.com/a.png' where slug = 'kit'`), 'check')
+  await expectError(db.query(`insert into store_orders (product_slug, price_cents, payment_method) values ('kit', 4700, 'boleto')`), 'check')
+})
+
 console.log(`\n${passed} testes do banco passaram`)

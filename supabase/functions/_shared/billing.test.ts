@@ -8,7 +8,7 @@ describe('decideBillingEvent', () => {
     const action = decideBillingEvent(
       parse({ id: 'evt_1', event: 'PAYMENT_CONFIRMED', payment: { id: 'pay_1', checkoutSession: 'chk_1', value: 49.9 } }),
     )
-    expect(action).toEqual({ kind: 'pack_paid', lookup: { checkoutId: 'chk_1', externalReference: null }, paymentId: 'pay_1', customerId: null })
+    expect(action).toEqual({ kind: 'pack_paid', lookup: { checkoutId: 'chk_1', externalReference: null, paymentId: 'pay_1', installmentId: null }, paymentId: 'pay_1', customerId: null })
   })
 
   it('cobrança paga de assinatura vira ciclo do plano, com valor em centavos', () => {
@@ -29,7 +29,7 @@ describe('decideBillingEvent', () => {
     )
     expect(action).toEqual({
       kind: 'subscription_paid',
-      lookup: { checkoutId: null, externalReference: 'ref' },
+      lookup: { checkoutId: null, externalReference: 'ref', paymentId: 'pay_2', installmentId: null },
       providerSubscriptionId: 'sub_1',
       customerId: 'cus_1',
       paymentId: 'pay_2',
@@ -50,12 +50,26 @@ describe('decideBillingEvent', () => {
     expect(action).toMatchObject({ kind: 'subscription_paid', dueDate: null, invoiceUrl: null })
   })
 
-  it('atraso só importa em assinatura', () => {
+  it('Pix vencido e cartão recusado sem assinatura encerram o pedido da loja', () => {
+    expect(decideBillingEvent(parse({ id: 'e', event: 'PAYMENT_OVERDUE', payment: { id: 'p' } }))).toMatchObject({
+      kind: 'pack_failed',
+      reason: 'pix vencido',
+    })
+    const refused = decideBillingEvent(
+      parse({ id: 'e', event: 'PAYMENT_CREDIT_CARD_CAPTURE_REFUSED', payment: { id: 'p', installment: 'ins_1', externalReference: 'ord' } }),
+    )
+    expect(refused).toEqual({
+      kind: 'pack_failed',
+      lookup: { checkoutId: null, externalReference: 'ord', paymentId: 'p', installmentId: 'ins_1' },
+      reason: 'cartão recusado',
+    })
+  })
+
+  it('atraso de assinatura vira atraso do plano', () => {
     expect(decideBillingEvent(parse({ id: 'e', event: 'PAYMENT_OVERDUE', payment: { id: 'p', subscription: 's' } }))).toEqual({
       kind: 'subscription_overdue',
       providerSubscriptionId: 's',
     })
-    expect(decideBillingEvent(parse({ id: 'e', event: 'PAYMENT_OVERDUE', payment: { id: 'p' } })).kind).toBe('ignore')
   })
 
   it('estorno separa pacote de assinatura', () => {

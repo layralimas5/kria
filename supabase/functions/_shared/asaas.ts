@@ -177,15 +177,25 @@ interface AsaasPayment {
   readonly invoiceUrl: string
 }
 
+export interface CustomerInput {
+  readonly name: string
+  readonly cpf: string
+  readonly email: string | null
+  readonly phone?: string | null
+  /** O nosso id de quem paga (usuário do app ou pedido da loja). */
+  readonly externalReference: string
+}
+
 /** Cliente do Asaas pelo CPF: reaproveita o que já existe para não duplicar cadastro a cada tentativa. */
-async function findOrCreateCustomer(payer: PixPayer): Promise<string> {
-  const found = await call<{ data: AsaasCustomer[] }>('GET', `/customers?cpfCnpj=${payer.cpf}&limit=1`)
+export async function findOrCreateCustomer(input: CustomerInput): Promise<string> {
+  const found = await call<{ data: AsaasCustomer[] }>('GET', `/customers?cpfCnpj=${input.cpf}&limit=1`)
   if (found.data[0]) return found.data[0].id
   const created = await call<AsaasCustomer>('POST', '/customers', {
-    name: payer.name,
-    cpfCnpj: payer.cpf,
-    ...(payer.email ? { email: payer.email } : {}),
-    externalReference: payer.userId,
+    name: input.name,
+    cpfCnpj: input.cpf,
+    ...(input.email ? { email: input.email } : {}),
+    ...(input.phone ? { mobilePhone: input.phone } : {}),
+    externalReference: input.externalReference,
   })
   return created.id
 }
@@ -210,7 +220,8 @@ export interface PixSubscription {
  * Devolve a fatura da primeira cobrança, onde fica o QR Code.
  */
 export async function createPixSubscription(input: PixSubscriptionInput): Promise<PixSubscription> {
-  const customerId = await findOrCreateCustomer(input.payer)
+  const { payer } = input
+  const customerId = await findOrCreateCustomer({ name: payer.name, cpf: payer.cpf, email: payer.email, externalReference: payer.userId })
   const subscription = await call<{ id: string }>('POST', '/subscriptions', {
     customer: customerId,
     billingType: 'PIX',
@@ -243,4 +254,122 @@ export async function deleteSubscription(id: string): Promise<void> {
     if (error instanceof AsaasError && error.status === 404) return
     throw error
   }
+}
+
+// Cobrança direta pela API: o checkout é a página do Vynkio, não a do Asaas (docs/loja.md).
+
+export interface PixCharge {
+  readonly paymentId: string
+  readonly payload: string
+  readonly qrBase64: string
+  readonly expiresAt: string | null
+}
+
+export interface ChargeInput {
+  readonly customerId: string
+  readonly description: string
+  /** O nosso id do pedido: volta em toda cobrança e no webhook. */
+  readonly externalReference: string
+}
+
+/** Pix com vencimento hoje. Devolve o copia e cola e a imagem do QR para mostrar na própria página. */
+export async function createPixCharge(input: ChargeInput & { readonly valueCents: number }): Promise<PixCharge> {
+  const payment = await call<{ id: string }>('POST', '/payments', {
+    customer: input.customerId,
+    billingType: 'PIX',
+    value: input.valueCents / 100,
+    dueDate: todayInBrazil(),
+    description: input.description.slice(0, 500),
+    externalReference: input.externalReference,
+  })
+  const qr = await call<{ encodedImage: string; payload: string; expirationDate?: string | null }>(
+    'GET',
+    `/payments/${encodeURIComponent(payment.id)}/pixQrCode`,
+  )
+  return { paymentId: payment.id, payload: qr.payload, qrBase64: qr.encodedImage, expiresAt: qr.expirationDate ?? null }
+}
+
+export interface CardData {
+  readonly holderName: string
+  readonly number: string
+  readonly expiryMonth: string
+  readonly expiryYear: string
+  readonly ccv: string
+}
+
+export interface CardHolder {
+  readonly name: string
+  readonly email: string
+  readonly cpf: string
+  readonly postalCode: string
+  readonly addressNumber: string
+  readonly phone: string
+}
+
+export interface CardChargeInput extends ChargeInput {
+  readonly totalCents: number
+  readonly installments: number
+  readonly card: CardData
+  readonly holder: CardHolder
+  /** IP de quem está pagando (o Asaas usa na análise de risco). */
+  readonly remoteIp: string
+}
+
+export interface CardCharge {
+  readonly paymentId: string
+  readonly installmentId: string | null
+  readonly status: string
+}
+
+/** Cartão recusado pelo emissor ou pela análise do Asaas: a mensagem é a do Asaas, feita para quem paga. */
+export class CardDeclinedError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'CardDeclinedError'
+  }
+}
+
+/**
+ * Cobra o cartão na hora. O número do cartão só passa por aqui a caminho do Asaas: não é gravado nem
+ * aparece em log (o erro guarda só o corpo de resposta do Asaas, que não repete o cartão).
+ */
+export async function createCardCharge(input: CardChargeInput): Promise<CardCharge> {
+  // Parcelado: `installmentCount` + `totalValue` (o centavo que sobrar vai na última); à vista: `value`.
+  const installment =
+    input.installments > 1 ? { installmentCount: input.installments, totalValue: input.totalCents / 100 } : { value: input.totalCents / 100 }
+  try {
+    const payment = await call<{ id: string; status: string; installment?: string | null }>('POST', '/payments', {
+      customer: input.customerId,
+      billingType: 'CREDIT_CARD',
+      ...installment,
+      dueDate: todayInBrazil(),
+      description: input.description.slice(0, 500),
+      externalReference: input.externalReference,
+      creditCard: input.card,
+      creditCardHolderInfo: {
+        name: input.holder.name,
+        email: input.holder.email,
+        cpfCnpj: input.holder.cpf,
+        postalCode: input.holder.postalCode,
+        addressNumber: input.holder.addressNumber,
+        phone: input.holder.phone,
+        mobilePhone: input.holder.phone,
+      },
+      remoteIp: input.remoteIp,
+    })
+    return { paymentId: payment.id, installmentId: payment.installment ?? null, status: payment.status }
+  } catch (error) {
+    if (error instanceof AsaasError && error.status === 400) throw new CardDeclinedError(declineMessage(error.body))
+    throw error
+  }
+}
+
+const DEFAULT_DECLINE = 'O cartão não foi aprovado. Confira os dados ou tente outro cartão.'
+
+export function declineMessage(body: unknown): string {
+  if (typeof body !== 'object' || body === null || !('errors' in body) || !Array.isArray(body.errors)) return DEFAULT_DECLINE
+  const first: unknown = body.errors[0]
+  if (typeof first !== 'object' || first === null || !('description' in first)) return DEFAULT_DECLINE
+  const description = first.description
+  return typeof description === 'string' && description.length > 0 && description.length < 300 ? description : DEFAULT_DECLINE
 }

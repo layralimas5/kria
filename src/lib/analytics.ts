@@ -10,6 +10,8 @@ type AnalyticsEvent =
   | { name: 'purchase'; params: { plan: string; value: number; currency: 'BRL'; transaction_id: string } }
   | { name: 'begin_checkout'; params: { product: string } }
   | { name: 'purchase'; params: { product: string; value: number; currency: 'BRL'; transaction_id: string } }
+  | { name: 'add_to_cart' | 'remove_from_cart'; params: { product: string } }
+  | { name: 'add_payment_info'; params: { product: string; method: 'card' | 'pix'; value: number } }
 
 type Gtag = (...args: unknown[]) => void
 

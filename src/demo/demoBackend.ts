@@ -18,6 +18,7 @@ import { demoMultiplierOutput } from './demoMultiplier'
 import { demoFinance, exportUsage, financeSettings, isRefusal, modelQuotes, settleExport, startExport } from './demoFinance'
 import { fullUseMarginOf, planEconomics, preflight, setTariff, storefront, updateCostGuard, updateDraftPlan } from './demoPricingV3'
 import { demoRefusal, demoSpendGuard, demoUsage } from './demoSpend'
+import { DEMO_PIX_QR_BASE64 } from './demoPixQr'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
 const SESSION_KEY = 'kria-demo-state-v12'
@@ -256,8 +257,64 @@ function buyCredits(body: Row): Response {
   return json({ url: `${window.location.origin}/creditos?compra=${purchase.id}` }, 201)
 }
 
-/** Loja no demo: o checkout volta direto para um pedido já pago. */
+/** Loja no demo: cartão volta para um pedido já pago; Pix mostra o QR e confirma sozinho em 8 segundos. */
 const DEMO_STORE_TOKEN = 'd'.repeat(64)
+const DEMO_PIX_TOKEN = 'e'.repeat(64)
+let demoPixCreatedAt = 0
+
+function demoStoreOffer() {
+  const origin = window.location.origin
+  return {
+    product: {
+      slug: 'kria-personagens',
+      name: 'Kria Personagens Insanos',
+      tagline: '100 personagens prontos para criar conteúdo com IA, com prompt e ficha de cada um.',
+      coverUrl: `${origin}/demo/img-3.svg`,
+      priceCents: 4700,
+    },
+    bumps: [
+      {
+        slug: 'pack-prompts',
+        name: 'Pack de 200 prompts de vídeo',
+        pitch: 'Os prompts que eu uso para animar os personagens. Só neste checkout.',
+        coverUrl: `${origin}/demo/img-5.svg`,
+        priceCents: 1990,
+        fullPriceCents: 3700,
+      },
+    ],
+    maxInstallments: 12,
+    interestMonthly: 0.0299,
+    salesUrl: origin,
+  }
+}
+
+function demoStoreCheckout(body: Row): Response {
+  if (body.action === 'offer') return json(demoStoreOffer())
+  if (body.method === 'pix') {
+    demoPixCreatedAt = Date.now()
+    return json({ token: DEMO_PIX_TOKEN, pix: { payload: DEMO_PIX_PAYLOAD, qrBase64: DEMO_PIX_QR_BASE64, expiresAt: null } }, 201)
+  }
+  return json({ token: DEMO_STORE_TOKEN }, 201)
+}
+
+const DEMO_PIX_PAYLOAD = '00020126580014br.gov.bcb.pix0136demo-vynkio-nao-e-um-pix-de-verdade5204000053039865406047.005802BR6304ABCD'
+
+function demoStoreOrder(body: Row): Response {
+  const origin = window.location.origin
+  const offer = demoStoreOffer()
+  const pixPending = body.token === DEMO_PIX_TOKEN && Date.now() - demoPixCreatedAt < 8000
+  const order = {
+    status: pixPending ? 'pending' : 'paid',
+    product: offer.product.name,
+    priceCents: 6690,
+    installments: 1,
+    method: body.token === DEMO_PIX_TOKEN ? 'pix' : 'card',
+    salesUrl: origin,
+    items: [offer.product, offer.bumps[0]!].map((item) => ({ slug: item.slug, name: item.name, coverUrl: item.coverUrl })),
+    pix: pixPending ? { payload: DEMO_PIX_PAYLOAD, qrBase64: DEMO_PIX_QR_BASE64, expiresAt: null } : null,
+  }
+  return json(body.action === 'download' ? { ...order, url: `${origin}/icon.png` } : order)
+}
 
 /** No demo a assinatura confirma na hora: mesmo efeito do webhook do Asaas no ar. */
 function subscribe(body: Row): Response {
@@ -1063,11 +1120,8 @@ export async function demoFetch(input: RequestInfo | URL, init?: RequestInit): P
       return fail(503, 'demo_only', 'No modo demo nada muda em contas. Nenhuma conta foi criada, excluída ou alterada.')
     }
     if (name === 'pricing-check') return fail(503, 'demo_only', 'No modo demo a consulta ao fal não roda. Nada foi alterado.')
-    if (name === 'store-checkout') return json({ url: `${window.location.origin}/pedido/${DEMO_STORE_TOKEN}` }, 201)
-    if (name === 'store-order') {
-      const order = { status: 'paid', product: 'Produto de demonstração', priceCents: 4700, salesUrl: window.location.origin }
-      return json(body.action === 'download' ? { ...order, url: `${window.location.origin}/icon.png` } : order)
-    }
+    if (name === 'store-checkout') return demoStoreCheckout(body)
+    if (name === 'store-order') return demoStoreOrder(body)
     return fail(404, 'not_found', 'Função desconhecida.')
   }
 
