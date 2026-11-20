@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { ModelQuotes } from '@/domain/creditPolicy'
 import { useToast } from '@/hooks/useToast'
-import { runPriceCheck, updateCostGuard, type PriceCheck } from '@/lib/adminApi'
+import { runPriceCheck, setCostPolicy, updateCostGuard, type PriceCheck } from '@/lib/adminApi'
 import { errorMessage } from '@/lib/api'
 import { Button } from '../../ui/Button'
 import { TextField } from '../../ui/Field'
@@ -101,5 +101,53 @@ export function PriceCheckCard({ onChecked }: { readonly onChecked: () => void }
       )}
       <p className="text-xs text-zinc-500">A API do fal devolve o preço base por unidade. Anthropic não tem consulta de preço: confira a página e salve a tarifa.</p>
     </div>
+  )
+}
+
+/**
+ * Liga ou desliga a trava de custo. Ligada, modelo sem custo conferido não gera. Só liga com todo modelo
+ * ativo conferido (o banco confere de novo); desligar fica sempre livre, com motivo na auditoria.
+ */
+export function CostPolicyToggle({ quotes, onSaved }: { readonly quotes: ModelQuotes; readonly onSaved: () => void }) {
+  const notify = useToast()
+  const on = quotes.settings.require_trusted_cost
+  const untrusted = quotes.models.filter((quote) => quote.active && !quote.trusted).map((quote) => quote.name)
+  const blocked = !on && untrusted.length > 0
+  const [reason, setReason] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    if (reason.trim().length < 5) return setError('Escreva o motivo (pelo menos 5 caracteres).')
+    setBusy(true)
+    setError(null)
+    try {
+      await setCostPolicy(!on, reason.trim())
+      notify(on ? 'Trava de custo desligada.' : 'Trava de custo ligada.')
+      setReason('')
+      onSaved()
+    } catch (saveError) {
+      setError(errorMessage(saveError))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="space-y-3">
+      <Notice tone={on ? 'info' : 'error'}>
+        {on
+          ? 'Ligada: modelo sem custo conferido não gera.'
+          : blocked
+            ? `Desligada. Para ligar, confira antes: ${untrusted.join(', ')}.`
+            : 'Desligada, e todo modelo ativo já está conferido. Pode ligar.'}
+      </Notice>
+      <TextField label="Motivo" hint="Vai para a auditoria." value={reason} disabled={blocked} onChange={(event) => setReason(event.target.value)} />
+      {error && <Notice tone="error">{error}</Notice>}
+      <Button type="submit" variant={on ? 'secondary' : 'primary'} loading={busy} disabled={blocked}>
+        {on ? 'Desligar trava de custo' : 'Ligar trava de custo'}
+      </Button>
+    </form>
   )
 }

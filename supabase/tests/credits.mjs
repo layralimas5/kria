@@ -2524,4 +2524,24 @@ await test('controles da conta: excluir e senha só com permissão e motivo, nun
 })
 
 
+await test('trava de custo: liga pelo admin só com todo modelo ativo conferido, e desliga sempre', async (db) => {
+  const dona = await newUser(db, 'dona@x.com')
+  await makeAdmin(db, dona)
+  const analista = await newUser(db, 'analista@x.com')
+  await makeAdmin(db, analista, 'analyst')
+  const setPolicy = (who, on, reason = 'tarifas conferidas hoje') =>
+    as(db, 'authenticated', who, async () => (await db.query(`select require_trusted_cost from admin_set_cost_policy($1, $2)`, [on, reason])).rows[0])
+
+  await expectError(setPolicy(dona, true), 'untrusted_models: .*foto')
+  await expectError(setPolicy(dona, true, 'ok'), 'reason_required')
+  await expectError(setPolicy(analista, false), 'forbidden')
+
+  await db.query(`update models set active = false where slug <> 'foto'`)
+  await as(db, 'authenticated', dona, () => db.query(`select admin_confirm_model_cost('foto', 'https://fal.ai/models/fal-ai/nano-banana-2')`))
+  assert.equal((await setPolicy(dona, true)).require_trusted_cost, true)
+  assert.equal((await setPolicy(dona, false, 'teste de fala do vídeo')).require_trusted_cost, false)
+  const logs = (await db.query(`select details, reason from admin_audit_logs where action = 'pricing.cost_policy' order by id`)).rows
+  assert.deepEqual(logs.map((log) => log.details.require_trusted_cost), [true, false])
+})
+
 console.log(`\n${passed} testes do banco passaram`)
