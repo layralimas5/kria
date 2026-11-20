@@ -1,6 +1,6 @@
 import { CalendarClock, Info } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { PaymentHistory } from '@/components/billing/PaymentHistory'
 import { PlanCard } from '@/components/billing/PlanCard'
 import { PlanComparison } from '@/components/billing/PlanComparison'
@@ -15,7 +15,7 @@ import { useAccount } from '@/hooks/useAccount'
 import { useBalance } from '@/hooks/useBalance'
 import { useModels } from '@/hooks/useCatalog'
 import { track } from '@/lib/analytics'
-import { cancelSubscription, errorMessage, startSubscription } from '@/lib/api'
+import { cancelSubscription, errorMessage } from '@/lib/api'
 
 const POLICIES = [
   'Os créditos do plano renovam a cada mês pago e não acumulam. Os comprados em pacote não expiram.',
@@ -95,7 +95,7 @@ function CheckoutReturn({ subscriptionId, subscriptions }: { readonly subscripti
   return (
     <Notice>
       <span className="flex items-center gap-2">
-        <Spinner className="size-4" /> Esperando a confirmação do pagamento. No cartão costuma levar alguns segundos.
+        <Spinner className="size-4" /> Esperando a confirmação do pagamento. No cartão e no Pix costuma levar alguns segundos.
       </span>
     </Notice>
   )
@@ -103,6 +103,7 @@ function CheckoutReturn({ subscriptionId, subscriptions }: { readonly subscripti
 
 export function SubscriptionPage() {
   const [params] = useSearchParams()
+  const navigate = useNavigate()
   const { plans, plan, subscription, subscriptions, error: accountError, refresh } = useAccount()
   const models = useModels()
   const [busy, setBusy] = useState<string | null>(null)
@@ -114,16 +115,10 @@ export function SubscriptionPage() {
   const live = subscription && (subscription.status === 'active' || subscription.status === 'past_due') ? subscription : null
   const currentSlug = live?.plan_slug ?? plan?.slug ?? null
 
-  async function subscribe(target: Plan) {
+  /** A escolha entre cartão e Pix fica na tela de assinar, a mesma que a landing usa. */
+  function subscribe(target: Plan) {
     setBusy(target.slug)
-    setMessage(null)
-    track({ name: 'begin_checkout', params: { plan: target.slug } })
-    try {
-      window.location.assign(await startSubscription(target.slug))
-    } catch (subscribeError) {
-      setMessage({ tone: 'error', text: errorMessage(subscribeError) })
-      setBusy(null)
-    }
+    navigate(`/assinar/${target.slug}`)
   }
 
   async function cancel() {
@@ -145,7 +140,7 @@ export function SubscriptionPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 pb-10 pt-4">
-      <PageHeader title="Assinatura" description="Créditos todo mês, cobrados no cartão pelo Asaas. Cancele quando quiser." />
+      <PageHeader title="Assinatura" description="Créditos todo mês, pagos no Pix ou no cartão pelo Asaas. Cancele quando quiser." />
 
       {returning && <CheckoutReturn subscriptionId={returning} subscriptions={subscriptions} />}
       {accountError && <Notice tone="error">{accountError}</Notice>}
@@ -167,7 +162,7 @@ export function SubscriptionPage() {
               switching={live !== null}
               busy={busy === item.slug}
               disabled={busy !== null}
-              onSubscribe={() => void subscribe(item)}
+              onSubscribe={() => subscribe(item)}
             />
           ))}
         </div>

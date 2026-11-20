@@ -162,8 +162,8 @@ export interface FaqItem {
 export const SUPPORT_EMAIL = 'vynkio.suporte@gmail.com'
 
 // Cada resposta segue uma regra implementada: estorno em `fail_generation` (0004), créditos e renovação
-// em `wallet_move` e `activate_subscription_period`, cobrança pelo Asaas (`_shared/asaas.ts`: assinatura só
-// no cartão, avulso Pix ou cartão) e os termos (/termos). Mudou a regra, muda a resposta.
+// em `wallet_move` e `activate_subscription_period`, cobrança pelo Asaas (`_shared/asaas.ts`: assinatura e
+// avulso por Pix ou cartão) e os termos (/termos). Mudou a regra, muda a resposta.
 export const FAQ: readonly FaqItem[] = [
   {
     topic: 'Plataforma',
@@ -229,7 +229,7 @@ export const FAQ: readonly FaqItem[] = [
     topic: 'Assinatura e pagamento',
     question: 'Quais formas de pagamento são aceitas?',
     answer:
-      'Os planos Starter, Pro e Max são assinaturas mensais no cartão de crédito, cobradas pelo Asaas com renovação automática. Os pacotes de créditos avulsos são pagos uma vez, por Pix ou cartão. O plano e os créditos são liberados quando o Asaas confirma o pagamento.',
+      'Pix e cartão de crédito, pelo Asaas, tanto nos planos quanto nos pacotes avulsos. Nos planos Starter, Pro e Max, o cartão é cobrado sozinho todo mês; no Pix, chega uma cobrança nova a cada mês para você pagar. O plano e os créditos são liberados quando o Asaas confirma o pagamento.',
   },
   {
     topic: 'Assinatura e pagamento',

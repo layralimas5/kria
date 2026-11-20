@@ -60,6 +60,22 @@ async function setStatus(admin: SupabaseClient, id: string, status: 'past_due' |
   return data === true
 }
 
+async function isPending(admin: SupabaseClient, id: string): Promise<boolean> {
+  const { data } = await admin.from('subscriptions').select('status').eq('id', id).maybeSingle()
+  return data?.status === 'pending'
+}
+
+/**
+ * Assinatura Pix que nunca pagou a primeira cobrança: o Asaas seguiria gerando uma por mês.
+ * Cancela lá e expira aqui; quem quiser assina de novo.
+ */
+async function dropUnpaidPix(admin: SupabaseClient, id: string, providerSubscriptionId: string): Promise<string> {
+  await deleteSubscription(providerSubscriptionId)
+  await admin.from('subscriptions').update({ status: 'expired', ended_at: new Date().toISOString() })
+    .eq('id', id).eq('status', 'pending')
+  return 'primeira cobrança não paga: assinatura cancelada'
+}
+
 async function grantPack(admin: SupabaseClient, purchaseId: string, paymentId: string | null): Promise<string> {
   const { data, error } = await admin.rpc('grant_purchase', { p_purchase_id: purchaseId, p_payment_id: paymentId })
   if (error) return `erro ao creditar: ${error.message}`
@@ -139,6 +155,7 @@ async function apply(admin: SupabaseClient, action: BillingAction): Promise<stri
     case 'subscription_overdue': {
       const id = await findSubscription(admin, action.providerSubscriptionId)
       if (!id) return 'assinatura não encontrada'
+      if (await isPending(admin, id)) return dropUnpaidPix(admin, id, action.providerSubscriptionId)
       return (await setStatus(admin, id, 'past_due')) ? 'em atraso' : 'sem efeito'
     }
 

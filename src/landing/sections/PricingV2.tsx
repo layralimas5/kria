@@ -11,7 +11,7 @@ import { fetchStorefront, withWelcome, type StorefrontPlan } from '../pricing/st
 
 // Regras comerciais que o sistema aplica (FAQ e CLAUDE.md do projeto). Nada de garantia, teste ou desconto.
 const TERMS: readonly { icon: LucideIcon; title: string; text: string }[] = [
-  { icon: CalendarClock, title: 'Cobrança mensal', text: 'No cartão, pelo Asaas. O valor do plano é cobrado uma vez por mês.' },
+  { icon: CalendarClock, title: 'Cobrança mensal', text: 'Pix ou cartão, pelo Asaas. O valor do plano é cobrado uma vez por mês.' },
   { icon: RotateCcw, title: 'Cancele quando quiser', text: 'Sem multa. O plano continua até o fim do período pago.' },
   { icon: RefreshCw, title: 'Créditos do plano', text: 'Renovam a cada cobrança paga e não acumulam para o mês seguinte.' },
   { icon: Wallet, title: 'Falhou, o crédito volta', text: 'Se a geração falhar, os créditos voltam sozinhos para o saldo.' },
