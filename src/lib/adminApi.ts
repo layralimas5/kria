@@ -69,6 +69,8 @@ async function rpc<T>(name: string, args: Record<string, unknown>, schema: z.Zod
   if (error) {
     const known = ADMIN_ERRORS[error.message]
     if (known) throw new ApiError(error.message, known)
+    const untrusted = /^untrusted_models: (.+)$/.exec(error.message)
+    if (untrusted) throw new ApiError('untrusted_models', `Ainda sem custo conferido: ${untrusted[1]}. Confira a tarifa desses modelos antes de ligar.`)
     console.error(name, error)
     throw new ApiError('admin_failed', 'A operação não foi concluída. Confira os valores.')
   }
@@ -338,6 +340,9 @@ export const updateCreditPolicy = (update: CreditPolicyUpdate) =>
     },
     z.unknown(),
   )
+
+export const setCostPolicy = (required: boolean, reason: string) =>
+  rpc('admin_set_cost_policy', { p_required: required, p_reason: reason }, z.unknown())
 
 export const confirmModelCost = (slug: string, source: string) => rpc('admin_confirm_model_cost', { p_slug: slug, p_source: source }, z.unknown())
 
