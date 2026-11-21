@@ -353,8 +353,16 @@ function demoPlanOffer(plan: DemoPlan): Response {
 /** Pix do plano no demo: confirma sozinho 8 s depois, como o webhook no ar. */
 let demoPlanPix: { readonly id: string; readonly plan: DemoPlan; readonly createdAt: number } | null = null
 
+/**
+ * Planos que o checkout do demo aceita: os públicos do demo e os três que estão à venda em produção
+ * (creator-start, creator-pro e creator-max, com os mesmos preços e créditos), que no demo ainda são rascunho.
+ */
+function demoCheckoutPlan(slug: unknown): DemoPlan | undefined {
+  return state.plans.find((item) => item.slug === slug && (item.public || String(item.slug).startsWith('creator-')))
+}
+
 function subscribe(body: Row): Response {
-  const plan = state.plans.find((item) => item.slug === body.plan && item.public)
+  const plan = demoCheckoutPlan(body.plan)
   if (body.action === 'status') {
     if (demoPlanPix && demoPlanPix.id === body.subscription) {
       if (Date.now() - demoPlanPix.createdAt < 8000) return json({ status: 'pending' })
