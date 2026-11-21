@@ -4,6 +4,7 @@ import {
   CreditCard,
   Cpu,
   LayoutDashboard,
+  MessageSquareQuote,
   Repeat,
   ScrollText,
   ShieldCheck,
@@ -57,6 +58,7 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
     items: [
       { label: 'Assinaturas', icon: CreditCard, to: '/admin/assinaturas', permission: 'users.view' },
       { label: 'Planos', icon: Tags, to: '/admin/planos', permission: 'plans.view' },
+      { label: 'Depoimentos', icon: MessageSquareQuote, to: '/admin/depoimentos', permission: 'plans.view' },
       { label: 'Financeiro', icon: Wallet, to: '/admin/financeiro', permission: 'finance.view' },
     ],
   },

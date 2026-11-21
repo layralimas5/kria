@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { AuditTab } from '@/components/admin/AuditTab'
 import { ModelsTab } from '@/components/admin/ModelsTab'
 import { PlansTab } from '@/components/admin/PlansTab'
+import { TestimonialsTab } from '@/components/admin/TestimonialsTab'
 import { AddUserButton, UsersTab } from '@/components/admin/UsersTab'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 
@@ -59,6 +60,18 @@ export function AdminAuditPage() {
   return (
     <SectionPage eyebrow="Sistema" title="Auditoria" description="As 100 ações mais recentes da operação. O registro não se edita nem se apaga.">
       <AuditTab />
+    </SectionPage>
+  )
+}
+
+export function AdminTestimonialsPage() {
+  return (
+    <SectionPage
+      eyebrow="Comercial"
+      title="Depoimentos"
+      description="Só de quem pagou e autorizou publicar. Aprovado aparece no checkout com o primeiro nome e a inicial do sobrenome. O texto não se edita."
+    >
+      <TestimonialsTab />
     </SectionPage>
   )
 }

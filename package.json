@@ -13,6 +13,7 @@
     "test": "vitest run",
     "db:test": "node supabase/tests/credits.mjs",
     "check": "npm run typecheck && npm run typecheck:functions && npm test && npm run db:test",
+    "checkout:cover": "node scripts/checkout-cover.mjs",
     "billing:image": "node scripts/billing-image.mjs",
     "landing:screens": "node scripts/landing-screens.mjs",
     "demo:assets": "node scripts/demo-assets.mjs",

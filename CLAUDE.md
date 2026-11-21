@@ -29,10 +29,13 @@ são telas reais do modo demo (`npm run landing:screens`).
 - Edge functions (Deno): `supabase/functions`
 - IA: fal.ai para foto e vídeo (fila assíncrona + webhook); Anthropic (Claude, SDK `@anthropic-ai/sdk` fixo
   em 0.131.0) para texto, na function `assistant`. Catálogo de modelos na tabela `models` (`kind` image, video, text)
-- Pagamento: Asaas. Pacote avulso: checkout Pix + cartão. Assinatura: cartão no checkout recorrente; Pix pela API
-  de assinaturas (`createPixSubscription`, pede nome e CPF, o CPF não é guardado), porque o checkout do Asaas recusa
-  Pix em `RECURRENT` (testado no sandbox em 19/11). Pix pendente sem pagar é cancelado no Asaas (nova tentativa ou
-  `PAYMENT_OVERDUE`), senão geraria cobrança todo mês
+- Pagamento: Asaas. Pacote avulso: checkout Pix + cartão. Assinatura: checkout próprio em `/assinar/:plan` (0041,
+  `docs/checkout-planos.md`), assinatura pela API (cartão com `createCardSubscription`, Pix com `createPixSubscription`),
+  produtos da loja com `offer_on_plans` como "leve junto" (no Pix entram na 1ª mensalidade e o webhook separa).
+  CPF e cartão só vão ao Asaas. Pix pendente sem pagar é cancelado no Asaas (nova tentativa ou `PAYMENT_OVERDUE`),
+  senão geraria cobrança todo mês
+- Depoimentos (0041): só de quem pagou, com autorização, e só aparecem aprovados no admin. Nunca criar depoimento
+  que não venha de uma compra real, nem de exemplo fora do modo demo
 - Loja de infoprodutos (0039 e 0040, `docs/loja.md`): `/comprar/:product` e `/pedido/:token`, sem conta no Vynkio.
   Checkout próprio (não a tela do Asaas): Pix com QR na página e cartão pela API com parcelas e juros visíveis
   (`_shared/installments.ts`, mesma conta no front), "leve junto" por `bump_slugs`. O servidor recalcula o total e recusa

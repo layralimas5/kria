@@ -5,12 +5,17 @@ import { formatBRL } from '@/domain/format'
 import { installmentLabel, type InstallmentOption } from '@/domain/storeQuote'
 import type { CardForm } from '@/hooks/useStoreCheckout'
 
+interface InstallmentChoice {
+  readonly options: readonly InstallmentOption[]
+  readonly value: number
+  readonly onChange: (count: number) => void
+}
+
 interface CardFieldsProps {
   readonly value: CardForm
   readonly onChange: (card: CardForm) => void
-  readonly options: readonly InstallmentOption[]
-  readonly installments: number
-  readonly onInstallments: (count: number) => void
+  /** Sem isto, cobrança à vista (plano mensal): nenhum seletor de parcelas. */
+  readonly installments?: InstallmentChoice
 }
 
 const MASKS: Partial<Record<keyof CardForm, (raw: string) => string>> = {
@@ -24,7 +29,7 @@ const MASKS: Partial<Record<keyof CardForm, (raw: string) => string>> = {
  * Dados do cartão. O número vai direto para a function de pagamento e dali para o Asaas: não fica salvo no
  * navegador nem no Vynkio. CEP e número do endereço são exigência do Asaas para a análise de risco.
  */
-export function CardFields({ value, onChange, options, installments, onInstallments }: CardFieldsProps) {
+export function CardFields({ value, onChange, installments }: CardFieldsProps) {
   const set = (field: keyof CardForm) => (event: ChangeEvent<HTMLInputElement>) => {
     const mask = MASKS[field]
     onChange({ ...value, [field]: mask ? mask(event.target.value) : event.target.value })
@@ -67,14 +72,16 @@ export function CardFields({ value, onChange, options, installments, onInstallme
         onChange={set('postalCode')}
       />
       <CheckoutInput label="Nº do endereço" autoComplete="off" required placeholder="123" value={value.addressNumber} onChange={set('addressNumber')} />
-      <div className="col-span-2">
-        <CheckoutSelect
-          label="Parcelas"
-          value={String(installments)}
-          onChange={(count) => onInstallments(Number(count))}
-          options={options.map((option) => ({ value: String(option.count), label: installmentLabel(option, formatBRL) }))}
-        />
-      </div>
+      {installments && (
+        <div className="col-span-2">
+          <CheckoutSelect
+            label="Parcelas"
+            value={String(installments.value)}
+            onChange={(count) => installments.onChange(Number(count))}
+            options={installments.options.map((option) => ({ value: String(option.count), label: installmentLabel(option, formatBRL) }))}
+          />
+        </div>
+      )}
     </div>
   )
 }

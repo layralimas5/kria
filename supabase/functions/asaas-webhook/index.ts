@@ -18,6 +18,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { deleteSubscription, getSubscription } from '../_shared/asaas.ts'
 import { asaasEventSchema, decideBillingEvent, type BillingAction, type Lookup } from '../_shared/billing.ts'
+import { splitFirstPayment } from '../_shared/planQuote.ts'
 import { adminClient, errorResponse, handle, json, readJson, requireEnv } from '../_shared/http.ts'
 import { timingSafeEqual } from '../_shared/signature.ts'
 import { expireStoreOrder, failStoreOrder, markStoreOrderPaid, refundStoreOrder } from './store.ts'
@@ -83,6 +84,8 @@ async function dropUnpaidPix(admin: SupabaseClient, id: string, providerSubscrip
   await deleteSubscription(providerSubscriptionId)
   await admin.from('subscriptions').update({ status: 'expired', ended_at: new Date().toISOString() })
     .eq('id', id).eq('status', 'pending')
+  await admin.from('store_orders').update({ status: 'failed', updated_at: new Date().toISOString() })
+    .eq('subscription_id', id).eq('status', 'pending')
   return 'primeira cobrança não paga: assinatura cancelada'
 }
 
@@ -92,14 +95,37 @@ async function grantPack(admin: SupabaseClient, purchaseId: string, paymentId: s
   return data ? 'creditado' : 'já creditado'
 }
 
+/**
+ * Pix do checkout dos planos com "leve junto": os extras vieram na primeira mensalidade (docs/checkout-planos.md).
+ * Libera o pedido da loja e devolve quanto do valor pago é do plano.
+ */
+async function releaseBumpsInPayment(admin: SupabaseClient, paymentId: string, paidCents: number): Promise<{ planCents: number; note: string }> {
+  const { data: order } = await admin
+    .from('store_orders')
+    .select('id, total_cents')
+    .eq('provider_payment_id', paymentId)
+    .not('subscription_id', 'is', null)
+    .eq('status', 'pending')
+    .maybeSingle<{ id: string; total_cents: number }>()
+  if (!order) return { planCents: paidCents, note: '' }
+  const split = splitFirstPayment(paidCents, order.total_cents)
+  // Só libera se o valor pago cobre os extras e ainda sobra a mensalidade.
+  if (split.storeCents < order.total_cents || split.planCents === 0) {
+    return { planCents: paidCents, note: '; extras não liberados: valor pago não cobre' }
+  }
+  const delivered = await markStoreOrderPaid(admin, order.id, paymentId, null)
+  return { planCents: split.planCents, note: `; extras: ${delivered}` }
+}
+
 async function activatePeriod(admin: SupabaseClient, action: Extract<BillingAction, { kind: 'subscription_paid' }>): Promise<string> {
   const subscriptionId = await findSubscription(admin, action.providerSubscriptionId, action.lookup)
   if (!subscriptionId) return `assinatura não encontrada: ${action.providerSubscriptionId}`
+  const bumps = await releaseBumpsInPayment(admin, action.paymentId, action.amountCents)
 
   const { data, error } = await admin.rpc('activate_subscription_period', {
     p_subscription_id: subscriptionId,
     p_payment_id: action.paymentId,
-    p_amount_cents: action.amountCents,
+    p_amount_cents: bumps.planCents,
     p_due_date: action.dueDate,
     p_invoice_url: action.invoiceUrl,
     p_provider_subscription_id: action.providerSubscriptionId,
@@ -117,7 +143,8 @@ async function activatePeriod(admin: SupabaseClient, action: Extract<BillingActi
       failures.push(oldId)
     })
   }
-  return failures.length > 0 ? `${result.outcome}; cancelar no Asaas manualmente: ${failures.join(', ')}` : result.outcome
+  const outcome = `${result.outcome}${bumps.note}`
+  return failures.length > 0 ? `${outcome}; cancelar no Asaas manualmente: ${failures.join(', ')}` : outcome
 }
 
 async function apply(admin: SupabaseClient, action: BillingAction): Promise<string> {

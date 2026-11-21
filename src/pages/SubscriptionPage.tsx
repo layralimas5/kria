@@ -1,9 +1,10 @@
 import { CalendarClock, Info } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { PaymentHistory } from '@/components/billing/PaymentHistory'
 import { PlanCard } from '@/components/billing/PlanCard'
 import { PlanComparison } from '@/components/billing/PlanComparison'
+import { ShareExperience } from '@/components/billing/ShareExperience'
 import { Button } from '@/components/ui/Button'
 import { Notice } from '@/components/ui/Notice'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -86,6 +87,22 @@ function useConversion(subscription: Subscription | undefined) {
   }, [subscription])
 }
 
+const ORDER_TOKEN = /^[0-9a-f]{64}$/
+
+/** Extras do "leve junto" comprados com o plano: o link do pedido (o mesmo vai por e-mail). */
+function BumpsReturn({ orderToken, failed }: { readonly orderToken: string | null; readonly failed: boolean }) {
+  if (failed) return <Notice tone="error">Os extras não foram cobrados, só o plano. Se quiser, compre depois pela página de cada um.</Notice>
+  if (!orderToken || !ORDER_TOKEN.test(orderToken)) return null
+  return (
+    <Notice>
+      Seus extras ficam liberados assim que o pagamento confirmar.{' '}
+      <Link to={`/pedido/${orderToken}`} className="font-semibold text-accent-soft underline underline-offset-2">
+        Abrir os downloads
+      </Link>
+    </Notice>
+  )
+}
+
 /** Volta do checkout: espera o webhook confirmar o pagamento. */
 function CheckoutReturn({ subscriptionId, subscriptions }: { readonly subscriptionId: string; readonly subscriptions: readonly Subscription[] }) {
   const pending = subscriptions.find((item) => item.id === subscriptionId)
@@ -143,10 +160,12 @@ export function SubscriptionPage() {
       <PageHeader title="Assinatura" description="Créditos todo mês, pagos no Pix ou no cartão pelo Asaas. Cancele quando quiser." />
 
       {returning && <CheckoutReturn subscriptionId={returning} subscriptions={subscriptions} />}
+      {returning && <BumpsReturn orderToken={params.get('pedido')} failed={params.get('extras') === 'falhou'} />}
       {accountError && <Notice tone="error">{accountError}</Notice>}
       {message && <Notice tone={message.tone}>{message.text}</Notice>}
 
       <CurrentPlan plan={plan} subscription={subscription} onCancel={() => void cancel()} canceling={canceling} />
+      <ShareExperience />
 
       <section aria-labelledby="plans-title" className="space-y-4">
         <h2 id="plans-title" className="font-headline text-lg text-zinc-100">

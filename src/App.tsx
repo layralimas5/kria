@@ -32,7 +32,7 @@ const AccountSettingsPage = page(() => import('@/pages/AccountSettingsPage'), 'A
 const OnboardingPage = page(() => import('@/pages/OnboardingPage'), 'OnboardingPage')
 const ForgotPasswordPage = page(() => import('@/pages/ForgotPasswordPage'), 'ForgotPasswordPage')
 const ResetPasswordPage = page(() => import('@/pages/ResetPasswordPage'), 'ResetPasswordPage')
-const SubscribePage = page(() => import('@/pages/SubscribePage'), 'SubscribePage')
+const PlanCheckoutPage = page(() => import('@/pages/PlanCheckoutPage'), 'PlanCheckoutPage')
 const CheckoutPage = page(() => import('@/pages/store/CheckoutPage'), 'CheckoutPage')
 const OrderPage = page(() => import('@/pages/store/OrderPage'), 'OrderPage')
 const AssistantPage = page(() => import('@/pages/AssistantPage'), 'AssistantPage')
@@ -50,6 +50,7 @@ const AdminSubscriptionsPage = page(() => import('@/pages/admin/AdminListsPages'
 const AdminUsersPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminUsersPage')
 const AdminUserViewPage = page(() => import('@/pages/admin/AdminUserViewPage'), 'AdminUserViewPage')
 const AdminPlansPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminPlansPage')
+const AdminTestimonialsPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminTestimonialsPage')
 const AdminModelsPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminModelsPage')
 const AdminAuditPage = page(() => import('@/pages/admin/AdminSectionPages'), 'AdminAuditPage')
 const AdminFinancePage = page(() => import('@/pages/admin/AdminFinancePage'), 'AdminFinancePage')
@@ -104,7 +105,7 @@ export function App() {
             <Route path="/nova-senha" element={<ResetPasswordPage />} />
             <Route element={<SignedIn />}>
               <Route path="boas-vindas" element={<OnboardingPage />} />
-              <Route path="assinar/:plan" element={<SubscribePage />} />
+              <Route path="assinar/:plan" element={<PlanCheckoutPage />} />
               {/* Operação: moldura própria, fora do painel do usuário e sem link em menu (docs/admin.md). */}
               <Route path="admin" element={<AdminRoot />}>
                 <Route index element={<AdminDashboardPage />} />
@@ -115,6 +116,7 @@ export function App() {
                 <Route path="assinaturas" element={<AdminSubscriptionsPage />} />
                 <Route path="modelos" element={<AdminModelsPage />} />
                 <Route path="planos" element={<AdminPlansPage />} />
+                <Route path="depoimentos" element={<AdminTestimonialsPage />} />
                 <Route path="financeiro" element={<AdminFinancePage />} />
                 <Route path="auditoria" element={<AdminAuditPage />} />
                 <Route path="administradores" element={<AdminAdminsPage />} />

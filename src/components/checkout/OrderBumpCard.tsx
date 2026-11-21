@@ -23,7 +23,7 @@ export function OrderBumpCard({ bump, checked, onToggle }: OrderBumpCardProps) {
       <input type="checkbox" checked={checked} onChange={onToggle} className="sr-only" />
       <span className="flex gap-4 p-4">
         {bump.coverUrl && (
-          <img src={bump.coverUrl} alt="" loading="lazy" className="size-20 shrink-0 rounded-lg object-cover" width={80} height={80} />
+          <img src={bump.coverUrl} alt="" loading="lazy" className="h-[100px] w-20 shrink-0 rounded-lg object-cover object-top" width={80} height={100} />
         )}
         <span className="min-w-0 flex-1">
           <span className="inline-block rounded bg-amber-500 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-black">

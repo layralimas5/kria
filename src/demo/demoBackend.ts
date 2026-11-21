@@ -317,12 +317,71 @@ function demoStoreOrder(body: Row): Response {
 }
 
 /** No demo a assinatura confirma na hora: mesmo efeito do webhook do Asaas no ar. */
+type DemoPlan = DemoState['plans'][number]
+
+/** O produto real da loja como "leve junto" do checkout dos planos, com a capa do PDF. */
+function demoPlanBumps() {
+  return [
+    {
+      slug: 'kria-personagens',
+      name: 'Personagens Insanos',
+      pitch: '100 personagens com 400 prompts prontos para copiar. Leve junto com o plano.',
+      coverUrl: `${window.location.origin}/demo/store-product.jpg`,
+      priceCents: 1290,
+      fullPriceCents: 1290,
+    },
+  ]
+}
+
+function demoPlanOffer(plan: DemoPlan): Response {
+  const live = state.subscriptions.find((item) => item.status === 'active' || item.status === 'past_due')
+  return json({
+    plan: {
+      slug: plan.slug,
+      name: plan.name,
+      tagline: typeof plan.description === 'string' ? plan.description : null,
+      priceCents: Number(plan.price_cents),
+      monthlyCredits: Number(plan.monthly_credits),
+      features: (Array.isArray(plan.features) ? plan.features : []).slice(0, 6),
+    },
+    bumps: demoPlanBumps(),
+    email: 'voce@demo.vynkio',
+    alreadySubscribed: live?.plan_slug === plan.slug,
+  })
+}
+
+/** Pix do plano no demo: confirma sozinho 8 s depois, como o webhook no ar. */
+let demoPlanPix: { readonly id: string; readonly plan: DemoPlan; readonly createdAt: number } | null = null
+
 function subscribe(body: Row): Response {
   const plan = state.plans.find((item) => item.slug === body.plan && item.public)
+  if (body.action === 'status') {
+    if (demoPlanPix && demoPlanPix.id === body.subscription) {
+      if (Date.now() - demoPlanPix.createdAt < 8000) return json({ status: 'pending' })
+      const { id, plan: pixPlan } = demoPlanPix
+      demoPlanPix = null
+      activateDemoSubscription(pixPlan, id)
+    }
+    const found = state.subscriptions.find((item) => item.id === body.subscription)
+    return found ? json({ status: found.status }) : fail(404, 'subscription_not_found', 'Assinatura não encontrada.')
+  }
   if (!plan) return fail(404, 'plan_not_found', 'Plano não encontrado.')
+  if (body.action === 'offer') return demoPlanOffer(plan)
   const live = state.subscriptions.find((item) => item.status === 'active' || item.status === 'past_due')
   if (live?.plan_slug === plan.slug) return fail(409, 'already_subscribed', 'Você já está nesse plano.')
 
+  const bumps = Array.isArray(body.bumps) ? body.bumps : []
+  const bumpsCents = demoPlanBumps().filter((bump) => bumps.includes(bump.slug)).reduce((total, bump) => total + bump.priceCents, 0)
+  const result = { orderToken: bumps.length > 0 ? DEMO_STORE_TOKEN : null, totalCents: Number(plan.price_cents) + bumpsCents, bumpsFailed: false }
+  if (body.method === 'pix') {
+    const id = uuid()
+    demoPlanPix = { id, plan, createdAt: Date.now() }
+    return json({ ...result, subscriptionId: id, pix: { payload: DEMO_PIX_PAYLOAD, qrBase64: DEMO_PIX_QR_BASE64, expiresAt: null } }, 201)
+  }
+  return json({ ...result, subscriptionId: activateDemoSubscription(plan, uuid()) }, 201)
+}
+
+function activateDemoSubscription(plan: DemoPlan, id: string): string {
   state.subscriptions.forEach((item) => {
     if (item.status !== 'expired') item.status = 'expired'
   })
@@ -330,7 +389,7 @@ function subscribe(body: Row): Response {
   const end = new Date(now)
   end.setMonth(end.getMonth() + 1)
   const subscription = {
-    id: uuid(),
+    id,
     user_id: DEMO_USER_ID,
     plan_slug: plan.slug,
     status: 'active',
@@ -354,7 +413,7 @@ function subscribe(body: Row): Response {
   if (state.subscriptionBalance > 0) addLedger(-state.subscriptionBalance, 0, 'subscription_expire', 'Créditos do ciclo anterior')
   addLedger(Number(plan.monthly_credits), 0, 'subscription_grant', 'Créditos do plano')
   persist()
-  return json({ url: `${window.location.origin}/assinatura?assinatura=${subscription.id}` }, 201)
+  return subscription.id
 }
 
 function cancelSubscription(): Response {
@@ -1041,7 +1100,51 @@ function registerUpload(body: Row): Response {
   return json(upload)
 }
 
+/**
+ * Depoimentos no demo: só um cartão que se apresenta como exemplo, para ver o layout. Nunca um nome ou
+ * texto que pareça cliente de verdade (o demo também vira print da landing).
+ */
+const DEMO_TESTIMONIAL = {
+  name: 'Exemplo de cliente',
+  role: 'Aparece só depois que você aprovar',
+  body: 'Aqui entra o depoimento real de quem comprou, com a nota que a pessoa deu. No modo demo este cartão é só um exemplo de layout.',
+  rating: 5,
+  created_at: new Date().toISOString(),
+}
+
+function demoTestimonials(name: string): Response | null {
+  switch (name) {
+    case 'public_testimonials':
+      return json([DEMO_TESTIMONIAL])
+    case 'my_testimonial':
+      return json({ eligible: true, status: null })
+    case 'submit_testimonial':
+    case 'admin_set_testimonial_status':
+      return json(null)
+    case 'admin_testimonials':
+      return json([
+        {
+          id: '00000000-0000-4000-8000-00000000d0e1',
+          scope: 'vynkio',
+          product_slug: null,
+          source: 'subscription',
+          author_name: DEMO_TESTIMONIAL.name,
+          author_role: DEMO_TESTIMONIAL.role,
+          body: DEMO_TESTIMONIAL.body,
+          rating: 5,
+          status: 'pending',
+          created_at: DEMO_TESTIMONIAL.created_at,
+          reviewed_at: null,
+        },
+      ])
+    default:
+      return null
+  }
+}
+
 function rpc(name: string, body: Row): Response {
+  const testimonials = demoTestimonials(name)
+  if (testimonials) return testimonials
   if (name === 'create_persona') return createPersona(body)
   if (name === 'register_upload') return registerUpload(body)
   if (name === 'import_analytics') return importAnalytics(body)

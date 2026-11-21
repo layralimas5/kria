@@ -1,13 +1,15 @@
-import { BadgeCheck, Lock, ShieldCheck, Zap, type LucideIcon } from 'lucide-react'
+import { BadgeCheck, ShieldCheck, Zap } from 'lucide-react'
 import { useEffect, useRef, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { BuyerFields } from '@/components/checkout/BuyerFields'
 import { CardFields } from '@/components/checkout/CardFields'
+import { BuyButton, PixInfo, TrustBadges, type TrustItem } from '@/components/checkout/CheckoutActions'
 import { CheckoutAlert } from '@/components/checkout/CheckoutAlert'
 import { CheckoutStep } from '@/components/checkout/CheckoutStep'
 import { OrderBumpCard } from '@/components/checkout/OrderBumpCard'
 import { OrderSummary } from '@/components/checkout/OrderSummary'
 import { PaymentMethodPicker } from '@/components/checkout/PaymentMethodPicker'
+import { TestimonialsBlock } from '@/components/checkout/TestimonialsBlock'
 import { StoreFooter } from '@/components/store/StoreFooter'
 import { StoreHeader } from '@/components/store/StoreHeader'
 import { Spinner } from '@/components/ui/Spinner'
@@ -20,7 +22,7 @@ import type { StoreOffer } from '@/lib/api'
 
 const PRODUCT_SLUG = /^[a-z0-9-]{2,40}$/
 
-const TRUST: readonly { readonly Icon: LucideIcon; readonly title: string; readonly text: string }[] = [
+const TRUST: readonly TrustItem[] = [
   { Icon: ShieldCheck, title: 'Compra segura', text: 'Dados protegidos de ponta a ponta' },
   { Icon: Zap, title: 'Acesso imediato', text: 'Link no e-mail logo após a confirmação' },
   { Icon: BadgeCheck, title: '7 dias de garantia', text: 'Direito de arrependimento' },
@@ -49,48 +51,6 @@ function ProductHeader({ offer }: { readonly offer: StoreOffer }) {
         </p>
       </div>
     </header>
-  )
-}
-
-function PixInfo() {
-  return (
-    <ul className="space-y-2 rounded-lg bg-emerald-50 px-4 py-3.5 text-sm text-emerald-900">
-      {PIX_BENEFITS.map((benefit) => (
-        <li key={benefit} className="flex items-center gap-2">
-          <BadgeCheck className="size-4 shrink-0 text-emerald-600" aria-hidden="true" /> {benefit}
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-function TrustBadges() {
-  return (
-    <ul className="grid gap-3 sm:grid-cols-3">
-      {TRUST.map(({ Icon, title, text }) => (
-        <li key={title} className="flex items-start gap-2.5 rounded-lg border border-zinc-200 bg-white px-3.5 py-3">
-          <Icon className="mt-0.5 size-5 shrink-0 text-emerald-600" aria-hidden="true" />
-          <span>
-            <span className="block text-[13px] font-semibold text-zinc-900">{title}</span>
-            <span className="block text-xs leading-snug text-zinc-500">{text}</span>
-          </span>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-function BuyButton({ loading, children }: { readonly loading: boolean; readonly children: string }) {
-  return (
-    <button
-      type="submit"
-      disabled={loading}
-      aria-busy={loading || undefined}
-      className="flex min-h-14 w-full items-center justify-center gap-2.5 rounded-xl bg-green-700 px-6 text-lg font-bold text-white shadow-lg shadow-green-700/25 transition-colors hover:bg-green-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-green-600/40 disabled:cursor-wait disabled:opacity-80"
-    >
-      {loading ? <Spinner className="size-5" /> : <Lock className="size-5" aria-hidden="true" />}
-      {loading ? 'Processando...' : children}
-    </button>
   )
 }
 
@@ -124,12 +84,10 @@ function CheckoutForm({ offer }: { readonly offer: StoreOffer }) {
             <CardFields
               value={checkout.card}
               onChange={checkout.setCard}
-              options={quote.options}
-              installments={checkout.installments}
-              onInstallments={checkout.setInstallments}
+              installments={{ options: quote.options, value: checkout.installments, onChange: checkout.setInstallments }}
             />
           ) : (
-            <PixInfo />
+            <PixInfo benefits={PIX_BENEFITS} />
           )}
         </div>
       </CheckoutStep>
@@ -143,7 +101,8 @@ function CheckoutForm({ offer }: { readonly offer: StoreOffer }) {
       <OrderSummary offer={offer} bumps={checkout.bumps} subtotalCents={quote.subtotalCents} selected={quote.selected} />
       {checkout.error && <CheckoutAlert>{checkout.error}</CheckoutAlert>}
       <BuyButton loading={checkout.submitting}>{checkout.method === 'pix' ? 'Gerar Pix' : 'Comprar agora'}</BuyButton>
-      <TrustBadges />
+      <TrustBadges items={TRUST} />
+      <TestimonialsBlock scope={{ kind: 'store', product: offer.product.slug }} />
     </form>
   )
 }

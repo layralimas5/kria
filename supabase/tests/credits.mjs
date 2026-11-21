@@ -2593,4 +2593,54 @@ await test('loja: checkout próprio com itens, parcelas e "leve junto"', async (
   await expectError(db.query(`insert into store_orders (product_slug, price_cents, payment_method) values ('kit', 4700, 'boleto')`), 'check')
 })
 
+await test('depoimentos: só de cliente que pagou, só aprovados aparecem, nome abreviado', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const admin = await newUser(db, 'admin@x.com')
+  await makeAdmin(db, admin)
+  const submit = (body = 'Uso todo dia para criar os posts da minha loja.') =>
+    db.query(`select submit_testimonial('Ana Paula Souza', 'Dona de loja', $1, 5, true)`, [body])
+
+  // Sem nenhuma mensalidade paga não é cliente: não dá para deixar depoimento.
+  await as(db, 'authenticated', ana, () => expectError(submit(), 'not_a_customer'))
+  await activate(db, await newSubscription(db, ana, 'pro'), 'pay_ana')
+  await as(db, 'authenticated', ana, () => expectError(db.query(`select submit_testimonial('Ana', null, 'Texto com vinte letras ou mais.', 5, false)`), 'consent_required'))
+  await as(db, 'authenticated', ana, () => submit())
+  await as(db, 'authenticated', ana, () => submit('Mudei de ideia e escrevi de novo com mais detalhe.'))
+  assert.equal((await db.query(`select count(*)::int as n from testimonials`)).rows[0].n, 1)
+
+  const vitrine = () => as(db, 'anon', null, async () => (await db.query(`select public_testimonials('vynkio') as list`)).rows[0].list)
+  assert.deepEqual(await vitrine(), [])
+
+  await as(db, 'authenticated', bia, () => expectError(db.query(`select admin_testimonials()`), 'not_admin|permission|forbidden'))
+  await as(db, 'anon', null, () => expectError(db.query(`select * from testimonials`), 'permission denied'))
+  const [pending] = await as(db, 'authenticated', admin, async () => (await db.query(`select admin_testimonials() as list`)).rows[0].list)
+  assert.equal(pending.status, 'pending')
+  await as(db, 'authenticated', admin, () => db.query(`select admin_set_testimonial_status($1, 'approved')`, [pending.id]))
+
+  const [shown] = await vitrine()
+  assert.equal(shown.name, 'Ana P.')
+  assert.equal(shown.body, 'Mudei de ideia e escrevi de novo com mais detalhe.')
+  assert.equal(shown.rating, 5)
+  assert.equal((await db.query(`select count(*)::int as n from admin_audit_logs where action = 'testimonial.approved'`)).rows[0].n, 1)
+
+  // Editar de novo volta para a fila.
+  await as(db, 'authenticated', ana, () => submit('Terceira versão do depoimento, agora mais curta.'))
+  assert.deepEqual(await vitrine(), [])
+})
+
+await test('checkout dos planos: extras viram pedido da loja ligado à assinatura', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  await db.query(`insert into store_products (slug, name, price_cents, file_path, file_name, sales_url, active, offer_on_plans)
+    values ('kit', 'Kit', 1290, 'kit/kit.zip', 'kit.zip', 'https://exemplo.com.br', true, true)`)
+  const sub = await newSubscription(db, ana, 'pro')
+  const order = (await db.query(`insert into store_orders (product_slug, price_cents, total_cents, payment_method, user_id, subscription_id, provider_payment_id)
+    values ('kit', 1290, 1290, 'pix', $1, $2, 'pay_first') returning id`, [ana, sub])).rows[0]
+  assert.equal((await db.query(`select count(*)::int as n from store_orders where subscription_id = $1`, [sub])).rows[0].n, 1)
+  // Conta excluída: o pedido fica (é venda), sem a ligação com a pessoa.
+  await db.query(`delete from auth.users where id = $1`, [ana])
+  const kept = (await db.query(`select user_id from store_orders where id = $1`, [order.id])).rows[0]
+  assert.equal(kept.user_id, null)
+})
+
 console.log(`\n${passed} testes do banco passaram`)

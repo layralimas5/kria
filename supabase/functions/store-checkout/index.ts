@@ -10,6 +10,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { AsaasError, CardDeclinedError, createCardCharge, createPixCharge, findOrCreateCustomer } from '../_shared/asaas.ts'
+import { clientIp, sha256 } from '../_shared/clientIp.ts'
 import { adminClient, errorResponse, handle, json, readJson } from '../_shared/http.ts'
 import { bumpPrice, firstIssue, payBodySchema, quoteOrder, type OrderQuote, type PayBody, type StoreProduct } from '../_shared/storeCheckout.ts'
 
@@ -59,16 +60,6 @@ function offerResponse(main: ProductRow, bumps: readonly ProductRow[]) {
     interestMonthly: main.interest_monthly,
     salesUrl: main.sales_url,
   }
-}
-
-/** IP de quem paga: o Asaas pede para a análise de risco. Aqui ele só é guardado como hash. */
-function clientIp(request: Request): string {
-  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('cf-connecting-ip') || '0.0.0.0'
-}
-
-async function sha256(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
-  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
 async function tooManyAttempts(admin: SupabaseClient, ipHash: string): Promise<string | null> {

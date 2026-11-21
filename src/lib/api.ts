@@ -132,14 +132,6 @@ export async function startCheckout(pack: string): Promise<string> {
   return z.object({ url: z.string().url() }).parse(data).url
 }
 
-export type SubscriptionPayment = { readonly method: 'card' } | { readonly method: 'pix'; readonly name: string; readonly cpf: string }
-
-/** Devolve o link de pagamento: checkout do cartão ou a fatura Pix da primeira cobrança. */
-export async function startSubscription(plan: string, payment: SubscriptionPayment): Promise<string> {
-  const data = await invoke('subscribe', { plan, ...payment })
-  return z.object({ url: z.string().url() }).parse(data).url
-}
-
 const storeOfferSchema = z.object({
   product: z.object({
     slug: z.string(),
@@ -171,7 +163,7 @@ export async function getStoreOffer(product: string): Promise<StoreOffer> {
   return storeOfferSchema.parse(await invoke('store-checkout', { action: 'offer', product }))
 }
 
-const pixSchema = z.object({ payload: z.string().min(10), qrBase64: z.string().min(10), expiresAt: z.string().nullable() })
+export const pixSchema = z.object({ payload: z.string().min(10), qrBase64: z.string().min(10), expiresAt: z.string().nullable() })
 
 export type StorePix = z.infer<typeof pixSchema>
 
@@ -232,6 +224,8 @@ const storeOrderSchema = z.object({
   salesUrl: z.string().url(),
   items: z.array(z.object({ slug: z.string(), name: z.string(), coverUrl: z.string().url().nullable() })).default([]),
   pix: pixSchema.nullable().default(null),
+  /** Já deixou depoimento neste pedido. */
+  reviewed: z.boolean().default(false),
 })
 
 export type StoreOrder = z.infer<typeof storeOrderSchema>
@@ -244,6 +238,20 @@ export async function getStoreOrder(token: string): Promise<StoreOrder> {
 export async function storeDownloadUrl(token: string, item: string): Promise<string> {
   const data = await invoke('store-order', { token, action: 'download', item })
   return z.object({ url: z.string().url() }).parse(data).url
+}
+
+export interface ReviewInput {
+  readonly authorName: string
+  readonly authorRole: string
+  readonly body: string
+  readonly rating: number
+  /** Autorização para publicar: sem ela o servidor recusa. */
+  readonly consent: true
+}
+
+/** Depoimento de quem comprou: só aparece no checkout depois de aprovado no admin. */
+export async function reviewStoreOrder(token: string, review: ReviewInput): Promise<void> {
+  await invoke('store-order', { token, action: 'review', review })
 }
 
 export async function cancelSubscription(): Promise<void> {

@@ -2,6 +2,7 @@ import { CheckCircle2, Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { PixPanel } from '@/components/checkout/PixPanel'
+import { StoreReviewForm } from '@/components/checkout/StoreReviewForm'
 import { StoreFrame } from '@/components/store/StoreFrame'
 import { CheckoutAlert } from '@/components/checkout/CheckoutAlert'
 import { Spinner } from '@/components/ui/Spinner'
@@ -76,6 +77,7 @@ function PaidOrder({ token, order }: { readonly token: string; readonly order: S
         ))}
       </ul>
       <p className="text-xs text-zinc-500">Guarde esta página: o link continua valendo para baixar de novo.</p>
+      <StoreReviewForm token={token} product={order.product} alreadySent={order.reviewed} />
     </>
   )
 }

@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { useId, type InputHTMLAttributes, type ReactNode } from 'react'
+import { useId, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 
 // Campos do checkout da loja, no tema claro das plataformas de infoproduto (o app continua escuro).
 
@@ -93,6 +93,29 @@ export function CheckoutSelect<T extends string>({ label, value, onChange, optio
         ))}
       </select>
       <FieldText id={id} hint={hint} />
+    </div>
+  )
+}
+
+interface CheckoutTextAreaProps extends FieldTextProps, Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'className'> {
+  readonly className?: string
+}
+
+export function CheckoutTextArea({ label, hint, error, className, ...props }: CheckoutTextAreaProps) {
+  const id = useId()
+  return (
+    <div className={className}>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-zinc-700">
+        {label}
+      </label>
+      <textarea
+        id={id}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error || hint ? `${id}-msg` : undefined}
+        className={clsx(CONTROL, error ? CONTROL_STATE.error : CONTROL_STATE.ok, 'resize-y py-3 leading-relaxed')}
+        {...props}
+      />
+      <FieldText id={id} hint={hint} error={error} />
     </div>
   )
 }

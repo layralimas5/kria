@@ -582,3 +582,29 @@ export const saveFilter = (name: string, filters: Record<string, string>) =>
   rpc('admin_save_filter', { p_scope: 'finance', p_name: name, p_filters: filters }, z.string())
 
 export const deleteSavedFilter = (id: string) => rpc('admin_delete_saved_filter', { p_id: id }, z.unknown())
+
+// ------------------------------------------------------------ depoimentos (0041)
+
+const adminTestimonialSchema = z.object({
+  id: z.string().uuid(),
+  scope: z.enum(['vynkio', 'store']),
+  product_slug: z.string().nullable(),
+  source: z.enum(['store_order', 'subscription']),
+  author_name: z.string(),
+  author_role: z.string().nullable(),
+  body: z.string(),
+  rating: z.number().int(),
+  status: z.enum(['pending', 'approved', 'hidden']),
+  created_at: z.string(),
+  reviewed_at: z.string().nullable(),
+})
+
+export type AdminTestimonial = z.infer<typeof adminTestimonialSchema>
+
+export function fetchAdminTestimonials(): Promise<AdminTestimonial[]> {
+  return rpc('admin_testimonials', {}, z.array(adminTestimonialSchema))
+}
+
+export async function setTestimonialStatus(id: string, status: 'approved' | 'hidden'): Promise<void> {
+  await rpc('admin_set_testimonial_status', { p_id: id, p_status: status }, z.unknown())
+}

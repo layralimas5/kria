@@ -1,6 +1,5 @@
-// Cliente mínimo do Asaas: checkout avulso de créditos (Pix e cartão) e
-// assinatura mensal no cartão (checkout recorrente) ou no Pix (API de assinaturas: o checkout
-// do Asaas só aceita cartão em cobrança recorrente).
+// Cliente mínimo do Asaas: checkout avulso de créditos (Pix e cartão), cobranças diretas da loja e
+// assinatura mensal pela API (cartão ou Pix), no checkout próprio dos planos (docs/checkout-planos.md).
 //   ASAAS_API_KEY   chave da conta (sandbox ou produção)
 //   ASAAS_ENV       'sandbox' (padrão) ou 'production'
 
@@ -39,7 +38,7 @@ function baseUrl(): string {
   return Deno.env.get('ASAAS_ENV') === 'production' ? BASE_URLS.production : BASE_URLS.sandbox
 }
 
-async function call<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: unknown): Promise<T> {
+async function call<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
   const response = await fetch(`${baseUrl()}${path}`, {
     method,
     headers: {
@@ -133,34 +132,6 @@ export async function getCustomerContact(id: string): Promise<AsaasCustomerConta
   return { name: customer.name ?? null, email: customer.email ?? null }
 }
 
-export interface SubscriptionCheckoutInput extends CheckoutUrls {
-  readonly subscriptionId: string
-  readonly planName: string
-  readonly monthlyCredits: number
-  readonly priceCents: number
-}
-
-/** Assinatura no cartão, a partir de hoje: o Asaas guarda o cartão e cobra sozinho todo mês. */
-export function createSubscriptionCheckout(input: SubscriptionCheckoutInput): Promise<AsaasCheckout> {
-  return call<AsaasCheckout>('POST', '/checkouts', {
-    billingTypes: ['CREDIT_CARD'],
-    chargeTypes: ['RECURRENT'],
-    minutesToExpire: 60,
-    externalReference: input.subscriptionId,
-    callback: { successUrl: input.successUrl, cancelUrl: input.cancelUrl, expiredUrl: input.cancelUrl },
-    items: [
-      {
-        name: `Vynkio ${input.planName}`.slice(0, 30),
-        description: `Plano mensal com ${input.monthlyCredits} créditos`.slice(0, 150),
-        quantity: 1,
-        value: input.priceCents / 100,
-        imageBase64: PRODUCT_IMAGE_BASE64,
-      },
-    ],
-    subscription: { cycle: 'MONTHLY', nextDueDate: todayInBrazil() },
-  })
-}
-
 export interface PixPayer {
   readonly name: string
   readonly cpf: string
@@ -175,6 +146,7 @@ interface AsaasCustomer {
 interface AsaasPayment {
   readonly id: string
   readonly invoiceUrl: string
+  readonly value: number
 }
 
 export interface CustomerInput {
@@ -205,13 +177,15 @@ export interface PixSubscriptionInput {
   readonly planName: string
   readonly monthlyCredits: number
   readonly priceCents: number
-  readonly payer: PixPayer
+  readonly payer: PixPayer & { readonly phone?: string | null }
 }
 
 export interface PixSubscription {
   readonly providerSubscriptionId: string
   readonly customerId: string
   readonly invoiceUrl: string
+  /** Primeira cobrança: é dela o QR Code, e é nela que entram os extras do "leve junto". */
+  readonly firstPaymentId: string
 }
 
 /**
@@ -221,7 +195,13 @@ export interface PixSubscription {
  */
 export async function createPixSubscription(input: PixSubscriptionInput): Promise<PixSubscription> {
   const { payer } = input
-  const customerId = await findOrCreateCustomer({ name: payer.name, cpf: payer.cpf, email: payer.email, externalReference: payer.userId })
+  const customerId = await findOrCreateCustomer({
+    name: payer.name,
+    cpf: payer.cpf,
+    email: payer.email,
+    phone: payer.phone,
+    externalReference: payer.userId,
+  })
   const subscription = await call<{ id: string }>('POST', '/subscriptions', {
     customer: customerId,
     billingType: 'PIX',
@@ -235,11 +215,74 @@ export async function createPixSubscription(input: PixSubscriptionInput): Promis
     const payments = await call<{ data: AsaasPayment[] }>('GET', `/subscriptions/${encodeURIComponent(subscription.id)}/payments`)
     const first = payments.data[0]
     if (!first?.invoiceUrl) throw new Error('assinatura Pix sem primeira cobrança')
-    return { providerSubscriptionId: subscription.id, customerId, invoiceUrl: first.invoiceUrl }
+    return { providerSubscriptionId: subscription.id, customerId, invoiceUrl: first.invoiceUrl, firstPaymentId: first.id }
   } catch (error) {
     await deleteSubscription(subscription.id).catch(() => undefined)
     throw error
   }
+}
+
+export interface CardSubscriptionInput {
+  readonly subscriptionId: string
+  readonly customerId: string
+  readonly planName: string
+  readonly monthlyCredits: number
+  readonly priceCents: number
+  readonly card: CardData
+  readonly holder: CardHolder
+  readonly remoteIp: string
+}
+
+/**
+ * Assinatura no cartão pela API, a partir de hoje: o Asaas cobra a primeira mensalidade na hora e guarda
+ * o cartão para as próximas. Recusado na criação = 400 com a mensagem do Asaas. O número do cartão só passa
+ * por aqui: não é gravado nem logado. Sem repetir em timeout (o Asaas avisa que duplicaria a assinatura).
+ */
+export async function createCardSubscription(input: CardSubscriptionInput): Promise<{ readonly providerSubscriptionId: string }> {
+  try {
+    const subscription = await call<{ id: string }>('POST', '/subscriptions', {
+      customer: input.customerId,
+      billingType: 'CREDIT_CARD',
+      cycle: 'MONTHLY',
+      value: input.priceCents / 100,
+      nextDueDate: todayInBrazil(),
+      description: `Vynkio ${input.planName}: plano mensal com ${input.monthlyCredits} créditos`.slice(0, 500),
+      externalReference: input.subscriptionId,
+      creditCard: input.card,
+      creditCardHolderInfo: holderInfo(input.holder),
+      remoteIp: input.remoteIp,
+    })
+    return { providerSubscriptionId: subscription.id }
+  } catch (error) {
+    if (error instanceof AsaasError && error.status === 400) throw new CardDeclinedError(declineMessage(error.body))
+    throw error
+  }
+}
+
+export interface PixQrCode {
+  readonly payload: string
+  readonly qrBase64: string
+  readonly expiresAt: string | null
+}
+
+export async function getPixQrCode(paymentId: string): Promise<PixQrCode> {
+  const qr = await call<{ encodedImage: string; payload: string; expirationDate?: string | null }>(
+    'GET',
+    `/payments/${encodeURIComponent(paymentId)}/pixQrCode`,
+  )
+  return { payload: qr.payload, qrBase64: qr.encodedImage, expiresAt: qr.expirationDate ?? null }
+}
+
+/**
+ * Muda o valor de uma cobrança Pix ainda não paga (a primeira mensalidade, quando entram os extras).
+ * Só ela muda: as próximas mensalidades continuam com o valor da assinatura.
+ */
+export async function setPixPaymentValue(paymentId: string, valueCents: number): Promise<void> {
+  await call('PUT', `/payments/${encodeURIComponent(paymentId)}`, {
+    billingType: 'PIX',
+    value: valueCents / 100,
+    dueDate: todayInBrazil(),
+  })
 }
 
 export function getSubscription(id: string): Promise<AsaasSubscription> {
@@ -282,11 +325,7 @@ export async function createPixCharge(input: ChargeInput & { readonly valueCents
     description: input.description.slice(0, 500),
     externalReference: input.externalReference,
   })
-  const qr = await call<{ encodedImage: string; payload: string; expirationDate?: string | null }>(
-    'GET',
-    `/payments/${encodeURIComponent(payment.id)}/pixQrCode`,
-  )
-  return { paymentId: payment.id, payload: qr.payload, qrBase64: qr.encodedImage, expiresAt: qr.expirationDate ?? null }
+  return { paymentId: payment.id, ...(await getPixQrCode(payment.id)) }
 }
 
 export interface CardData {
@@ -346,21 +385,25 @@ export async function createCardCharge(input: CardChargeInput): Promise<CardChar
       description: input.description.slice(0, 500),
       externalReference: input.externalReference,
       creditCard: input.card,
-      creditCardHolderInfo: {
-        name: input.holder.name,
-        email: input.holder.email,
-        cpfCnpj: input.holder.cpf,
-        postalCode: input.holder.postalCode,
-        addressNumber: input.holder.addressNumber,
-        phone: input.holder.phone,
-        mobilePhone: input.holder.phone,
-      },
+      creditCardHolderInfo: holderInfo(input.holder),
       remoteIp: input.remoteIp,
     })
     return { paymentId: payment.id, installmentId: payment.installment ?? null, status: payment.status }
   } catch (error) {
     if (error instanceof AsaasError && error.status === 400) throw new CardDeclinedError(declineMessage(error.body))
     throw error
+  }
+}
+
+function holderInfo(holder: CardHolder) {
+  return {
+    name: holder.name,
+    email: holder.email,
+    cpfCnpj: holder.cpf,
+    postalCode: holder.postalCode,
+    addressNumber: holder.addressNumber,
+    phone: holder.phone,
+    mobilePhone: holder.phone,
   }
 }
 

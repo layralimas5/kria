@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { quoteCheckout, sameEmail, type CheckoutQuote } from '@/domain/storeQuote'
 import { track } from '@/lib/analytics'
-import { errorMessage, payStoreOrder, type StoreBuyer, type StoreOffer, type StorePayment } from '@/lib/api'
+import { errorMessage, payStoreOrder, type StoreBuyer, type StoreCard, type StoreOffer, type StorePayment } from '@/lib/api'
 
 export type PaymentMethod = 'card' | 'pix'
 
@@ -16,7 +16,7 @@ export interface CardForm {
 }
 
 const EMPTY_BUYER: StoreBuyer = { name: '', email: '', cpf: '', phone: '' }
-const EMPTY_CARD: CardForm = { holderName: '', number: '', expiry: '', ccv: '', postalCode: '', addressNumber: '' }
+export const EMPTY_CARD: CardForm = { holderName: '', number: '', expiry: '', ccv: '', postalCode: '', addressNumber: '' }
 
 export interface StoreCheckout {
   readonly buyer: StoreBuyer
@@ -41,22 +41,23 @@ export interface StoreCheckout {
   readonly submit: () => Promise<string | null>
 }
 
-function payment(method: PaymentMethod, card: CardForm, installments: number): StorePayment {
-  if (method === 'pix') return { method }
+/** O formulário do cartão no formato da API (validade MM/AA separada em mês e ano). */
+export function cardPayload(card: CardForm, installments: number): StoreCard {
   const [month = '', year = ''] = card.expiry.split('/')
   return {
-    method,
-    card: {
-      holderName: card.holderName,
-      number: card.number,
-      expiryMonth: month,
-      expiryYear: year,
-      ccv: card.ccv,
-      postalCode: card.postalCode,
-      addressNumber: card.addressNumber,
-      installments,
-    },
+    holderName: card.holderName,
+    number: card.number,
+    expiryMonth: month,
+    expiryYear: year,
+    ccv: card.ccv,
+    postalCode: card.postalCode,
+    addressNumber: card.addressNumber,
+    installments,
   }
+}
+
+function payment(method: PaymentMethod, card: CardForm, installments: number): StorePayment {
+  return method === 'pix' ? { method } : { method, card: cardPayload(card, installments) }
 }
 
 /** Estado do checkout da loja. `submit` devolve o token do pedido (para a página do pedido) ou `null` no erro. */

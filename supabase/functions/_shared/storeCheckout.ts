@@ -6,7 +6,7 @@ import { z } from 'npm:zod@3'
 import { isValidCpf } from './billing.ts'
 import { installmentOption } from './installments.ts'
 
-const SLUG = z.string().regex(/^[a-z0-9-]{2,40}$/)
+export const SLUG = z.string().regex(/^[a-z0-9-]{2,40}$/)
 const digits = (value: string) => value.replace(/\D/g, '')
 
 /** Número de cartão com o dígito verificador certo (Luhn). Recebe só os números. */
@@ -24,7 +24,7 @@ export function isValidCardNumber(number: string): boolean {
   return sum % 10 === 0
 }
 
-const buyerSchema = z.object({
+export const buyerSchema = z.object({
   name: z
     .string()
     .trim()
@@ -48,7 +48,7 @@ function expiryIsValid(month: string, year: string, now: Date): boolean {
   return yearNumber * 12 + monthNumber >= current && yearNumber <= now.getUTCFullYear() + 20
 }
 
-const cardSchema = z
+export const cardSchema = z
   .object({
     holderName: z.string().trim().min(3, 'Informe o nome impresso no cartão.').max(80),
     number: z.string().transform(digits).refine(isValidCardNumber, 'Número do cartão inválido.'),
