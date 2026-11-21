@@ -1,6 +1,5 @@
 import type { ChangeEvent } from 'react'
-import { TextField } from '@/components/ui/Field'
-import { SelectField } from '@/components/ui/SelectField'
+import { CheckoutInput, CheckoutSelect } from '@/components/checkout/fields'
 import { BRAND_LABEL, cardBrand, maskCardNumber, maskCep, maskExpiry } from '@/domain/checkoutMasks'
 import { formatBRL } from '@/domain/format'
 import { installmentLabel, type InstallmentOption } from '@/domain/storeQuote'
@@ -34,28 +33,31 @@ export function CardFields({ value, onChange, options, installments, onInstallme
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <TextField
+      <CheckoutInput
         label="Número do cartão"
         className="col-span-2"
         inputMode="numeric"
         autoComplete="cc-number"
         required
         placeholder="0000 0000 0000 0000"
-        hint={brand ? BRAND_LABEL[brand] : undefined}
+        adornment={
+          brand && <span className="rounded bg-zinc-100 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-zinc-600">{BRAND_LABEL[brand]}</span>
+        }
         value={value.number}
         onChange={set('number')}
       />
-      <TextField
+      <CheckoutInput
         label="Nome impresso no cartão"
         className="col-span-2"
         autoComplete="cc-name"
         required
+        placeholder="Como está no cartão"
         value={value.holderName}
         onChange={set('holderName')}
       />
-      <TextField label="Validade" inputMode="numeric" autoComplete="cc-exp" required placeholder="MM/AA" value={value.expiry} onChange={set('expiry')} />
-      <TextField label="CVV" inputMode="numeric" autoComplete="cc-csc" required placeholder="123" value={value.ccv} onChange={set('ccv')} />
-      <TextField
+      <CheckoutInput label="Validade" inputMode="numeric" autoComplete="cc-exp" required placeholder="MM/AA" value={value.expiry} onChange={set('expiry')} />
+      <CheckoutInput label="CVV" inputMode="numeric" autoComplete="cc-csc" required placeholder="123" value={value.ccv} onChange={set('ccv')} />
+      <CheckoutInput
         label="CEP do titular"
         inputMode="numeric"
         autoComplete="postal-code"
@@ -64,9 +66,9 @@ export function CardFields({ value, onChange, options, installments, onInstallme
         value={value.postalCode}
         onChange={set('postalCode')}
       />
-      <TextField label="Nº do endereço" autoComplete="off" required value={value.addressNumber} onChange={set('addressNumber')} />
+      <CheckoutInput label="Nº do endereço" autoComplete="off" required placeholder="123" value={value.addressNumber} onChange={set('addressNumber')} />
       <div className="col-span-2">
-        <SelectField
+        <CheckoutSelect
           label="Parcelas"
           value={String(installments)}
           onChange={(count) => onInstallments(Number(count))}

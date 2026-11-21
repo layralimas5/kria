@@ -1,20 +1,16 @@
-import { Lock } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Logo } from '@/components/Logo'
+import { StoreFooter } from '@/components/store/StoreFooter'
+import { StoreHeader } from '@/components/store/StoreHeader'
 
-/** Moldura das páginas da loja: marca, cartão central e o selo do pagamento. */
+/** Moldura das páginas da loja depois do checkout: mesma faixa e rodapé, conteúdo num cartão central. */
 export function StoreFrame({ children }: { readonly children: ReactNode }) {
   return (
-    <main className="grid min-h-dvh place-items-center bg-canvas px-4 py-10">
-      <div className="w-full max-w-sm">
-        <div className="flex justify-center">
-          <Logo size="lg" />
-        </div>
-        <div className="mt-10 space-y-5 text-center">{children}</div>
-        <p className="mt-8 flex items-center justify-center gap-1.5 text-center text-xs text-zinc-500">
-          <Lock className="size-3.5" aria-hidden="true" /> Pagamento pelo Asaas, com Pix ou cartão.
-        </p>
-      </div>
-    </main>
+    <div className="min-h-dvh bg-zinc-100">
+      <StoreHeader />
+      <main className="mx-auto max-w-[480px] px-4 py-8">
+        <div className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 text-center shadow-sm sm:p-8">{children}</div>
+      </main>
+      <StoreFooter />
+    </div>
   )
 }

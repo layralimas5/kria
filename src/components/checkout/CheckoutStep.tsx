@@ -10,9 +10,9 @@ interface CheckoutStepProps {
 export function CheckoutStep({ number, title, children }: CheckoutStepProps) {
   const headingId = `checkout-step-${number}`
   return (
-    <section aria-labelledby={headingId} className="rounded-2xl border border-white/[0.08] bg-surface p-5 sm:p-6">
-      <h2 id={headingId} className="mb-5 flex items-center gap-3 text-[15px] font-semibold text-zinc-50">
-        <span className="grid size-7 place-items-center rounded-full bg-accent/15 text-[13px] font-bold text-accent-soft" aria-hidden="true">
+    <section aria-labelledby={headingId} className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+      <h2 id={headingId} className="mb-5 flex items-center gap-3 text-base font-semibold text-zinc-900">
+        <span className="grid size-7 place-items-center rounded-full bg-violet-600 text-[13px] font-bold text-white" aria-hidden="true">
           {number}
         </span>
         {title}

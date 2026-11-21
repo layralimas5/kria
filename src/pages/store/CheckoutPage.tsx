@@ -1,17 +1,18 @@
-import { Lock, ShieldCheck } from 'lucide-react'
+import { BadgeCheck, Lock, ShieldCheck, Zap, type LucideIcon } from 'lucide-react'
 import { useEffect, useRef, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { BuyerFields } from '@/components/checkout/BuyerFields'
 import { CardFields } from '@/components/checkout/CardFields'
+import { CheckoutAlert } from '@/components/checkout/CheckoutAlert'
 import { CheckoutStep } from '@/components/checkout/CheckoutStep'
 import { OrderBumpCard } from '@/components/checkout/OrderBumpCard'
 import { OrderSummary } from '@/components/checkout/OrderSummary'
 import { PaymentMethodPicker } from '@/components/checkout/PaymentMethodPicker'
-import { Logo } from '@/components/Logo'
-import { Button } from '@/components/ui/Button'
-import { Notice } from '@/components/ui/Notice'
+import { StoreFooter } from '@/components/store/StoreFooter'
+import { StoreHeader } from '@/components/store/StoreHeader'
 import { Spinner } from '@/components/ui/Spinner'
 import { formatBRL } from '@/domain/format'
+import { longestInstallment, quoteCheckout } from '@/domain/storeQuote'
 import { useStoreCheckout } from '@/hooks/useStoreCheckout'
 import { useStoreOffer } from '@/hooks/useStoreOffer'
 import { track } from '@/lib/analytics'
@@ -19,19 +20,77 @@ import type { StoreOffer } from '@/lib/api'
 
 const PRODUCT_SLUG = /^[a-z0-9-]{2,40}$/
 
+const TRUST: readonly { readonly Icon: LucideIcon; readonly title: string; readonly text: string }[] = [
+  { Icon: ShieldCheck, title: 'Compra segura', text: 'Dados protegidos de ponta a ponta' },
+  { Icon: Zap, title: 'Acesso imediato', text: 'Link no e-mail logo após a confirmação' },
+  { Icon: BadgeCheck, title: '7 dias de garantia', text: 'Direito de arrependimento' },
+]
+
+const PIX_BENEFITS = ['Liberação imediata depois do pagamento', 'QR Code e código copia e cola na próxima tela', 'Sem juros e sem taxa'] as const
+
 function ProductHeader({ offer }: { readonly offer: StoreOffer }) {
   const { product } = offer
+  const longest = longestInstallment(quoteCheckout(offer, new Set(), offer.maxInstallments).options)
   return (
-    <header className="overflow-hidden rounded-2xl border border-white/[0.08] bg-surface">
+    <header className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
       {product.coverUrl && (
         <img src={product.coverUrl} alt="" width={1200} height={480} className="aspect-[5/2] w-full object-cover" fetchPriority="high" />
       )}
       <div className="p-5 sm:p-6">
-        <h1 className="text-xl font-semibold leading-snug text-zinc-50 sm:text-2xl">{product.name}</h1>
-        {product.tagline && <p className="mt-1.5 text-sm leading-relaxed text-zinc-400">{product.tagline}</p>}
-        <p className="mt-3 text-2xl font-bold tabular-nums text-zinc-50">{formatBRL(product.priceCents)}</p>
+        <h1 className="text-xl font-bold leading-snug text-zinc-900 sm:text-2xl">{product.name}</h1>
+        {product.tagline && <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">{product.tagline}</p>}
+        <p className="mt-4 flex flex-wrap items-baseline gap-x-2">
+          <span className="text-3xl font-extrabold tabular-nums text-zinc-900">{formatBRL(product.priceCents)}</span>
+          {longest && (
+            <span className="text-sm text-zinc-500">
+              ou {longest.count}x de {formatBRL(longest.installmentCents)} no cartão
+            </span>
+          )}
+        </p>
       </div>
     </header>
+  )
+}
+
+function PixInfo() {
+  return (
+    <ul className="space-y-2 rounded-lg bg-emerald-50 px-4 py-3.5 text-sm text-emerald-900">
+      {PIX_BENEFITS.map((benefit) => (
+        <li key={benefit} className="flex items-center gap-2">
+          <BadgeCheck className="size-4 shrink-0 text-emerald-600" aria-hidden="true" /> {benefit}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function TrustBadges() {
+  return (
+    <ul className="grid gap-3 sm:grid-cols-3">
+      {TRUST.map(({ Icon, title, text }) => (
+        <li key={title} className="flex items-start gap-2.5 rounded-lg border border-zinc-200 bg-white px-3.5 py-3">
+          <Icon className="mt-0.5 size-5 shrink-0 text-emerald-600" aria-hidden="true" />
+          <span>
+            <span className="block text-[13px] font-semibold text-zinc-900">{title}</span>
+            <span className="block text-xs leading-snug text-zinc-500">{text}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function BuyButton({ loading, children }: { readonly loading: boolean; readonly children: string }) {
+  return (
+    <button
+      type="submit"
+      disabled={loading}
+      aria-busy={loading || undefined}
+      className="flex min-h-14 w-full items-center justify-center gap-2.5 rounded-xl bg-green-700 px-6 text-lg font-bold text-white shadow-lg shadow-green-700/25 transition-colors hover:bg-green-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-green-600/40 disabled:cursor-wait disabled:opacity-80"
+    >
+      {loading ? <Spinner className="size-5" /> : <Lock className="size-5" aria-hidden="true" />}
+      {loading ? 'Processando...' : children}
+    </button>
   )
 }
 
@@ -47,61 +106,51 @@ function CheckoutForm({ offer }: { readonly offer: StoreOffer }) {
   }
 
   return (
-    <form onSubmit={(event) => void handleSubmit(event)} className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8">
-      <div className="space-y-5">
-        <ProductHeader offer={offer} />
-        <CheckoutStep number={1} title="Seus dados">
-          <BuyerFields value={checkout.buyer} onChange={checkout.setBuyer} />
-        </CheckoutStep>
-        <CheckoutStep number={2} title="Pagamento">
-          <div className="space-y-5">
-            <PaymentMethodPicker value={checkout.method} onChange={checkout.setMethod} />
-            {checkout.method === 'card' ? (
-              <CardFields
-                value={checkout.card}
-                onChange={checkout.setCard}
-                options={quote.options}
-                installments={checkout.installments}
-                onInstallments={checkout.setInstallments}
-              />
-            ) : (
-              <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-zinc-400">
-                Ao finalizar, o QR Code e o código copia e cola aparecem aqui mesmo. O acesso libera assim que o Pix cair.
-              </p>
-            )}
-          </div>
-        </CheckoutStep>
-        {offer.bumps.length > 0 && (
-          <section aria-label="Leve junto" className="space-y-3">
-            {offer.bumps.map((bump) => (
-              <OrderBumpCard key={bump.slug} bump={bump} checked={checkout.bumps.has(bump.slug)} onToggle={() => checkout.toggleBump(bump.slug)} />
-            ))}
-          </section>
-        )}
-      </div>
-
-      <aside className="space-y-4 lg:sticky lg:top-6">
-        <OrderSummary offer={offer} bumps={checkout.bumps} subtotalCents={quote.subtotalCents} selected={quote.selected} />
-        {checkout.error && <Notice tone="error">{checkout.error}</Notice>}
-        <Button type="submit" loading={checkout.submitting} className="min-h-12 w-full text-base">
-          {checkout.method === 'pix' ? 'Gerar Pix' : 'Comprar agora'}
-        </Button>
-        <ul className="space-y-1.5 text-xs text-zinc-500">
-          <li className="flex items-center gap-2">
-            <Lock className="size-3.5 shrink-0" aria-hidden="true" /> Pagamento processado pelo Asaas. O Vynkio não guarda o seu cartão.
-          </li>
-          <li className="flex items-center gap-2">
-            <ShieldCheck className="size-3.5 shrink-0" aria-hidden="true" /> Acesso imediato por e-mail depois da confirmação.
-          </li>
-        </ul>
-      </aside>
+    <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
+      <ProductHeader offer={offer} />
+      <CheckoutStep number={1} title="Seus dados">
+        <BuyerFields
+          value={checkout.buyer}
+          onChange={checkout.setBuyer}
+          emailConfirm={checkout.emailConfirm}
+          onEmailConfirm={checkout.setEmailConfirm}
+          showErrors={checkout.attempted}
+        />
+      </CheckoutStep>
+      <CheckoutStep number={2} title="Pagamento">
+        <div className="space-y-5">
+          <PaymentMethodPicker value={checkout.method} onChange={checkout.setMethod} />
+          {checkout.method === 'card' ? (
+            <CardFields
+              value={checkout.card}
+              onChange={checkout.setCard}
+              options={quote.options}
+              installments={checkout.installments}
+              onInstallments={checkout.setInstallments}
+            />
+          ) : (
+            <PixInfo />
+          )}
+        </div>
+      </CheckoutStep>
+      {offer.bumps.length > 0 && (
+        <section aria-label="Leve junto" className="space-y-3">
+          {offer.bumps.map((bump) => (
+            <OrderBumpCard key={bump.slug} bump={bump} checked={checkout.bumps.has(bump.slug)} onToggle={() => checkout.toggleBump(bump.slug)} />
+          ))}
+        </section>
+      )}
+      <OrderSummary offer={offer} bumps={checkout.bumps} subtotalCents={quote.subtotalCents} selected={quote.selected} />
+      {checkout.error && <CheckoutAlert>{checkout.error}</CheckoutAlert>}
+      <BuyButton loading={checkout.submitting}>{checkout.method === 'pix' ? 'Gerar Pix' : 'Comprar agora'}</BuyButton>
+      <TrustBadges />
     </form>
   )
 }
 
 /**
- * `/comprar/:product`: checkout próprio da loja (docs/loja.md). O botão da página de vendas aponta para
- * cá. Sem conta no Vynkio: dados, pagamento e "leve junto" na mesma tela.
+ * `/comprar/:product`: checkout próprio da loja (docs/loja.md), no tema claro das plataformas de infoproduto.
+ * O botão da página de vendas aponta para cá. Sem conta no Vynkio: dados, pagamento e "leve junto" na mesma tela.
  */
 export function CheckoutPage() {
   const { product = '' } = useParams()
@@ -116,31 +165,31 @@ export function CheckoutPage() {
   }, [state.kind, product])
 
   return (
-    <main className="min-h-dvh bg-canvas px-4 pb-16 pt-6 sm:pt-8">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <Logo />
-          <span className="flex items-center gap-1.5 text-xs font-medium text-zinc-400">
-            <Lock className="size-3.5" aria-hidden="true" /> Compra segura
-          </span>
-        </div>
-        {!valid && <Notice tone="error">Produto não encontrado.</Notice>}
+    <div className="min-h-dvh bg-zinc-100">
+      <StoreHeader />
+      <main className="mx-auto max-w-[640px] px-4 py-6 sm:py-8">
+        {!valid && <CheckoutAlert>Produto não encontrado.</CheckoutAlert>}
         {valid && state.kind === 'loading' && (
           <div className="grid min-h-[50vh] place-items-center" role="status">
-            <Spinner className="size-7 text-accent-soft" />
+            <Spinner className="size-7 text-violet-600" />
             <span className="sr-only">Carregando o checkout</span>
           </div>
         )}
         {valid && state.kind === 'error' && (
-          <div className="mx-auto max-w-sm space-y-4">
-            <Notice tone="error">{state.message}</Notice>
-            <Button onClick={state.reload} className="w-full">
+          <div className="space-y-4">
+            <CheckoutAlert>{state.message}</CheckoutAlert>
+            <button
+              type="button"
+              onClick={state.reload}
+              className="min-h-11 w-full rounded-lg bg-violet-600 px-4 text-sm font-semibold text-white hover:bg-violet-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-600/30"
+            >
               Tentar de novo
-            </Button>
+            </button>
           </div>
         )}
         {state.kind === 'ready' && <CheckoutForm offer={state.offer} />}
-      </div>
-    </main>
+      </main>
+      <StoreFooter />
+    </div>
   )
 }

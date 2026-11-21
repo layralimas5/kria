@@ -26,3 +26,14 @@ export function installmentLabel(option: InstallmentOption, format: (cents: numb
   if (option.count === 1) return `À vista: ${format(option.totalCents)}`
   return `${option.count}x de ${format(option.installmentCents)}${option.interestFree ? ' sem juros' : ` (total ${format(option.totalCents)})`}`
 }
+
+/** Confirmação do e-mail: ignora maiúsculas e espaços nas pontas, como o servidor ao gravar. */
+export function sameEmail(email: string, confirmation: string): boolean {
+  return email.trim().toLowerCase() === confirmation.trim().toLowerCase()
+}
+
+/** Maior parcelamento disponível, para o "ou 2x de R$ 6,73" do topo. `null` quando só existe à vista. */
+export function longestInstallment(options: readonly InstallmentOption[]): InstallmentOption | null {
+  const last = options[options.length - 1]
+  return last && last.count > 1 ? last : null
+}

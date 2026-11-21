@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { PixPanel } from '@/components/checkout/PixPanel'
 import { StoreFrame } from '@/components/store/StoreFrame'
-import { Button } from '@/components/ui/Button'
-import { Notice } from '@/components/ui/Notice'
+import { CheckoutAlert } from '@/components/checkout/CheckoutAlert'
 import { Spinner } from '@/components/ui/Spinner'
 import { useStoreOrder } from '@/hooks/useStoreOrder'
 import { track } from '@/lib/analytics'
@@ -44,15 +43,22 @@ function DownloadButton({ token, item }: { readonly token: string; readonly item
   }
 
   return (
-    <li className="space-y-2 rounded-xl border border-white/[0.08] bg-surface p-3 text-left">
+    <li className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-left">
       <div className="flex items-center gap-3">
         {item.coverUrl && <img src={item.coverUrl} alt="" width={48} height={48} className="size-12 shrink-0 rounded-lg object-cover" />}
-        <p className="min-w-0 flex-1 text-sm font-semibold text-zinc-100">{item.name}</p>
-        <Button onClick={() => void download()} loading={busy} aria-label={`Baixar ${item.name}`}>
-          <Download className="size-4" aria-hidden="true" /> Baixar
-        </Button>
+        <p className="min-w-0 flex-1 text-sm font-semibold text-zinc-900">{item.name}</p>
+        <button
+          type="button"
+          onClick={() => void download()}
+          disabled={busy}
+          aria-busy={busy || undefined}
+          aria-label={`Baixar ${item.name}`}
+          className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg bg-green-700 px-4 text-sm font-bold text-white hover:bg-green-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-green-600/40 disabled:opacity-80"
+        >
+          {busy ? <Spinner className="size-4" /> : <Download className="size-4" aria-hidden="true" />} Baixar
+        </button>
       </div>
-      {error && <Notice tone="error">{error}</Notice>}
+      {error && <CheckoutAlert>{error}</CheckoutAlert>}
     </li>
   )
 }
@@ -61,9 +67,9 @@ function PaidOrder({ token, order }: { readonly token: string; readonly order: S
   useEffect(() => trackPurchaseOnce(token, order), [token, order])
   return (
     <>
-      <CheckCircle2 className="mx-auto size-10 text-emerald-400" aria-hidden="true" />
-      <h1 className="text-xl font-semibold text-zinc-50">Pagamento confirmado</h1>
-      <p className="text-sm text-zinc-400">Seu acesso está liberado. O mesmo link vai para o e-mail que você usou na compra.</p>
+      <CheckCircle2 className="mx-auto size-10 text-green-600" aria-hidden="true" />
+      <h1 className="text-xl font-semibold text-zinc-900">Pagamento confirmado</h1>
+      <p className="text-sm text-zinc-600">Seu acesso está liberado. O mesmo link vai para o e-mail que você usou na compra.</p>
       <ul className="space-y-2">
         {order.items.map((item) => (
           <DownloadButton key={item.slug} token={token} item={item} />
@@ -78,9 +84,9 @@ function Waiting({ order, gaveUp }: { readonly order: StoreOrder; readonly gaveU
   if (order.pix && !gaveUp) return <PixPanel pix={order.pix} totalCents={order.priceCents} />
   return (
     <div className="flex flex-col items-center gap-4" role="status">
-      {!gaveUp && <Spinner className="size-7 text-accent-soft" />}
-      <h1 className="text-lg font-semibold text-zinc-50">{gaveUp ? 'Ainda sem confirmação' : 'Confirmando o pagamento'}</h1>
-      <p className="text-sm text-zinc-400">
+      {!gaveUp && <Spinner className="size-7 text-violet-600" />}
+      <h1 className="text-lg font-semibold text-zinc-900">{gaveUp ? 'Ainda sem confirmação' : 'Confirmando o pagamento'}</h1>
+      <p className="text-sm text-zinc-600">
         {gaveUp
           ? 'Se você já pagou, o link chega no seu e-mail assim que a confirmação cair. Pode recarregar esta página depois.'
           : 'No cartão costuma levar alguns segundos. Não precisa fechar esta página.'}
@@ -99,13 +105,13 @@ function OrderStatus({ token, order, gaveUp }: { readonly token: string; readonl
     case 'failed':
       return (
         <>
-          <h1 className="text-lg font-semibold text-zinc-50">O pagamento não foi concluído</h1>
-          <p className="text-sm text-zinc-400">
+          <h1 className="text-lg font-semibold text-zinc-900">O pagamento não foi concluído</h1>
+          <p className="text-sm text-zinc-600">
             {order.method === 'card'
               ? 'O cartão não foi aprovado e nada foi cobrado. Tente outro cartão ou pague com Pix.'
               : 'Nada foi cobrado. Se quiser, comece de novo.'}
           </p>
-          <a href={order.salesUrl} className="inline-flex min-h-10 w-full items-center justify-center rounded-xl btn-accent px-4 text-sm font-semibold">
+          <a href={order.salesUrl} className="inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white hover:bg-violet-700">
             Voltar para a página
           </a>
         </>
@@ -113,8 +119,8 @@ function OrderStatus({ token, order, gaveUp }: { readonly token: string; readonl
     case 'refunded':
       return (
         <>
-          <h1 className="text-lg font-semibold text-zinc-50">Pedido estornado</h1>
-          <p className="text-sm text-zinc-400">O valor do {order.product} foi devolvido e o download foi encerrado.</p>
+          <h1 className="text-lg font-semibold text-zinc-900">Pedido estornado</h1>
+          <p className="text-sm text-zinc-600">O valor do {order.product} foi devolvido e o download foi encerrado.</p>
         </>
       )
   }
@@ -129,7 +135,7 @@ export function OrderPage() {
   if (!valid) {
     return (
       <StoreFrame>
-        <Notice tone="error">Pedido não encontrado. Confira o link do e-mail.</Notice>
+        <CheckoutAlert>Pedido não encontrado. Confira o link do e-mail.</CheckoutAlert>
       </StoreFrame>
     )
   }
@@ -138,11 +144,11 @@ export function OrderPage() {
     <StoreFrame>
       {state.kind === 'loading' && (
         <div className="flex justify-center" role="status">
-          <Spinner className="size-7 text-accent-soft" />
+          <Spinner className="size-7 text-violet-600" />
           <span className="sr-only">Carregando o pedido</span>
         </div>
       )}
-      {state.kind === 'error' && <Notice tone="error">{state.message}</Notice>}
+      {state.kind === 'error' && <CheckoutAlert>{state.message}</CheckoutAlert>}
       {state.kind === 'ready' && <OrderStatus token={token} order={state.order} gaveUp={state.gaveUp} />}
     </StoreFrame>
   )

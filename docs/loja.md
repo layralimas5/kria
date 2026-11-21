@@ -29,6 +29,12 @@ por parcela: com juro zero, a taxa sai da sua margem.
 **Leve junto (order bump).** Até 3 produtos em `bump_slugs` do produto principal, cada um ativo e com arquivo próprio.
 O preço de oferta é `bump_price_cents` do produto oferecido (vazio = preço normal) e a frase é `bump_pitch`.
 
+**Visual (21/11).** No padrão das plataformas de infoproduto: fundo claro, coluna única, faixa escura com a marca
+no topo, capa 1200x480, preço com "ou Nx de" (maior parcela), e-mail com confirmação (o acesso chega por ele),
+"leve junto" em caixa tracejada e botão verde. Os campos claros ficam em `components/checkout/fields.tsx`; o resto
+do app continua escuro. Verde dos botões é `green-700` (texto branco com contraste AA). Ver no `npm run dev:demo`
+em `/comprar/kria-personagens`.
+
 **Freios.** Sem login: no máximo 40 pedidos pendentes a cada 10 minutos e 6 tentativas por IP por hora (o IP fica só
 como sha256 em `client_ip_hash`). Se aparecer teste de cartão em massa, o próximo passo é captcha (Turnstile) no botão.
 

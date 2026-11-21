@@ -1,17 +1,16 @@
 import clsx from 'clsx'
-import { CreditCard, QrCode, type LucideIcon } from 'lucide-react'
+import { CheckCircle2, CreditCard, QrCode, type LucideIcon } from 'lucide-react'
 import type { PaymentMethod } from '@/hooks/useStoreCheckout'
 
 interface MethodOption {
   readonly value: PaymentMethod
   readonly label: string
-  readonly hint: string
   readonly Icon: LucideIcon
 }
 
 const METHODS: readonly MethodOption[] = [
-  { value: 'card', label: 'Cartão', hint: 'Em até 12x', Icon: CreditCard },
-  { value: 'pix', label: 'Pix', hint: 'Liberação na hora', Icon: QrCode },
+  { value: 'card', label: 'Cartão de crédito', Icon: CreditCard },
+  { value: 'pix', label: 'Pix', Icon: QrCode },
 ]
 
 interface PaymentMethodPickerProps {
@@ -24,23 +23,24 @@ export function PaymentMethodPicker({ value, onChange }: PaymentMethodPickerProp
     <fieldset>
       <legend className="sr-only">Forma de pagamento</legend>
       <div className="grid grid-cols-2 gap-3">
-        {METHODS.map(({ value: method, label, hint, Icon }) => (
-          <label
-            key={method}
-            className={clsx(
-              'flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-3 transition-colors',
-              'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent',
-              value === method ? 'border-accent/70 bg-accent/10' : 'border-white/[0.08] bg-surface-2 hover:border-white/15',
-            )}
-          >
-            <input type="radio" name="payment-method" value={method} checked={value === method} onChange={() => onChange(method)} className="sr-only" />
-            <Icon className={clsx('size-5 shrink-0', value === method ? 'text-accent-soft' : 'text-zinc-400')} aria-hidden="true" />
-            <span className="min-w-0">
-              <span className="block text-sm font-semibold text-zinc-100">{label}</span>
-              <span className="block text-xs text-zinc-500">{hint}</span>
-            </span>
-          </label>
-        ))}
+        {METHODS.map(({ value: method, label, Icon }) => {
+          const active = value === method
+          return (
+            <label
+              key={method}
+              className={clsx(
+                'relative flex min-h-[72px] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-3 text-center transition-colors',
+                'has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-violet-600/20',
+                active ? 'border-violet-600 bg-violet-50' : 'border-zinc-200 bg-white hover:border-zinc-300',
+              )}
+            >
+              <input type="radio" name="payment-method" value={method} checked={active} onChange={() => onChange(method)} className="sr-only" />
+              <Icon className={clsx('size-6', active ? 'text-violet-700' : 'text-zinc-500')} aria-hidden="true" />
+              <span className={clsx('text-sm font-semibold', active ? 'text-violet-800' : 'text-zinc-700')}>{label}</span>
+              {active && <CheckCircle2 className="absolute right-2 top-2 size-4 text-violet-600" aria-hidden="true" />}
+            </label>
+          )
+        })}
       </div>
     </fieldset>
   )

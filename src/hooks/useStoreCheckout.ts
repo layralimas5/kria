@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { quoteCheckout, type CheckoutQuote } from '@/domain/storeQuote'
+import { quoteCheckout, sameEmail, type CheckoutQuote } from '@/domain/storeQuote'
 import { track } from '@/lib/analytics'
 import { errorMessage, payStoreOrder, type StoreBuyer, type StoreOffer, type StorePayment } from '@/lib/api'
 
@@ -21,6 +21,10 @@ const EMPTY_CARD: CardForm = { holderName: '', number: '', expiry: '', ccv: '', 
 export interface StoreCheckout {
   readonly buyer: StoreBuyer
   readonly setBuyer: (buyer: StoreBuyer) => void
+  readonly emailConfirm: string
+  readonly setEmailConfirm: (email: string) => void
+  /** Já houve uma tentativa de envio: os campos mostram os erros mesmo sem a pessoa ter saído deles. */
+  readonly attempted: boolean
   readonly method: PaymentMethod
   readonly setMethod: (method: PaymentMethod) => void
   readonly card: CardForm
@@ -58,6 +62,8 @@ function payment(method: PaymentMethod, card: CardForm, installments: number): S
 /** Estado do checkout da loja. `submit` devolve o token do pedido (para a página do pedido) ou `null` no erro. */
 export function useStoreCheckout(offer: StoreOffer): StoreCheckout {
   const [buyer, setBuyer] = useState<StoreBuyer>(EMPTY_BUYER)
+  const [emailConfirm, setEmailConfirm] = useState('')
+  const [attempted, setAttempted] = useState(false)
   const [method, setMethod] = useState<PaymentMethod>('card')
   const [card, setCard] = useState<CardForm>(EMPTY_CARD)
   const [installments, setInstallments] = useState(1)
@@ -79,6 +85,11 @@ export function useStoreCheckout(offer: StoreOffer): StoreCheckout {
   }
 
   async function submit(): Promise<string | null> {
+    setAttempted(true)
+    if (!sameEmail(buyer.email, emailConfirm)) {
+      setError('Confira o e-mail: os dois campos precisam ser iguais, porque é nele que o acesso chega.')
+      return null
+    }
     setSubmitting(true)
     setError(null)
     track({ name: 'add_payment_info', params: { product: offer.product.slug, method, value: quote.selected.totalCents / 100 } })
@@ -102,6 +113,9 @@ export function useStoreCheckout(offer: StoreOffer): StoreCheckout {
   return {
     buyer,
     setBuyer,
+    emailConfirm,
+    setEmailConfirm,
+    attempted,
     method,
     setMethod,
     card,

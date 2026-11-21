@@ -267,10 +267,10 @@ function demoStoreOffer() {
   return {
     product: {
       slug: 'kria-personagens',
-      name: 'Kria Personagens Insanos',
-      tagline: '100 personagens prontos para criar conteúdo com IA, com prompt e ficha de cada um.',
-      coverUrl: `${origin}/demo/img-3.svg`,
-      priceCents: 4700,
+      name: 'Personagens Insanos',
+      tagline: '100 personagens com 400 prompts prontos para copiar, em 5 coleções.',
+      coverUrl: `${origin}/demo/store-cover.jpg`,
+      priceCents: 1290,
     },
     bumps: [
       {
@@ -306,7 +306,7 @@ function demoStoreOrder(body: Row): Response {
   const order = {
     status: pixPending ? 'pending' : 'paid',
     product: offer.product.name,
-    priceCents: 6690,
+    priceCents: 3280,
     installments: 1,
     method: body.token === DEMO_PIX_TOKEN ? 'pix' : 'card',
     salesUrl: origin,
