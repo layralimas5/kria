@@ -116,6 +116,25 @@ function PixWaiting({ result }: { readonly result: PlanPayResult & { readonly pi
   )
 }
 
+/** Quem já assina este plano não tem o que pagar aqui: vai escolher outro. */
+function AlreadySubscribed({ offer }: { readonly offer: PlanOffer }) {
+  return (
+    <div className="space-y-4">
+      <PlanHeader offer={offer} />
+      <div className="rounded-xl border border-zinc-200 bg-white p-5 text-center shadow-sm" role="status">
+        <p className="text-sm font-semibold text-zinc-900">Você já está no {offer.plan.name}.</p>
+        <p className="mt-1 text-sm text-zinc-600">Para trocar de plano, escolha outro. O atual vale até o novo ser pago.</p>
+        <Link
+          to="/assinatura"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg bg-violet-600 px-5 text-sm font-semibold text-white hover:bg-violet-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-600/30"
+        >
+          Ver os outros planos
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 function PlanCheckoutForm({ offer, onPix }: { readonly offer: PlanOffer; readonly onPix: (result: PlanPayResult) => void }) {
   const navigate = useNavigate()
   const checkout = usePlanCheckout(offer)
@@ -131,7 +150,6 @@ function PlanCheckoutForm({ offer, onPix }: { readonly offer: PlanOffer; readonl
   return (
     <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
       <PlanHeader offer={offer} />
-      {offer.alreadySubscribed && <CheckoutAlert>Você já está nesse plano. Para trocar, escolha outro em Assinatura.</CheckoutAlert>}
       <CheckoutStep number={1} title="Seus dados">
         <PlanBuyerFields value={checkout.buyer} onChange={checkout.setBuyer} email={offer.email} />
       </CheckoutStep>
@@ -193,7 +211,8 @@ export function PlanCheckoutPage() {
             </Link>
           </div>
         )}
-        {state.kind === 'ready' && !pixResult && <PlanCheckoutForm offer={state.offer} onPix={setPixResult} />}
+        {state.kind === 'ready' && !pixResult && state.offer.alreadySubscribed && <AlreadySubscribed offer={state.offer} />}
+        {state.kind === 'ready' && !pixResult && !state.offer.alreadySubscribed && <PlanCheckoutForm offer={state.offer} onPix={setPixResult} />}
         {pixResult?.pix && <PixWaiting result={{ ...pixResult, pix: pixResult.pix }} />}
       </main>
       <StoreFooter />
