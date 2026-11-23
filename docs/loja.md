@@ -16,7 +16,7 @@ Venda avulsa de produto digital (kit, e-book, pack) sem conta no Vynkio. Criada 
      tokenização no navegador (conferido em 20/11), por isso o cartão passa pela function. Recusado = 402 com a mensagem
      do Asaas e o pedido fica `failed`.
 4. A pessoa cai em `/pedido/<token>` (`OrderPage`), que pergunta o status a cada 4 s pela `store-order`.
-5. O `asaas-webhook` (`asaas-webhook/store.ts`) marca pago e manda o link por e-mail (Resend), uma vez só, para o
+5. O `asaas-webhook` (`asaas-webhook/store.ts`) marca pago e manda o link por e-mail (Gmail do Vynkio), uma vez só, para o
    e-mail digitado no checkout. Cartão recusado depois (captura ou análise de risco) e Pix vencido viram `failed`.
 6. "Baixar" pede à `store-order` uma URL assinada de 10 minutos do arquivo de cada produto do pedido. Cada produto
    baixa até 30 vezes. Pedido estornado não baixa mais.
@@ -75,9 +75,11 @@ Pedido já criado mantém o preço com que nasceu.
 
 | Segredo | Para quê |
 |---|---|
-| `RESEND_API_KEY` | Envio do e-mail de entrega. Sem ele, a entrega fica só na página |
-| `STORE_EMAIL_FROM` | Remetente verificado no Resend, ex.: `Vynkio <entrega@vynkio-ia.com.br>` |
-| `STORE_EMAIL_REPLY_TO` | Opcional: para onde vai a resposta do comprador |
+| `STORE_SMTP_USER` | Gmail que envia o e-mail de entrega: `vynkio.suporte@gmail.com` (o mesmo dos e-mails de login) |
+| `STORE_SMTP_PASS` | Senha de app do Google dessa conta. Sem ela, a entrega fica só na página |
+
+O envio é por SMTP na porta 465 (as Edge Functions bloqueiam 25 e 587). O Gmail limita a 500 e-mails por dia,
+somados aos de login: passou disso, trocar `_shared/storeMailer.ts` por um serviço de envio.
 
 O Asaas já usa as chaves do Vynkio (`ASAAS_API_KEY`, `ASAAS_WEBHOOK_TOKEN`). No painel do webhook, marcar também
 `PAYMENT_CREDIT_CARD_CAPTURE_REFUSED` e `PAYMENT_REPROVED_BY_RISK_ANALYSIS`.

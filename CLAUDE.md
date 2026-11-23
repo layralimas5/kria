@@ -41,7 +41,7 @@ são telas reais do modo demo (`npm run landing:screens`).
   (`_shared/installments.ts`, mesma conta no front), "leve junto" por `bump_slugs`. O servidor recalcula o total e recusa
   se divergir do que a pessoa viu. Número do cartão só passa pela function, nunca gravado nem logado. Pedido em
   `store_orders` + `store_order_items` (sem policy, só functions), entrega por URL assinada do bucket `store` e e-mail
-  pelo Resend (`asaas-webhook/store.ts`). Produto novo = arquivo no bucket + `insert` em `store_products`, sem deploy
+  pelo Gmail do Vynkio em SMTP 465 (`_shared/storeMailer.ts`, `STORE_SMTP_USER`/`STORE_SMTP_PASS`). Produto novo = arquivo no bucket + `insert` em `store_products`, sem deploy
 
 ## Regras do domínio
 

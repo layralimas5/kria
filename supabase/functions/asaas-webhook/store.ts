@@ -5,7 +5,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { getCustomerContact } from '../_shared/asaas.ts'
 import { requireEnv } from '../_shared/http.ts'
-import { sendDeliveryEmail } from '../_shared/storeEmail.ts'
+import { sendDeliveryEmail } from '../_shared/storeMailer.ts'
 
 const now = () => new Date().toISOString()
 
@@ -84,7 +84,7 @@ async function deliverByEmail(admin: SupabaseClient, orderId: string): Promise<s
     })
     if (!sent) {
       await admin.from('store_orders').update({ email_sent_at: null }).eq('id', orderId)
-      return 'e-mail desligado (sem RESEND_API_KEY)'
+      return 'e-mail desligado (sem STORE_SMTP_USER/STORE_SMTP_PASS)'
     }
     return 'e-mail enviado'
   } catch (sendError) {

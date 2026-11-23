@@ -20,7 +20,7 @@ fatura do Asaas. Agora tudo acontece na página do Vynkio, com os produtos da lo
      própria página e ela pergunta o status a cada 4 s (`action: 'status'`). Se o Asaas não aceitar somar, segue
      só o plano e o pedido dos extras fica `failed`, sem ligação com a cobrança.
 4. O `asaas-webhook` ativa o plano como sempre. Na primeira mensalidade Pix com extras, ele acha o pedido pela
-   cobrança, libera os downloads (e-mail pelo Resend) e registra no plano só a parte dele (`splitFirstPayment`),
+   cobrança, libera os downloads (e-mail pelo Gmail do Vynkio) e registra no plano só a parte dele (`splitFirstPayment`),
    para o MRR e o financeiro não contarem os extras como mensalidade. Só libera se o valor pago cobre os extras.
 5. Depois de pago, a pessoa vai para `/assinatura?assinatura=<id>&pedido=<token>`: a confirmação e o link dos extras.
 
