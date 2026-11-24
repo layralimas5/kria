@@ -1,102 +1,102 @@
 {
   "marina": {
     "src": "/landing/showcase/marina.jpg",
-    "width": 900,
-    "height": 1600
+    "width": 940,
+    "height": 1671
   },
   "marina-praia": {
     "src": "/landing/showcase/marina-praia.jpg",
-    "width": 900,
-    "height": 1200
+    "width": 1086,
+    "height": 1448
   },
   "marina-cafe": {
     "src": "/landing/showcase/marina-cafe.jpg",
-    "width": 900,
-    "height": 1200
+    "width": 1086,
+    "height": 1448
   },
   "marina-academia": {
     "src": "/landing/showcase/marina-academia.jpg",
-    "width": 900,
-    "height": 1200
+    "width": 1086,
+    "height": 1448
   },
   "marina-cozinha": {
     "src": "/landing/showcase/marina-cozinha.jpg",
-    "width": 900,
-    "height": 1200
+    "width": 1086,
+    "height": 1448
   },
   "marina-noite": {
     "src": "/landing/showcase/marina-noite.jpg",
-    "width": 900,
-    "height": 1200
+    "width": 1086,
+    "height": 1448
   },
   "marina-escritorio": {
     "src": "/landing/showcase/marina-escritorio.jpg",
-    "width": 900,
-    "height": 1200
+    "width": 1086,
+    "height": 1448
   },
   "bento-cidade": {
     "src": "/landing/showcase/bento-cidade.jpg",
-    "width": 1600,
-    "height": 900
+    "width": 1672,
+    "height": 941
   },
   "g-ugc-hidratante": {
     "src": "/landing/showcase/g-ugc-hidratante.jpg",
-    "width": 900,
-    "height": 1600
+    "width": 940,
+    "height": 1671
   },
   "g-moqueca": {
     "src": "/landing/showcase/g-moqueca.jpg",
-    "width": 900,
-    "height": 1125
+    "width": 1121,
+    "height": 1401
   },
   "g-casa-praia": {
     "src": "/landing/showcase/g-casa-praia.jpg",
-    "width": 900,
-    "height": 1125
+    "width": 1121,
+    "height": 1401
   },
   "g-tenis": {
     "src": "/landing/showcase/g-tenis.jpg",
-    "width": 900,
-    "height": 900
+    "width": 1254,
+    "height": 1254
   },
   "g-podcast": {
     "src": "/landing/showcase/g-podcast.jpg",
-    "width": 900,
-    "height": 1200
+    "width": 1086,
+    "height": 1448
   },
   "g-perfume": {
     "src": "/landing/showcase/g-perfume.jpg",
-    "width": 900,
-    "height": 1200
+    "width": 1086,
+    "height": 1448
   },
   "g-cafe": {
     "src": "/landing/showcase/g-cafe.jpg",
-    "width": 900,
-    "height": 1125
+    "width": 1121,
+    "height": 1401
   },
   "g-personal": {
     "src": "/landing/showcase/g-personal.jpg",
-    "width": 900,
-    "height": 1600
+    "width": 940,
+    "height": 1671
   },
   "g-quarto": {
     "src": "/landing/showcase/g-quarto.jpg",
-    "width": 900,
-    "height": 1125
+    "width": 1121,
+    "height": 1401
   },
   "g-hamburguer": {
     "src": "/landing/showcase/g-hamburguer.jpg",
-    "width": 900,
-    "height": 900
+    "width": 1254,
+    "height": 1254
   },
   "g-boutique": {
     "src": "/landing/showcase/g-boutique.jpg",
-    "width": 900,
-    "height": 1200
+    "width": 1086,
+    "height": 1448
   },
   "g-brigadeiro": {
     "src": "/landing/showcase/g-brigadeiro.jpg",
-    "width": 900,
-    "height": 1125
+    "width": 1121,
+    "height": 1401
   }
 }

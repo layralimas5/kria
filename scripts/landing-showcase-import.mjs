@@ -1,13 +1,13 @@
 // Importa as fotos da landing geradas por fora (Gemini, que usa o Nano Banana) e salvas em
 // fotos-lp/<id>.png|jpg|jpeg|webp. Recorta na proporção de showcase.json, salva em
-// public/landing/showcase e registra no manifesto, como a geração pelo fal.
+// public/landing/showcase na resolução original (sem reduzir) e registra no manifesto, como a geração pelo fal.
 // Uso:
 //   npm run landing:showcase:import            importa tudo que estiver na pasta
 //   npm run landing:showcase:import -- --list  só mostra o que falta
 import fs from 'node:fs'
 import path from 'node:path'
 import { chromium } from 'playwright'
-import { MANIFEST, OUT, ROOT, SPECS_FILE, saveJpeg, sizeFor } from './lib/showcase-image.mjs'
+import { MANIFEST, OUT, ROOT, SPECS_FILE, naturalSize, saveJpeg, sourceCropSize } from './lib/showcase-image.mjs'
 
 const INBOX = path.join(ROOT, 'fotos-lp')
 const MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' }
@@ -48,8 +48,9 @@ if (queue.length === 0) {
 fs.mkdirSync(OUT, { recursive: true })
 const browser = await chromium.launch()
 for (const { spec, file } of queue) {
-  const size = sizeFor(spec.aspect)
-  await saveJpeg(browser, asDataUri(file), path.join(OUT, `${spec.id}.jpg`), size)
+  const imageUrl = asDataUri(file)
+  const size = sourceCropSize(spec.aspect, await naturalSize(browser, imageUrl))
+  await saveJpeg(browser, imageUrl, path.join(OUT, `${spec.id}.jpg`), size)
   manifest[spec.id] = { src: `/landing/showcase/${spec.id}.jpg`, ...size }
   console.log(`  ${spec.id}: importada`)
 }

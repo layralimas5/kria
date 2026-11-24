@@ -32,11 +32,35 @@ export function sizeFor(aspect) {
   return { width, height: Math.round((width * h) / w) }
 }
 
-/** Recorta no centro para a proporção da landing e salva um jpg leve. */
+/** Maior recorte central na proporção pedida que cabe na foto original, sem ampliar. */
+export function sourceCropSize(aspect, natural) {
+  const [w, h] = aspect.split(':').map(Number)
+  const width = Math.min(natural.width, Math.floor((natural.height * w) / h))
+  return { width, height: Math.round((width * h) / w) }
+}
+
+/** Lê largura e altura originais da foto. */
+export async function naturalSize(browser, imageUrl) {
+  const page = await browser.newPage()
+  await page.setContent(`<img src="${imageUrl}">`)
+  await page.waitForFunction(() => document.images[0]?.complete && document.images[0].naturalWidth > 0, null, { timeout: 60000 })
+  const size = await page.evaluate(() => ({ width: document.images[0].naturalWidth, height: document.images[0].naturalHeight }))
+  await page.close()
+  return size
+}
+
+// Máscara de nitidez leve: devolve o contraste fino que a redução e o jpg tiram.
+const SHARPEN_FILTER =
+  '<svg width="0" height="0" style="position:absolute"><filter id="sharpen" color-interpolation-filters="sRGB">' +
+  '<feConvolveMatrix order="3" preserveAlpha="true" kernelMatrix="0 -0.16 0 -0.16 1.64 -0.16 0 -0.16 0"/></filter></svg>'
+
+/** Recorta no centro para a proporção da landing, aplica nitidez leve e salva em jpg de alta qualidade. */
 export async function saveJpeg(browser, imageUrl, target, { width, height }) {
   const page = await browser.newPage({ viewport: { width, height } })
-  await page.setContent(`<body style="margin:0;background:#000"><img src="${imageUrl}" style="width:${width}px;height:${height}px;object-fit:cover;display:block"></body>`)
+  await page.setContent(
+    `<body style="margin:0;background:#000">${SHARPEN_FILTER}<img src="${imageUrl}" style="width:${width}px;height:${height}px;object-fit:cover;display:block;filter:url(#sharpen)"></body>`,
+  )
   await page.waitForFunction(() => document.images[0]?.complete && document.images[0].naturalWidth > 0, null, { timeout: 60000 })
-  await page.screenshot({ path: target, type: 'jpeg', quality: 82 })
+  await page.screenshot({ path: target, type: 'jpeg', quality: 90 })
   await page.close()
 }
