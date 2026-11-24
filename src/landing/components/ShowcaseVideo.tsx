@@ -65,13 +65,13 @@ export function ShowcaseVideo({ src, poster, label, className, aspect = 'aspect-
           state === 'playing' ? 'opacity-0 hover:opacity-100 focus-visible:opacity-100' : 'opacity-100',
         )}
       >
-        <span className="grid size-16 place-items-center rounded-full bg-black/50 text-white ring-1 ring-white/20 backdrop-blur-md transition-transform duration-200 group-hover:scale-105">
+        <span className="grid size-12 place-items-center sm:size-16 rounded-full bg-black/50 text-white ring-1 ring-white/20 backdrop-blur-md transition-transform duration-200 group-hover:scale-105">
           {state === 'loading' ? (
-            <LoaderCircle className="size-6 animate-spin" aria-hidden="true" />
+            <LoaderCircle className="size-5 animate-spin sm:size-6" aria-hidden="true" />
           ) : playing ? (
-            <Pause className="size-6 fill-current" aria-hidden="true" />
+            <Pause className="size-5 fill-current sm:size-6" aria-hidden="true" />
           ) : (
-            <Play className="ml-1 size-6 fill-current" aria-hidden="true" />
+            <Play className="ml-1 size-5 fill-current sm:size-6" aria-hidden="true" />
           )}
         </span>
       </button>
