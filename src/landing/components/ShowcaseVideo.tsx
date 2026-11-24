@@ -10,6 +10,8 @@ interface ShowcaseVideoProps {
   readonly className?: string
   /** Proporção do vídeo (classe `aspect-*`). */
   readonly aspect?: string
+  /** Vídeo narrado: toca com som, uma vez, em vez de mudo e em loop. */
+  readonly withSound?: boolean
 }
 
 type PlayerState = 'idle' | 'loading' | 'playing' | 'paused'
@@ -18,7 +20,7 @@ type PlayerState = 'idle' | 'loading' | 'playing' | 'paused'
  * Player de vídeo da landing. Nada baixa antes do clique (`preload="none"`, só o pôster) e só
  * toca quando a pessoa pede, então nunca há dois vídeos tocando juntos na página.
  */
-export function ShowcaseVideo({ src, poster, label, className, aspect = 'aspect-video' }: ShowcaseVideoProps) {
+export function ShowcaseVideo({ src, poster, label, className, aspect = 'aspect-video', withSound = false }: ShowcaseVideoProps) {
   const video = useRef<HTMLVideoElement>(null)
   const [state, setState] = useState<PlayerState>('idle')
   const playing = state === 'playing' || state === 'loading'
@@ -45,12 +47,13 @@ export function ShowcaseVideo({ src, poster, label, className, aspect = 'aspect-
         poster={poster}
         preload="none"
         playsInline
-        muted
-        loop
+        muted={!withSound}
+        loop={!withSound}
         aria-label={label}
         onWaiting={() => setState('loading')}
         onPlaying={() => setState('playing')}
         onPause={() => setState('paused')}
+        onEnded={() => setState('paused')}
         className={clsx('block h-full w-full object-cover', aspect)}
       />
       <button

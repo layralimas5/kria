@@ -115,7 +115,8 @@ export const TOUR_VIDEO: TourVideo | null = null
 
 /**
  * Vídeo de "Conheça o poder da Vynkio" (`#como-funciona`). Enquanto for null, a seção mostra o quadro vazio
- * no tamanho do vídeo. Arquivo em `public/landing/`, com pôster tirado do próprio vídeo.
+ * no tamanho do vídeo. Arquivo em `public/landing/`, com pôster tirado do próprio vídeo. O vídeo é narrado e
+ * toca com som; a fonte HyperFrames fica na central, em `marketing/vynkio/video-conheca/film`.
  */
 export interface PlatformVideo {
   readonly src: string
@@ -124,7 +125,11 @@ export interface PlatformVideo {
   readonly label: string
 }
 
-export const PLATFORM_VIDEO: PlatformVideo | null = null
+export const PLATFORM_VIDEO: PlatformVideo | null = {
+  src: '/landing/vynkio-conheca.mp4',
+  poster: '/landing/vynkio-conheca.jpg',
+  label: 'Conheça o Vynkio: o Robozinho V mostra como sair da segunda sem post e terminar a semana com tudo criado, em 43 segundos',
+}
 
 export type ModelKind = 'Imagem' | 'Vídeo' | 'Texto' | 'Edição' | 'Voz'
 

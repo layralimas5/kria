@@ -6,7 +6,7 @@ import { PLATFORM_VIDEO } from '../content'
 /** Quadro do vídeo: o player quando `PLATFORM_VIDEO` existe; até lá, o espaço reservado no mesmo tamanho. */
 function VideoSlot() {
   if (PLATFORM_VIDEO) {
-    return <ShowcaseVideo src={PLATFORM_VIDEO.src} poster={PLATFORM_VIDEO.poster} label={PLATFORM_VIDEO.label} className="rounded-[calc(1.75rem-1px)]" />
+    return <ShowcaseVideo src={PLATFORM_VIDEO.src} poster={PLATFORM_VIDEO.poster} label={PLATFORM_VIDEO.label} withSound className="rounded-[calc(1.75rem-1px)]" />
   }
   return (
     <div aria-hidden="true" className="aspect-video rounded-[calc(1.75rem-1px)] bg-[#08070f] bg-[radial-gradient(80%_70%_at_50%_0%,rgba(124,58,237,0.16),transparent_70%)]" />
