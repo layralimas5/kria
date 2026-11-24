@@ -72,6 +72,17 @@
     }
   }
 
+  /* Reflexo que atravessa as fotos do Estúdio vazio: passa rápido e some até a próxima volta. */
+  @keyframes studio-shine {
+    0%,
+    70% {
+      transform: translateX(0) skewX(-12deg);
+    }
+    100% {
+      transform: translateX(450%) skewX(-12deg);
+    }
+  }
+
   /* Brilho do topo da landing: deriva lenta, só transform. */
   @keyframes hero-drift {
     from {

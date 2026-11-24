@@ -40,6 +40,8 @@ export const ADMIN_PERMISSION_LABELS: Readonly<Record<string, string>> = {
   'admins.manage': 'Dar e remover acesso à operação',
   'finance.override': 'Ligar preço abaixo da meta de margem (exceção)',
   'expenses.manage': 'Lançar e anular despesas',
+  'support.view': 'Ver os chamados de suporte',
+  'support.manage': 'Responder chamados e mudar situação e prioridade',
 }
 
 export const adminMeSchema = z.object({

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { AuditTab } from '@/components/admin/AuditTab'
 import { ModelsTab } from '@/components/admin/ModelsTab'
 import { PlansTab } from '@/components/admin/PlansTab'
+import { SupportDesk } from '@/components/admin/support/SupportDesk'
 import { TestimonialsTab } from '@/components/admin/TestimonialsTab'
 import { AddUserButton, UsersTab } from '@/components/admin/UsersTab'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
@@ -72,6 +73,18 @@ export function AdminTestimonialsPage() {
       description="Só de quem pagou e autorizou publicar. Aprovado aparece no checkout com o primeiro nome e a inicial do sobrenome. O texto não se edita."
     >
       <TestimonialsTab />
+    </SectionPage>
+  )
+}
+
+export function AdminSupportPage() {
+  return (
+    <SectionPage
+      eyebrow="Operação"
+      title="Chamados"
+      description="Os chamados que os usuários abrem na aba Suporte. Responda, deixe nota interna e acompanhe a situação de cada um. Toda resposta vai para a auditoria."
+    >
+      <SupportDesk />
     </SectionPage>
   )
 }

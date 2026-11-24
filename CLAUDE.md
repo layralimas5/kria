@@ -93,6 +93,8 @@ são telas reais do modo demo (`npm run landing:screens`).
   conta nem a de admin) e vão para a auditoria sem a senha. "Ver como usuário" é só leitura
   (`admin_user_view`, auditado como `user.view_as`); nunca abrir a sessão da pessoa. Desde a 0032 a tela desenha o menu
   dela (`navGroupsFor` com `plan.tools` e `kinds`) e lista o que fica escondido; o botão "Ver como" está em cada linha de Usuários.
+- Chamados (0042, `docs/chamados.md`): a pessoa abre em `/suporte?aba=chamados`, a operação atende em `/admin/chamados`
+  (permissões `support.view`/`support.manage`). Tabelas fechadas, só funções; nota interna nunca sai para a pessoa.
 - Ferramenta que ainda não existe aparece como "Breve", sem link nem botão.
 - Persona nasce só de imagem gerada aqui (`create_persona`). Sem upload de foto:
   é o que impede deepfake de pessoa real. Não abrir upload sem moderação de rosto.

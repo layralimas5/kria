@@ -1,6 +1,8 @@
-import { LifeBuoy, Mail, MessageCircle, Rocket, Users } from 'lucide-react'
+import clsx from 'clsx'
+import { LifeBuoy, Mail, MessageCircle, Rocket, Ticket, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { MyTickets } from '@/components/support/MyTickets'
 import { Notice } from '@/components/ui/Notice'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Spinner } from '@/components/ui/Spinner'
@@ -53,6 +55,13 @@ function Channel({ support }: { readonly support: MySupport }) {
   return (
     <Card icon={<LifeBuoy className="size-5" aria-hidden="true" />} title="Suporte nos planos pagos">
       <p>O suporte direto faz parte dos planos: e-mail no Starter e WhatsApp no Pro e no Max.</p>
+      <p>
+        Algo não funcionou?{' '}
+        <Link to="/suporte?aba=chamados" className="font-semibold text-accent-soft underline-offset-4 hover:underline">
+          Abra um chamado
+        </Link>{' '}
+        e a equipe responde por aqui.
+      </p>
       <Link to="/assinatura" className={CTA}>
         Ver planos
       </Link>
@@ -60,14 +69,43 @@ function Channel({ support }: { readonly support: MySupport }) {
   )
 }
 
-/** Aba Suporte: mostra só o canal do plano em vigor, com o contato que o banco liberou. */
-export function SupportPage() {
+type SupportTab = 'contato' | 'chamados'
+
+const TABS: readonly { readonly id: SupportTab; readonly label: string; readonly icon: ReactNode }[] = [
+  { id: 'contato', label: 'Contato', icon: <MessageCircle className="size-4" aria-hidden="true" /> },
+  { id: 'chamados', label: 'Chamados', icon: <Ticket className="size-4" aria-hidden="true" /> },
+]
+
+function Tabs({ active, onChange }: { readonly active: SupportTab; readonly onChange: (tab: SupportTab) => void }) {
+  return (
+    <div role="tablist" aria-label="Suporte" className="inline-flex rounded-2xl bg-surface p-1 ring-1 ring-white/[0.06]">
+      {TABS.map((tab) => (
+        <button
+          key={tab.id}
+          id={`support-tab-${tab.id}`}
+          type="button"
+          role="tab"
+          aria-selected={active === tab.id}
+          aria-controls={`support-panel-${tab.id}`}
+          onClick={() => onChange(tab.id)}
+          className={clsx(
+            'inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+            active === tab.id ? 'bg-accent/15 text-zinc-50 ring-1 ring-accent/30' : 'text-zinc-400 hover:text-zinc-100',
+          )}
+        >
+          {tab.icon}
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function ContactPanel() {
   const support = useQuery(fetchMySupport, 'Não deu para carregar o suporte agora.')
   const data = support.data
-
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <PageHeader title="Suporte" description={data?.plan_name ? `O atendimento do seu plano ${data.plan_name}.` : 'O atendimento do seu plano.'} />
+    <>
       {support.error && <Notice tone="error">{support.error}</Notice>}
       {!data && support.loading && (
         <div className="grid place-items-center py-20 text-zinc-500" role="status" aria-label="Carregando">
@@ -95,6 +133,22 @@ export function SupportPage() {
           )}
         </>
       )}
+    </>
+  )
+}
+
+/** Aba Suporte: o canal do plano em vigor (Contato) e os chamados da pessoa (Chamados, 0042). */
+export function SupportPage() {
+  const [params, setParams] = useSearchParams()
+  const tab: SupportTab = params.get('aba') === 'chamados' ? 'chamados' : 'contato'
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader title="Suporte" description="Fale com a equipe pelo canal do seu plano ou abra um chamado e acompanhe por aqui." />
+      <Tabs active={tab} onChange={(next) => setParams(next === 'contato' ? {} : { aba: next })} />
+      <div role="tabpanel" id={`support-panel-${tab}`} aria-labelledby={`support-tab-${tab}`} className="space-y-6">
+        {tab === 'chamados' ? <MyTickets /> : <ContactPanel />}
+      </div>
     </div>
   )
 }
