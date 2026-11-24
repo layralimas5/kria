@@ -4,6 +4,7 @@ import { cardPayload, EMPTY_CARD, type CardForm, type PaymentMethod } from '@/ho
 import { track } from '@/lib/analytics'
 import { errorMessage } from '@/lib/api'
 import { payPlan, type PlanBuyer, type PlanOffer, type PlanPayResult } from '@/lib/planCheckoutApi'
+import type { CheckoutChoices } from '@/domain/planCheckoutReturn'
 
 const EMPTY_BUYER: PlanBuyer = { name: '', cpf: '', phone: '' }
 
@@ -23,12 +24,20 @@ export interface PlanCheckout {
   readonly submit: () => Promise<PlanPayResult | null>
 }
 
+export interface PlanCheckoutStart {
+  /** Nome da conta, para não digitar de novo. */
+  readonly name?: string
+  /** Escolhas que voltaram pelo link de confirmação do e-mail. */
+  readonly choices?: CheckoutChoices | null
+}
+
 /** Estado do checkout de um plano. `submit` devolve a assinatura criada (e o Pix, se for o caso) ou `null` no erro. */
-export function usePlanCheckout(offer: PlanOffer): PlanCheckout {
-  const [buyer, setBuyer] = useState<PlanBuyer>(EMPTY_BUYER)
-  const [method, setMethod] = useState<PaymentMethod>('card')
+export function usePlanCheckout(offer: PlanOffer, start: PlanCheckoutStart = {}): PlanCheckout {
+  const offered = new Set(offer.bumps.map((bump) => bump.slug))
+  const [buyer, setBuyer] = useState<PlanBuyer>({ ...EMPTY_BUYER, name: start.name ?? '' })
+  const [method, setMethod] = useState<PaymentMethod>(start.choices?.method ?? 'card')
   const [card, setCard] = useState<CardForm>(EMPTY_CARD)
-  const [bumps, setBumps] = useState<ReadonlySet<string>>(new Set())
+  const [bumps, setBumps] = useState<ReadonlySet<string>>(() => new Set(start.choices?.bumps.filter((slug) => offered.has(slug)) ?? []))
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 

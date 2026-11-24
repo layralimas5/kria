@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/Field'
 import { Notice } from '@/components/ui/Notice'
 import { useSession } from '@/hooks/useSession'
+import { authErrorMessage } from '@/domain/authErrors'
 import { WELCOME_CREDITS } from '@/domain/plans'
 import { FULL_NAME_MAX, normalizeFullName, PASSWORD_MIN, signupError } from '@/domain/signup'
 import { track } from '@/lib/analytics'
@@ -13,13 +14,6 @@ import { isConfigured, supabase } from '@/lib/supabase'
 import type { ResetCodeState } from './ForgotPasswordPage'
 
 type Mode = 'signin' | 'signup' | 'code'
-
-const AUTH_ERRORS: Record<string, string> = {
-  'Invalid login credentials': 'E-mail ou senha incorretos.',
-  'User already registered': 'Já existe conta com esse e-mail. Entre com sua senha.',
-  'Email not confirmed': 'Confirme seu e-mail pelo link que enviamos antes de entrar.',
-  'Signups not allowed for this instance': 'Novos cadastros estão pausados no momento.',
-}
 
 const COPY: Record<Mode, { title: string; description: string }> = {
   signup: { title: 'Crie sua conta', description: `Ganhe ${WELCOME_CREDITS} créditos para testar.` },
@@ -83,7 +77,7 @@ export function LoginPage({ initialMode }: { readonly initialMode: 'signin' | 's
           })
     setLoading(false)
     if (result.error) {
-      setError(AUTH_ERRORS[result.error.message] ?? 'Não deu para continuar. Confira os dados e tente de novo.')
+      setError(authErrorMessage(result.error.message))
       return
     }
     track(mode === 'signin' ? { name: 'login', params: { method: 'email' } } : { name: 'sign_up', params: { method: 'email' } })

@@ -7,8 +7,11 @@ export type PlanOfferState =
   | { readonly kind: 'error'; readonly message: string }
   | { readonly kind: 'ready'; readonly offer: PlanOffer }
 
-/** O que o checkout de um plano mostra: plano, "leve junto" e o e-mail da conta. */
-export function usePlanOffer(slug: string): PlanOfferState {
+/**
+ * O que o checkout de um plano mostra: plano, "leve junto" e o e-mail da conta. Abre sem login também;
+ * `viewerId` muda quando a pessoa cria a conta ou entra, e a oferta é lida de novo com o e-mail dela.
+ */
+export function usePlanOffer(slug: string, viewerId: string | null): PlanOfferState {
   const [state, setState] = useState<PlanOfferState>({ kind: 'loading' })
 
   useEffect(() => {
@@ -21,7 +24,7 @@ export function usePlanOffer(slug: string): PlanOfferState {
     return () => {
       cancelled = true
     }
-  }, [slug])
+  }, [slug, viewerId])
 
   return state
 }

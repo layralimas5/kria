@@ -1,5 +1,6 @@
-// Checkout próprio dos planos (docs/checkout-planos.md). Só com login: a assinatura é da conta.
-// POST { action: 'offer', plan }   → plano, "leve junto" e o e-mail da conta
+// Checkout próprio dos planos (docs/checkout-planos.md). Pagar exige login: a assinatura é da conta.
+// POST { action: 'offer', plan }   → plano, "leve junto" e o e-mail da conta. Sem login também responde
+//                                    (e-mail nulo): o checkout abre direto da landing e a conta é criada nele.
 // POST { action: 'pay', ... }      → cria a assinatura no Asaas pela API e cobra
 //   cartão  a primeira mensalidade sai na hora e o cartão fica guardado no Asaas para as próximas.
 //           Os extras são uma cobrança à vista à parte no mesmo cartão (pedido da loja).
@@ -93,10 +94,14 @@ async function livePlanSlug(admin: Admin, userId: string): Promise<string | null
   return data?.plan_slug ?? null
 }
 
-async function offer(admin: Admin, userId: string, slug: string): Promise<Response> {
+async function offer(admin: Admin, userId: string | null, slug: string): Promise<Response> {
   const plan = await loadPlan(admin, slug)
   if (!plan) return errorResponse(404, 'plan_not_found', 'Plano não encontrado.')
-  const [bumps, email, current] = await Promise.all([loadBumps(admin), accountEmail(admin, userId), livePlanSlug(admin, userId)])
+  const [bumps, email, current] = await Promise.all([
+    loadBumps(admin),
+    userId ? accountEmail(admin, userId) : null,
+    userId ? livePlanSlug(admin, userId) : null,
+  ])
   return json({
     plan: {
       slug: plan.slug,
@@ -379,11 +384,11 @@ Deno.serve(
   handle(async (request) => {
     const admin = adminClient()
     const userId = await authenticatedUserId(request, admin)
-    if (!userId) return errorResponse(401, 'unauthorized', 'Entre na sua conta.')
     const raw = await readJson(request)
 
     const offerBody = offerSchema.safeParse(raw)
     if (offerBody.success) return offer(admin, userId, offerBody.data.plan)
+    if (!userId) return errorResponse(401, 'unauthorized', 'Entre na sua conta.')
     const statusBody = statusSchema.safeParse(raw)
     if (statusBody.success) return status(admin, userId, statusBody.data.subscription)
 

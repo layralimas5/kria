@@ -7,7 +7,11 @@ fatura do Asaas. Agora tudo acontece na página do Vynkio, com os produtos da lo
 ## Como funciona
 
 1. `PlanCheckoutPage` pede a oferta à function `subscribe` (`action: 'offer'`): plano (nome, linha, preço,
-   créditos, até 6 benefícios), "leve junto" e o e-mail da conta. Exige login (a assinatura é da conta).
+   créditos, até 6 benefícios), "leve junto" e o e-mail da conta. A oferta responde sem login (e-mail nulo):
+   desde 24/11 o checkout abre direto da landing. Sem sessão, o passo 1 é "Crie sua conta" (nome, e-mail, senha,
+   mesma regra do `/criar-conta`); o cadastro manda o link de confirmação com volta para
+   `/assinar/:plan?metodo=&extras=` (`src/domain/planCheckoutReturn.ts`), que reabre o checkout logado, com o nome,
+   a forma de pagamento e os extras já escolhidos. Pagar (`action: pay`) continua exigindo login.
 2. A pessoa preenche nome, CPF e celular (o e-mail é o da conta), escolhe cartão ou Pix e marca os extras.
 3. `action: 'pay'` (`_shared/planCheckout.ts` valida, `_shared/planQuote.ts` soma) recalcula no servidor e recusa
    se o total que a pessoa viu não bater (`price_changed`).

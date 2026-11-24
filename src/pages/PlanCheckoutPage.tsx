@@ -1,11 +1,12 @@
-import { CalendarCheck, Check, ShieldCheck, Sparkles } from 'lucide-react'
+import { CalendarCheck, Check, MailCheck, ShieldCheck, Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { BuyButton, PixInfo, TrustBadges, type TrustItem } from '@/components/checkout/CheckoutActions'
 import { CheckoutAlert } from '@/components/checkout/CheckoutAlert'
 import { CardFields } from '@/components/checkout/CardFields'
 import { CheckoutStep } from '@/components/checkout/CheckoutStep'
 import { OrderBumpCard } from '@/components/checkout/OrderBumpCard'
+import { PlanAccountFields } from '@/components/checkout/PlanAccountFields'
 import { PaymentMethodPicker } from '@/components/checkout/PaymentMethodPicker'
 import { PixPanel } from '@/components/checkout/PixPanel'
 import { PlanBuyerFields } from '@/components/checkout/PlanBuyerFields'
@@ -14,9 +15,12 @@ import { StoreFooter } from '@/components/store/StoreFooter'
 import { StoreHeader } from '@/components/store/StoreHeader'
 import { Spinner } from '@/components/ui/Spinner'
 import { formatBRL, formatCredits } from '@/domain/format'
-import { usePlanCheckout } from '@/hooks/usePlanCheckout'
+import { checkoutReturnPath, readCheckoutChoices } from '@/domain/planCheckoutReturn'
+import { useCheckoutSignup } from '@/hooks/useCheckoutSignup'
+import { usePlanCheckout, type PlanCheckout } from '@/hooks/usePlanCheckout'
 import { usePlanOffer } from '@/hooks/usePlanOffer'
 import { usePlanPixStatus } from '@/hooks/usePlanPixStatus'
+import { useSession } from '@/hooks/useSession'
 import { track } from '@/lib/analytics'
 import type { PlanOffer, PlanPayResult } from '@/lib/planCheckoutApi'
 import type { PlanQuote } from '../../supabase/functions/_shared/planQuote'
@@ -135,9 +139,89 @@ function AlreadySubscribed({ offer }: { readonly offer: PlanOffer }) {
   )
 }
 
-function PlanCheckoutForm({ offer, onPix }: { readonly offer: PlanOffer; readonly onPix: (result: PlanPayResult) => void }) {
+function BumpList({ offer, checkout }: { readonly offer: PlanOffer; readonly checkout: PlanCheckout }) {
+  if (offer.bumps.length === 0) return null
+  return (
+    <section aria-label="Leve junto" className="space-y-3">
+      {offer.bumps.map((bump) => (
+        <OrderBumpCard key={bump.slug} bump={bump} checked={checkout.bumps.has(bump.slug)} onToggle={() => checkout.toggleBump(bump.slug)} />
+      ))}
+    </section>
+  )
+}
+
+/** Depois do cadastro: o link de confirmação traz a pessoa de volta para este checkout, já no pagamento. */
+function ConfirmEmail({ offer, email }: { readonly offer: PlanOffer; readonly email: string }) {
+  return (
+    <div className="space-y-4">
+      <PlanHeader offer={offer} />
+      <section aria-labelledby="confirm-email" role="status" className="rounded-xl border border-zinc-200 bg-white p-6 text-center shadow-sm sm:p-8">
+        <MailCheck className="mx-auto size-10 text-violet-600" aria-hidden="true" />
+        <h2 id="confirm-email" className="mt-3 text-lg font-bold text-zinc-900">
+          Confirme seu e-mail para pagar
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+          Enviamos um link para <strong className="font-semibold text-zinc-900">{email}</strong>. Ao abrir, este checkout volta com o{' '}
+          {offer.plan.name} e as suas escolhas, direto no pagamento.
+        </p>
+        <p className="mt-3 text-[13px] text-zinc-500">Não chegou em alguns minutos? Olhe a caixa de spam ou de promoções.</p>
+      </section>
+    </div>
+  )
+}
+
+/** Sem login: a conta nasce aqui. O pagamento vem logo depois, com a conta confirmada. */
+function PlanSignupForm({ offer }: { readonly offer: PlanOffer }) {
   const navigate = useNavigate()
   const checkout = usePlanCheckout(offer)
+  const signup = useCheckoutSignup()
+  const [sentTo, setSentTo] = useState<string | null>(null)
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const returnPath = checkoutReturnPath(offer.plan.slug, { method: checkout.method, bumps: [...checkout.bumps] })
+    const outcome = await signup.submit(returnPath)
+    if (outcome === 'signed-in') navigate(returnPath, { replace: true })
+    if (outcome === 'confirm-email') setSentTo(signup.account.email.trim())
+  }
+
+  if (sentTo) return <ConfirmEmail offer={offer} email={sentTo} />
+
+  return (
+    <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
+      <PlanHeader offer={offer} />
+      <CheckoutStep number={1} title="Crie sua conta">
+        <PlanAccountFields value={signup.account} onChange={signup.setAccount} />
+      </CheckoutStep>
+      <CheckoutStep number={2} title="Pagamento">
+        <div className="space-y-5">
+          <PaymentMethodPicker value={checkout.method} onChange={checkout.setMethod} />
+          {checkout.method === 'card' ? (
+            <p className="rounded-lg bg-zinc-50 px-3.5 py-3 text-sm text-zinc-600">Os dados do cartão você coloca logo depois de confirmar o e-mail.</p>
+          ) : (
+            <PixInfo benefits={PIX_BENEFITS} />
+          )}
+        </div>
+      </CheckoutStep>
+      <BumpList offer={offer} checkout={checkout} />
+      <PlanSummary offer={offer} quote={checkout.quote} />
+      {signup.error && <CheckoutAlert>{signup.error}</CheckoutAlert>}
+      <BuyButton loading={signup.submitting}>Criar conta e continuar</BuyButton>
+      <TrustBadges items={TRUST} />
+      <TestimonialsBlock scope={{ kind: 'vynkio' }} />
+    </form>
+  )
+}
+
+function PlanCheckoutForm({ offer, onPix }: { readonly offer: PlanOffer; readonly onPix: (result: PlanPayResult) => void }) {
+  const navigate = useNavigate()
+  const { session } = useSession()
+  const location = useLocation()
+  const displayName: unknown = session?.user.user_metadata.display_name
+  const checkout = usePlanCheckout(offer, {
+    name: typeof displayName === 'string' ? displayName : undefined,
+    choices: readCheckoutChoices(location.search),
+  })
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -159,13 +243,7 @@ function PlanCheckoutForm({ offer, onPix }: { readonly offer: PlanOffer; readonl
           {checkout.method === 'card' ? <CardFields value={checkout.card} onChange={checkout.setCard} /> : <PixInfo benefits={PIX_BENEFITS} />}
         </div>
       </CheckoutStep>
-      {offer.bumps.length > 0 && (
-        <section aria-label="Leve junto" className="space-y-3">
-          {offer.bumps.map((bump) => (
-            <OrderBumpCard key={bump.slug} bump={bump} checked={checkout.bumps.has(bump.slug)} onToggle={() => checkout.toggleBump(bump.slug)} />
-          ))}
-        </section>
-      )}
+      <BumpList offer={offer} checkout={checkout} />
       <PlanSummary offer={offer} quote={checkout.quote} />
       {checkout.error && <CheckoutAlert>{checkout.error}</CheckoutAlert>}
       <BuyButton loading={checkout.submitting}>{checkout.method === 'pix' ? 'Gerar Pix' : 'Assinar agora'}</BuyButton>
@@ -176,13 +254,15 @@ function PlanCheckoutForm({ offer, onPix }: { readonly offer: PlanOffer; readonl
 }
 
 /**
- * `/assinar/:plan`: checkout próprio dos planos (docs/checkout-planos.md), no tema claro da loja. Chega aqui
- * já logado (RequireAuth leva ao login e volta). Dados, pagamento e "leve junto" na mesma tela.
+ * `/assinar/:plan`: checkout próprio dos planos (docs/checkout-planos.md), no tema claro da loja. Abre direto
+ * da landing, com ou sem login: sem conta, ela é criada aqui e o link de confirmação volta para o pagamento.
  */
 export function PlanCheckoutPage() {
   const { plan = '' } = useParams()
   const valid = PLAN_SLUG.test(plan)
-  const state = usePlanOffer(valid ? plan : '')
+  const { session, loading: sessionLoading } = useSession()
+  const viewerId = session?.user.id ?? null
+  const state = usePlanOffer(valid && !sessionLoading ? plan : '', viewerId)
   const [pixResult, setPixResult] = useState<PlanPayResult | null>(null)
   const tracked = useRef(false)
 
@@ -211,8 +291,11 @@ export function PlanCheckoutPage() {
             </Link>
           </div>
         )}
-        {state.kind === 'ready' && !pixResult && state.offer.alreadySubscribed && <AlreadySubscribed offer={state.offer} />}
-        {state.kind === 'ready' && !pixResult && !state.offer.alreadySubscribed && <PlanCheckoutForm offer={state.offer} onPix={setPixResult} />}
+        {state.kind === 'ready' && !pixResult && !viewerId && <PlanSignupForm offer={state.offer} />}
+        {state.kind === 'ready' && !pixResult && viewerId && state.offer.alreadySubscribed && <AlreadySubscribed offer={state.offer} />}
+        {state.kind === 'ready' && !pixResult && viewerId && !state.offer.alreadySubscribed && (
+          <PlanCheckoutForm key={viewerId} offer={state.offer} onPix={setPixResult} />
+        )}
         {pixResult?.pix && <PixWaiting result={{ ...pixResult, pix: pixResult.pix }} />}
       </main>
       <StoreFooter />

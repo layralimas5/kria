@@ -100,13 +100,14 @@ export function App() {
             {/* Loja de infoprodutos: sem conta no Vynkio (docs/loja.md). */}
             <Route path="/comprar/:product" element={<CheckoutPage />} />
             <Route path="/pedido/:token" element={<OrderPage />} />
+            {/* Checkout dos planos abre sem login: a conta é criada nele (docs/checkout-planos.md). */}
+            <Route path="/assinar/:plan" element={<PlanCheckoutPage />} />
             <Route path="/entrar" element={<LoginPage key="signin" initialMode="signin" />} />
             <Route path="/criar-conta" element={<LoginPage key="signup" initialMode="signup" />} />
             <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
             <Route path="/nova-senha" element={<ResetPasswordPage />} />
             <Route element={<SignedIn />}>
               <Route path="boas-vindas" element={<OnboardingPage />} />
-              <Route path="assinar/:plan" element={<PlanCheckoutPage />} />
               {/* Operação: moldura própria, fora do painel do usuário e sem link em menu (docs/admin.md). */}
               <Route path="admin" element={<AdminRoot />}>
                 <Route index element={<AdminDashboardPage />} />
