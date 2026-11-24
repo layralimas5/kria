@@ -5,6 +5,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAdminAccess } from '@/hooks/useAdminAccess'
 import { CommandProvider } from '@/hooks/useCommandPalette'
 import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed'
+import { useSupportAttention } from '@/hooks/useSupportAttention'
 import { supabase } from '@/lib/supabase'
 import { ADMIN_GO_SHORTCUTS, adminCommands, searchAdminUsers } from '../command/commandSets'
 import { SearchTrigger } from '../command/SearchTrigger'
@@ -21,7 +22,14 @@ function AdminBadge() {
   return <span className="inline-flex rounded-md bg-accent/15 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent-soft ring-1 ring-accent/25">Admin</span>
 }
 
-function NavLink({ item, active, collapsed }: { readonly item: AdminNavItem; readonly active: boolean; readonly collapsed: boolean }) {
+interface NavLinkProps {
+  readonly item: AdminNavItem
+  readonly active: boolean
+  readonly collapsed: boolean
+  readonly count: number
+}
+
+function NavLink({ item, active, collapsed, count }: NavLinkProps) {
   const Icon = item.icon
   const layout = clsx('flex min-h-9 items-center gap-3 whitespace-nowrap rounded-xl text-[14px] font-semibold', collapsed ? 'justify-center px-0' : 'px-3')
   if (!item.to) {
@@ -43,13 +51,24 @@ function NavLink({ item, active, collapsed }: { readonly item: AdminNavItem; rea
     <Link
       to={item.to}
       aria-current={active ? 'page' : undefined}
-      aria-label={collapsed ? item.label : undefined}
+      aria-label={collapsed || count > 0 ? `${item.label}${count > 0 ? `, ${count} pedindo atenção` : ''}` : undefined}
       title={collapsed ? item.label : undefined}
       className={clsx(layout, 'group relative transition-colors', FOCUS, active ? 'nav-active text-zinc-50' : 'text-zinc-400 hover:bg-white/[0.045] hover:text-zinc-100')}
     >
       {active && <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-accent-strong shadow-[0_0_12px_2px_rgb(139_92_246/0.7)]" />}
       <Icon className={clsx('size-[18px] shrink-0 transition-colors', active ? 'text-accent-soft' : 'group-hover:text-zinc-200')} aria-hidden="true" />
       {!collapsed && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
+      {count > 0 && (
+        <span
+          aria-hidden="true"
+          className={clsx(
+            'grid min-w-5 place-items-center rounded-full bg-accent px-1.5 text-[10px] font-bold tabular-nums text-white shadow-[0_0_12px_-2px_rgb(124_58_237/0.9)]',
+            collapsed && 'absolute right-1 top-0.5 min-w-4 px-1 text-[9px]',
+          )}
+        >
+          {count > 99 ? '99+' : count}
+        </span>
+      )}
     </Link>
   )
 }
@@ -57,6 +76,7 @@ function NavLink({ item, active, collapsed }: { readonly item: AdminNavItem; rea
 function AdminNav({ collapsed }: { readonly collapsed: boolean }) {
   const { can } = useAdminAccess()
   const { pathname, search } = useLocation()
+  const supportCount = useSupportAttention(can('support.view'))
   // Item com ?aba= (Retenção, Ferramentas...) só fica ativo na própria aba; sem aba, vale a primeira.
   const isActive = (to: string) => {
     const [path, query] = to.split('?')
@@ -80,7 +100,7 @@ function AdminNav({ collapsed }: { readonly collapsed: boolean }) {
           <ul className="space-y-0.5">
             {group.items.map((item) => (
               <li key={item.label}>
-                <NavLink item={item} collapsed={collapsed} active={item.to !== undefined && isActive(item.to)} />
+                <NavLink item={item} collapsed={collapsed} active={item.to !== undefined && isActive(item.to)} count={item.counter === 'support' ? supportCount : 0} />
               </li>
             ))}
           </ul>

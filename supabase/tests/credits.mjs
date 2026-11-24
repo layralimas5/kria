@@ -2643,4 +2643,78 @@ await test('checkout dos planos: extras viram pedido da loja ligado à assinatur
   assert.equal(kept.user_id, null)
 })
 
+await test('chamados: a pessoa só vê os dela, nota interna não aparece, admin atende e fica auditado', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const bia = await newUser(db, 'bia@x.com')
+  const admin = await newUser(db, 'admin@x.com')
+  const analyst = await newUser(db, 'analista@x.com')
+  await makeAdmin(db, admin)
+  await makeAdmin(db, analyst, 'analyst')
+  const open = (who, subject = 'Minha foto não terminou', body = 'Gerei uma foto e ficou carregando para sempre.') =>
+    as(db, 'authenticated', who, async () =>
+      (await db.query(`select open_support_ticket('generation', $1, $2) as id`, [subject, body])).rows[0].id)
+
+  await as(db, 'anon', null, () => expectError(db.query(`select open_support_ticket('other', 'Assunto ok', 'Texto com mais de dez letras')`), 'permission denied|not_authenticated'))
+  await as(db, 'authenticated', ana, () => expectError(db.query(`select open_support_ticket('outra', 'Assunto ok', 'Texto com mais de dez letras')`), 'invalid_category'))
+  await as(db, 'authenticated', ana, () => expectError(db.query(`select open_support_ticket('other', 'Oi', 'Texto com mais de dez letras')`), 'invalid_subject'))
+  await as(db, 'authenticated', ana, () => expectError(db.query(`select open_support_ticket('other', 'Assunto ok', 'curto')`), 'invalid_body'))
+
+  const ticket = await open(ana)
+  // Ninguém lê a tabela direto; a outra pessoa não abre o chamado da Ana.
+  await as(db, 'authenticated', ana, () => expectError(db.query(`select * from support_tickets`), 'permission denied'))
+  await as(db, 'authenticated', ana, () => expectError(db.query(`select * from support_messages`), 'permission denied'))
+  await as(db, 'authenticated', bia, () => expectError(db.query(`select my_support_ticket($1)`, [ticket]), 'ticket_not_found'))
+  await as(db, 'authenticated', bia, () => expectError(db.query(`select reply_support_ticket($1, 'oi')`, [ticket]), 'ticket_not_found'))
+  assert.deepEqual(await as(db, 'authenticated', bia, async () => (await db.query(`select my_support_tickets() as l`)).rows[0].l), [])
+
+  // Fila do admin: só com a permissão de suporte e o segundo fator.
+  await as(db, 'authenticated', bia, () => expectError(db.query(`select admin_support_tickets()`), 'forbidden'))
+  await as(db, 'authenticated', analyst, () => expectError(db.query(`select admin_support_tickets()`), 'forbidden'))
+  await as(db, 'authenticated', admin, () => expectError(db.query(`select admin_support_tickets()`), 'mfa_required'), 'aal1')
+  const queue = await as(db, 'authenticated', admin, async () => (await db.query(`select admin_support_tickets() as q`)).rows[0].q)
+  assert.equal(queue.counts.open, 1)
+  assert.equal(queue.tickets[0].email, 'ana@x.com')
+  assert.equal(queue.tickets[0].priority, 'normal')
+  assert.equal(await as(db, 'authenticated', admin, async () => (await db.query(`select admin_support_attention() as n`)).rows[0].n), 1)
+
+  // Nota interna fica só no admin; resposta pública espera a pessoa e marca como não lida para ela.
+  await as(db, 'authenticated', admin, () => db.query(`select admin_reply_support_ticket($1, 'Ver log do fal', true)`, [ticket]))
+  const replied = await as(db, 'authenticated', admin, async () =>
+    (await db.query(`select admin_reply_support_ticket($1, 'Oi Ana, já devolvemos o crédito.', false) as t`, [ticket])).rows[0].t)
+  assert.equal(replied.status, 'waiting_user')
+  assert.equal(replied.messages.length, 3)
+  const [listed] = await as(db, 'authenticated', ana, async () => (await db.query(`select my_support_tickets() as l`)).rows[0].l)
+  assert.equal(listed.unread, true)
+  const seen = await as(db, 'authenticated', ana, async () => (await db.query(`select my_support_ticket($1) as t`, [ticket])).rows[0].t)
+  assert.equal(seen.unread, false)
+  assert.deepEqual(seen.messages.map((m) => m.author), ['user', 'admin'])
+  assert.ok(seen.messages.every((m) => !m.body.includes('log do fal')))
+
+  // Responder reabre; resolver e responder de novo também.
+  const back = await as(db, 'authenticated', ana, async () => (await db.query(`select reply_support_ticket($1, 'Voltou, obrigada!') as t`, [ticket])).rows[0].t)
+  assert.equal(back.status, 'open')
+  await as(db, 'authenticated', ana, () => db.query(`select resolve_my_support_ticket($1)`, [ticket]))
+  const reopened = await as(db, 'authenticated', ana, async () => (await db.query(`select reply_support_ticket($1, 'Aconteceu de novo') as t`, [ticket])).rows[0].t)
+  assert.equal(reopened.status, 'open')
+
+  // Situação e prioridade pelo admin, com auditoria.
+  await as(db, 'authenticated', admin, () => expectError(db.query(`select admin_update_support_ticket($1, 'fechado', null)`, [ticket]), 'invalid_status'))
+  const updated = await as(db, 'authenticated', admin, async () =>
+    (await db.query(`select admin_update_support_ticket($1, 'resolved', 'urgent') as t`, [ticket])).rows[0].t)
+  assert.equal(updated.status, 'resolved')
+  assert.equal(updated.priority, 'urgent')
+  assert.ok(updated.resolved_at)
+  assert.equal((await db.query(`select count(*)::int as n from admin_audit_logs where action like 'support.%'`)).rows[0].n, 3)
+
+  // Plano com suporte prioritário já abre em prioridade alta.
+  await activate(db, await newSubscription(db, bia, 'studio'), 'pay_bia')
+  await open(bia)
+  const queue2 = await as(db, 'authenticated', admin, async () => (await db.query(`select admin_support_tickets() as q`)).rows[0].q)
+  assert.equal(queue2.tickets.find((item) => item.email === 'bia@x.com').priority, 'high')
+
+  // Freio: no máximo 5 abertos ao mesmo tempo.
+  for (let index = 0; index < 4; index += 1) await open(bia, `Assunto número ${index}`)
+  await as(db, 'authenticated', bia, () => expectError(db.query(`select open_support_ticket('other', 'Mais um assunto', 'Texto com mais de dez letras')`), 'too_many_open_tickets'))
+})
+
 console.log(`\n${passed} testes do banco passaram`)

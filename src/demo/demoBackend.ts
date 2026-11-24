@@ -19,6 +19,7 @@ import { demoFinance, exportUsage, financeSettings, isRefusal, modelQuotes, sett
 import { fullUseMarginOf, planEconomics, preflight, setTariff, storefront, updateCostGuard, updateDraftPlan } from './demoPricingV3'
 import { demoRefusal, demoSpendGuard, demoUsage } from './demoSpend'
 import { DEMO_PIX_QR_BASE64 } from './demoPixQr'
+import { demoSupportTickets } from './demoSupportTickets'
 
 // O estado sobrevive ao recarregar a aba (sessionStorage); fechar a aba recomeça o demo.
 const SESSION_KEY = 'kria-demo-state-v12'
@@ -716,7 +717,7 @@ function demoUserRow(): Row {
 
 const SUPER_ADMIN_PERMISSIONS = [
   'dashboard.view', 'finance.view', 'users.view', 'users.manage', 'credits.adjust', 'plans.view', 'plans.manage',
-  'models.view', 'models.manage', 'pricing.manage', 'audit.view', 'admins.manage', 'expenses.manage',
+  'models.view', 'models.manage', 'pricing.manage', 'audit.view', 'admins.manage', 'expenses.manage', 'support.view', 'support.manage',
 ]
 
 function setRole(body: Row): Response {
@@ -1153,6 +1154,8 @@ function demoTestimonials(name: string): Response | null {
 function rpc(name: string, body: Row): Response {
   const testimonials = demoTestimonials(name)
   if (testimonials) return testimonials
+  const ticket = demoSupportTickets(name, body, String(currentPlan().name ?? ''))
+  if (ticket) return ticket.ok ? json(ticket.body) : rpcFail(ticket.code)
   if (name === 'create_persona') return createPersona(body)
   if (name === 'register_upload') return registerUpload(body)
   if (name === 'import_analytics') return importAnalytics(body)

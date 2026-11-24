@@ -4,6 +4,7 @@ import {
   CreditCard,
   Cpu,
   LayoutDashboard,
+  LifeBuoy,
   MessageSquareQuote,
   Repeat,
   ScrollText,
@@ -23,6 +24,8 @@ export interface AdminNavItem {
   readonly to?: string
   /** Permissão do banco que a tela usa; quem não tem não vê o item. */
   readonly permission?: string
+  /** Número ao lado do item (chamados que pedem atenção). */
+  readonly counter?: 'support'
 }
 
 export interface AdminNavGroup {
@@ -50,6 +53,7 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
     items: [
       { label: 'Usuários', icon: Users, to: '/admin/usuarios', permission: 'users.view' },
       { label: 'Gerações', icon: Sparkles, to: '/admin/geracoes', permission: 'users.view' },
+      { label: 'Chamados', icon: LifeBuoy, to: '/admin/chamados', permission: 'support.view', counter: 'support' },
       { label: 'Modelos e custos', icon: Cpu, to: '/admin/modelos', permission: 'models.view' },
     ],
   },
