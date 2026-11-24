@@ -8,6 +8,7 @@ import { GenerationDetails } from '@/components/library/GenerationDetails'
 import { MakePersonaDialog } from '@/components/MakePersonaDialog'
 import { Composer } from '@/components/studio/Composer'
 import { ModelTiles } from '@/components/studio/ModelTiles'
+import { StudioShowcase } from '@/components/studio/StudioShowcase'
 import { Notice } from '@/components/ui/Notice'
 import { isOpen, type Generation, type MediaKind } from '@/domain/types'
 import { useBalance } from '@/hooks/useBalance'
@@ -43,11 +44,7 @@ const KIND_TITLE: Record<MediaKind, { readonly article: string; readonly noun: s
 function EmptyHero({ kind, onIdea }: { readonly kind: MediaKind; readonly onIdea: (idea: string) => void }) {
   return (
     <section className="flex flex-col items-center px-2 py-12 text-center md:py-16" aria-labelledby="studio-empty">
-      <div aria-hidden="true" className="relative mb-10 flex h-28 items-center justify-center">
-        <span className="absolute h-24 w-20 -translate-x-20 -rotate-12 rounded-xl border border-white/10 bg-white/[0.02]" />
-        <span className="absolute h-28 w-22 rounded-xl border border-accent/50 bg-accent/10 shadow-[0_0_60px_-10px_rgb(124_58_237/0.7)]" />
-        <span className="absolute h-24 w-20 translate-x-20 rotate-12 rounded-xl border border-white/10 bg-white/[0.02]" />
-      </div>
+      <StudioShowcase />
       <h2 id="studio-empty" className="font-headline text-4xl text-balance text-zinc-50 md:text-6xl">
         Crie. Anime. <span className="bg-gradient-to-r from-accent-soft via-violet-300 to-galaxy bg-clip-text text-transparent">Publique.</span>
       </h2>
