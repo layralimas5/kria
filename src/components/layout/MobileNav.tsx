@@ -1,17 +1,15 @@
 import clsx from 'clsx'
 import { Coins, Menu } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
-import { useAccount } from '@/hooks/useAccount'
-import { usePlanModels } from '@/hooks/usePlanModels'
 import { useBalance } from '@/hooks/useBalance'
 import { UserMenu } from '../account/UserMenu'
 import { BrandSwitcher } from '../workspace/BrandSwitcher'
 import { SearchTrigger } from '../command/SearchTrigger'
 import { Logo } from '../Logo'
-import { AdminShortcut } from './AdminShortcut'
 import { NotificationsMenu } from './NotificationsMenu'
-import { Popover } from '../ui/Popover'
-import { MOBILE_TABS, navGroupsFor } from './nav'
+import { MobileMenuSheet } from './MobileMenuSheet'
+import { MOBILE_TABS } from './nav'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
 const TAB = 'flex min-h-16 w-full flex-col items-center justify-center gap-1 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent'
@@ -42,62 +40,11 @@ export function MobileTopBar() {
   )
 }
 
-/** Todas as áreas do menu, para o celular. "Breve" aparece sem link, como na barra lateral. */
-function FullMenu({ onNavigate }: { readonly onNavigate: () => void }) {
-  const { pathname } = useLocation()
-  const [params] = useSearchParams()
-  const { plan } = useAccount()
-  const { kinds } = usePlanModels()
-  return (
-    <nav aria-label="Todas as áreas" className="max-h-[70dvh] w-[min(88vw,20rem)] space-y-3 overflow-y-auto p-1">
-      <div onClickCapture={onNavigate}>
-        <AdminShortcut collapsed={false} />
-      </div>
-      {navGroupsFor(plan, kinds).map((group) => (
-        <div key={group.title}>
-          <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500">{group.title}</p>
-          <ul>
-            {group.items.map((item) => {
-              const Icon = item.icon
-              if (item.soon) {
-                return (
-                  <li key={item.label} aria-disabled="true" className="flex min-h-10 items-center gap-3 px-2 text-sm font-semibold text-zinc-600">
-                    <Icon className="size-4" aria-hidden="true" />
-                    <span className="flex-1">{item.label}</span>
-                    <span className="rounded-md bg-white/[0.05] px-1 text-[9px] font-bold uppercase text-zinc-500">Breve</span>
-                  </li>
-                )
-              }
-              const active = item.isActive(pathname, params)
-              return (
-                <li key={item.label}>
-                  <Link
-                    to={item.to}
-                    onClick={onNavigate}
-                    aria-current={active ? 'page' : undefined}
-                    className={clsx(
-                      'flex min-h-10 items-center gap-3 rounded-lg px-2 text-sm font-semibold',
-                      FOCUS,
-                      active ? 'bg-white/[0.07] text-zinc-50' : 'text-zinc-300 hover:bg-white/[0.04]',
-                    )}
-                  >
-                    <Icon className={clsx('size-4', active && 'text-accent-soft')} aria-hidden="true" />
-                    {item.label}
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      ))}
-    </nav>
-  )
-}
-
 /** Abas de baixo do celular. */
 export function MobileTabBar() {
   const { pathname } = useLocation()
   const [params] = useSearchParams()
+  const [menuOpen, setMenuOpen] = useState(false)
   return (
     <nav
       aria-label="Principal"
@@ -117,20 +64,19 @@ export function MobileTabBar() {
           )
         })}
         <li>
-          <Popover
-            label="Menu"
-            align="end"
-            trigger={({ open, toggle, controls }) => (
-              <button type="button" onClick={toggle} aria-expanded={open} aria-controls={controls} className={clsx(TAB, open ? 'text-accent-soft' : 'text-zinc-500')}>
-                <Menu className="size-5" aria-hidden="true" />
-                Menu
-              </button>
-            )}
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={menuOpen}
+            className={clsx(TAB, menuOpen ? 'text-accent-soft' : 'text-zinc-500')}
           >
-            {(close) => <FullMenu onNavigate={close} />}
-          </Popover>
+            <Menu className="size-5" aria-hidden="true" />
+            Menu
+          </button>
         </li>
       </ul>
+      <MobileMenuSheet open={menuOpen} onClose={() => setMenuOpen(false)} />
     </nav>
   )
 }

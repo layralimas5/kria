@@ -28,7 +28,7 @@ export interface NavItem {
   readonly label: string
   readonly to: string
   readonly icon: LucideIcon
-  readonly badge?: 'NOVO' | 'TOP'
+  readonly badge?: 'TOP'
   /** Recurso de etapa futura: aparece no menu sem link nem ação. */
   readonly soon?: true
   /** Só aparece para o plano que inclui essa ferramenta. Sem `tool`, é de todos. */
@@ -55,30 +55,28 @@ export const FORMATS_TAB: NavItem = {
   label: 'Formatos',
   to: '/formatos',
   icon: LayoutTemplate,
-  badge: 'NOVO',
   isActive: (pathname) => pathname === '/formatos' || pathname.startsWith('/formatos/'),
 }
 export const MULTIPLIER_TAB: NavItem = {
   label: 'Multiplicador',
   to: '/multiplicador',
   icon: CopyPlus,
-  badge: 'NOVO',
   isActive: (pathname) => pathname === '/multiplicador' || pathname.startsWith('/multiplicador/'),
 }
 export const IMAGE_TAB: NavItem = { label: 'Imagens', to: '/estudio?modo=imagem', icon: ImageIcon, isActive: isStudioMode('image') }
-export const VIDEO_TAB: NavItem = { label: 'Vídeos', to: '/estudio?modo=video', icon: Clapperboard, badge: 'NOVO', mediaKind: 'video', isActive: isStudioMode('video') }
+export const VIDEO_TAB: NavItem = { label: 'Vídeos', to: '/estudio?modo=video', icon: Clapperboard, mediaKind: 'video', isActive: isStudioMode('video') }
 export const PERSONAS_TAB: NavItem = { label: 'Personagens', to: '/personas', icon: UserRound, badge: 'TOP', isActive: isPath('/personas') }
 export const UGC_TAB: NavItem = { label: 'UGC', to: '/assistente/ugc', icon: Megaphone, tool: 'ugc_studio', isActive: isAssistant('ugc') }
 export const IDEAS_TAB: NavItem = { label: 'Ideias', to: '/assistente/ideias', icon: Lightbulb, tool: 'copy', isActive: isAssistant('ideias') }
 export const SCRIPT_TAB: NavItem = { label: 'Roteiros', to: '/assistente/roteiro', icon: ScrollText, tool: 'copy', isActive: isAssistant('roteiro') }
 export const COPY_TAB: NavItem = { label: 'Copys', to: '/assistente/copy', icon: PenLine, tool: 'copy', isActive: isAssistant('copy') }
-export const PLANNING_TAB: NavItem = { label: 'Planejamento', to: '/assistente/planejamento', icon: CalendarDays, badge: 'NOVO', tool: 'copy', isActive: isAssistant('planejamento') }
+export const PLANNING_TAB: NavItem = { label: 'Planejamento', to: '/assistente/planejamento', icon: CalendarDays, tool: 'copy', isActive: isAssistant('planejamento') }
 const isContentView = (view: 'quadro' | 'calendario') => (pathname: string, params: URLSearchParams) =>
   pathname === '/conteudo' && (params.get('visao') === 'calendario' ? 'calendario' : 'quadro') === view
 
-export const CONTENT_TAB: NavItem = { label: 'Conteúdos', to: '/conteudo', icon: KanbanSquare, badge: 'NOVO', isActive: isContentView('quadro') }
+export const CONTENT_TAB: NavItem = { label: 'Conteúdos', to: '/conteudo', icon: KanbanSquare, isActive: isContentView('quadro') }
 export const CALENDAR_TAB: NavItem = { label: 'Calendário', to: '/conteudo?visao=calendario', icon: CalendarDays, isActive: isContentView('calendario') }
-export const RESULTS_TAB: NavItem = { label: 'Analytics', to: '/resultados', icon: BarChart3, badge: 'NOVO', isActive: isPath('/resultados') }
+export const RESULTS_TAB: NavItem = { label: 'Analytics', to: '/resultados', icon: BarChart3, isActive: isPath('/resultados') }
 export const GALLERY_TAB: NavItem = { label: 'Biblioteca', to: '/galeria', icon: Images, isActive: isPath('/galeria') }
 export const BRANDS_TAB: NavItem = { label: 'Marcas', to: '/marcas', icon: Store, isActive: isPath('/marcas') }
 export const PROJECTS_TAB: NavItem = { label: 'Projetos', to: '/projetos', icon: FolderKanban, tool: 'projects', isActive: isPath('/projetos') }
