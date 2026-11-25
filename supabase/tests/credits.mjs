@@ -2717,4 +2717,60 @@ await test('chamados: a pessoa só vê os dela, nota interna não aparece, admin
   await as(db, 'authenticated', bia, () => expectError(db.query(`select open_support_ticket('other', 'Mais um assunto', 'Texto com mais de dez letras')`), 'too_many_open_tickets'))
 })
 
+test('notificações: aparelho por conta, venda só para admin com finance.view', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const lay = await newUser(db, 'lay@x.com')
+  const sup = await newUser(db, 'sup@x.com')
+  await makeAdmin(db, lay)
+  await makeAdmin(db, sup, 'support')
+  const key = 'B' + 'a'.repeat(86)
+  const auth = 'x'.repeat(22)
+  const fcm = (id) => `https://fcm.googleapis.com/fcm/send/${id}`
+  const save = (user, endpoint, topics, aal = 'aal2') =>
+    as(db, 'authenticated', user, async () =>
+      (await db.query(`select save_push_subscription($1, $2, $3, $4) as t`, [endpoint, key, auth, topics])).rows[0].t, aal)
+
+  // Endereço fora dos serviços de push é recusado (o servidor faz POST nele).
+  await expectError(save(ana, 'https://169.254.169.254/latest', ['generations']), 'invalid_push_endpoint')
+  await expectError(save(ana, 'http://fcm.googleapis.com/x', ['generations']), 'invalid_push_endpoint')
+  await expectError(save(ana, fcm('a'), ['marketing']), 'invalid_push_topics')
+  await expectError(save(ana, fcm('a'), []), 'invalid_push_topics')
+  // Venda: só admin com finance.view e segundo fator.
+  await expectError(save(ana, fcm('a'), ['sales']), 'forbidden')
+  await expectError(save(sup, fcm('s'), ['sales']), 'forbidden')
+  await expectError(save(lay, fcm('l'), ['sales'], 'aal1'), 'forbidden')
+
+  assert.deepEqual(await save(ana, fcm('a'), ['generations', 'generations']), ['generations'])
+  assert.deepEqual(await save(lay, fcm('l'), ['sales', 'generations']), ['generations', 'sales'])
+  await save(lay, 'https://web.push.apple.com/abc', ['sales'])
+
+  // Cliente não grava direto nem vê aparelho alheio.
+  await as(db, 'authenticated', ana, () =>
+    expectError(db.query(`insert into push_subscriptions (user_id, endpoint, p256dh, auth) values ($1, $2, $3, $4)`, [ana, fcm('z'), key, auth]), 'permission denied'))
+  const seen = await as(db, 'authenticated', ana, async () => (await db.query(`select endpoint from push_subscriptions`)).rows)
+  assert.deepEqual(seen.map((row) => row.endpoint), [fcm('a')])
+
+  const targets = async (topic, user = null) =>
+    (await db.query(`select endpoint from push_targets($1, $2) order by endpoint`, [topic, user])).rows.map((row) => row.endpoint)
+  assert.deepEqual(await targets('sales'), [fcm('l'), 'https://web.push.apple.com/abc'])
+  assert.deepEqual(await targets('generations', ana), [fcm('a')])
+  assert.deepEqual(await targets('test', lay), [fcm('l'), 'https://web.push.apple.com/abc'])
+
+  // Rebaixada para suporte: para de receber venda na hora.
+  await db.query(`update admin_users set role = 'support' where user_id = $1`, [lay])
+  assert.deepEqual(await targets('sales'), [])
+
+  // Mesmo navegador, outra conta: o aparelho passa a ser de quem entrou.
+  await save(ana, fcm('l'), ['generations'])
+  assert.deepEqual(await targets('generations', ana), [fcm('a'), fcm('l')])
+  assert.deepEqual(await targets('generations', lay), [])
+
+  // Remover só o próprio; falha repetida apaga.
+  const removed = await as(db, 'authenticated', lay, async () => (await db.query(`select remove_push_subscription($1) as r`, [fcm('a')])).rows[0].r)
+  assert.equal(removed, false)
+  const id = (await db.query(`select id from push_subscriptions where endpoint = $1`, [fcm('a')])).rows[0].id
+  for (let index = 0; index < 10; index += 1) await db.query(`select push_register_failure($1)`, [id])
+  assert.equal((await db.query(`select count(*)::int as n from push_subscriptions where id = $1`, [id])).rows[0].n, 0)
+})
+
 console.log(`\n${passed} testes do banco passaram`)
