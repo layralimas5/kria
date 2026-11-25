@@ -31,29 +31,32 @@ function listProducts(products: readonly string[]): string {
   return `${products[0]} + ${products.length - 1}`
 }
 
+/** O valor vai no título: é a linha que todo celular mostra, mesmo com a notificação recolhida. */
 export function saleMessage(sale: Sale): PushMessage {
-  const value = formatBrl(sale.amountCents)
+  const title = `Parabéns, Vynkio! Venda de ${formatBrl(sale.amountCents)}`
   switch (sale.kind) {
     case 'plan':
       return {
-        title: sale.firstPayment ? `Nova assinatura: ${sale.planName}` : `Renovação: ${sale.planName}`,
-        body: sale.firstPayment ? `${value} entrou. Mais um assinante no Vynkio.` : `${value} entrou na renovação do plano.`,
+        title,
+        body: sale.firstPayment
+          ? `Mais um usuário do plano ${sale.planName}.`
+          : `Mais um mês do plano ${sale.planName} renovado.`,
         url: '/admin/assinaturas',
         tag: `sale-${sale.id}`,
         topic: 'sales',
       }
     case 'pack':
       return {
-        title: `Créditos vendidos: ${sale.packName}`,
-        body: `${value} por ${sale.credits.toLocaleString('pt-BR')} créditos.`,
+        title,
+        body: `Mais um pacote ${sale.packName} vendido: ${sale.credits.toLocaleString('pt-BR')} créditos.`,
         url: '/admin/financeiro',
         tag: `sale-${sale.id}`,
         topic: 'sales',
       }
     case 'store':
       return {
-        title: 'Venda na loja',
-        body: `${value} · ${listProducts(sale.products)}`,
+        title,
+        body: `Mais uma venda na loja: ${listProducts(sale.products)}.`,
         url: '/admin/financeiro',
         tag: `sale-${sale.id}`,
         topic: 'sales',
