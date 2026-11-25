@@ -52,7 +52,7 @@ export function QuickActions({ actions }: QuickActionsProps) {
                 )}
               >
                 <span className="flex items-start justify-between gap-3">
-                  <span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-accent/30 to-accent/10 text-accent-soft ring-1 ring-accent/25 transition-transform duration-200 group-hover:scale-105">
+                  <span className="grid size-10 place-items-center rounded-xl bg-white/[0.04] text-zinc-200 ring-1 ring-inset ring-white/[0.08] transition-transform duration-200 group-hover:scale-105">
                     <Icon className="size-[18px]" aria-hidden="true" />
                   </span>
                   <ArrowUpRight

@@ -88,12 +88,12 @@ export function PulseHero({ data, name }: { readonly data: CenterData; readonly 
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       className="card-premium relative overflow-hidden rounded-3xl p-5 md:p-7"
     >
-      <div aria-hidden="true" className="pointer-events-none absolute -left-24 -top-32 size-96 rounded-full bg-accent/25 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute -left-24 -top-32 size-96 rounded-full bg-white/[0.06] blur-3xl" />
       <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 right-0 size-96 rounded-full bg-galaxy/10 blur-3xl" />
 
       <div className="relative flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">{today.format(new Date())}</p>
+          <p className="text-[13px] font-medium text-zinc-500 first-letter:uppercase">{today.format(new Date())}</p>
           <h2 id="pulse-title" className="mt-2 font-headline text-2xl text-zinc-50 md:text-3xl">
             {greeting(new Date())}
             {name ? `, ${name}` : ''}

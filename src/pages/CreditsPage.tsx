@@ -89,7 +89,7 @@ export function CreditsPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Créditos e consumo</p>
           <h1 className="font-headline mt-2 text-4xl text-balance text-zinc-50 md:text-5xl">
             Créditos que viram{' '}
-            <span className="bg-gradient-to-r from-accent-soft via-violet-300 to-galaxy bg-clip-text text-transparent">criação</span>
+            <span className="text-zinc-500">criação</span>
           </h1>
           <p className="mt-3 max-w-xl text-sm text-pretty text-zinc-400 md:text-base">Veja quanto o seu saldo rende, para onde foram os créditos e compre pacotes avulsos quando precisar.</p>
         </div>

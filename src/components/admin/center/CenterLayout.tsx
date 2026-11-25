@@ -32,7 +32,7 @@ export function CenterSection({
     <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-36 space-y-4 print:break-inside-avoid">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/[0.05] pb-3">
         <div className="flex items-start gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent/30 to-accent/5 text-accent-soft ring-1 ring-accent/25" aria-hidden="true">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/[0.04] text-zinc-200 ring-1 ring-inset ring-white/[0.08]" aria-hidden="true">
             <Icon className="size-5" />
           </span>
           <div>

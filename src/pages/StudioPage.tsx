@@ -46,7 +46,7 @@ function EmptyHero({ kind, onIdea }: { readonly kind: MediaKind; readonly onIdea
     <section className="flex flex-col items-center px-2 py-12 text-center md:py-16" aria-labelledby="studio-empty">
       <StudioShowcase />
       <h2 id="studio-empty" className="font-headline text-4xl text-balance text-zinc-50 md:text-6xl">
-        Crie. Anime. <span className="bg-gradient-to-r from-accent-soft via-violet-300 to-galaxy bg-clip-text text-transparent">Publique.</span>
+        Crie. Anime. <span className="text-zinc-500">Publique.</span>
       </h2>
       <p className="mt-5 max-w-lg text-pretty text-zinc-400">Escreva o que você quer ver na caixa abaixo, ou comece por uma destas ideias.</p>
       <ul className="mt-8 grid w-full max-w-3xl gap-2 sm:grid-cols-2">
@@ -97,7 +97,7 @@ function StudioHeader({ kind, running }: { readonly kind: MediaKind; readonly ru
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Estúdio</p>
         <h1 className="font-headline mt-1.5 text-3xl text-zinc-50 md:text-4xl">
-          {KIND_TITLE[kind].article} <span className="bg-gradient-to-r from-accent-soft via-violet-300 to-galaxy bg-clip-text text-transparent">{KIND_TITLE[kind].noun}</span>
+          {KIND_TITLE[kind].article} <span className="text-zinc-500">{KIND_TITLE[kind].noun}</span>
         </h1>
       </div>
       <div className="flex flex-wrap items-center gap-2">

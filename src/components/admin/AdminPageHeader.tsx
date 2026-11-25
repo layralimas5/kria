@@ -9,10 +9,10 @@ interface AdminPageHeaderProps {
   readonly actions?: ReactNode
 }
 
-/** A última palavra do título leva o degradê da marca, como nas telas do app. */
+/** Com duas palavras ou mais, a última fica em cinza, como nas telas do app. */
 function splitTitle(title: string): [string, string] {
   const index = title.lastIndexOf(' ')
-  return index < 0 ? ['', title] : [title.slice(0, index + 1), title.slice(index + 1)]
+  return index < 0 ? [title, ''] : [title.slice(0, index + 1), title.slice(index + 1)]
 }
 
 export function AdminPageHeader({ eyebrow, title, description, actions }: AdminPageHeaderProps) {
@@ -26,10 +26,10 @@ export function AdminPageHeader({ eyebrow, title, description, actions }: AdminP
       className="flex flex-wrap items-end justify-between gap-4"
     >
       <div className="min-w-0">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-soft">{eyebrow}</p>
+        <p className="text-[13px] font-medium text-zinc-500">{eyebrow}</p>
         <h1 className="mt-1.5 font-headline text-3xl text-balance text-zinc-50 md:text-4xl">
           {head}
-          <span className="bg-gradient-to-r from-accent-soft via-violet-300 to-galaxy bg-clip-text text-transparent">{tail}</span>
+          <span className="text-zinc-500">{tail}</span>
         </h1>
         <div className="mt-2 max-w-2xl text-sm text-pretty text-zinc-400">{description}</div>
       </div>

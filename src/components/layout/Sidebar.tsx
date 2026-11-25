@@ -1,5 +1,6 @@
 import clsx from 'clsx'
-import { Coins } from 'lucide-react'
+import { Coins, Plus } from 'lucide-react'
+import { Fragment } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { formatCredits } from '@/domain/format'
 import { useAccount } from '@/hooks/useAccount'
@@ -7,68 +8,16 @@ import { usePlanModels } from '@/hooks/usePlanModels'
 import { useBalance } from '@/hooks/useBalance'
 import { Logo, LogoMark } from '../Logo'
 import { Badge } from '../ui/Badge'
-import { navGroupsFor, type NavItem } from './nav'
+import { navGroupsFor } from './nav'
 import { AdminShortcut } from './AdminShortcut'
+import { SideNavDivider, SideNavItem, SidePanel } from './SideNav'
 import { SidebarToggle } from './SidebarToggle'
 
-const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
+const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-soft/70'
 
 interface SidebarProps {
   readonly collapsed: boolean
   readonly onToggle: () => void
-}
-
-/** Ferramenta que ainda não existe: visível para a pessoa saber o que vem, mas sem ação. */
-function SoonTab({ item, collapsed }: { readonly item: NavItem; readonly collapsed: boolean }) {
-  const Icon = item.icon
-  return (
-    <span
-      aria-disabled="true"
-      title={`${item.label}: em breve`}
-      className={clsx(
-        'flex min-h-9 cursor-default items-center gap-3 whitespace-nowrap rounded-xl text-[14px] font-semibold text-zinc-600',
-        collapsed ? 'justify-center px-0' : 'px-3',
-      )}
-    >
-      <Icon className="size-[18px] shrink-0" aria-hidden="true" />
-      {collapsed ? (
-        <span className="sr-only">{item.label}, em breve</span>
-      ) : (
-        <>
-          <span className="min-w-0 flex-1 truncate">{item.label}</span>
-          <span className="shrink-0 rounded-md bg-white/[0.05] px-1 py-px text-[9px] font-bold uppercase tracking-wide text-zinc-500">Breve</span>
-        </>
-      )}
-    </span>
-  )
-}
-
-function Tab({ item, collapsed, active }: { readonly item: NavItem; readonly collapsed: boolean; readonly active: boolean }) {
-  if (item.soon) return <SoonTab item={item} collapsed={collapsed} />
-  const Icon = item.icon
-  return (
-    <Link
-      to={item.to}
-      aria-current={active ? 'page' : undefined}
-      aria-label={collapsed ? item.label : undefined}
-      title={collapsed ? item.label : undefined}
-      className={clsx(
-        'group relative flex min-h-9 items-center gap-3 whitespace-nowrap rounded-xl text-[14px] font-semibold transition-colors',
-        FOCUS,
-        collapsed ? 'justify-center px-0' : 'px-3',
-        active ? 'nav-active text-zinc-50' : 'text-zinc-400 hover:bg-white/[0.045] hover:text-zinc-100',
-      )}
-    >
-      {active && <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-accent-strong shadow-[0_0_12px_2px_rgb(139_92_246/0.7)]" />}
-      <Icon className={clsx('size-[18px] shrink-0 transition-colors', active ? 'text-accent-soft' : 'group-hover:text-zinc-200')} aria-hidden="true" />
-      {!collapsed && (
-        <>
-          <span className="min-w-0 flex-1 truncate">{item.label}</span>
-          {item.badge && <Badge className="shrink-0">{item.badge}</Badge>}
-        </>
-      )}
-    </Link>
-  )
 }
 
 function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
@@ -77,39 +26,41 @@ function CreditsCard({ collapsed }: { readonly collapsed: boolean }) {
 
   if (collapsed) {
     return (
-      <Link
+      <SideNavItem
+        label={balance === null ? 'Créditos' : `${formatCredits(balance)} créditos`}
+        accessibleLabel={balance === null ? 'Créditos' : `${balance} créditos. Comprar mais`}
+        icon={Coins}
         to="/creditos"
-        title="Comprar créditos"
-        aria-label={balance === null ? 'Créditos' : `${balance} créditos. Comprar mais`}
-        className={clsx('card-premium flex flex-col items-center gap-1 rounded-xl py-2.5 text-[11px] font-bold tabular-nums text-zinc-100', FOCUS)}
-      >
-        <Coins className="size-4 text-accent-soft" aria-hidden="true" />
-        {balance ?? '...'}
-      </Link>
+        collapsed
+        iconClassName="text-accent-soft"
+      />
     )
   }
 
   return (
-    <div className="card-premium relative overflow-hidden rounded-2xl p-3">
-      <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-accent/25 blur-2xl" />
-      <p className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-        Seu saldo
+    <div className="rounded-[18px] bg-white/[0.025] p-3 ring-1 ring-inset ring-white/[0.06]">
+      <div className="flex items-center justify-between text-[12px] text-zinc-500">
+        <span>Saldo</span>
         {plan && (
-          <Link to="/assinatura" className={clsx('rounded normal-case tracking-normal text-zinc-400 hover:text-zinc-100', FOCUS)}>
+          <Link to="/assinatura" className={clsx('rounded text-zinc-400 transition-colors hover:text-zinc-100', FOCUS)}>
             Plano {plan.name}
           </Link>
         )}
-      </p>
-      <p className="mt-1 flex items-center gap-1.5 text-lg font-bold tabular-nums text-zinc-50">
-        <Coins className="size-4 text-accent-soft" aria-hidden="true" />
-        {balance === null ? '...' : formatCredits(balance)}
-      </p>
-      <Link
-        to="/creditos"
-        className={clsx('btn-accent relative mt-3 flex min-h-9 items-center justify-center rounded-lg text-[13px] font-semibold', FOCUS)}
-      >
-        Comprar créditos
-      </Link>
+      </div>
+      <div className="mt-1 flex items-center justify-between gap-2">
+        <p className="flex items-center gap-1.5 text-[17px] font-semibold tabular-nums tracking-tight text-zinc-50">
+          <Coins className="size-4 text-accent-soft" strokeWidth={1.75} aria-hidden="true" />
+          {balance === null ? '...' : formatCredits(balance)}
+        </p>
+        <Link
+          to="/creditos"
+          aria-label="Comprar créditos"
+          title="Comprar créditos"
+          className={clsx('btn-accent grid size-8 place-items-center rounded-full', FOCUS)}
+        >
+          <Plus className="size-4" aria-hidden="true" />
+        </Link>
+      </div>
     </div>
   )
 }
@@ -121,40 +72,42 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { kinds } = usePlanModels()
 
   return (
-    <aside
-      aria-label="Menu"
-      className="sidebar-surface fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar-w)] flex-col border-r border-white/[0.06] transition-[width] duration-200 ease-out md:flex"
-    >
-      <div className={clsx('flex h-16 shrink-0 items-center', collapsed ? 'justify-center' : 'px-4')}>
+    <SidePanel label="Menu" id="app-sidebar" widthVar="--sidebar-w" className="md:flex">
+      <div className={clsx('flex h-[60px] shrink-0 items-center', collapsed ? 'justify-center' : 'px-5')}>
         <Link to="/inicio" aria-label="Vynkio, início" className={clsx('rounded-lg', FOCUS)}>
           {collapsed ? <LogoMark /> : <Logo />}
         </Link>
       </div>
+      <SideNavDivider collapsed={collapsed} />
 
-      <nav aria-label="Principal" className={clsx('flex-1 space-y-4 overflow-y-auto py-2', collapsed ? 'px-3' : 'px-3')}>
-        {navGroupsFor(plan, kinds).map((group) => (
-          <div key={group.title}>
-            {collapsed ? (
-              <div aria-hidden="true" className="mx-auto mb-2 h-px w-6 bg-white/10" />
-            ) : (
-              <p className="mb-1.5 px-3 text-[10.5px] font-bold uppercase tracking-[0.14em] text-zinc-500">{group.title}</p>
-            )}
-            <ul className="space-y-0.5">
+      <nav aria-label="Principal" className="scrollbar-none flex-1 overflow-y-auto px-3 pb-4 [mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)]">
+        {navGroupsFor(plan, kinds).map((group, index) => (
+          <Fragment key={group.title}>
+            {index > 0 && <SideNavDivider collapsed={collapsed} />}
+            <ul aria-label={group.title} className="space-y-1">
               {group.items.map((item) => (
                 <li key={item.label}>
-                  <Tab item={item} collapsed={collapsed} active={item.isActive(pathname, params)} />
+                  <SideNavItem
+                    label={item.label}
+                    icon={item.icon}
+                    to={item.soon ? undefined : item.to}
+                    collapsed={collapsed}
+                    active={item.isActive(pathname, params)}
+                    trailing={item.badge && <Badge>{item.badge}</Badge>}
+                  />
                 </li>
               ))}
             </ul>
-          </div>
+          </Fragment>
         ))}
       </nav>
 
-      <div className="space-y-2 p-3">
+      <div className="space-y-1.5 p-3 pt-1">
+        <SideNavDivider collapsed={collapsed} />
         <AdminShortcut collapsed={collapsed} />
         <CreditsCard collapsed={collapsed} />
         <SidebarToggle collapsed={collapsed} onToggle={onToggle} />
       </div>
-    </aside>
+    </SidePanel>
   )
 }

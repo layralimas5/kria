@@ -18,8 +18,8 @@ import { Sidebar } from './layout/Sidebar'
 import { Spinner } from './ui/Spinner'
 
 /**
- * Moldura do app logado. `--sidebar-w` é a largura da barra lateral no desktop
- * (0 no celular); o conteúdo e a caixa de prompt fixa usam essa variável para
+ * Moldura do app logado. `--sidebar-w` é a largura reservada para o painel flutuante no desktop
+ * (margem + painel; 0 no celular); o conteúdo e a caixa de prompt fixa usam essa variável para
  * se alinharem à área útil. A busca global (Ctrl+K) e os atalhos valem em todas as telas.
  */
 export function AppShell() {
@@ -41,7 +41,7 @@ export function AppShell() {
   return (
     <PlanKindsContext.Provider value={kinds}>
       <CommandProvider scope="app" commands={commands} goShortcuts={goShortcuts}>
-        <div className={clsx('relative min-h-dvh overflow-x-clip pb-20 [--sidebar-w:0px] md:pb-0', collapsed ? 'md:[--sidebar-w:72px]' : 'md:[--sidebar-w:256px]')}>
+        <div className={clsx('relative min-h-dvh overflow-x-clip pb-20 [--sidebar-w:0px] md:pb-0', collapsed ? 'md:[--sidebar-w:5.25rem]' : 'md:[--sidebar-w:16.5rem]')}>
           <div aria-hidden="true" className="ambient-bg" />
           <a
             href="#conteudo"
@@ -52,8 +52,8 @@ export function AppShell() {
           <Sidebar collapsed={collapsed} onToggle={toggleCollapsed} />
           <MobileTopBar />
 
-          <header className="glass-bar sticky top-0 z-30 hidden h-14 items-center gap-3 border-b border-white/[0.04] pl-[calc(var(--sidebar-w)+1.25rem)] pr-5 transition-[padding] duration-200 md:flex">
-            <SearchTrigger />
+          <header className="glass-bar sticky top-0 z-30 hidden h-14 items-center gap-3 border-b border-white/[0.04] px-5 transition-[margin] duration-200 md:ml-[var(--sidebar-w)] md:flex">
+            <SearchTrigger className="xl:absolute xl:left-1/2 xl:w-[22rem] xl:-translate-x-1/2" />
             <div className="ml-auto flex items-center gap-3">
               <BrandSwitcher />
               <NotificationsMenu />
