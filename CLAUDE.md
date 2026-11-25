@@ -101,6 +101,9 @@ são telas reais do modo demo (`npm run landing:screens`).
 - Ferramenta que ainda não existe aparece como "Breve", sem link nem botão.
 - Persona nasce só de imagem gerada aqui (`create_persona`). Sem upload de foto:
   é o que impede deepfake de pessoa real. Não abrir upload sem moderação de rosto.
+  Única exceção (autorizada pela Lay em 25/11): o vídeo de referência do Copiar movimento (0044,
+  `docs/copiar-movimento.md`), que só empresta o movimento: rosto sempre de persona do Vynkio, som desligado,
+  autorização marcada, uso único e apagado quando a geração fecha. Não abrir outro upload de pessoa por analogia.
 - Webhook do fal não confia no corpo: confere a assinatura HMAC do id e consulta o fal.
 - Trocar modelo ou preço = `update public.models`. Não precisa de deploy.
 - Texto passa pelo mesmo motor: `create_generation` reserva, `complete_text_generation` captura, `fail_generation`

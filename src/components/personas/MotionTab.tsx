@@ -3,11 +3,17 @@ import { Check, Clapperboard } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { modelSpecs } from '@/domain/format'
 import type { Persona } from '@/domain/types'
-import { MOTION_PRESETS, type PersonaMotion } from '@/hooks/usePersonaMotion'
+import { MOTION_PRESETS, type MotionSource, type PersonaMotion } from '@/hooks/usePersonaMotion'
 import { MediaView } from '../MediaView'
+import { MotionVideoSource } from './MotionVideoSource'
 import { Badge } from '../ui/Badge'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
+const SOURCES: readonly { readonly value: MotionSource; readonly label: string }[] = [
+  { value: 'prompt', label: 'Descrever' },
+  { value: 'video', label: 'Copiar de um vídeo' },
+]
+
 const SECTION_TITLE = 'mb-2 px-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500'
 
 interface MotionTabProps {
@@ -59,6 +65,37 @@ export function MotionTab({ motion, personas }: MotionTabProps) {
         )}
       </section>
 
+      <section>
+        <p id="motion-source" className={SECTION_TITLE}>
+          Como definir o movimento
+        </p>
+        <div role="radiogroup" aria-labelledby="motion-source" className="grid grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1">
+          {SOURCES.map((option) => {
+            const selected = motion.source === option.value
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => motion.setSource(option.value)}
+                className={clsx(
+                  'min-h-9 rounded-lg px-2 text-[13px] font-semibold transition-colors',
+                  FOCUS,
+                  selected ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-400 hover:text-zinc-100',
+                )}
+              >
+                {option.label}
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {motion.source === 'video' ? (
+        <MotionVideoSource motion={motion} />
+      ) : (
+      <>
       <section>
         <p className={SECTION_TITLE}>Movimento</p>
         <div className="mb-2 flex flex-wrap gap-1.5">
@@ -125,6 +162,8 @@ export function MotionTab({ motion, personas }: MotionTabProps) {
           })}
         </div>
       </section>
+      </>
+      )}
     </div>
   )
 }

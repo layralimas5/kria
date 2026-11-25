@@ -15,6 +15,8 @@ const model = (slug: string, credits: number, allowed_plans: string[] | null = n
   options: {},
   allowed_plans,
   studio: true,
+  video_input: null,
+  max_input_seconds: null,
 })
 
 const format = (overrides: Partial<Format> = {}): Format => ({

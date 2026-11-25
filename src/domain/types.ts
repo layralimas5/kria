@@ -21,6 +21,9 @@ export const modelSchema = z.object({
   allowed_plans: z.array(z.string()).nullable(),
   /** Falso no modelo que só serve aos formatos (0015): fica fora do Studio. */
   studio: z.boolean().default(true),
+  /** Copiar movimento (0044): recebe vídeo de referência de até `max_input_seconds`. */
+  video_input: z.enum(['video_url']).nullish().transform((value) => value ?? null),
+  max_input_seconds: z.number().int().nullish().transform((value) => value ?? null),
 })
 export type Model = z.infer<typeof modelSchema>
 

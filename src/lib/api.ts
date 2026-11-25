@@ -77,6 +77,8 @@ export interface GenerateInput {
   readonly sourceGenerationId?: string
   readonly brandId?: string
   readonly projectId?: string
+  /** Copiar movimento: o vídeo já registrado por `registerMotionReference`. */
+  readonly motionReferenceId?: string
   /** Mesma chave = mesmo pedido: o servidor não cobra nem gera duas vezes. */
   readonly idempotencyKey: string
 }
