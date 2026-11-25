@@ -1,6 +1,6 @@
 // Webhook do Asaas. Confere o token, registra o evento (repetido para aqui)
 // e aplica: pacote pago credita, pedido da loja pago libera o download (./store.ts), ciclo de assinatura pago renova os créditos
-// do plano, atraso e cancelamento mudam o status da assinatura.
+// do plano, atraso e cancelamento mudam o status da assinatura. Venda aplicada avisa no aparelho do admin (./notifySale.ts).
 //
 // Deploy sem verificação de JWT (quem chama é o Asaas):
 //   npx supabase functions deploy asaas-webhook --no-verify-jwt
@@ -21,6 +21,7 @@ import { asaasEventSchema, decideBillingEvent, type BillingAction, type Lookup }
 import { splitFirstPayment } from '../_shared/planQuote.ts'
 import { adminClient, errorResponse, handle, json, readJson, requireEnv } from '../_shared/http.ts'
 import { timingSafeEqual } from '../_shared/signature.ts'
+import { notifyPackSale, notifyPlanSale } from './notifySale.ts'
 import { expireStoreOrder, failStoreOrder, markStoreOrderPaid, refundStoreOrder } from './store.ts'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -92,7 +93,9 @@ async function dropUnpaidPix(admin: SupabaseClient, id: string, providerSubscrip
 async function grantPack(admin: SupabaseClient, purchaseId: string, paymentId: string | null): Promise<string> {
   const { data, error } = await admin.rpc('grant_purchase', { p_purchase_id: purchaseId, p_payment_id: paymentId })
   if (error) return `erro ao creditar: ${error.message}`
-  return data ? 'creditado' : 'já creditado'
+  if (!data) return 'já creditado'
+  await notifyPackSale(admin, purchaseId)
+  return 'creditado'
 }
 
 /**
@@ -133,6 +136,7 @@ async function activatePeriod(admin: SupabaseClient, action: Extract<BillingActi
   })
   if (error) return `erro ao ativar: ${error.message}`
   const result = data as { outcome: string; replaced: string[] }
+  if (result.outcome === 'activated') await notifyPlanSale(admin, subscriptionId, action.paymentId, action.amountCents)
 
   // Troca de plano: a cobrança recorrente antiga para de existir no Asaas.
   const failures: string[] = []

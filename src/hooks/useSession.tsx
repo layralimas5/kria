@@ -1,5 +1,6 @@
 import type { Session } from '@supabase/supabase-js'
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { forgetDeviceAfterSignOut } from '@/lib/push'
 import { supabase } from '@/lib/supabase'
 
 interface SessionState {
@@ -17,7 +18,11 @@ export function SessionProvider({ children }: { readonly children: ReactNode }) 
       .getSession()
       .then(({ data }) => setState({ session: data.session, loading: false }))
       .catch(() => setState({ session: null, loading: false }))
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => setState({ session, loading: false }))
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      setState({ session, loading: false })
+      // Quem sai da conta não continua recebendo aviso dela neste aparelho.
+      if (event === 'SIGNED_OUT') void forgetDeviceAfterSignOut()
+    })
     return () => data.subscription.unsubscribe()
   }, [])
 

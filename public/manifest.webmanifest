@@ -1,0 +1,24 @@
+{
+  "id": "/inicio",
+  "name": "Vynkio",
+  "short_name": "Vynkio",
+  "description": "Vídeos, imagens, roteiros e legendas com IA num só lugar, em português.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/inicio?origem=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0a1a",
+  "theme_color": "#0b0a1a",
+  "categories": ["productivity", "photo", "business"],
+  "icons": [
+    { "src": "/app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Criar no Studio", "url": "/estudio", "icons": [{ "src": "/app/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Galeria", "url": "/galeria", "icons": [{ "src": "/app/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

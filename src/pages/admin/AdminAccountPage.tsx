@@ -1,7 +1,9 @@
-import { KeyRound, ShieldCheck, UserRound } from 'lucide-react'
+import { BellRing, KeyRound, ShieldCheck, Smartphone, UserRound } from 'lucide-react'
 import { useEffect, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { InstallApp } from '@/components/account/InstallApp'
 import { PasswordForm } from '@/components/account/PasswordForm'
+import { PushSettings, type PushOption } from '@/components/account/PushSettings'
 import { AdminAvatar } from '@/components/admin/ProfileMenu'
 import { ADMIN_PERMISSION_LABELS, ADMIN_ROLE_DESCRIPTIONS, ADMIN_ROLE_LABELS } from '@/domain/adminDashboard'
 import { useAdminAccess } from '@/hooks/useAdminAccess'
@@ -23,7 +25,15 @@ function Card({ id, icon, title, description, children }: { id?: string; icon: R
   )
 }
 
-/** Conta de quem administra: dados, papel, permissões e troca de senha. */
+const SALES_OPTIONS: readonly PushOption[] = [
+  {
+    topic: 'sales',
+    label: 'Avisar cada venda',
+    description: 'Assinatura nova, renovação, pacote de créditos e loja, na hora em que o Asaas confirma. Mostra o plano e o valor, nunca quem comprou.',
+  },
+]
+
+/** Conta de quem administra: dados, papel, permissões, avisos de venda e troca de senha. */
 export function AdminAccountPage() {
   const { me } = useAdminAccess()
   const { hash } = useLocation()
@@ -75,6 +85,21 @@ export function AdminAccountPage() {
             </li>
           ))}
         </ul>
+      </Card>
+
+      {me.permissions.includes('finance.view') && (
+        <Card
+          id="notificacoes"
+          icon={<BellRing className="size-5" aria-hidden="true" />}
+          title="Notificação de venda"
+          description="Aparece na tela de bloqueio deste aparelho, como mensagem de app."
+        >
+          <PushSettings options={SALES_OPTIONS} />
+        </Card>
+      )}
+
+      <Card id="app" icon={<Smartphone className="size-5" aria-hidden="true" />} title="App no celular" description="O Vynkio abre como app, com ícone na tela de início.">
+        <InstallApp />
       </Card>
 
       <Card
