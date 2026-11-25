@@ -160,7 +160,7 @@ export function AdminLayout() {
         </SidePanel>
 
         <header className="glass-bar sticky top-0 z-30 border-b border-white/[0.05] transition-[margin] duration-200 lg:ml-[var(--admin-w)] print:hidden">
-          <div className="flex h-14 items-center gap-3 px-4 lg:px-8">
+          <div className="relative flex h-14 items-center gap-3 px-4 lg:px-8">
             <button
               type="button"
               onClick={() => setMenuOpen((open) => !open)}
@@ -178,7 +178,7 @@ export function AdminLayout() {
               </span>
             </span>
             <Breadcrumb />
-            <SearchTrigger className="hidden md:flex xl:ml-4" />
+            <SearchTrigger className="hidden md:flex xl:absolute xl:left-1/2 xl:w-[22rem] xl:-translate-x-1/2" />
             <SearchTrigger compact className="md:hidden" />
             {actions}
           </div>

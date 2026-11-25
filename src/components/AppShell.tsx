@@ -53,7 +53,7 @@ export function AppShell() {
           <MobileTopBar />
 
           <header className="glass-bar sticky top-0 z-30 hidden h-14 items-center gap-3 border-b border-white/[0.04] px-5 transition-[margin] duration-200 md:ml-[var(--sidebar-w)] md:flex">
-            <SearchTrigger />
+            <SearchTrigger className="xl:absolute xl:left-1/2 xl:w-[22rem] xl:-translate-x-1/2" />
             <div className="ml-auto flex items-center gap-3">
               <BrandSwitcher />
               <NotificationsMenu />
