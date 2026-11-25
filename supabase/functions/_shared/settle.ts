@@ -6,6 +6,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { FalError, getResult, getStatus } from './fal.ts'
 import { extractOutput, GENERATION_TIMEOUT_MS, storagePathFor } from './generation.ts'
+import { discardMotionReference } from './motionCleanup.ts'
 import { sendPush } from './push.ts'
 import { generationMessage } from './pushMessages.ts'
 
@@ -17,14 +18,17 @@ export interface OpenGeneration {
   readonly provider_status_url: string | null
   readonly provider_response_url: string | null
   readonly created_at: string
+  /** Vídeo de referência do Copiar movimento (0044): apagado quando a geração fecha. */
+  readonly motion_reference_id: string | null
 }
 
 export type SettleOutcome = 'pending' | 'succeeded' | 'failed' | 'already_closed'
 
-export const GENERATION_COLUMNS = 'id, user_id, kind, status, provider_status_url, provider_response_url, created_at'
+export const GENERATION_COLUMNS = 'id, user_id, kind, status, provider_status_url, provider_response_url, created_at, motion_reference_id'
 
-/** Avisa no aparelho da pessoa só quem de fato fechou a geração (webhook e polling correm juntos). */
+/** Quem de fato fechou a geração (webhook e polling correm juntos) apaga o vídeo de referência e avisa no aparelho. */
 async function notifyOwner(admin: SupabaseClient, generation: OpenGeneration, succeeded: boolean): Promise<void> {
+  await discardMotionReference(admin, generation.motion_reference_id)
   await sendPush(admin, generationMessage({ id: generation.id, kind: generation.kind, succeeded }), generation.user_id)
 }
 

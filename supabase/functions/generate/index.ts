@@ -1,4 +1,4 @@
-// POST { model, prompt, options?, personaId?, sourceGenerationId?, uploadId?, endGenerationId?, brandId?, projectId?, idempotencyKey? }
+// POST { model, prompt, options?, personaId?, sourceGenerationId?, uploadId?, endGenerationId?, motionReferenceId?, brandId?, projectId?, idempotencyKey? }
 //   ou { format: { slug, step, fields, note }, uploadId | sourceGenerationId, endGenerationId?, ... }:
 //   com formato, modelo e prompt saem da tabela `formats` (0015), nunca do cliente.
 // Reserva os créditos, manda para a fila do fal.ai e devolve a geração.
@@ -8,6 +8,8 @@ import { z } from 'npm:zod@3'
 import { submit } from '../_shared/fal.ts'
 import { NOTE_MAX, parseFormatFields, planFormatStep, type FormatRow } from '../_shared/formats.ts'
 import { buildProviderInput, checkPrompt, parseModelOptions, resolveOptions, type ModelRow } from '../_shared/generation.ts'
+import { discardMotionReference } from '../_shared/motionCleanup.ts'
+import { fitsTier } from '../_shared/mp4Duration.ts'
 import { providerFor } from '../_shared/providers.ts'
 import {
   adminClient,
@@ -39,6 +41,8 @@ const bodySchema = z
     sourceGenerationId: z.string().uuid().optional(),
     uploadId: z.string().uuid().optional(),
     endGenerationId: z.string().uuid().optional(),
+    /** Vídeo de referência do Copiar movimento (0044), já registrado pela function motion-reference. */
+    motionReferenceId: z.string().uuid().optional(),
     brandId: z.string().uuid().optional(),
     projectId: z.string().uuid().optional(),
     idempotencyKey: z.string().regex(/^[A-Za-z0-9-]{8,80}$/).optional(),
@@ -47,6 +51,7 @@ const bodySchema = z
   .refine((body) => (body.format ? !body.model && !body.prompt : Boolean(body.model && body.prompt)))
 
 const SIGNED_URL_SECONDS = 60 * 60
+const MOTION_BUCKET = 'motion'
 
 Deno.serve(
   handle(async (request) => {
@@ -87,13 +92,38 @@ Deno.serve(
     // Antes de reservar crédito: opção fora do catálogo não chega ao fornecedor.
     const { data: catalogRow, error: catalogError } = await admin
       .from('models')
-      .select('options')
+      .select('options, video_input, max_input_seconds')
       .eq('slug', job.model)
-      .maybeSingle<{ options: unknown }>()
+      .maybeSingle<{ options: unknown; video_input: string | null; max_input_seconds: number | null }>()
     if (catalogError) return databaseErrorResponse(catalogError)
     if (!catalogRow) return errorResponse(400, 'model_unavailable', 'Esse modelo não está disponível.')
     const options = resolveOptions(parseModelOptions(catalogRow.options), body.options)
     if (!options.ok) return errorResponse(400, 'invalid_option', options.reason)
+
+    // Copiar movimento: o rosto vem de persona ou imagem gerada aqui; o vídeo é da pessoa, de uso único,
+    // e precisa caber no nível cobrado. Modelo sem vídeo não aceita vídeo.
+    let motionReference: { id: string; path: string } | null = null
+    if (catalogRow.video_input) {
+      if (!body.motionReferenceId) return errorResponse(400, 'motion_reference_required', 'Envie o vídeo com o movimento.')
+      if (body.uploadId || body.format || !(body.personaId || body.sourceGenerationId)) {
+        return errorResponse(400, 'invalid_body', 'Escolha um personagem seu para repetir o movimento.')
+      }
+      const { data: reference } = await admin
+        .from('motion_references')
+        .select('id, path, duration_ms')
+        .eq('id', body.motionReferenceId)
+        .eq('user_id', userId)
+        .is('generation_id', null)
+        .is('deleted_at', null)
+        .maybeSingle<{ id: string; path: string; duration_ms: number }>()
+      if (!reference) return errorResponse(404, 'motion_reference_not_found', 'Vídeo não encontrado ou já usado. Envie de novo.')
+      if (!fitsTier(reference.duration_ms, catalogRow.max_input_seconds ?? 0)) {
+        return errorResponse(400, 'invalid_duration', 'O vídeo é mais longo do que esse nível cobre.')
+      }
+      motionReference = reference
+    } else if (body.motionReferenceId) {
+      return errorResponse(400, 'invalid_body', 'Esse modelo não usa vídeo de referência.')
+    }
 
     const { data: generation, error } = await admin
       .rpc('create_generation', {
@@ -120,6 +150,21 @@ Deno.serve(
     }
     if (error || !generation) return databaseErrorResponse(error ?? { message: 'no_row' })
 
+    if (motionReference) {
+      // Uso único: se outro pedido levou o vídeo primeiro, este é estornado.
+      const { data: claimed } = await admin
+        .from('motion_references')
+        .update({ generation_id: generation.id })
+        .eq('id', motionReference.id)
+        .is('generation_id', null)
+        .select('id')
+      if (!claimed || claimed.length === 0) {
+        await admin.rpc('fail_generation', { p_id: generation.id, p_error: 'Vídeo de referência já usado.' })
+        return errorResponse(409, 'motion_reference_used', 'Esse vídeo já foi usado. Envie de novo. Seus créditos foram devolvidos.')
+      }
+      await admin.from('generations').update({ motion_reference_id: motionReference.id }).eq('id', generation.id)
+    }
+
     if (body.brandId || body.projectId || Object.keys(options.values).length > 0) {
       // Antes de pagar o fal: o trigger `generations_context` recusa marca ou projeto de outra pessoa.
       const { error: contextError } = await admin
@@ -128,6 +173,7 @@ Deno.serve(
         .eq('id', generation.id)
       if (contextError) {
         await admin.rpc('fail_generation', { p_id: generation.id, p_error: 'Projeto ou marca não encontrados.' })
+        await discardMotionReference(admin, motionReference?.id ?? null)
         return errorResponse(404, 'context_not_found', 'Projeto ou marca não encontrados. Seus créditos foram devolvidos.')
       }
     }
@@ -135,7 +181,7 @@ Deno.serve(
     try {
       const { data: model, error: modelError } = await admin
         .from('models')
-        .select('slug, name, kind, provider, endpoint, image_input, end_image_input, requires_image, credits, defaults, options')
+        .select('slug, name, kind, provider, endpoint, image_input, end_image_input, requires_image, video_input, credits, defaults, options')
         .eq('slug', job.model)
         .single<Omit<ModelRow, 'options'> & { provider: string; options: unknown }>()
       if (modelError || !model) throw new Error(`modelo: ${modelError?.message}`)
@@ -143,12 +189,13 @@ Deno.serve(
 
       const imageUrl = await signedUrlFor(await sourcePath())
       const endImageUrl = body.endGenerationId ? await signedUrlFor(await generationOutputPath(body.endGenerationId)) : null
+      const videoUrl = motionReference ? await signedUrlFor(motionReference.path, MOTION_BUCKET) : null
       const token = await signGenerationId(requireEnv('WEBHOOK_SECRET'), generation.id)
       const webhookUrl = `${requireEnv('SUPABASE_URL')}/functions/v1/fal-webhook?gid=${generation.id}&t=${token}`
       const submission = await submit(
         requireEnv('FAL_KEY'),
         model.endpoint,
-        buildProviderInput({ ...model, options: parseModelOptions(model.options) }, job.prompt, imageUrl, options.values, endImageUrl),
+        buildProviderInput({ ...model, options: parseModelOptions(model.options) }, job.prompt, imageUrl, options.values, endImageUrl, videoUrl),
         webhookUrl,
       )
 
@@ -170,6 +217,7 @@ Deno.serve(
     } catch (submitError) {
       console.error('submit failed', submitError)
       await admin.rpc('fail_generation', { p_id: generation.id, p_error: 'Não conseguimos iniciar a geração.' })
+      await discardMotionReference(admin, motionReference?.id ?? null)
       return errorResponse(502, 'provider_unavailable', 'O gerador não respondeu. Seus créditos foram devolvidos.')
     }
 
@@ -185,9 +233,9 @@ Deno.serve(
       return (await admin.from('generations').select('output_path').eq('id', id).single()).data?.output_path ?? null
     }
 
-    async function signedUrlFor(path: string | null): Promise<string | null> {
+    async function signedUrlFor(path: string | null, bucket = 'media'): Promise<string | null> {
       if (!path) return null
-      const { data, error: signError } = await admin.storage.from('media').createSignedUrl(path, SIGNED_URL_SECONDS)
+      const { data, error: signError } = await admin.storage.from(bucket).createSignedUrl(path, SIGNED_URL_SECONDS)
       if (signError || !data) throw new Error(`signed url: ${signError?.message}`)
       return data.signedUrl
     }

@@ -18,6 +18,24 @@ const model = (overrides: Partial<ModelRow> = {}): ModelRow => ({
 })
 
 describe('buildProviderInput', () => {
+  it('copiar movimento: manda imagem e vídeo, sem a duração do catálogo', () => {
+    const motion = model({
+      kind: 'video',
+      image_input: 'image_url',
+      video_input: 'video_url',
+      requires_image: true,
+      defaults: { character_orientation: 'image', keep_original_sound: false, enable_safety_checker: true, duration: '10' },
+    })
+    expect(buildProviderInput(motion, 'repete o movimento', 'https://x/persona.png', {}, null, 'https://x/ref.mp4')).toEqual({
+      character_orientation: 'image',
+      keep_original_sound: false,
+      enable_safety_checker: true,
+      prompt: 'repete o movimento',
+      image_url: 'https://x/persona.png',
+      video_url: 'https://x/ref.mp4',
+    })
+  })
+
   it('junta defaults e prompt', () => {
     expect(buildProviderInput(model(), 'um café', null)).toEqual({ num_images: 1, prompt: 'um café' })
   })

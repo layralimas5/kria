@@ -13,6 +13,8 @@ export interface ModelRow {
   /** Campo do quadro final (antes e depois, 0015). Nulo: o modelo não aceita. */
   readonly end_image_input: 'end_image_url' | null
   readonly requires_image: boolean
+  /** Campo do vídeo de referência (Copiar movimento, 0044). Nulo ou ausente: o modelo não recebe vídeo. */
+  readonly video_input?: 'video_url' | null
   readonly credits: number
   readonly defaults: Record<string, unknown>
   /** O que a pessoa pode escolher e os valores aceitos (`models.options`, 0011). O primeiro é o padrão. */
@@ -56,6 +58,7 @@ export interface GeneratedFile {
 /**
  * O corpo enviado ao fal.ai: defaults do catálogo, as opções já conferidas, o prompt
  * e as imagens nos campos que o modelo espera (a de partida e, se houver, a final).
+ * Com vídeo de referência, `duration` não vai: ali ela só serve para o custo no catálogo.
  */
 export function buildProviderInput(
   model: ModelRow,
@@ -63,8 +66,13 @@ export function buildProviderInput(
   imageUrl: string | null,
   options: ChosenOptions = {},
   endImageUrl: string | null = null,
+  videoUrl: string | null = null,
 ): Record<string, unknown> {
   const input: Record<string, unknown> = { ...model.defaults, ...options, prompt }
+  if (model.video_input) {
+    delete input.duration
+    if (videoUrl) input[model.video_input] = videoUrl
+  }
   if (!model.image_input || !imageUrl) return input
   input[model.image_input] = model.image_input === 'image_urls' ? [imageUrl] : imageUrl
   if (model.end_image_input && endImageUrl) input[model.end_image_input] = endImageUrl
