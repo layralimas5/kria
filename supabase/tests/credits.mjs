@@ -235,8 +235,9 @@ await test('RLS: cada pessoa só enxerga o que é dela', async (db) => {
   assert.deepEqual(seen.generations, [{ user_id: ana }])
   assert.deepEqual(seen.balances, [{ user_id: ana }])
   assert.deepEqual(seen.ledger, [{ user_id: ana }])
-  // Ativos: 10 até a 0016 + Multiplicador (0017); Seedance (0033) entra no lugar do Veo; FLUX, Ideogram, Hailuo e Wan (0035).
-  assert.equal(seen.models, 15)
+  // Ativos: 10 até a 0016 + Multiplicador (0017); Seedance (0033) entra no lugar do Veo; FLUX, Ideogram, Hailuo e Wan (0035);
+  // Copiar movimento de 5 s e de 10 s (0044).
+  assert.equal(seen.models, 17)
   await as(db, 'authenticated', ana, () =>
     expectError(db.query(`select provider_cost_usd from models`), 'permission denied'),
   )
@@ -2771,6 +2772,51 @@ test('notificações: aparelho por conta, venda só para admin com finance.view'
   const id = (await db.query(`select id from push_subscriptions where endpoint = $1`, [fcm('a')])).rows[0].id
   for (let index = 0; index < 10; index += 1) await db.query(`select push_register_failure($1)`, [id])
   assert.equal((await db.query(`select count(*)::int as n from push_subscriptions where id = $1`, [id])).rows[0].n, 0)
+})
+
+test('copiar movimento: dois níveis pelo custo do fal, fora do Studio, vídeo só pelo servidor', async (db) => {
+  const ana = await newUser(db, 'ana@x.com')
+  const rows = (await db.query(`select slug, credits, studio, video_input, max_input_seconds, requires_image, image_input, charges_on_failure,
+      provider_cost_usd::float as cost, defaults, allowed_plans, cost_checked_at from models where slug in ('motion-5', 'motion-10', 'video-kling') order by slug`)).rows
+  const [m10, m5, kling] = rows
+  assert.deepEqual([m5.slug, m10.slug, kling.slug], ['motion-5', 'motion-10', 'video-kling'])
+  assert.equal(m5.cost, 0.63)
+  assert.equal(m10.cost, 1.26)
+  // Créditos pela régua em vigor (a mesma do Kling): o de 10 s custa o dobro do de 5 s.
+  const expected = (await db.query(`select m.slug, case when s.credit_scale = 2 then quote_credits(m.provider_cost_usd, m.credits, s)
+      else greatest(1, round(m.provider_cost_usd * 100)::integer) end as credits
+      from models m, pricing_settings s where m.slug in ('motion-5', 'motion-10') order by m.slug desc`)).rows
+  assert.deepEqual([m5.credits, m10.credits], expected.map((row) => row.credits))
+  assert.ok(m10.credits >= 2 * m5.credits - 1 && m10.credits <= 2 * m5.credits + 1)
+  for (const m of [m5, m10]) {
+    assert.equal(m.studio, false)
+    assert.equal(m.video_input, 'video_url')
+    assert.equal(m.image_input, 'image_url')
+    assert.equal(m.requires_image, true)
+    assert.equal(m.charges_on_failure, true)
+    assert.equal(m.cost_checked_at, null)
+    assert.deepEqual(m.allowed_plans, kling.allowed_plans)
+    assert.equal(m.defaults.keep_original_sound, false)
+    assert.equal(m.defaults.enable_safety_checker, true)
+  }
+  assert.equal(m5.max_input_seconds, 5)
+  assert.equal(m10.max_input_seconds, 10)
+
+  // A pessoa não grava referência direto: só a function, que mede a duração.
+  await as(db, 'authenticated', ana, () =>
+    expectError(db.query(`insert into motion_references (user_id, path, content_type, size_bytes, duration_ms, rights_confirmed_at)
+      values ($1, $2, 'video/mp4', 10, 3000, now())`, [ana, ana + '/' + crypto.randomUUID() + '.mp4']), 'permission denied'))
+  // Duração fora do limite do banco é recusada até para o servidor.
+  await expectError(db.query(`insert into motion_references (user_id, path, content_type, size_bytes, duration_ms, rights_confirmed_at)
+      values ($1, $2, 'video/mp4', 10, 45000, now())`, [ana, ana + '/' + crypto.randomUUID() + '.mp4']), 'check')
+  const ref = (await db.query(`insert into motion_references (user_id, path, content_type, size_bytes, duration_ms, rights_confirmed_at)
+      values ($1, $2, 'video/mp4', 10, 4000, now()) returning id`, [ana, ana + '/' + crypto.randomUUID() + '.mp4'])).rows[0].id
+  const seen = await as(db, 'authenticated', ana, async () => (await db.query(`select id from motion_references`)).rows)
+  assert.deepEqual(seen.map((row) => row.id), [ref])
+  const bia = await newUser(db, 'bia@x.com')
+  const hidden = await as(db, 'authenticated', bia, async () => (await db.query(`select id from motion_references`)).rows)
+  assert.equal(hidden.length, 0)
+  assert.equal((await db.query(`select count(*)::int as n from storage.buckets where id = 'motion' and not public`)).rows[0].n, 1)
 })
 
 console.log(`\n${passed} testes do banco passaram`)
