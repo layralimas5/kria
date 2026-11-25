@@ -11,6 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_CONTACT_EMAIL?: string
   /** 'true' mostra os preços v2 (Creator e Business) na landing. Só junto com a virada no admin. */
   readonly VITE_PRICING_V2?: string
+  /** Chave pública VAPID das notificações (`npm run vapid:keys`). Sem ela, o botão de notificação explica que está desligado. */
+  readonly VITE_VAPID_PUBLIC_KEY?: string
 }
 
 interface ImportMeta {

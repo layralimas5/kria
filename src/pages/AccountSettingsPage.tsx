@@ -1,9 +1,11 @@
-import { ChevronLeft, Download, KeyRound, LogOut, Mail, Target, Trash2 } from 'lucide-react'
+import { BellRing, ChevronLeft, Download, KeyRound, LogOut, Mail, Smartphone, Target, Trash2 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { GoalSelect } from '@/components/account/GoalSelect'
+import { InstallApp } from '@/components/account/InstallApp'
 import { PasswordForm } from '@/components/account/PasswordForm'
 import { DeleteAccount, ExportData } from '@/components/account/PrivacyActions'
+import { PushSettings, type PushOption } from '@/components/account/PushSettings'
 import { Button } from '@/components/ui/Button'
 import { Notice } from '@/components/ui/Notice'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -25,6 +27,13 @@ function SettingsCard({ icon, title, description, children }: { icon: ReactNode;
   )
 }
 
+const GENERATION_OPTIONS: readonly PushOption[] = [
+  {
+    topic: 'generations',
+    label: 'Avisar quando a criação ficar pronta',
+    description: 'Imagem e vídeo levam alguns minutos. Pode fechar o Vynkio que a gente avisa aqui.',
+  },
+]
 
 export function AccountSettingsPage() {
   const { session } = useSession()
@@ -66,6 +75,14 @@ export function AccountSettingsPage() {
         <Button variant="secondary" loading={signingOut} onClick={() => void handleSignOutEverywhere()}>
           Sair de todos os aparelhos
         </Button>
+      </SettingsCard>
+
+      <SettingsCard icon={<Smartphone className="size-5" aria-hidden="true" />} title="App no celular" description="Instale o Vynkio e abra direto pelo ícone, sem procurar no navegador.">
+        <InstallApp />
+      </SettingsCard>
+
+      <SettingsCard icon={<BellRing className="size-5" aria-hidden="true" />} title="Notificações" description="Avisos na tela deste aparelho, mesmo com o Vynkio fechado.">
+        <PushSettings options={GENERATION_OPTIONS} />
       </SettingsCard>
 
       <SettingsCard icon={<Target className="size-5" aria-hidden="true" />} title="Preferências" description="O que você mais quer criar no Vynkio.">

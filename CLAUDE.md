@@ -95,6 +95,9 @@ são telas reais do modo demo (`npm run landing:screens`).
   dela (`navGroupsFor` com `plan.tools` e `kinds`) e lista o que fica escondido; o botão "Ver como" está em cada linha de Usuários.
 - Chamados (0042, `docs/chamados.md`): a pessoa abre em `/suporte?aba=chamados`, a operação atende em `/admin/chamados`
   (permissões `support.view`/`support.manage`). Tabelas fechadas, só funções; nota interna nunca sai para a pessoa.
+- App e notificações (0043, `docs/app-e-notificacoes.md`): o Vynkio é PWA (manifest, `public/sw.js` sem cache de página).
+  Web Push próprio em `_shared/webPush.ts` (sem lib). Tópico `generations` para todos, `sales` só admin com `finance.view`.
+  Aviso de venda só quando o pagamento foi aplicado, com plano e valor, nunca dado de quem comprou. Envio nunca lança.
 - Ferramenta que ainda não existe aparece como "Breve", sem link nem botão.
 - Persona nasce só de imagem gerada aqui (`create_persona`). Sem upload de foto:
   é o que impede deepfake de pessoa real. Não abrir upload sem moderação de rosto.
