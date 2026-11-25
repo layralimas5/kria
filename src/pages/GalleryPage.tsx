@@ -99,11 +99,11 @@ export function GalleryPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Biblioteca</p>
           <h1 className="font-headline mt-2 text-4xl text-balance text-zinc-50 md:text-5xl">
             Tudo o que você{' '}
-            <span className="bg-gradient-to-r from-accent-soft via-violet-300 to-galaxy bg-clip-text text-transparent">já criou</span>
+            <span className="text-zinc-500">já criou</span>
           </h1>
           <p className="mt-3 max-w-xl text-sm text-pretty text-zinc-400 md:text-base">Busque pelo pedido, filtre por modelo e abra qualquer criação para baixar, refazer ou animar.</p>
         </div>
-        <Link to="/estudio?modo=imagem" className={clsx('btn-accent inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-[0_8px_30px_-10px_rgb(124_58_237/0.8)]', FOCUS)}>
+        <Link to="/estudio?modo=imagem" className={clsx('btn-accent inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold', FOCUS)}>
           <Sparkles className="size-4" aria-hidden="true" /> Nova criação
         </Link>
       </motion.header>

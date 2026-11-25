@@ -11,7 +11,7 @@ import { MediaView } from '../MediaView'
 import { Drawer } from '../ui/Drawer'
 
 const FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
-const SECONDARY = 'border border-white/[0.08] bg-surface-2 text-zinc-100 hover:bg-surface-3'
+const SECONDARY = 'btn-glass'
 const ACTION = clsx('inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-3.5 text-sm font-semibold transition-colors', FOCUS)
 
 const STATUS: Record<Generation['status'], { label: string; tone: string }> = {

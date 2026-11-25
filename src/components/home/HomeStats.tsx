@@ -18,7 +18,7 @@ function StatCard({ icon, label, to, children, index }: { icon: ReactNode; label
   const content = (
     <>
       <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500 sm:text-[11px]">
-        <span className="grid size-6 place-items-center rounded-lg bg-accent/15 text-accent-soft">{icon}</span>
+        <span className="grid size-6 place-items-center rounded-lg bg-white/[0.05] text-zinc-300 ring-1 ring-inset ring-white/[0.06]">{icon}</span>
         {label}
       </p>
       <div className="mt-3 flex flex-1 flex-col sm:mt-4">{children}</div>

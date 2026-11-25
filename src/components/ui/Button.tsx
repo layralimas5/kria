@@ -5,9 +5,8 @@ import { Spinner } from './Spinner'
 type Variant = 'primary' | 'secondary' | 'ghost'
 
 const VARIANTS: Record<Variant, string> = {
-  primary:
-    'btn-accent font-semibold disabled:bg-surface-3 disabled:text-zinc-500 disabled:shadow-none',
-  secondary: 'border border-white/[0.08] bg-surface-2 text-zinc-100 hover:border-white/15 hover:bg-surface-3',
+  primary: 'btn-accent font-semibold disabled:bg-surface-3 disabled:text-zinc-500',
+  secondary: 'btn-glass font-medium',
   ghost: 'text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-100',
 }
 
@@ -27,7 +26,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={clsx(
-        'inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-all duration-150 ease-out',
+        'inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
         'disabled:cursor-not-allowed',
         VARIANTS[variant],

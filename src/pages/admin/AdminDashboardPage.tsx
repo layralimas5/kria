@@ -20,7 +20,7 @@ import { useAdminPeriod } from '@/hooks/useAdminPeriod'
 import { useCommandCenter } from '@/hooks/useCommandCenter'
 
 const ACTION =
-  'inline-flex min-h-9 items-center gap-1.5 rounded-xl px-3 text-[13px] font-semibold text-zinc-300 ring-1 ring-white/[0.08] transition-colors hover:bg-white/[0.05] hover:text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40'
+  'btn-glass inline-flex min-h-9 items-center gap-1.5 rounded-xl px-3 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-soft/70'
 
 function exportCsv(data: CenterData) {
   const { indicators, daily } = centerCsvRows(data)

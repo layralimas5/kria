@@ -96,25 +96,21 @@ export function HomePage() {
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="relative isolate flex flex-wrap items-end justify-between gap-6"
       >
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -left-24 -top-24 -z-10 h-72 w-[36rem] rounded-full bg-[radial-gradient(closest-side,rgb(124_58_237/0.28),transparent)] blur-2xl"
-        />
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">{today.format(now)}</p>
+          <p className="text-[13px] font-medium text-zinc-500 first-letter:uppercase">{today.format(now)}</p>
           {name && (
-            <p className="font-headline mt-3 text-3xl text-zinc-300 md:text-4xl">
+            <p className="mt-3 text-lg font-medium text-zinc-400">
               Oi, <span className="text-zinc-50">{name}</span>
             </p>
           )}
-          <h1 className="font-headline mt-2 text-4xl text-balance text-zinc-50 md:text-6xl">
+          <h1 className="font-headline mt-1 text-4xl text-balance text-zinc-50 md:text-5xl">
             O que vamos{' '}
-            <span className="bg-gradient-to-r from-accent-soft via-violet-300 to-galaxy bg-clip-text text-transparent">criar hoje?</span>
+            <span className="text-zinc-500">criar hoje?</span>
           </h1>
         </div>
         <Link
           to={actions[0]?.to ?? '/estudio?modo=imagem'}
-          className={clsx('btn-accent inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-[0_8px_30px_-10px_rgb(124_58_237/0.8)]', FOCUS)}
+          className={clsx('btn-accent inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-semibold', FOCUS)}
         >
           {actions[0]?.title ?? 'Criar imagem'}
           <ArrowRight className="size-4" aria-hidden="true" />
