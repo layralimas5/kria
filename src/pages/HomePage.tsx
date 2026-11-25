@@ -98,7 +98,7 @@ export function HomePage() {
       >
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute -left-24 -top-24 -z-10 h-72 w-[36rem] rounded-full bg-[radial-gradient(closest-side,rgb(124_58_237/0.28),transparent)] blur-2xl"
+          className="pointer-events-none absolute -left-24 -top-24 -z-10 h-72 w-[min(36rem,100vw)] rounded-full bg-[radial-gradient(closest-side,rgb(124_58_237/0.28),transparent)] blur-2xl"
         />
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">{today.format(now)}</p>

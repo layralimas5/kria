@@ -41,7 +41,7 @@ export function AppShell() {
   return (
     <PlanKindsContext.Provider value={kinds}>
       <CommandProvider scope="app" commands={commands} goShortcuts={goShortcuts}>
-        <div className={clsx('relative min-h-dvh pb-20 [--sidebar-w:0px] md:pb-0', collapsed ? 'md:[--sidebar-w:72px]' : 'md:[--sidebar-w:256px]')}>
+        <div className={clsx('relative min-h-dvh overflow-x-clip pb-20 [--sidebar-w:0px] md:pb-0', collapsed ? 'md:[--sidebar-w:72px]' : 'md:[--sidebar-w:256px]')}>
           <div aria-hidden="true" className="ambient-bg" />
           <a
             href="#conteudo"
