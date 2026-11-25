@@ -6,6 +6,8 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { FalError, getResult, getStatus } from './fal.ts'
 import { extractOutput, GENERATION_TIMEOUT_MS, storagePathFor } from './generation.ts'
+import { sendPush } from './push.ts'
+import { generationMessage } from './pushMessages.ts'
 
 export interface OpenGeneration {
   readonly id: string
@@ -21,9 +23,15 @@ export type SettleOutcome = 'pending' | 'succeeded' | 'failed' | 'already_closed
 
 export const GENERATION_COLUMNS = 'id, user_id, kind, status, provider_status_url, provider_response_url, created_at'
 
-async function fail(admin: SupabaseClient, id: string, reason: string): Promise<SettleOutcome> {
-  const { error } = await admin.rpc('fail_generation', { p_id: id, p_error: reason })
+/** Avisa no aparelho da pessoa só quem de fato fechou a geração (webhook e polling correm juntos). */
+async function notifyOwner(admin: SupabaseClient, generation: OpenGeneration, succeeded: boolean): Promise<void> {
+  await sendPush(admin, generationMessage({ id: generation.id, kind: generation.kind, succeeded }), generation.user_id)
+}
+
+async function fail(admin: SupabaseClient, generation: OpenGeneration, reason: string): Promise<SettleOutcome> {
+  const { data, error } = await admin.rpc('fail_generation', { p_id: generation.id, p_error: reason })
   if (error) throw new Error(`fail_generation: ${error.message}`)
+  if (data === true) await notifyOwner(admin, generation, false)
   return 'failed'
 }
 
@@ -47,33 +55,34 @@ export async function settleGeneration(
 
   const expired = Date.now() - new Date(generation.created_at).getTime() > GENERATION_TIMEOUT_MS
   if (!generation.provider_status_url || !generation.provider_response_url) {
-    return expired ? fail(admin, generation.id, 'A geração não chegou ao provedor.') : 'pending'
+    return expired ? fail(admin, generation, 'A geração não chegou ao provedor.') : 'pending'
   }
 
   const status = await getStatus(falKey, generation.provider_status_url)
   if (status.status !== 'COMPLETED') {
-    return expired ? fail(admin, generation.id, 'A geração demorou demais e foi cancelada.') : 'pending'
+    return expired ? fail(admin, generation, 'A geração demorou demais e foi cancelada.') : 'pending'
   }
-  if (status.error) return fail(admin, generation.id, status.error)
+  if (status.error) return fail(admin, generation, status.error)
 
   let result: unknown
   try {
     result = await getResult(falKey, generation.provider_response_url)
   } catch (error) {
     // 4xx no resultado é falha do modelo (ex.: filtro de segurança); 5xx tenta de novo depois.
-    if (error instanceof FalError && error.status < 500) return fail(admin, generation.id, error.message)
+    if (error instanceof FalError && error.status < 500) return fail(admin, generation, error.message)
     throw error
   }
 
   const output = extractOutput(result, generation.kind)
-  if (!output) return fail(admin, generation.id, 'O modelo não devolveu arquivo.')
+  if (!output) return fail(admin, generation, 'O modelo não devolveu arquivo.')
 
   const path = await copyToStorage(admin, generation, output.url, output.contentType)
-  const { error } = await admin.rpc('complete_generation', {
+  const { data: closed, error } = await admin.rpc('complete_generation', {
     p_id: generation.id,
     p_output_path: path,
     p_output_type: output.contentType,
   })
   if (error) throw new Error(`complete_generation: ${error.message}`)
+  if (closed === true) await notifyOwner(admin, generation, true)
   return 'succeeded'
 }

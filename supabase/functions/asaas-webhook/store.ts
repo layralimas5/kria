@@ -6,6 +6,7 @@ import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { getCustomerContact } from '../_shared/asaas.ts'
 import { requireEnv } from '../_shared/http.ts'
 import { sendDeliveryEmail } from '../_shared/storeMailer.ts'
+import { notifyStoreSale } from './notifySale.ts'
 
 const now = () => new Date().toISOString()
 
@@ -31,8 +32,10 @@ export async function markStoreOrderPaid(
     await admin.from('store_orders').update({ ...ids, updated_at: now() }).eq('id', orderId)
   }
 
+  const justPaid = Boolean(changed && changed.length > 0)
   const delivery = await deliverByEmail(admin, orderId)
-  return `${changed && changed.length > 0 ? 'pedido pago' : 'pedido já pago'}; ${delivery}`
+  if (justPaid) await notifyStoreSale(admin, orderId)
+  return `${justPaid ? 'pedido pago' : 'pedido já pago'}; ${delivery}`
 }
 
 interface DeliveryRow {
