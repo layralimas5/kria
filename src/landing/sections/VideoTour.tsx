@@ -60,7 +60,7 @@ function Poster({ src, children }: { readonly src: string; readonly children: Re
     <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-panel sm:aspect-video ring-1 ring-white/[0.08] shadow-[0_40px_120px_-40px_rgba(124,58,237,0.55)]">
       <img src={src} alt="" loading="lazy" decoding="async" width={2160} height={1350} className="absolute inset-0 size-full object-cover object-top opacity-60" />
       <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_50%,rgba(0,0,0,0.2),rgba(0,0,0,0.75))]" />
-      <div className="absolute inset-0 grid place-items-center p-6 text-center">{children}</div>
+      <div className="absolute inset-0 grid place-items-center p-5 sm:p-6 text-center">{children}</div>
     </div>
   )
 }
@@ -71,7 +71,7 @@ export function VideoTour() {
   const video = TOUR_VIDEO
 
   return (
-    <section id="video" aria-labelledby="video-title" className="scroll-mt-20 px-4 pt-24 md:pt-32">
+    <section id="video" aria-labelledby="video-title" className="scroll-mt-20 px-4 pt-16 md:pt-32">
       <div className="mx-auto max-w-5xl">
         <SectionHeading id="video-title" align="center" title="Veja o Vynkio em ação" lead="Conheça a plataforma por dentro e descubra como transformar uma ideia em conteúdo." />
         <Reveal className="mt-12">

@@ -11,7 +11,7 @@ const SCENES = showcaseByPrefix('marina-')
 
 export function SameFace() {
   return (
-    <section id="mesmo-rosto" aria-labelledby="mesmo-rosto-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
+    <section id="mesmo-rosto" aria-labelledby="mesmo-rosto-title" className="scroll-mt-16 px-4 pt-14 md:pt-28">
       <div className="mx-auto max-w-[1440px]">
         <SectionHeading
           id="mesmo-rosto-title"
@@ -42,7 +42,7 @@ export function SameFace() {
                     className="w-full transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transition-none"
                   />
                 </PhotoReveal>
-                <span className="absolute bottom-3 left-3 rounded-md bg-black/55 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur-md">{scene.title}</span>
+                <span className="absolute bottom-3 left-3 rounded-md bg-black/55 px-2 py-1 text-xs font-semibold text-white backdrop-blur-md">{scene.title}</span>
               </Reveal>
             ))}
           </ul>

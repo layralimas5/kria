@@ -6,7 +6,7 @@ import { SAFETY_LINE } from '../content'
 /** Último convite da página: bloco com borda em gradiente, luz que respira devagar e os dois caminhos. */
 export function FinalCta() {
   return (
-    <section aria-labelledby="final-title" className="px-4 pb-20 pt-24 md:pb-28 md:pt-32">
+    <section aria-labelledby="final-title" className="px-4 pb-20 pt-16 md:pb-28 md:pt-32">
       <Reveal className="mx-auto max-w-6xl">
         <div className="relative rounded-[2rem] bg-gradient-to-br from-accent-soft/50 via-white/[0.08] to-galaxy/50 p-px shadow-[0_40px_120px_-50px_rgb(124_58_237/0.8)]">
           <div className="relative isolate overflow-hidden rounded-[calc(2rem-1px)] bg-[#08070f]">

@@ -30,7 +30,7 @@ export function StartBento() {
   return (
     <section aria-labelledby="comece-title" className="px-4 pt-16 md:pt-20">
       <div className="mx-auto grid max-w-[1440px] gap-3 lg:grid-cols-[1.15fr_1fr]">
-        <Reveal className="relative isolate flex min-h-[340px] flex-col justify-end overflow-hidden rounded-3xl p-6 ring-1 ring-white/[0.08] md:p-9">
+        <Reveal className="relative isolate flex min-h-[340px] flex-col justify-end overflow-hidden rounded-3xl p-5 ring-1 ring-white/[0.08] md:p-9">
           <ShowcasePhoto
             image={showcase('bento-cidade')}
             alt=""

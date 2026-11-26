@@ -26,7 +26,7 @@ function Cell({ value }: { readonly value: string | undefined }) {
 
 export function PlanComparison({ plans }: { readonly plans: readonly MarketingPlan[] }) {
   return (
-    <section aria-labelledby="comparar-title" className="mt-16">
+    <section aria-labelledby="comparar-title" className="mt-10 md:mt-16">
       <h3 id="comparar-title" className="text-center font-landing text-2xl font-bold uppercase tracking-[-0.03em] text-zinc-50 md:text-3xl">
         Compare os planos
       </h3>

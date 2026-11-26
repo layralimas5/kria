@@ -71,7 +71,7 @@ function AdvantageRow({ advantage, index }: { readonly advantage: Advantage; rea
 /** "Por que Vynkio?": título fixo à esquerda e três diferenciais em linhas finas à direita. */
 export function WhyVynkio() {
   return (
-    <section id="por-que" aria-labelledby="por-que-title" className="scroll-mt-20 px-4 pt-28 md:pt-40">
+    <section id="por-que" aria-labelledby="por-que-title" className="scroll-mt-20 px-4 pt-16 md:pt-40">
       <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-5 lg:self-start lg:sticky lg:top-28">
           <Reveal>

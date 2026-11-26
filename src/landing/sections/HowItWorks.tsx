@@ -16,7 +16,7 @@ function VideoSlot() {
 /** "Como funciona": título da seção e o vídeo da plataforma. */
 export function HowItWorks() {
   return (
-    <section id="como-funciona" aria-labelledby="como-funciona-title" className="relative scroll-mt-20 px-4 pt-24 md:pt-32">
+    <section id="como-funciona" aria-labelledby="como-funciona-title" className="relative scroll-mt-20 px-4 pt-16 md:pt-32">
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-24 -z-10 h-[40rem] bg-[radial-gradient(50%_40%_at_50%_30%,rgba(124,58,237,0.14),transparent)]" />
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col items-center text-center">

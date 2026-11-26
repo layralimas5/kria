@@ -10,7 +10,7 @@ const RULES = [
 
 export function CreditsExplainer() {
   return (
-    <section aria-labelledby="creditos-title" className="mt-16 rounded-3xl border border-white/[0.06] bg-panel/60 p-6 md:p-10">
+    <section aria-labelledby="creditos-title" className="mt-10 md:mt-16 rounded-3xl border border-white/[0.06] bg-panel/60 p-5 md:p-10">
       <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-12">
         <div>
           <h3 id="creditos-title" className="font-landing text-2xl font-bold uppercase tracking-[-0.03em] text-zinc-50 md:text-3xl">

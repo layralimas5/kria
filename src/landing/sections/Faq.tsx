@@ -97,7 +97,7 @@ export function Faq() {
   }
 
   return (
-    <section id="faq" aria-labelledby="faq-title" className="relative scroll-mt-16 px-4 pt-24 md:pt-32">
+    <section id="faq" aria-labelledby="faq-title" className="relative scroll-mt-16 px-4 pt-16 md:pt-32">
       <FaqJsonLd />
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-24 -z-10 h-[30rem] bg-[radial-gradient(40%_45%_at_50%_30%,rgba(124,58,237,0.12),transparent)]" />
       <div className="mx-auto max-w-3xl">

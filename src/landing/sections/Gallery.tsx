@@ -12,7 +12,7 @@ const ASPECTS = ['aspect-[3/4]', 'aspect-[9/16]', 'aspect-[4/5]', 'aspect-[9/14]
 
 export function Gallery() {
   return (
-    <section id="galeria" aria-labelledby="galeria-title" className="scroll-mt-16 px-4 pt-20 md:pt-28">
+    <section id="galeria" aria-labelledby="galeria-title" className="scroll-mt-16 px-4 pt-14 md:pt-28">
       <div className="mx-auto max-w-[1440px]">
         <SectionHeading
           id="galeria-title"
@@ -30,12 +30,12 @@ export function Gallery() {
                     className={`group relative overflow-hidden rounded-2xl bg-panel outline-none focus-visible:ring-2 focus-visible:ring-accent ${CARD_HOVER} ${ASPECTS[index % ASPECTS.length]}`}
                   >
                     <LoopVideo clip={clip} className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
-                    <span className="absolute left-3 top-3 rounded-md bg-black/55 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur-md">
+                    <span className="absolute left-3 top-3 rounded-md bg-black/55 px-2 py-1 text-xs font-semibold text-white backdrop-blur-md">
                       {clip.title}
                     </span>
                     <figcaption className="absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 pt-12 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
                       <p className="line-clamp-4 text-pretty text-[13px] font-medium leading-snug text-white">“{clip.prompt}”</p>
-                      <p className="mt-1.5 text-[11px] text-zinc-400">
+                      <p className="mt-1.5 text-xs text-zinc-400">
                         {clip.model}
                       </p>
                     </figcaption>

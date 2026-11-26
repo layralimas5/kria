@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { ArrowRight, CalendarClock, Coins, Info, RefreshCw, RotateCcw, Sparkles, Wallet, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@/hooks/useQuery'
@@ -54,7 +55,7 @@ function FreePlanStrip({ plan }: { readonly plan: StorefrontPlan }) {
   )
   return (
     <Reveal className="mx-auto mt-5 max-w-6xl">
-      <div className="flex flex-col gap-5 rounded-[1.75rem] border border-white/[0.07] bg-white/[0.02] p-6 sm:p-7 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-5 rounded-[1.75rem] border border-white/[0.07] bg-white/[0.02] p-5 sm:p-7 md:flex-row md:items-center md:justify-between">
         <div className="flex gap-4">
           <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-2xl bg-white/[0.05] text-accent-soft ring-1 ring-white/[0.1]">
             <Sparkles className="size-5" />
@@ -111,7 +112,7 @@ export function PricingV2() {
   const free = creator.find((plan) => plan.cta === 'signup')
 
   return (
-    <section id="precos" aria-labelledby="precos-title" className="relative scroll-mt-16 px-4 pt-24 md:pt-32">
+    <section id="precos" aria-labelledby="precos-title" className="relative scroll-mt-16 px-4 pt-16 md:pt-32">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-48 -z-10 h-[42rem] bg-[radial-gradient(45%_40%_at_50%_35%,rgba(124,58,237,0.14),transparent),radial-gradient(30%_30%_at_75%_60%,rgba(59,130,246,0.07),transparent)]"
@@ -122,7 +123,7 @@ export function PricingV2() {
 
         <div aria-busy={storefront.loading}>
           {storefront.error ? (
-            <div className="mx-auto mt-12 max-w-md rounded-2xl border border-white/[0.07] bg-[#0c0b14] p-6 text-center text-sm text-zinc-300">
+            <div className="mx-auto mt-12 max-w-md rounded-2xl border border-white/[0.07] bg-[#0c0b14] p-5 sm:p-6 text-center text-sm text-zinc-300">
               <p>Os planos não carregaram agora.</p>
               <button
                 type="button"
@@ -136,13 +137,25 @@ export function PricingV2() {
             <PlanSkeleton />
           ) : (
             <>
-              <ul className="mx-auto mt-12 grid max-w-6xl gap-5 md:mt-14 lg:grid-cols-3 lg:items-stretch">
+              {/* Celular: carrossel com o plano em destaque primeiro e a ponta do próximo à vista. Computador: grade de 3. */}
+              <ul
+                aria-label="Planos"
+                className="-mx-4 mt-10 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 [scrollbar-width:none] md:mt-14 lg:mx-auto lg:grid lg:max-w-6xl lg:grid-cols-3 lg:items-stretch lg:gap-5 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden"
+              >
                 {paid.map((plan, index) => (
-                  <Reveal key={plan.slug} as="li" delay={index * 0.08} className={plan.highlight ? 'order-first lg:order-none' : undefined}>
+                  <Reveal
+                    key={plan.slug}
+                    as="li"
+                    delay={index * 0.08}
+                    className={clsx('w-[86%] shrink-0 snap-center sm:w-[60%] lg:w-auto', plan.highlight && 'order-first lg:order-none')}
+                  >
                     <PlanCardV2 plan={plan} />
                   </Reveal>
                 ))}
               </ul>
+              <p className="mt-1 text-center text-[13px] text-zinc-500 lg:hidden" aria-hidden="true">
+                Deslize para ver os outros planos
+              </p>
               {free && <FreePlanStrip plan={free} />}
               <p className="mx-auto mt-6 flex max-w-3xl items-start justify-center gap-2 text-center text-[13px] text-zinc-400">
                 <Info className="mt-0.5 size-3.5 shrink-0 text-accent-soft" aria-hidden="true" />
@@ -158,7 +171,7 @@ export function PricingV2() {
           )}
         </div>
 
-        <ul className="mx-auto mt-14 grid max-w-6xl gap-x-6 gap-y-5 border-t border-white/[0.06] pt-10 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="mx-auto mt-10 md:mt-14 grid max-w-6xl gap-x-6 gap-y-5 border-t border-white/[0.06] pt-10 sm:grid-cols-2 lg:grid-cols-4">
           {TERMS.map(({ icon: Icon, title, text }, index) => (
             <Reveal key={title} as="li" delay={index * 0.05} className="flex gap-3">
               <Icon className="mt-0.5 size-5 shrink-0 text-accent-soft" aria-hidden="true" />

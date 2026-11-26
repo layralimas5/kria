@@ -57,7 +57,7 @@ const GUARANTEES: readonly Guarantee[] = [
 /** Por que dá para assinar sem susto: as garantias que o produto cumpre por regra, não por promessa. */
 export function Trust() {
   return (
-    <section id="seguranca" aria-labelledby="seguranca-title" className="scroll-mt-20 px-4 pt-24 md:pt-32">
+    <section id="seguranca" aria-labelledby="seguranca-title" className="scroll-mt-20 px-4 pt-16 md:pt-32">
       <div className="mx-auto max-w-6xl">
         <SectionHeading
           id="seguranca-title"
@@ -67,12 +67,14 @@ export function Trust() {
         />
         <ul className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {GUARANTEES.map(({ icon: Icon, title, text }, index) => (
-            <Reveal key={title} as="li" delay={index * 0.04} className={`rounded-2xl border border-white/[0.06] bg-panel/60 p-5 ${CARD_HOVER}`}>
-              <span className="grid size-10 place-items-center rounded-xl bg-accent/15 text-accent-soft ring-1 ring-accent/25">
+            <Reveal key={title} as="li" delay={index * 0.04} className={`flex gap-3.5 rounded-2xl border border-white/[0.06] bg-panel/60 p-4 sm:block sm:p-5 ${CARD_HOVER}`}>
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent/15 text-accent-soft ring-1 ring-accent/25 sm:size-10">
                 <Icon className="size-5" aria-hidden="true" />
               </span>
-              <h3 className="mt-4 text-[15px] font-semibold text-zinc-50">{title}</h3>
-              <p className="mt-1.5 text-pretty text-sm leading-relaxed text-zinc-400">{text}</p>
+              <div className="min-w-0">
+                <h3 className="text-[15px] font-semibold text-zinc-50 sm:mt-4">{title}</h3>
+                <p className="mt-1 text-pretty text-sm leading-relaxed text-zinc-400 sm:mt-1.5">{text}</p>
+              </div>
             </Reveal>
           ))}
         </ul>

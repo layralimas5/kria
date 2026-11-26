@@ -69,10 +69,10 @@ function ToolCard({ tool, index }: { readonly tool: Tool; readonly index: number
         aria-hidden="true"
         className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-accent/10 opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-100"
       />
-      <span className="grid size-11 place-items-center rounded-2xl bg-accent/12 text-accent-soft ring-1 ring-accent/25">
-        <Icon className="size-5" aria-hidden="true" />
+      <span className="grid size-9 place-items-center rounded-xl bg-accent/12 text-accent-soft ring-1 ring-accent/25 sm:size-11 sm:rounded-2xl">
+        <Icon className="size-[18px] sm:size-5" aria-hidden="true" />
       </span>
-      <h3 className="mt-4 text-base font-semibold text-zinc-50 sm:mt-6 sm:text-lg">{tool.title}</h3>
+      <h3 className="mt-3 text-base font-semibold text-zinc-50 sm:mt-6 sm:text-lg">{tool.title}</h3>
       <p className="mt-1.5 max-w-md text-pretty text-sm text-zinc-400 sm:text-[15px]">{tool.text}</p>
     </motion.li>
   )
@@ -81,7 +81,7 @@ function ToolCard({ tool, index }: { readonly tool: Tool; readonly index: number
 /** "Um estúdio. Várias possibilidades": as ferramentas que existem hoje e para quem elas servem. */
 export function Studio() {
   return (
-    <section id="estudio" aria-labelledby="estudio-title" className="scroll-mt-20 px-4 pt-24 md:pt-32">
+    <section id="estudio" aria-labelledby="estudio-title" className="scroll-mt-20 px-4 pt-16 md:pt-32">
       <div className="mx-auto max-w-6xl">
         <SectionHeading
           id="estudio-title"
@@ -101,11 +101,11 @@ export function Studio() {
           ))}
         </ul>
 
-        <div className="mt-20 md:mt-24">
+        <div className="mt-12 md:mt-24">
           <h3 className="text-center text-[12px] font-semibold uppercase tracking-[0.16em] text-zinc-500">Para quem cria e para quem vende</h3>
           <ul className="mt-6 grid gap-3 md:grid-cols-3">
             {AUDIENCES.map(({ icon: Icon, title, text }, index) => (
-              <Reveal key={title} as="li" delay={index * 0.07} className={`rounded-3xl border border-white/[0.07] bg-[linear-gradient(160deg,rgba(124,58,237,0.10),transparent_55%)] p-6 ${CARD_HOVER}`}>
+              <Reveal key={title} as="li" delay={index * 0.07} className={`rounded-3xl border border-white/[0.07] bg-[linear-gradient(160deg,rgba(124,58,237,0.10),transparent_55%)] p-5 sm:p-6 ${CARD_HOVER}`}>
                 <Icon className="size-5 text-accent-soft" aria-hidden="true" />
                 <p className="mt-5 font-landing text-xl font-bold tracking-[-0.02em] text-zinc-50">{title}</p>
                 <p className="mt-2 text-pretty text-[15px] text-zinc-400">{text}</p>
