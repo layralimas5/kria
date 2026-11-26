@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canUseModel, currentSubscription, planIncludes, planYield, pricePerCredit } from './plans'
+import { canUseModel, currentSubscription, distinctByName, planIncludes, planYield, pricePerCredit } from './plans'
 import type { Subscription } from './types'
 
 const NOW = new Date('2026-10-18T12:00:00Z').getTime()
@@ -42,6 +42,22 @@ describe('pricePerCredit', () => {
   it('divide o preço pelos créditos do mês', () => {
     expect(pricePerCredit({ price_cents: 5990, monthly_credits: 300 })).toBeCloseTo(0.1997, 3)
     expect(pricePerCredit({ price_cents: 0, monthly_credits: 0 })).toBeNull()
+  })
+})
+
+describe('Copiar movimento nos planos', () => {
+  const catalog = [
+    { name: 'Kling 3.0', credits: 406, allowed_plans: null, video_input: null },
+    { name: 'Copiar movimento', credits: 406, allowed_plans: null, video_input: 'video_url' },
+    { name: 'Copiar movimento', credits: 812, allowed_plans: null, video_input: 'video_url' },
+  ]
+
+  it('aparece uma vez só na comparação', () => {
+    expect(distinctByName(catalog).map((model) => model.name)).toEqual(['Kling 3.0', 'Copiar movimento'])
+  })
+
+  it('fica fora do "quanto rende": o custo depende da duração do vídeo', () => {
+    expect(planYield({ slug: 'pro', monthly_credits: 5000 }, catalog)).toEqual([{ model: 'Kling 3.0', count: 12 }])
   })
 })
 

@@ -44,6 +44,12 @@ export interface PlanYield {
   readonly count: number
 }
 
+/** Um modelo por nome: os níveis do Copiar movimento (0044) aparecem como um recurso só. */
+export function distinctByName<T extends Pick<Model, 'name'>>(models: readonly T[]): T[] {
+  const seen = new Set<string>()
+  return models.filter((model) => (seen.has(model.name) ? false : (seen.add(model.name), true)))
+}
+
 /**
  * Quanto o plano rende se o usuário gastar tudo num modelo só: "300 créditos" não
  * diz nada para quem chega, "60 fotos" diz. Fica fora o modelo que o plano não libera
@@ -51,10 +57,12 @@ export interface PlanYield {
  */
 export function planYield(
   plan: Pick<Plan, 'slug' | 'monthly_credits'>,
-  models: readonly Pick<Model, 'name' | 'credits' | 'allowed_plans'>[],
+  models: readonly (Pick<Model, 'name' | 'credits' | 'allowed_plans'> & { readonly video_input?: string | null })[],
   credits = plan.monthly_credits,
 ): PlanYield[] {
   return models
+    // Copiar movimento cobra pela duração de cada vídeo: "rende N" não seria verdade.
+    .filter((model) => !model.video_input)
     .filter((model) => model.credits > 0 && canUseModel(model.allowed_plans, plan.slug))
     .map((model) => ({ model: model.name, count: Math.floor(credits / model.credits) }))
     .filter((item) => item.count > 0)
