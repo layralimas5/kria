@@ -170,7 +170,7 @@ function GenerateButton({ studio }: { readonly studio: Studio }) {
       disabled={studio.submitting}
       aria-busy={studio.submitting || undefined}
       className={clsx(
-        'btn-accent flex min-h-12 w-full shrink-0 flex-col items-center justify-center rounded-xl px-6 transition-all sm:min-h-[4.5rem] sm:w-32',
+        'btn-accent flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl px-6 transition-all sm:min-h-[4.5rem] sm:w-32 sm:flex-col sm:gap-0',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2',
       )}
     >
@@ -179,7 +179,12 @@ function GenerateButton({ studio }: { readonly studio: Studio }) {
       ) : (
         <>
           <span className="font-headline text-[15px] leading-none">Gerar</span>
-          {studio.model && <span className="mt-1 text-[11px] font-semibold opacity-75">{studio.model.credits} créditos</span>}
+          {studio.model && (
+            <span className="text-xs font-semibold opacity-80 sm:mt-1 sm:text-[11px] sm:opacity-75">
+              <span aria-hidden="true" className="sm:hidden">· </span>
+              {studio.model.credits} créditos
+            </span>
+          )}
         </>
       )}
     </button>
@@ -192,7 +197,8 @@ function ComposerFooter({ studio }: { readonly studio: Studio }) {
   const left = balance !== null && studio.model ? balance - studio.model.credits : null
   const nearLimit = studio.prompt.length > PROMPT_MAX * 0.9
   return (
-    <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-white/[0.05] px-1 pt-2 text-[11px] text-zinc-500">
+    // No celular o custo já está no botão: o rodapé fica para telas maiores.
+    <div className="mt-2 hidden flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-white/[0.05] px-1 pt-2 text-[11px] text-zinc-500 sm:flex">
       <span className="tabular-nums">
         {left === null ? 'Carregando saldo' : left >= 0 ? `Sobram ${left.toLocaleString('pt-BR')} créditos depois desta` : 'Saldo insuficiente para este modelo'}
       </span>
@@ -253,7 +259,7 @@ export function Composer({ studio, personas, images }: ComposerProps) {
               maxLength={PROMPT_MAX}
               rows={2}
               placeholder={PLACEHOLDERS[studio.kind]}
-              className="max-h-40 min-h-14 flex-1 resize-none bg-transparent px-1 py-1.5 text-[15px] leading-relaxed text-zinc-100 placeholder:text-zinc-500 focus:outline-none [field-sizing:content]"
+              className="max-h-[4.75rem] min-h-11 flex-1 resize-none bg-transparent px-1 py-1.5 text-[15px] leading-relaxed text-zinc-100 placeholder:text-zinc-500 focus:outline-none [field-sizing:content] sm:max-h-40 sm:min-h-14"
             />
             <div className="hidden sm:block">
               <GenerateButton studio={studio} />
@@ -275,7 +281,7 @@ export function Composer({ studio, personas, images }: ComposerProps) {
             )}
           </div>
 
-          <div className="mt-2.5 sm:hidden">
+          <div className="mt-2 sm:hidden">
             <GenerateButton studio={studio} />
           </div>
           <ComposerFooter studio={studio} />
